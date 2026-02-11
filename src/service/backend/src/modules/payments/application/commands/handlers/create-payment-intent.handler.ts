@@ -1,0 +1,102 @@
+import { Inject } from '@nestjs/common';
+import {
+  CommandBus,
+  CommandHandler,
+  ICommandHandler,
+  QueryBus,
+} from '@nestjs/cqrs';
+import { OutboxProducer } from '../../../../outbox/application/outbox.producer';
+import { IPaymentRepositorySymbol } from '../../../domains/repositories/i.payment.repository';
+import type { IPaymentRepository } from '../../../domains/repositories/i.payment.repository';
+import { AttachPaymentToOrderCommand } from '../../../../../shared/ordering/commands/attach-payment-to-order.command';
+import { GetOrderQuery } from '../../../../../shared/ordering/queries/get-order.query';
+import {
+  PaymentWebhookFailedEvent,
+  PaymentWebhookSucceededEvent,
+} from '../../../../../shared/payments';
+import type { OrderView } from '../../../../../shared/ordering/readers/order.view';
+import {
+  CreatePaymentIntentCommand,
+  type CreatePaymentIntentResult,
+} from '../../../../../shared/payments';
+
+function assertOrderView(value: unknown): asserts value is OrderView {
+  if (!value || typeof value !== 'object') {
+    throw new Error('order not found');
+  }
+
+  const record = value as Record<string, unknown>;
+  if (
+    typeof record.amount !== 'number' ||
+    typeof record.currency !== 'string'
+  ) {
+    throw new Error('order not found');
+  }
+}
+
+@CommandHandler(CreatePaymentIntentCommand)
+export class CreatePaymentIntentHandler implements ICommandHandler<CreatePaymentIntentCommand> {
+  constructor(
+    @Inject(IPaymentRepositorySymbol)
+    private readonly payments: IPaymentRepository,
+    private readonly outbox: OutboxProducer,
+    private readonly queryBus: QueryBus,
+    private readonly commandBus: CommandBus,
+  ) {}
+
+  async execute(
+    command: CreatePaymentIntentCommand,
+  ): Promise<CreatePaymentIntentResult> {
+    const orderId = String(command.input.orderId ?? '').trim();
+    if (!orderId) throw new Error('orderId is required');
+
+    const order = await this.queryBus.execute(
+      new GetOrderQuery(orderId) as unknown as never,
+    );
+    assertOrderView(order);
+
+    const payment = await this.payments.createIntent({
+      orderId,
+      amount: order.amount,
+      currency: order.currency,
+    });
+
+    await this.commandBus.execute(
+      new AttachPaymentToOrderCommand({
+        orderId,
+        paymentId: payment.id,
+      }) as unknown as never,
+    );
+
+    const outcome = command.input.simulateOutcome ?? 'SUCCEEDED';
+    const delaySeconds = Math.max(
+      0,
+      Number(command.input.simulateDelaySeconds ?? 10),
+    );
+
+    const event =
+      outcome === 'SUCCEEDED'
+        ? new PaymentWebhookSucceededEvent(orderId, payment.id)
+        : new PaymentWebhookFailedEvent(orderId, payment.id);
+
+    const outboxId = await this.outbox.publish(event, {
+      delaySeconds,
+      messageGroupId: orderId,
+    });
+
+    const eventType =
+      outcome === 'SUCCEEDED'
+        ? PaymentWebhookSucceededEvent.eventType
+        : PaymentWebhookFailedEvent.eventType;
+
+    return {
+      paymentId: payment.id,
+      status: payment.status,
+      scheduled: {
+        eventType,
+        delaySeconds,
+        outboxId,
+      },
+    };
+  }
+}
