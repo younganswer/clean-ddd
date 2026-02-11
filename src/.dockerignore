@@ -1,0 +1,19 @@
+# Dependencies
+**/node_modules
+
+# Build outputs
+**/dist
+**/.next
+**/out
+
+# Logs
+**/logs
+
+# Tooling
+**/.turbo
+**/.cache
+
+# VCS / editor
+.git
+.history
+.DS_Store

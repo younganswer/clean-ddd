@@ -1,0 +1,89 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: clean-ddd (API Gateway + Lambda + SQS FIFO) minimal stack
+
+Globals:
+  Function:
+    Runtime: nodejs22.x
+    MemorySize: 512
+    Timeout: 10
+    Architectures:
+      - arm64
+    Environment:
+      Variables:
+        AWS_REGION: !Ref AWS::Region
+
+Parameters:
+  DatabaseUrlPooled:
+    Type: String
+    NoEcho: true
+    Description: Neon pooled connection string
+
+Resources:
+  OutboxDispatchDlq:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: OutboxDispatchDlq.fifo
+      FifoQueue: true
+      ContentBasedDeduplication: false
+
+  OutboxDispatchQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: OutboxDispatchQueue.fifo
+      FifoQueue: true
+      ContentBasedDeduplication: false
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt OutboxDispatchDlq.Arn
+        maxReceiveCount: 5
+
+  HttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: v1
+
+  ApiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../../apps/api
+      Handler: dist/lambda/http.handler.handler
+      Environment:
+        Variables:
+          DATABASE_URL_POOLED: !Ref DatabaseUrlPooled
+          SQS_OUTBOX_QUEUE_URL: !Ref OutboxDispatchQueue
+      Policies:
+        - SQSSendMessagePolicy:
+            QueueName: !GetAtt OutboxDispatchQueue.QueueName
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /{proxy+}
+            Method: ANY
+
+  OutboxConsumerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../../apps/api
+      Handler: dist/lambda/sqs.handler.handler
+      Timeout: 30
+      Environment:
+        Variables:
+          DATABASE_URL_POOLED: !Ref DatabaseUrlPooled
+          SQS_OUTBOX_QUEUE_URL: !Ref OutboxDispatchQueue
+      Policies:
+        - SQSPollerPolicy:
+            QueueName: !GetAtt OutboxDispatchQueue.QueueName
+      Events:
+        OutboxQueue:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt OutboxDispatchQueue.Arn
+            BatchSize: 1
+
+Outputs:
+  ApiUrl:
+    Value: !Sub "https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com/v1"
+  OutboxQueueUrl:
+    Value: !Ref OutboxDispatchQueue

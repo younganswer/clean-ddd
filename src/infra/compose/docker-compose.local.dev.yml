@@ -1,0 +1,47 @@
+services:
+  frontend:
+    build:
+      target: dev
+    volumes:
+      - ../../service/frontend/src:/app/service/frontend/src
+      - ../../service/frontend/public:/app/service/frontend/public
+      - ../../service/frontend/next.config.ts:/app/service/frontend/next.config.ts
+      - ../../service/frontend/tsconfig.json:/app/service/frontend/tsconfig.json
+      - ../../service/frontend/postcss.config.mjs:/app/service/frontend/postcss.config.mjs
+      - ../../service/frontend/eslint.config.mjs:/app/service/frontend/eslint.config.mjs
+
+  backend-api:
+    build:
+      target: dev
+    volumes:
+      - ../../service/backend/src:/app/service/backend/src
+      - ../../service/backend/scripts:/app/service/backend/scripts
+      - ../../service/backend/migrations:/app/service/backend/migrations
+      - ../../service/backend/mikro-orm.config.ts:/app/service/backend/mikro-orm.config.ts
+      - ../../service/backend/tsconfig.json:/app/service/backend/tsconfig.json
+      - ../../service/backend/tsconfig.build.json:/app/service/backend/tsconfig.build.json
+      - ../../service/backend/nest-cli.json:/app/service/backend/nest-cli.json
+
+  backend-cron:
+    build:
+      target: dev
+    volumes:
+      - ../../service/backend/src:/app/service/backend/src
+      - ../../service/backend/scripts:/app/service/backend/scripts
+      - ../../service/backend/migrations:/app/service/backend/migrations
+      - ../../service/backend/mikro-orm.config.ts:/app/service/backend/mikro-orm.config.ts
+      - ../../service/backend/tsconfig.json:/app/service/backend/tsconfig.json
+      - ../../service/backend/tsconfig.build.json:/app/service/backend/tsconfig.build.json
+      - ../../service/backend/nest-cli.json:/app/service/backend/nest-cli.json
+
+  backend-queue:
+    build:
+      target: dev
+    volumes:
+      - ../../service/backend/src:/app/service/backend/src
+      - ../../service/backend/scripts:/app/service/backend/scripts
+      - ../../service/backend/migrations:/app/service/backend/migrations
+      - ../../service/backend/mikro-orm.config.ts:/app/service/backend/mikro-orm.config.ts
+      - ../../service/backend/tsconfig.json:/app/service/backend/tsconfig.json
+      - ../../service/backend/tsconfig.build.json:/app/service/backend/tsconfig.build.json
+      - ../../service/backend/nest-cli.json:/app/service/backend/nest-cli.json
