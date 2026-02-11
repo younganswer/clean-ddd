@@ -91,7 +91,7 @@ async function pickAvailablePort(
 }
 
 async function main() {
-  const region = process.env.AWS_REGION ?? 'us-east-1';
+  const region = process.env.AWS_REGION ?? 'ap-northeast-2';
   const sqsEndpoint = process.env.SQS_ENDPOINT ?? 'http://localhost:45666';
   const queueName = process.env.SQS_QUEUE_NAME ?? 'OutboxDispatchQueue.fifo';
 

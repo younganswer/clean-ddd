@@ -43,7 +43,7 @@ services:
       OUTBOX_POLLING_ENABLED: "false"
       DATABASE_URL: postgresql://app:app@postgres:5432/clean_ddd
       DATABASE_URL_DIRECT: postgresql://app:app@postgres:5432/clean_ddd
-      AWS_REGION: us-east-1
+      AWS_REGION: ap-northeast-2
       AWS_ACCESS_KEY_ID: test
       AWS_SECRET_ACCESS_KEY: test
       SQS_ENDPOINT: http://localstack:4566
@@ -67,7 +67,7 @@ services:
       OUTBOX_POLLING_ENABLED: "false"
       DATABASE_URL: postgresql://app:app@postgres:5432/clean_ddd
       DATABASE_URL_DIRECT: postgresql://app:app@postgres:5432/clean_ddd
-      AWS_REGION: us-east-1
+      AWS_REGION: ap-northeast-2
       AWS_ACCESS_KEY_ID: test
       AWS_SECRET_ACCESS_KEY: test
       SQS_ENDPOINT: http://localstack:4566
@@ -91,7 +91,7 @@ services:
       OUTBOX_POLLING_ENABLED: "true"
       DATABASE_URL: postgresql://app:app@postgres:5432/clean_ddd
       DATABASE_URL_DIRECT: postgresql://app:app@postgres:5432/clean_ddd
-      AWS_REGION: us-east-1
+      AWS_REGION: ap-northeast-2
       AWS_ACCESS_KEY_ID: test
       AWS_SECRET_ACCESS_KEY: test
       SQS_ENDPOINT: http://localstack:4566

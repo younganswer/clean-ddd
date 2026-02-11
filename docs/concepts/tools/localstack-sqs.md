@@ -7,7 +7,7 @@
 로컬에서는 AWS SQS 대신 LocalStack SQS를 사용합니다.
 
 - 엔드포인트: `http://localhost:4566`
-- 리전: 기본적으로 `us-east-1`
+- 리전: 기본적으로 `ap-northeast-2`
 
 ## 이 저장소에서의 형태
 

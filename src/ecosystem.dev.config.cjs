@@ -27,7 +27,7 @@ module.exports = {
 			},
 			env_local: {
 				NODE_ENV: "local",
-				AWS_REGION: "us-east-1",
+				AWS_REGION: "ap-northeast-2",
 				AWS_ACCESS_KEY_ID: "test",
 				AWS_SECRET_ACCESS_KEY: "test",
 				SQS_ENDPOINT: "http://localhost:45666",
@@ -74,7 +74,7 @@ module.exports = {
 			},
 			env_local: {
 				NODE_ENV: "local",
-				AWS_REGION: "us-east-1",
+				AWS_REGION: "ap-northeast-2",
 				AWS_ACCESS_KEY_ID: "test",
 				AWS_SECRET_ACCESS_KEY: "test",
 				SQS_ENDPOINT: "http://localhost:45666",
@@ -121,7 +121,7 @@ module.exports = {
 			},
 			env_local: {
 				NODE_ENV: "local",
-				AWS_REGION: "us-east-1",
+				AWS_REGION: "ap-northeast-2",
 				AWS_ACCESS_KEY_ID: "test",
 				AWS_SECRET_ACCESS_KEY: "test",
 				SQS_ENDPOINT: "http://localhost:45666",

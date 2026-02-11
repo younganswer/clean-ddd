@@ -2,7 +2,7 @@
 set -euo pipefail
 
 awslocal sqs create-queue \
-  --region "${AWS_REGION:-us-east-1}" \
+  --region "${AWS_REGION:-ap-northeast-2}" \
   --queue-name OutboxDispatchQueue.fifo \
   --attributes FifoQueue=true,ContentBasedDeduplication=false \
   >/dev/null

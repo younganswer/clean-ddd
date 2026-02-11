@@ -5,8 +5,8 @@ services:
       - "${LOCALSTACK_PORT:-45666}:4566"
     environment:
       - SERVICES=sqs
-      - AWS_REGION=us-east-1
-      - AWS_DEFAULT_REGION=us-east-1
+      - AWS_REGION=ap-northeast-2
+      - AWS_DEFAULT_REGION=ap-northeast-2
     volumes:
       - ../localstack:/etc/localstack/init/ready.d
 
