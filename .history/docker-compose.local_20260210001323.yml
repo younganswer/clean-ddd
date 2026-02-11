@@ -1,0 +1,35 @@
+services:
+  localstack:
+    image: localstack/localstack:3.2
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=sqs
+      - DEFAULT_REGION=ap-northeast-2
+    volumes:
+      - ./tools/localstack:/etc/localstack/init/ready.d
+
+    healthcheck:
+      test: ["CMD", "sh", "-c", "wget -qO- http://localhost:4566/_localstack/health | grep -q sqs"]
+      interval: 5s
+      timeout: 2s
+      retries: 10
+
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=app
+      - POSTGRES_PASSWORD=app
+      - POSTGRES_DB=clean_ddd
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  postgres_data:

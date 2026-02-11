@@ -1,0 +1,712 @@
+Error: DATABASE_URL_POOLED (or DATABASE_URL) is required
+    at mikroOrmConfigForRuntime (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/mikro-orm.config.ts:56:11)
+    at Object.<anonymous> (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/database.module.ts:9:34)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at Module.Hook._require.Module.require (/Users/hwang-youngseo/clean-ddd/node_modules/.pnpm/require-in-the-middle@5.2.0/node_modules/require-in-the-middle/index.js:101:39)
+Error: DATABASE_URL_POOLED (or DATABASE_URL) is required
+    at mikroOrmConfigForRuntime (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/mikro-orm.config.ts:56:11)
+    at Object.<anonymous> (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/database.module.ts:9:34)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at Module.Hook._require.Module.require (/Users/hwang-youngseo/clean-ddd/node_modules/.pnpm/require-in-the-middle@5.2.0/node_modules/require-in-the-middle/index.js:101:39)
+Error: DATABASE_URL_POOLED (or DATABASE_URL) is required
+    at mikroOrmConfigForRuntime (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/mikro-orm.config.ts:56:11)
+    at Object.<anonymous> (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/database.module.ts:9:34)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at Module.Hook._require.Module.require (/Users/hwang-youngseo/clean-ddd/node_modules/.pnpm/require-in-the-middle@5.2.0/node_modules/require-in-the-middle/index.js:101:39)
+Error: DATABASE_URL_POOLED (or DATABASE_URL) is required
+    at mikroOrmConfigForRuntime (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/mikro-orm.config.ts:56:11)
+    at Object.<anonymous> (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/database.module.ts:9:34)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at Module.Hook._require.Module.require (/Users/hwang-youngseo/clean-ddd/node_modules/.pnpm/require-in-the-middle@5.2.0/node_modules/require-in-the-middle/index.js:101:39)
+Error: DATABASE_URL_POOLED (or DATABASE_URL) is required
+    at mikroOrmConfigForRuntime (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/mikro-orm.config.ts:56:11)
+    at Object.<anonymous> (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/database.module.ts:9:34)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at Module.Hook._require.Module.require (/Users/hwang-youngseo/clean-ddd/node_modules/.pnpm/require-in-the-middle@5.2.0/node_modules/require-in-the-middle/index.js:101:39)
+Error: DATABASE_URL_POOLED (or DATABASE_URL) is required
+    at mikroOrmConfigForRuntime (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/mikro-orm.config.ts:56:11)
+    at Object.<anonymous> (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/database.module.ts:9:34)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at Module.Hook._require.Module.require (/Users/hwang-youngseo/clean-ddd/node_modules/.pnpm/require-in-the-middle@5.2.0/node_modules/require-in-the-middle/index.js:101:39)
+Error: DATABASE_URL_POOLED (or DATABASE_URL) is required
+    at mikroOrmConfigForRuntime (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/mikro-orm.config.ts:56:11)
+    at Object.<anonymous> (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/database.module.ts:9:34)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at Module.Hook._require.Module.require (/Users/hwang-youngseo/clean-ddd/node_modules/.pnpm/require-in-the-middle@5.2.0/node_modules/require-in-the-middle/index.js:101:39)
+Error: DATABASE_URL_POOLED (or DATABASE_URL) is required
+    at mikroOrmConfigForRuntime (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/mikro-orm.config.ts:56:11)
+    at Object.<anonymous> (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/database.module.ts:9:34)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at Module.Hook._require.Module.require (/Users/hwang-youngseo/clean-ddd/node_modules/.pnpm/require-in-the-middle@5.2.0/node_modules/require-in-the-middle/index.js:101:39)
+Error: DATABASE_URL_POOLED (or DATABASE_URL) is required
+    at mikroOrmConfigForRuntime (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/mikro-orm.config.ts:56:11)
+    at Object.<anonymous> (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/database.module.ts:9:34)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at Module.Hook._require.Module.require (/Users/hwang-youngseo/clean-ddd/node_modules/.pnpm/require-in-the-middle@5.2.0/node_modules/require-in-the-middle/index.js:101:39)
+Error: DATABASE_URL_POOLED (or DATABASE_URL) is required
+    at mikroOrmConfigForRuntime (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/mikro-orm.config.ts:56:11)
+    at Object.<anonymous> (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/database.module.ts:9:34)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at Module.Hook._require.Module.require (/Users/hwang-youngseo/clean-ddd/node_modules/.pnpm/require-in-the-middle@5.2.0/node_modules/require-in-the-middle/index.js:101:39)
+Error: DATABASE_URL_POOLED (or DATABASE_URL) is required
+    at mikroOrmConfigForRuntime (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/mikro-orm.config.ts:56:11)
+    at Object.<anonymous> (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/database.module.ts:9:34)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at Module.Hook._require.Module.require (/Users/hwang-youngseo/clean-ddd/node_modules/.pnpm/require-in-the-middle@5.2.0/node_modules/require-in-the-middle/index.js:101:39)
+Error: DATABASE_URL_POOLED (or DATABASE_URL) is required
+    at mikroOrmConfigForRuntime (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/mikro-orm.config.ts:56:11)
+    at Object.<anonymous> (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/database.module.ts:9:34)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at Module.Hook._require.Module.require (/Users/hwang-youngseo/clean-ddd/node_modules/.pnpm/require-in-the-middle@5.2.0/node_modules/require-in-the-middle/index.js:101:39)
+Error: DATABASE_URL_POOLED (or DATABASE_URL) is required
+    at mikroOrmConfigForRuntime (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/mikro-orm.config.ts:56:11)
+    at Object.<anonymous> (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/database.module.ts:9:34)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at Module.Hook._require.Module.require (/Users/hwang-youngseo/clean-ddd/node_modules/.pnpm/require-in-the-middle@5.2.0/node_modules/require-in-the-middle/index.js:101:39)
+Error: DATABASE_URL_POOLED (or DATABASE_URL) is required
+    at mikroOrmConfigForRuntime (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/mikro-orm.config.ts:56:11)
+    at Object.<anonymous> (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/database.module.ts:9:34)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at Module.Hook._require.Module.require (/Users/hwang-youngseo/clean-ddd/node_modules/.pnpm/require-in-the-middle@5.2.0/node_modules/require-in-the-middle/index.js:101:39)
+Error: DATABASE_URL_POOLED (or DATABASE_URL) is required
+    at mikroOrmConfigForRuntime (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/mikro-orm.config.ts:56:11)
+    at Object.<anonymous> (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/database.module.ts:9:34)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at Module.Hook._require.Module.require (/Users/hwang-youngseo/clean-ddd/node_modules/.pnpm/require-in-the-middle@5.2.0/node_modules/require-in-the-middle/index.js:101:39)
+Error: DATABASE_URL_POOLED (or DATABASE_URL) is required
+    at mikroOrmConfigForRuntime (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/mikro-orm.config.ts:56:11)
+    at Object.<anonymous> (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/database.module.ts:9:34)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at Module.Hook._require.Module.require (/Users/hwang-youngseo/clean-ddd/node_modules/.pnpm/require-in-the-middle@5.2.0/node_modules/require-in-the-middle/index.js:101:39)
+Error: DATABASE_URL_POOLED (or DATABASE_URL) is required
+    at mikroOrmConfigForRuntime (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/mikro-orm.config.ts:56:11)
+    at Object.<anonymous> (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/database.module.ts:9:34)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at Module.Hook._require.Module.require (/Users/hwang-youngseo/clean-ddd/node_modules/.pnpm/require-in-the-middle@5.2.0/node_modules/require-in-the-middle/index.js:101:39)
+Error: DATABASE_URL_POOLED (or DATABASE_URL) is required
+    at mikroOrmConfigForRuntime (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/mikro-orm.config.ts:56:11)
+    at Object.<anonymous> (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/database.module.ts:9:34)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at Module.Hook._require.Module.require (/Users/hwang-youngseo/clean-ddd/node_modules/.pnpm/require-in-the-middle@5.2.0/node_modules/require-in-the-middle/index.js:101:39)
+Error: DATABASE_URL_POOLED (or DATABASE_URL) is required
+    at mikroOrmConfigForRuntime (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/mikro-orm.config.ts:56:11)
+    at Object.<anonymous> (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/database.module.ts:9:34)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at Module.Hook._require.Module.require (/Users/hwang-youngseo/clean-ddd/node_modules/.pnpm/require-in-the-middle@5.2.0/node_modules/require-in-the-middle/index.js:101:39)
+Error: DATABASE_URL_POOLED (or DATABASE_URL) is required
+    at mikroOrmConfigForRuntime (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/mikro-orm.config.ts:56:11)
+    at Object.<anonymous> (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/database.module.ts:9:34)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at Module.Hook._require.Module.require (/Users/hwang-youngseo/clean-ddd/node_modules/.pnpm/require-in-the-middle@5.2.0/node_modules/require-in-the-middle/index.js:101:39)
+Error: DATABASE_URL_POOLED (or DATABASE_URL) is required
+    at mikroOrmConfigForRuntime (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/mikro-orm.config.ts:56:11)
+    at Object.<anonymous> (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/database.module.ts:9:34)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at Module.Hook._require.Module.require (/Users/hwang-youngseo/clean-ddd/node_modules/.pnpm/require-in-the-middle@5.2.0/node_modules/require-in-the-middle/index.js:101:39)
+Error: DATABASE_URL_POOLED (or DATABASE_URL) is required
+    at mikroOrmConfigForRuntime (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/mikro-orm.config.ts:56:11)
+    at Object.<anonymous> (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/database.module.ts:9:34)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at Module.Hook._require.Module.require (/Users/hwang-youngseo/clean-ddd/node_modules/.pnpm/require-in-the-middle@5.2.0/node_modules/require-in-the-middle/index.js:101:39)
+Error: DATABASE_URL_POOLED (or DATABASE_URL) is required
+    at mikroOrmConfigForRuntime (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/mikro-orm.config.ts:56:11)
+    at Object.<anonymous> (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/database.module.ts:9:34)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at Module.Hook._require.Module.require (/Users/hwang-youngseo/clean-ddd/node_modules/.pnpm/require-in-the-middle@5.2.0/node_modules/require-in-the-middle/index.js:101:39)
+Error: DATABASE_URL_POOLED (or DATABASE_URL) is required
+    at mikroOrmConfigForRuntime (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/mikro-orm.config.ts:56:11)
+    at Object.<anonymous> (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/database.module.ts:9:34)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at Module.Hook._require.Module.require (/Users/hwang-youngseo/clean-ddd/node_modules/.pnpm/require-in-the-middle@5.2.0/node_modules/require-in-the-middle/index.js:101:39)
+Error: DATABASE_URL_POOLED (or DATABASE_URL) is required
+    at mikroOrmConfigForRuntime (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/mikro-orm.config.ts:56:11)
+    at Object.<anonymous> (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/database.module.ts:9:34)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at Module.Hook._require.Module.require (/Users/hwang-youngseo/clean-ddd/node_modules/.pnpm/require-in-the-middle@5.2.0/node_modules/require-in-the-middle/index.js:101:39)
+Error: DATABASE_URL_POOLED (or DATABASE_URL) is required
+    at mikroOrmConfigForRuntime (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/mikro-orm.config.ts:56:11)
+    at Object.<anonymous> (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/database.module.ts:9:34)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at Module.Hook._require.Module.require (/Users/hwang-youngseo/clean-ddd/node_modules/.pnpm/require-in-the-middle@5.2.0/node_modules/require-in-the-middle/index.js:101:39)
+Error: DATABASE_URL_POOLED (or DATABASE_URL) is required
+    at mikroOrmConfigForRuntime (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/mikro-orm.config.ts:56:11)
+    at Object.<anonymous> (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/database.module.ts:9:34)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at Module.Hook._require.Module.require (/Users/hwang-youngseo/clean-ddd/node_modules/.pnpm/require-in-the-middle@5.2.0/node_modules/require-in-the-middle/index.js:101:39)
+Error: DATABASE_URL_POOLED (or DATABASE_URL) is required
+    at mikroOrmConfigForRuntime (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/mikro-orm.config.ts:56:11)
+    at Object.<anonymous> (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/database.module.ts:9:34)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at Module.Hook._require.Module.require (/Users/hwang-youngseo/clean-ddd/node_modules/.pnpm/require-in-the-middle@5.2.0/node_modules/require-in-the-middle/index.js:101:39)
+Error: DATABASE_URL_POOLED (or DATABASE_URL) is required
+    at mikroOrmConfigForRuntime (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/mikro-orm.config.ts:56:11)
+    at Object.<anonymous> (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/database.module.ts:9:34)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at Module.Hook._require.Module.require (/Users/hwang-youngseo/clean-ddd/node_modules/.pnpm/require-in-the-middle@5.2.0/node_modules/require-in-the-middle/index.js:101:39)
+Error: DATABASE_URL_POOLED (or DATABASE_URL) is required
+    at mikroOrmConfigForRuntime (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/mikro-orm.config.ts:56:11)
+    at Object.<anonymous> (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/database.module.ts:9:34)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at Module.Hook._require.Module.require (/Users/hwang-youngseo/clean-ddd/node_modules/.pnpm/require-in-the-middle@5.2.0/node_modules/require-in-the-middle/index.js:101:39)
+Error: DATABASE_URL_POOLED (or DATABASE_URL) is required
+    at mikroOrmConfigForRuntime (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/mikro-orm.config.ts:56:11)
+    at Object.<anonymous> (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/database.module.ts:9:34)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at Module.Hook._require.Module.require (/Users/hwang-youngseo/clean-ddd/node_modules/.pnpm/require-in-the-middle@5.2.0/node_modules/require-in-the-middle/index.js:101:39)
+Error: DATABASE_URL_POOLED (or DATABASE_URL) is required
+    at mikroOrmConfigForRuntime (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/mikro-orm.config.ts:56:11)
+    at Object.<anonymous> (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/database.module.ts:9:34)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at Module.Hook._require.Module.require (/Users/hwang-youngseo/clean-ddd/node_modules/.pnpm/require-in-the-middle@5.2.0/node_modules/require-in-the-middle/index.js:101:39)
+Error: DATABASE_URL_POOLED (or DATABASE_URL) is required
+    at mikroOrmConfigForRuntime (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/mikro-orm.config.ts:56:11)
+    at Object.<anonymous> (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/database.module.ts:9:34)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at Module.Hook._require.Module.require (/Users/hwang-youngseo/clean-ddd/node_modules/.pnpm/require-in-the-middle@5.2.0/node_modules/require-in-the-middle/index.js:101:39)
+Error: DATABASE_URL_POOLED (or DATABASE_URL) is required
+    at mikroOrmConfigForRuntime (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/mikro-orm.config.ts:56:11)
+    at Object.<anonymous> (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/database.module.ts:9:34)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at Module.Hook._require.Module.require (/Users/hwang-youngseo/clean-ddd/node_modules/.pnpm/require-in-the-middle@5.2.0/node_modules/require-in-the-middle/index.js:101:39)
+Error: DATABASE_URL_POOLED (or DATABASE_URL) is required
+    at mikroOrmConfigForRuntime (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/mikro-orm.config.ts:56:11)
+    at Object.<anonymous> (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/database.module.ts:9:34)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at Module.Hook._require.Module.require (/Users/hwang-youngseo/clean-ddd/node_modules/.pnpm/require-in-the-middle@5.2.0/node_modules/require-in-the-middle/index.js:101:39)
+Error: DATABASE_URL_POOLED (or DATABASE_URL) is required
+    at mikroOrmConfigForRuntime (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/mikro-orm.config.ts:56:11)
+    at Object.<anonymous> (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/database.module.ts:9:34)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at Module.Hook._require.Module.require (/Users/hwang-youngseo/clean-ddd/node_modules/.pnpm/require-in-the-middle@5.2.0/node_modules/require-in-the-middle/index.js:101:39)
+Error: DATABASE_URL_POOLED (or DATABASE_URL) is required
+    at mikroOrmConfigForRuntime (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/mikro-orm.config.ts:56:11)
+    at Object.<anonymous> (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/database.module.ts:9:34)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at Module.Hook._require.Module.require (/Users/hwang-youngseo/clean-ddd/node_modules/.pnpm/require-in-the-middle@5.2.0/node_modules/require-in-the-middle/index.js:101:39)
+Error: DATABASE_URL_POOLED (or DATABASE_URL) is required
+    at mikroOrmConfigForRuntime (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/mikro-orm.config.ts:56:11)
+    at Object.<anonymous> (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/database.module.ts:9:34)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at Module.Hook._require.Module.require (/Users/hwang-youngseo/clean-ddd/node_modules/.pnpm/require-in-the-middle@5.2.0/node_modules/require-in-the-middle/index.js:101:39)
+Error: DATABASE_URL_POOLED (or DATABASE_URL) is required
+    at mikroOrmConfigForRuntime (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/mikro-orm.config.ts:56:11)
+    at Object.<anonymous> (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/database.module.ts:9:34)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at Module.Hook._require.Module.require (/Users/hwang-youngseo/clean-ddd/node_modules/.pnpm/require-in-the-middle@5.2.0/node_modules/require-in-the-middle/index.js:101:39)
+Error: DATABASE_URL_POOLED (or DATABASE_URL) is required
+    at mikroOrmConfigForRuntime (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/mikro-orm.config.ts:56:11)
+    at Object.<anonymous> (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/database.module.ts:9:34)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at Module.Hook._require.Module.require (/Users/hwang-youngseo/clean-ddd/node_modules/.pnpm/require-in-the-middle@5.2.0/node_modules/require-in-the-middle/index.js:101:39)
+Error: DATABASE_URL_POOLED (or DATABASE_URL) is required
+    at mikroOrmConfigForRuntime (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/mikro-orm.config.ts:56:11)
+    at Object.<anonymous> (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/database.module.ts:9:34)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at Module.Hook._require.Module.require (/Users/hwang-youngseo/clean-ddd/node_modules/.pnpm/require-in-the-middle@5.2.0/node_modules/require-in-the-middle/index.js:101:39)
+Error: DATABASE_URL_POOLED (or DATABASE_URL) is required
+    at mikroOrmConfigForRuntime (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/mikro-orm.config.ts:56:11)
+    at Object.<anonymous> (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/database.module.ts:9:34)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at Module.Hook._require.Module.require (/Users/hwang-youngseo/clean-ddd/node_modules/.pnpm/require-in-the-middle@5.2.0/node_modules/require-in-the-middle/index.js:101:39)
+Error: DATABASE_URL_POOLED (or DATABASE_URL) is required
+    at mikroOrmConfigForRuntime (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/mikro-orm.config.ts:56:11)
+    at Object.<anonymous> (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/database.module.ts:9:34)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at Module.Hook._require.Module.require (/Users/hwang-youngseo/clean-ddd/node_modules/.pnpm/require-in-the-middle@5.2.0/node_modules/require-in-the-middle/index.js:101:39)
+Error: DATABASE_URL_POOLED (or DATABASE_URL) is required
+    at mikroOrmConfigForRuntime (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/mikro-orm.config.ts:56:11)
+    at Object.<anonymous> (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/database.module.ts:9:34)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at Module.Hook._require.Module.require (/Users/hwang-youngseo/clean-ddd/node_modules/.pnpm/require-in-the-middle@5.2.0/node_modules/require-in-the-middle/index.js:101:39)
+Error: DATABASE_URL_POOLED (or DATABASE_URL) is required
+    at mikroOrmConfigForRuntime (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/mikro-orm.config.ts:56:11)
+    at Object.<anonymous> (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/database.module.ts:9:34)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at Module.Hook._require.Module.require (/Users/hwang-youngseo/clean-ddd/node_modules/.pnpm/require-in-the-middle@5.2.0/node_modules/require-in-the-middle/index.js:101:39)
+Error: DATABASE_URL_POOLED (or DATABASE_URL) is required
+    at mikroOrmConfigForRuntime (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/mikro-orm.config.ts:56:11)
+    at Object.<anonymous> (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/database.module.ts:9:34)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at Module.Hook._require.Module.require (/Users/hwang-youngseo/clean-ddd/node_modules/.pnpm/require-in-the-middle@5.2.0/node_modules/require-in-the-middle/index.js:101:39)
+Error: DATABASE_URL_POOLED (or DATABASE_URL) is required
+    at mikroOrmConfigForRuntime (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/mikro-orm.config.ts:56:11)
+    at Object.<anonymous> (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/database.module.ts:9:34)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at Module.Hook._require.Module.require (/Users/hwang-youngseo/clean-ddd/node_modules/.pnpm/require-in-the-middle@5.2.0/node_modules/require-in-the-middle/index.js:101:39)
+Error: DATABASE_URL_POOLED (or DATABASE_URL) is required
+    at mikroOrmConfigForRuntime (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/mikro-orm.config.ts:56:11)
+    at Object.<anonymous> (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/database.module.ts:9:34)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at Module.Hook._require.Module.require (/Users/hwang-youngseo/clean-ddd/node_modules/.pnpm/require-in-the-middle@5.2.0/node_modules/require-in-the-middle/index.js:101:39)
+Error: DATABASE_URL_POOLED (or DATABASE_URL) is required
+    at mikroOrmConfigForRuntime (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/mikro-orm.config.ts:56:11)
+    at Object.<anonymous> (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/database.module.ts:9:34)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at Module.Hook._require.Module.require (/Users/hwang-youngseo/clean-ddd/node_modules/.pnpm/require-in-the-middle@5.2.0/node_modules/require-in-the-middle/index.js:101:39)
+Error: DATABASE_URL_POOLED (or DATABASE_URL) is required
+    at mikroOrmConfigForRuntime (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/mikro-orm.config.ts:56:11)
+    at Object.<anonymous> (/Users/hwang-youngseo/clean-ddd/apps/backend/src/lib/database/database.module.ts:9:34)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at Module.Hook._require.Module.require (/Users/hwang-youngseo/clean-ddd/node_modules/.pnpm/require-in-the-middle@5.2.0/node_modules/require-in-the-middle/index.js:101:39)
+[api] 79886  - 2026. 02. 11. 오전 1:14:37     LOG [NestFactory] Starting Nest application...
+[api] 79886  - 2026. 02. 11. 오전 1:14:37     LOG [InstanceLoader] DatabaseModule dependencies initialized
+[api] 79886  - 2026. 02. 11. 오전 1:14:37     LOG [InstanceLoader] SqsModule dependencies initialized
+[api] 79886  - 2026. 02. 11. 오전 1:14:37     LOG [InstanceLoader] BffModule dependencies initialized
+[api] 79886  - 2026. 02. 11. 오전 1:14:37     LOG [InstanceLoader] ConfigHostModule dependencies initialized
+[api] 79886  - 2026. 02. 11. 오전 1:14:37     LOG [InstanceLoader] DiscoveryModule dependencies initialized
+[api] 79886  - 2026. 02. 11. 오전 1:14:37     LOG [InstanceLoader] AppModule dependencies initialized
+[api] 79886  - 2026. 02. 11. 오전 1:14:37     LOG [InstanceLoader] ConfigModule dependencies initialized
+[api] 79886  - 2026. 02. 11. 오전 1:14:37     LOG [InstanceLoader] ScheduleModule dependencies initialized
+[api] 79886  - 2026. 02. 11. 오전 1:14:37     LOG [InstanceLoader] CqrsModule dependencies initialized
+[api] 79886  - 2026. 02. 11. 오전 1:14:37     LOG [InstanceLoader] CheckoutBffModule dependencies initialized
+[api] 79886  - 2026. 02. 11. 오전 1:14:37     LOG [InstanceLoader] OrdersBffModule dependencies initialized
+[api] 79886  - 2026. 02. 11. 오전 1:14:37     LOG [InstanceLoader] OrderDetailBffModule dependencies initialized
+[api] 79886  - 2026. 02. 11. 오전 1:14:37     LOG [InstanceLoader] DashboardBffModule dependencies initialized
+[api] 79886  - 2026. 02. 11. 오전 1:14:37     LOG [InstanceLoader] CronJobsModule dependencies initialized
+[api] 79886  - 2026. 02. 11. 오전 1:14:37     LOG [InstanceLoader] MikroOrmCoreModule dependencies initialized
+[api] 79886  - 2026. 02. 11. 오전 1:14:37     LOG [InstanceLoader] OutboxModule dependencies initialized
+[api] 79886  - 2026. 02. 11. 오전 1:14:37     LOG [InstanceLoader] SagaOrchestratorModule dependencies initialized
+[api] 79886  - 2026. 02. 11. 오전 1:14:37     LOG [InstanceLoader] OutboxConsumerModule dependencies initialized
+[api] 79886  - 2026. 02. 11. 오전 1:14:37     LOG [InstanceLoader] ShippingModule dependencies initialized
+[api] 79886  - 2026. 02. 11. 오전 1:14:37     LOG [InstanceLoader] InventoryModule dependencies initialized
+[api] 79886  - 2026. 02. 11. 오전 1:14:37     LOG [InstanceLoader] OrderingModule dependencies initialized
+[api] 79886  - 2026. 02. 11. 오전 1:14:37     LOG [InstanceLoader] PaymentsModule dependencies initialized
+[api] 79886  - 2026. 02. 11. 오전 1:14:37     LOG [RoutesResolver] AppController {/api/v1}:
+[api] 79886  - 2026. 02. 11. 오전 1:14:37     LOG [RouterExplorer] Mapped {/api/v1, GET} route
+[api] 79886  - 2026. 02. 11. 오전 1:14:37     LOG [RouterExplorer] Mapped {/api/v1/app/health-check, GET} route
+[api] 79886  - 2026. 02. 11. 오전 1:14:37     LOG [RoutesResolver] OrdersBffController {/api/v1/bff/orders}:
+[api] 79886  - 2026. 02. 11. 오전 1:14:37     LOG [RouterExplorer] Mapped {/api/v1/bff/orders, GET} route
+[api] 79886  - 2026. 02. 11. 오전 1:14:37     LOG [RouterExplorer] Mapped {/api/v1/bff/orders/:orderId, GET} route
+[api] 79886  - 2026. 02. 11. 오전 1:14:37     LOG [RouterExplorer] Mapped {/api/v1/bff/orders, POST} route
+[api] 79886  - 2026. 02. 11. 오전 1:14:37     LOG [RoutesResolver] OrderDetailBffController {/api/v1/bff/order-detail}:
+[api] 79886  - 2026. 02. 11. 오전 1:14:37     LOG [RouterExplorer] Mapped {/api/v1/bff/order-detail/:orderId, GET} route
+[api] 79886  - 2026. 02. 11. 오전 1:14:37     LOG [RoutesResolver] CheckoutBffController {/api/v1/bff/checkout}:
+[api] 79886  - 2026. 02. 11. 오전 1:14:37     LOG [RouterExplorer] Mapped {/api/v1/bff/checkout, POST} route
+[api] 79886  - 2026. 02. 11. 오전 1:14:37     LOG [RoutesResolver] DashboardBffController {/api/v1/bff/dashboard}:
+[api] 79886  - 2026. 02. 11. 오전 1:14:37     LOG [RouterExplorer] Mapped {/api/v1/bff/dashboard/summary, GET} route
+[api] 79886  - 2026. 02. 11. 오전 1:14:37     LOG [RoutesResolver] PaymentsController {/api/v1/orders/:orderId/payments}:
+[api] 79886  - 2026. 02. 11. 오전 1:14:37     LOG [RouterExplorer] Mapped {/api/v1/orders/:orderId/payments/intents, POST} route
+[api] 79886  - 2026. 02. 11. 오전 1:14:37     LOG [RoutesResolver] PaymentIntentsController {/api/v1/payments/intents}:
+[api] 79886  - 2026. 02. 11. 오전 1:14:37     LOG [RouterExplorer] Mapped {/api/v1/payments/intents, GET} route
+[api] 79886  - 2026. 02. 11. 오전 1:14:37     LOG [RouterExplorer] Mapped {/api/v1/payments/intents/:paymentId, GET} route
+[api] 79886  - 2026. 02. 11. 오전 1:14:37     LOG [RoutesResolver] OrdersController {/api/v1/orders}:
+[api] 79886  - 2026. 02. 11. 오전 1:14:37     LOG [RouterExplorer] Mapped {/api/v1/orders, POST} route
+[api] 79886  - 2026. 02. 11. 오전 1:14:37     LOG [RouterExplorer] Mapped {/api/v1/orders, GET} route
+[api] 79886  - 2026. 02. 11. 오전 1:14:37     LOG [RouterExplorer] Mapped {/api/v1/orders/:id, GET} route
+[api] 79886  - 2026. 02. 11. 오전 1:14:37     LOG [RoutesResolver] ShipmentsController {/api/v1/shipments}:
+[api] 79886  - 2026. 02. 11. 오전 1:14:37     LOG [RouterExplorer] Mapped {/api/v1/shipments, GET} route
+[api] 79886  - 2026. 02. 11. 오전 1:14:37     LOG [RouterExplorer] Mapped {/api/v1/shipments/by-order/:orderId, GET} route
+[api] 79886  - 2026. 02. 11. 오전 1:14:37     LOG [RouterExplorer] Mapped {/api/v1/shipments/:id, GET} route
+[api] 79886  - 2026. 02. 11. 오전 1:14:37     LOG [RoutesResolver] InventoryController {/api/v1/inventory}:
+[api] 79886  - 2026. 02. 11. 오전 1:14:37     LOG [RouterExplorer] Mapped {/api/v1/inventory/items, GET} route
+[api] 79886  - 2026. 02. 11. 오전 1:14:37     LOG [RouterExplorer] Mapped {/api/v1/inventory/items/:sku, GET} route
+[api] 79886  - 2026. 02. 11. 오전 1:14:37     LOG [RouterExplorer] Mapped {/api/v1/inventory/reservations, GET} route
+[api] 79886  - 2026. 02. 11. 오전 1:14:37     LOG [NestApplication] Nest application successfully started
+[api] 80296  - 2026. 02. 11. 오전 1:15:57     LOG [NestFactory] Starting Nest application...
+[api] 80296  - 2026. 02. 11. 오전 1:15:57     LOG [InstanceLoader] DatabaseModule dependencies initialized
+[api] 80296  - 2026. 02. 11. 오전 1:15:57     LOG [InstanceLoader] SqsModule dependencies initialized
+[api] 80296  - 2026. 02. 11. 오전 1:15:57     LOG [InstanceLoader] BffModule dependencies initialized
+[api] 80296  - 2026. 02. 11. 오전 1:15:57     LOG [InstanceLoader] ConfigHostModule dependencies initialized
+[api] 80296  - 2026. 02. 11. 오전 1:15:57     LOG [InstanceLoader] DiscoveryModule dependencies initialized
+[api] 80296  - 2026. 02. 11. 오전 1:15:57     LOG [InstanceLoader] AppModule dependencies initialized
+[api] 80296  - 2026. 02. 11. 오전 1:15:57     LOG [InstanceLoader] ConfigModule dependencies initialized
+[api] 80296  - 2026. 02. 11. 오전 1:15:57     LOG [InstanceLoader] ScheduleModule dependencies initialized
+[api] 80296  - 2026. 02. 11. 오전 1:15:57     LOG [InstanceLoader] CqrsModule dependencies initialized
+[api] 80296  - 2026. 02. 11. 오전 1:15:57     LOG [InstanceLoader] CheckoutBffModule dependencies initialized
+[api] 80296  - 2026. 02. 11. 오전 1:15:57     LOG [InstanceLoader] OrdersBffModule dependencies initialized
+[api] 80296  - 2026. 02. 11. 오전 1:15:57     LOG [InstanceLoader] OrderDetailBffModule dependencies initialized
+[api] 80296  - 2026. 02. 11. 오전 1:15:57     LOG [InstanceLoader] DashboardBffModule dependencies initialized
+[api] 80296  - 2026. 02. 11. 오전 1:15:57     LOG [InstanceLoader] CronJobsModule dependencies initialized
+[api] 80296  - 2026. 02. 11. 오전 1:15:57     LOG [InstanceLoader] MikroOrmCoreModule dependencies initialized
+[api] 80296  - 2026. 02. 11. 오전 1:15:57     LOG [InstanceLoader] OutboxModule dependencies initialized
+[api] 80296  - 2026. 02. 11. 오전 1:15:57     LOG [InstanceLoader] SagaOrchestratorModule dependencies initialized
+[api] 80296  - 2026. 02. 11. 오전 1:15:57     LOG [InstanceLoader] OutboxConsumerModule dependencies initialized
+[api] 80296  - 2026. 02. 11. 오전 1:15:57     LOG [InstanceLoader] ShippingModule dependencies initialized
+[api] 80296  - 2026. 02. 11. 오전 1:15:57     LOG [InstanceLoader] InventoryModule dependencies initialized
+[api] 80296  - 2026. 02. 11. 오전 1:15:57     LOG [InstanceLoader] OrderingModule dependencies initialized
+[api] 80296  - 2026. 02. 11. 오전 1:15:57     LOG [InstanceLoader] PaymentsModule dependencies initialized
+[api] 80296  - 2026. 02. 11. 오전 1:15:57     LOG [RoutesResolver] AppController {/api/v1}:
+[api] 80296  - 2026. 02. 11. 오전 1:15:57     LOG [RouterExplorer] Mapped {/api/v1, GET} route
+[api] 80296  - 2026. 02. 11. 오전 1:15:57     LOG [RouterExplorer] Mapped {/api/v1/app/health-check, GET} route
+[api] 80296  - 2026. 02. 11. 오전 1:15:57     LOG [RoutesResolver] OrdersBffController {/api/v1/bff/orders}:
+[api] 80296  - 2026. 02. 11. 오전 1:15:57     LOG [RouterExplorer] Mapped {/api/v1/bff/orders, GET} route
+[api] 80296  - 2026. 02. 11. 오전 1:15:57     LOG [RouterExplorer] Mapped {/api/v1/bff/orders/:orderId, GET} route
+[api] 80296  - 2026. 02. 11. 오전 1:15:57     LOG [RouterExplorer] Mapped {/api/v1/bff/orders, POST} route
+[api] 80296  - 2026. 02. 11. 오전 1:15:57     LOG [RoutesResolver] OrderDetailBffController {/api/v1/bff/order-detail}:
+[api] 80296  - 2026. 02. 11. 오전 1:15:57     LOG [RouterExplorer] Mapped {/api/v1/bff/order-detail/:orderId, GET} route
+[api] 80296  - 2026. 02. 11. 오전 1:15:57     LOG [RoutesResolver] CheckoutBffController {/api/v1/bff/checkout}:
+[api] 80296  - 2026. 02. 11. 오전 1:15:57     LOG [RouterExplorer] Mapped {/api/v1/bff/checkout, POST} route
+[api] 80296  - 2026. 02. 11. 오전 1:15:57     LOG [RoutesResolver] DashboardBffController {/api/v1/bff/dashboard}:
+[api] 80296  - 2026. 02. 11. 오전 1:15:57     LOG [RouterExplorer] Mapped {/api/v1/bff/dashboard/summary, GET} route
+[api] 80296  - 2026. 02. 11. 오전 1:15:57     LOG [RoutesResolver] PaymentsController {/api/v1/orders/:orderId/payments}:
+[api] 80296  - 2026. 02. 11. 오전 1:15:57     LOG [RouterExplorer] Mapped {/api/v1/orders/:orderId/payments/intents, POST} route
+[api] 80296  - 2026. 02. 11. 오전 1:15:57     LOG [RoutesResolver] PaymentIntentsController {/api/v1/payments/intents}:
+[api] 80296  - 2026. 02. 11. 오전 1:15:57     LOG [RouterExplorer] Mapped {/api/v1/payments/intents, GET} route
+[api] 80296  - 2026. 02. 11. 오전 1:15:57     LOG [RouterExplorer] Mapped {/api/v1/payments/intents/:paymentId, GET} route
+[api] 80296  - 2026. 02. 11. 오전 1:15:57     LOG [RoutesResolver] OrdersController {/api/v1/orders}:
+[api] 80296  - 2026. 02. 11. 오전 1:15:57     LOG [RouterExplorer] Mapped {/api/v1/orders, POST} route
+[api] 80296  - 2026. 02. 11. 오전 1:15:57     LOG [RouterExplorer] Mapped {/api/v1/orders, GET} route
+[api] 80296  - 2026. 02. 11. 오전 1:15:57     LOG [RouterExplorer] Mapped {/api/v1/orders/:id, GET} route
+[api] 80296  - 2026. 02. 11. 오전 1:15:57     LOG [RoutesResolver] ShipmentsController {/api/v1/shipments}:
+[api] 80296  - 2026. 02. 11. 오전 1:15:57     LOG [RouterExplorer] Mapped {/api/v1/shipments, GET} route
+[api] 80296  - 2026. 02. 11. 오전 1:15:57     LOG [RouterExplorer] Mapped {/api/v1/shipments/by-order/:orderId, GET} route
+[api] 80296  - 2026. 02. 11. 오전 1:15:57     LOG [RouterExplorer] Mapped {/api/v1/shipments/:id, GET} route
+[api] 80296  - 2026. 02. 11. 오전 1:15:57     LOG [RoutesResolver] InventoryController {/api/v1/inventory}:
+[api] 80296  - 2026. 02. 11. 오전 1:15:57     LOG [RouterExplorer] Mapped {/api/v1/inventory/items, GET} route
+[api] 80296  - 2026. 02. 11. 오전 1:15:57     LOG [RouterExplorer] Mapped {/api/v1/inventory/items/:sku, GET} route
+[api] 80296  - 2026. 02. 11. 오전 1:15:57     LOG [RouterExplorer] Mapped {/api/v1/inventory/reservations, GET} route
+[api] 80296  - 2026. 02. 11. 오전 1:15:57     LOG [NestApplication] Nest application successfully started
+[api] 81784  - 2026. 02. 11. 오전 1:20:32     LOG [NestFactory] Starting Nest application...
+[api] 81784  - 2026. 02. 11. 오전 1:20:32     LOG [InstanceLoader] DatabaseModule dependencies initialized
+[api] 81784  - 2026. 02. 11. 오전 1:20:32     LOG [InstanceLoader] SqsModule dependencies initialized
+[api] 81784  - 2026. 02. 11. 오전 1:20:32     LOG [InstanceLoader] BffModule dependencies initialized
+[api] 81784  - 2026. 02. 11. 오전 1:20:32     LOG [InstanceLoader] ConfigHostModule dependencies initialized
+[api] 81784  - 2026. 02. 11. 오전 1:20:32     LOG [InstanceLoader] DiscoveryModule dependencies initialized
+[api] 81784  - 2026. 02. 11. 오전 1:20:32     LOG [InstanceLoader] AppModule dependencies initialized
+[api] 81784  - 2026. 02. 11. 오전 1:20:32     LOG [InstanceLoader] ConfigModule dependencies initialized
+[api] 81784  - 2026. 02. 11. 오전 1:20:32     LOG [InstanceLoader] ScheduleModule dependencies initialized
+[api] 81784  - 2026. 02. 11. 오전 1:20:32     LOG [InstanceLoader] CqrsModule dependencies initialized
+[api] 81784  - 2026. 02. 11. 오전 1:20:32     LOG [InstanceLoader] CheckoutBffModule dependencies initialized
+[api] 81784  - 2026. 02. 11. 오전 1:20:32     LOG [InstanceLoader] OrdersBffModule dependencies initialized
+[api] 81784  - 2026. 02. 11. 오전 1:20:32     LOG [InstanceLoader] OrderDetailBffModule dependencies initialized
+[api] 81784  - 2026. 02. 11. 오전 1:20:32     LOG [InstanceLoader] DashboardBffModule dependencies initialized
+[api] 81784  - 2026. 02. 11. 오전 1:20:32     LOG [InstanceLoader] CronJobsModule dependencies initialized
+[api] 81784  - 2026. 02. 11. 오전 1:20:32     LOG [InstanceLoader] MikroOrmCoreModule dependencies initialized
+[api] 81784  - 2026. 02. 11. 오전 1:20:32     LOG [InstanceLoader] OutboxModule dependencies initialized
+[api] 81784  - 2026. 02. 11. 오전 1:20:32     LOG [InstanceLoader] SagaOrchestratorModule dependencies initialized
+[api] 81784  - 2026. 02. 11. 오전 1:20:32     LOG [InstanceLoader] OutboxConsumerModule dependencies initialized
+[api] 81784  - 2026. 02. 11. 오전 1:20:32     LOG [InstanceLoader] ShippingModule dependencies initialized
+[api] 81784  - 2026. 02. 11. 오전 1:20:32     LOG [InstanceLoader] InventoryModule dependencies initialized
+[api] 81784  - 2026. 02. 11. 오전 1:20:32     LOG [InstanceLoader] OrderingModule dependencies initialized
+[api] 81784  - 2026. 02. 11. 오전 1:20:32     LOG [InstanceLoader] PaymentsModule dependencies initialized
+[api] 81784  - 2026. 02. 11. 오전 1:20:32     LOG [RoutesResolver] AppController {/api/v1}:
+[api] 81784  - 2026. 02. 11. 오전 1:20:32     LOG [RouterExplorer] Mapped {/api/v1, GET} route
+[api] 81784  - 2026. 02. 11. 오전 1:20:32     LOG [RouterExplorer] Mapped {/api/v1/app/health-check, GET} route
+[api] 81784  - 2026. 02. 11. 오전 1:20:32     LOG [RoutesResolver] OrdersBffController {/api/v1/bff/orders}:
+[api] 81784  - 2026. 02. 11. 오전 1:20:32     LOG [RouterExplorer] Mapped {/api/v1/bff/orders, GET} route
+[api] 81784  - 2026. 02. 11. 오전 1:20:32     LOG [RouterExplorer] Mapped {/api/v1/bff/orders/:orderId, GET} route
+[api] 81784  - 2026. 02. 11. 오전 1:20:32     LOG [RouterExplorer] Mapped {/api/v1/bff/orders, POST} route
+[api] 81784  - 2026. 02. 11. 오전 1:20:32     LOG [RoutesResolver] OrderDetailBffController {/api/v1/bff/order-detail}:
+[api] 81784  - 2026. 02. 11. 오전 1:20:32     LOG [RouterExplorer] Mapped {/api/v1/bff/order-detail/:orderId, GET} route
+[api] 81784  - 2026. 02. 11. 오전 1:20:32     LOG [RoutesResolver] CheckoutBffController {/api/v1/bff/checkout}:
+[api] 81784  - 2026. 02. 11. 오전 1:20:32     LOG [RouterExplorer] Mapped {/api/v1/bff/checkout, POST} route
+[api] 81784  - 2026. 02. 11. 오전 1:20:32     LOG [RoutesResolver] DashboardBffController {/api/v1/bff/dashboard}:
+[api] 81784  - 2026. 02. 11. 오전 1:20:32     LOG [RouterExplorer] Mapped {/api/v1/bff/dashboard/summary, GET} route
+[api] 81784  - 2026. 02. 11. 오전 1:20:32     LOG [RoutesResolver] PaymentsController {/api/v1/orders/:orderId/payments}:
+[api] 81784  - 2026. 02. 11. 오전 1:20:32     LOG [RouterExplorer] Mapped {/api/v1/orders/:orderId/payments/intents, POST} route
+[api] 81784  - 2026. 02. 11. 오전 1:20:32     LOG [RoutesResolver] PaymentIntentsController {/api/v1/payments/intents}:
+[api] 81784  - 2026. 02. 11. 오전 1:20:32     LOG [RouterExplorer] Mapped {/api/v1/payments/intents, GET} route
+[api] 81784  - 2026. 02. 11. 오전 1:20:32     LOG [RouterExplorer] Mapped {/api/v1/payments/intents/:paymentId, GET} route
+[api] 81784  - 2026. 02. 11. 오전 1:20:32     LOG [RoutesResolver] OrdersController {/api/v1/orders}:
+[api] 81784  - 2026. 02. 11. 오전 1:20:32     LOG [RouterExplorer] Mapped {/api/v1/orders, POST} route
+[api] 81784  - 2026. 02. 11. 오전 1:20:32     LOG [RouterExplorer] Mapped {/api/v1/orders, GET} route
+[api] 81784  - 2026. 02. 11. 오전 1:20:32     LOG [RouterExplorer] Mapped {/api/v1/orders/:id, GET} route
+[api] 81784  - 2026. 02. 11. 오전 1:20:32     LOG [RoutesResolver] ShipmentsController {/api/v1/shipments}:
+[api] 81784  - 2026. 02. 11. 오전 1:20:32     LOG [RouterExplorer] Mapped {/api/v1/shipments, GET} route
+[api] 81784  - 2026. 02. 11. 오전 1:20:32     LOG [RouterExplorer] Mapped {/api/v1/shipments/by-order/:orderId, GET} route
+[api] 81784  - 2026. 02. 11. 오전 1:20:32     LOG [RouterExplorer] Mapped {/api/v1/shipments/:id, GET} route
+[api] 81784  - 2026. 02. 11. 오전 1:20:32     LOG [RoutesResolver] InventoryController {/api/v1/inventory}:
+[api] 81784  - 2026. 02. 11. 오전 1:20:32     LOG [RouterExplorer] Mapped {/api/v1/inventory/items, GET} route
+[api] 81784  - 2026. 02. 11. 오전 1:20:32     LOG [RouterExplorer] Mapped {/api/v1/inventory/items/:sku, GET} route
+[api] 81784  - 2026. 02. 11. 오전 1:20:32     LOG [RouterExplorer] Mapped {/api/v1/inventory/reservations, GET} route
+[api] 81784  - 2026. 02. 11. 오전 1:20:32     LOG [NestApplication] Nest application successfully started

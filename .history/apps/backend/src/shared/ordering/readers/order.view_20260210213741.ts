@@ -1,0 +1,17 @@
+import type { OrderStatus } from '../enums/order-status.enum';
+
+export type OrderItemView = {
+  sku: string;
+  quantity: number;
+};
+
+export type OrderView = {
+  orderId: string;
+  status: OrderStatus;
+  amount: number;
+  currency: string;
+  items: OrderItemView[];
+  paymentId: string | null;
+  createdAt: string;
+  updatedAt: string;
+};

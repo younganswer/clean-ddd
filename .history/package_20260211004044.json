@@ -1,0 +1,35 @@
+{
+  "name": "clean-ddd",
+  "private": true,
+  "packageManager": "pnpm@9.15.5+sha512.845196026aab1cc3f098a0474b64dfbab2afe7a1b4e91dd86895d8e4aa32a7a6d03049e2d0ad770bbe4de023a7122fb68c1a1d6e0d033c7076085f9d5d4800d4",
+  "engines": {
+    "node": ">=22"
+  },
+  "devDependencies": {
+    "pm2": "^5.4.2"
+  },
+  "scripts": {
+    "dev": "./shims/pnpm -r dev",
+    "build": "./shims/pnpm -r build",
+    "lint": "./shims/pnpm -r lint",
+    "typecheck": "./shims/pnpm -r typecheck",
+    "format": "./shims/pnpm -r format",
+    "infra:up": "docker compose -f docker-compose.local.yml up -d --remove-orphans",
+    "infra:down": "docker compose -f docker-compose.local.yml down --remove-orphans",
+    "infra:prune": "docker compose -f docker-compose.local.yml down -v --remove-orphans",
+    "health:local": "./shims/pnpm --dir apps/backend health:local",
+    "dev:local": "./shims/pnpm --dir apps/backend dev:local",
+    "smoke:local": "./shims/pnpm --dir apps/backend smoke:local",
+    "prod:check": "./shims/pnpm --dir apps/backend prod:check",
+    "prod:migrate": "./shims/pnpm prod:check && ./shims/pnpm --dir apps/backend db:migrate",
+    "prod:migrate:pm2": "./shims/pnpm prod:check && corepack pnpm exec pm2 delete clean-ddd-migration || true && corepack pnpm exec pm2 start apps/backend/ecosystem.migration.config.cjs --env prod --no-daemon",
+    "start:pm2:local": "corepack pnpm build && corepack pnpm exec pm2 delete clean-ddd-api clean-ddd-cron clean-ddd-queue || true && corepack pnpm exec pm2 start apps/backend/ecosystem.main.config.cjs --env local && corepack pnpm exec pm2 log",
+    "start:pm2:dev": "corepack pnpm build && corepack pnpm exec pm2 delete clean-ddd-api clean-ddd-cron clean-ddd-queue || true && corepack pnpm exec pm2 start apps/backend/ecosystem.main.config.cjs --env dev && corepack pnpm exec pm2 log",
+    "start:pm2:prod": "corepack pnpm build && PM2_API_INSTANCES=2 corepack pnpm exec pm2 delete clean-ddd-api clean-ddd-cron clean-ddd-queue || true && PM2_API_INSTANCES=2 corepack pnpm exec pm2 start apps/backend/ecosystem.main.config.cjs --env prod && corepack pnpm exec pm2 log",
+    "reload:pm2": "corepack pnpm build && corepack pnpm exec pm2 reload apps/backend/ecosystem.main.config.cjs && corepack pnpm exec pm2 log",
+    "stop:pm2": "corepack pnpm exec pm2 delete clean-ddd-api clean-ddd-cron clean-ddd-queue || true",
+    "start:pm2:local:api": "corepack pnpm build && corepack pnpm exec pm2 delete clean-ddd-api || true && corepack pnpm exec pm2 start apps/backend/ecosystem.main.config.cjs --env local --only clean-ddd-api && corepack pnpm exec pm2 log",
+    "start:pm2:local:cron": "corepack pnpm build && corepack pnpm exec pm2 delete clean-ddd-cron || true && corepack pnpm exec pm2 start apps/backend/ecosystem.main.config.cjs --env local --only clean-ddd-cron && corepack pnpm exec pm2 log",
+    "start:pm2:local:queue": "corepack pnpm build && corepack pnpm exec pm2 delete clean-ddd-queue || true && corepack pnpm exec pm2 start apps/backend/ecosystem.main.config.cjs --env local --only clean-ddd-queue && corepack pnpm exec pm2 log"
+  }
+}
