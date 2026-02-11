@@ -4,12 +4,13 @@
 
 ## 로컬 토폴로지
 
-로컬 개발에서는 Docker로 보조 서비스를 띄우고, PM2로 백엔드의 여러 실행 역할을 구동합니다.
+로컬 개발에서는 Docker Compose로 보조 서비스와 애플리케이션(백엔드/프론트엔드)을 함께 구동합니다.
 
 ```mermaid
 graph LR
   subgraph LocalMachine[Local]
-    FE[Next.js dev server\napps/frontend] -->|HTTP| API[Backend HTTP API\nclean-ddd-api]
+    NGINX[Nginx reverse proxy] -->|HTTP| FE[Frontend\nsrc/service/frontend]
+    NGINX -->|HTTP /api| API[Backend HTTP API\nclean-ddd-api]
 
     CRON[Backend cron/scheduler\nclean-ddd-cron]
     QP[Backend queue poller\nclean-ddd-queue]
@@ -24,7 +25,7 @@ graph LR
   end
 ```
 
-`clean-ddd-api`, `clean-ddd-cron`, `clean-ddd-queue` 같은 프로세스 이름은 PM2 설정에서 정의됩니다.
+`clean-ddd-api`, `clean-ddd-cron`, `clean-ddd-queue` 같은 역할(role)은 동일한 백엔드 코드베이스를 환경변수로 분기해 실행하는 형태로 구성됩니다.
 
 ## AWS 토폴로지(개념)
 

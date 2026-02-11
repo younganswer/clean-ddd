@@ -4,7 +4,7 @@
 
 ```mermaid
 graph TD
-  IDX[docs/index.md]
+  IDX[index.md]
 
   IDX --> O1[system-at-a-glance]
   IDX --> O2[runtime-topology]

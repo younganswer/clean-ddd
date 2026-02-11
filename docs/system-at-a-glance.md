@@ -4,11 +4,11 @@
 
 ## 저장소 레이아웃
 
-- `apps/backend`: NestJS 백엔드입니다. 동일한 코드가 여러 역할(HTTP API, cron/scheduler, queue poller)로 실행됩니다.
-- `apps/frontend`: Next.js 기반 어드민 UI입니다(정적 export).
-- `packages/contracts`: API 계약(OpenAPI) 및 통합을 위한 공유 타입입니다. 도메인 객체는 공유하지 않습니다.
-- `infra`: AWS 인프라 템플릿(SAM)입니다.
-- `tools`: LocalStack 부트스트랩 스크립트 등 로컬 개발 도구입니다.
+- `src/service/backend`: NestJS 백엔드입니다. 동일한 코드가 여러 역할(HTTP API, cron/scheduler, queue poller)로 실행됩니다.
+- `src/service/frontend`: Next.js 기반 어드민 UI입니다(정적 export).
+- `src/packages/contracts`: API 계약(OpenAPI) 및 통합을 위한 공유 타입입니다. 도메인 객체는 공유하지 않습니다.
+- `src/infra`: 로컬 개발용 docker compose/LocalStack, AWS 인프라 템플릿(SAM) 등을 둡니다.
+- `src/infra/localstack`: LocalStack 초기화 스크립트 및 로컬 개발 도구 문서가 있습니다.
 
 ## 핵심 아이디어(기술)
 

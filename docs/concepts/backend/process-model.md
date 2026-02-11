@@ -12,7 +12,7 @@
 
 ## 이 저장소에서의 형태
 
-PM2 설정은 루트의 `ecosystem.dev.config.cjs`에서 정의됩니다. 각 프로세스는 환경변수로 역할을 구분합니다.
+PM2 설정은 저장소 루트 기준 `src/ecosystem.dev.config.cjs`에서 정의됩니다. 각 프로세스는 환경변수로 역할을 구분합니다.
 
 - `PORT_LISTEN`: HTTP 포트 리스닝 여부
 - `OUTBOX_CRON_ENABLED`: Outbox 디스패치/스케줄러 역할 활성화 여부

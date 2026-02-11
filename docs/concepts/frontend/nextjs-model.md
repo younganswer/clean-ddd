@@ -1,6 +1,6 @@
 # 본 저장소의 Next.js 모델
 
-이 문서는 clean-ddd 프론트엔드(`apps/frontend`)가 어떤 형태로 실행/배포되는지(기술 모델)를 소개합니다.
+이 문서는 clean-ddd 프론트엔드(`src/service/frontend`)가 어떤 형태로 실행/배포되는지(기술 모델)를 소개합니다.
 
 ## 개요
 
@@ -13,6 +13,7 @@
 
 - `next.config.ts`에서 `output: "export"`를 사용합니다.
 - API 호출은 환경변수(예: `NEXT_PUBLIC_API_BASE_URL`)를 통해 백엔드의 base URL을 주입받는 형태로 구성됩니다.
+    - 로컬 Docker Compose(nginx reverse proxy) 기준으로는 `/api/v1` 같은 상대 경로를 권장합니다.
 
 ## 함께 읽기
 

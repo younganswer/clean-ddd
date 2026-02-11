@@ -1,6 +1,6 @@
 # 테스트 전략(백엔드)
 
-이 문서는 `apps/backend`의 테스트를 어떤 관점으로 나누고, 각 테스트가 무엇을 설명하는지 소개합니다.
+이 문서는 `src/service/backend`의 테스트를 어떤 관점으로 나누고, 각 테스트가 무엇을 설명하는지 소개합니다.
 
 ## 개요
 
@@ -11,7 +11,7 @@
 
 ## 폴더로 표현되는 레이어
 
-`apps/backend/tests` 아래의 구조는 다음과 같은 의미로 사용됩니다.
+`src/service/backend/tests` 아래의 구조는 다음과 같은 의미로 사용됩니다.
 
 - `tests/units/**`
   - 외부 인프라 없이도 성립하는 규칙/로직을 설명합니다.
@@ -32,5 +32,5 @@ DB 통합 테스트는 별도의 opt-in 환경변수(예: `RUN_DB_TESTS`)로 활
 
 ## 함께 읽기
 
-- 백엔드 테스트 README: [apps/backend/tests/README.md](../../../apps/backend/tests/README.md)
+- 백엔드 테스트 README: [src/service/backend/tests/README.md](../../../src/service/backend/tests/README.md)
 - 문서 허브: [docs/index.md](../../index.md)

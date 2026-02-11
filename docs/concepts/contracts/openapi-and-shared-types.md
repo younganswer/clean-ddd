@@ -1,6 +1,6 @@
 # OpenAPI와 공유 타입
 
-이 문서는 `packages/contracts`의 역할을 소개합니다.
+이 문서는 `src/packages/contracts`의 역할을 소개합니다.
 
 ## 개요
 
@@ -13,8 +13,8 @@
 
 ## 이 저장소에서의 형태
 
-- OpenAPI 스펙은 `packages/contracts/openapi.yaml`에 위치합니다.
-- 타입 진입점은 `packages/contracts/index.ts`로 제공됩니다.
+- OpenAPI 스펙은 `src/packages/contracts/openapi.yaml`에 위치합니다.
+- 타입 진입점은 `src/packages/contracts/index.ts`로 제공됩니다.
 
 ## 함께 읽기
 
