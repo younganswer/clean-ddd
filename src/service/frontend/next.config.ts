@@ -1,11 +1,33 @@
 import type { NextConfig } from "next";
+import { PHASE_DEVELOPMENT_SERVER } from "next/constants";
 
-const nextConfig: NextConfig = {
-  output: "export",
-  trailingSlash: true,
-  images: {
-    unoptimized: true,
-  },
+const baseConfig: NextConfig = {
+	trailingSlash: true,
+	images: {
+		unoptimized: true,
+	},
 };
 
-export default nextConfig;
+export default function nextConfig(phase: string): NextConfig {
+	const apiProxyTarget = process.env.API_PROXY_TARGET?.replace(/\/$/, "");
+
+	if (phase === PHASE_DEVELOPMENT_SERVER) {
+		return {
+			...baseConfig,
+			async rewrites() {
+				if (!apiProxyTarget) return [];
+				return [
+					{
+						source: "/api/:path*",
+						destination: `${apiProxyTarget}/api/:path*`,
+					},
+				];
+			},
+		};
+	}
+
+	return {
+		...baseConfig,
+		output: "export",
+	};
+}
