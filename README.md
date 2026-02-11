@@ -6,10 +6,10 @@ DDD와 Clean Architecture의 요소들을 기술적으로 실험할 수 있도�
 
 ## 문서
 
-- 문서 허브: [docs/index.md](docs/index.md)
-- 사용법/로컬 실행: [docs/usage.md](docs/usage.md)
-- 배포 가이드: [docs/deploy.md](docs/deploy.md)
-- 인프라(SAM/로컬 런타임): [src/infra/README.md](src/infra/README.md)
+- [문서 허브](docs/index.md)
+- [사용법/로컬 실행](docs/usage.md)
+- [배포 가이드](docs/deploy.md)
+- [인프라(SAM/로컬 런타임)](src/infra/README.md)
 
 ## 저장소 구조(요약)
 
