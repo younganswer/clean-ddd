@@ -1,4 +1,6 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import type { Request } from 'express';
+import { AuthContextAccessor } from '../context/auth-context';
 
 /**
  * docs-first placeholder guard.
@@ -8,8 +10,19 @@ import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
  */
 @Injectable()
 export class AuthGuard implements CanActivate {
+  constructor(private readonly authContextAccessor: AuthContextAccessor) {}
+
   canActivate(context: ExecutionContext): boolean {
-    void context;
+    const req = context.switchToHttp().getRequest<Request>();
+    const header = req.headers['x-subject-id'];
+    const subjectIdRaw = Array.isArray(header) ? header[0] : header;
+    const subjectId = (subjectIdRaw ?? '').trim();
+
+    this.authContextAccessor.setActor({
+      subjectId: subjectId.length > 0 ? subjectId : 'anonymous',
+      type: subjectId.length > 0 ? 'user' : 'anonymous',
+    });
+
     return true;
   }
 }
