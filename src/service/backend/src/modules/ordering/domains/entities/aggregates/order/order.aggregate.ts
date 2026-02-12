@@ -1,17 +1,20 @@
 import { OrderStatus } from '../../../../../../shared/ordering/enums/order-status.enum';
+import { BaseEntity } from '../../../../../../shared/domain/base.entity';
 import { Money } from '../../../value-objects/money.vo';
 import { OrderItem } from '../../../value-objects/order-item.vo';
 
-export class Order {
+export class Order extends BaseEntity<string> {
   private constructor(
-    private readonly _id: string,
+    id: string,
     private _status: OrderStatus,
     private readonly _total: Money,
     private readonly _items: OrderItem[],
     private _paymentId: string | null,
     private readonly _createdAt: Date,
     private _updatedAt: Date,
-  ) {}
+  ) {
+    super(id, id);
+  }
 
   static createNew(input: {
     id: string;
@@ -64,10 +67,6 @@ export class Order {
     this._updatedAt = now;
   }
 
-  get id(): string {
-    return this._id;
-  }
-
   get status(): OrderStatus {
     return this._status;
   }
@@ -111,7 +110,7 @@ export class Order {
     updatedAt: Date;
   } {
     return {
-      id: this._id,
+      id: this.id,
       status: this._status,
       amount: this.amount,
       currency: this.currency,

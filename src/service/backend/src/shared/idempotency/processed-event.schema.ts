@@ -1,22 +1,16 @@
-import { Entity, Index, PrimaryKey, Property, Unique } from '@mikro-orm/core';
-import { randomUUID } from 'node:crypto';
+import { Entity, Index, Property, Unique } from '@mikro-orm/core';
+import { BaseSchema } from '../persistence/mikro-orm/base.schema';
 
 @Entity({ tableName: 'processed_events' })
 @Unique({
   properties: ['consumerName', 'eventId'],
   name: 'uq_processed_consumer_event',
 })
-@Index({ properties: ['processedAt'] })
-export class ProcessedEventSchema {
-  @PrimaryKey({ type: 'uuid' })
-  uuid: string = randomUUID();
-
+@Index({ properties: ['createdAt'] })
+export class ProcessedEventSchema extends BaseSchema {
   @Property()
   consumerName!: string;
 
   @Property({ type: 'uuid' })
   eventId!: string;
-
-  @Property({ type: 'timestamptz' })
-  processedAt: Date = new Date();
 }

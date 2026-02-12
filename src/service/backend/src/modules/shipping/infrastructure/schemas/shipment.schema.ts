@@ -1,23 +1,14 @@
-import { Entity, Index, PrimaryKey, Property, Unique } from '@mikro-orm/core';
-import { randomUUID } from 'node:crypto';
+import { Entity, Index, Property, Unique } from '@mikro-orm/core';
 import { ShipmentStatus } from '../../domains/shipment-status';
+import { BaseSchema } from '../../../../shared/persistence/mikro-orm/base.schema';
 
 @Entity({ tableName: 'shipments' })
 @Unique({ properties: ['orderId'] })
 @Index({ properties: ['createdAt'] })
-export class ShipmentSchema {
-  @PrimaryKey({ type: 'uuid' })
-  uuid: string = randomUUID();
-
+export class ShipmentSchema extends BaseSchema {
   @Property({ type: 'uuid' })
   orderId!: string;
 
   @Property({ type: 'string' })
   status: ShipmentStatus = ShipmentStatus.PENDING;
-
-  @Property({ type: 'timestamptz' })
-  createdAt: Date = new Date();
-
-  @Property({ type: 'timestamptz' })
-  updatedAt: Date = new Date();
 }

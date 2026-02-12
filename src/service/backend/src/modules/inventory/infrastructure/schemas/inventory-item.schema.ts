@@ -1,9 +1,11 @@
-import { Entity, Index, PrimaryKey, Property } from '@mikro-orm/core';
+import { Entity, Index, Property, Unique } from '@mikro-orm/core';
+import { BaseSchema } from '../../../../shared/persistence/mikro-orm/base.schema';
 
 @Entity({ tableName: 'inventory_items' })
 @Index({ properties: ['updatedAt'] })
-export class InventoryItemSchema {
-  @PrimaryKey()
+@Unique({ properties: ['sku'] })
+export class InventoryItemSchema extends BaseSchema {
+  @Property()
   sku!: string;
 
   @Property({ type: 'int' })
@@ -11,10 +13,4 @@ export class InventoryItemSchema {
 
   @Property({ type: 'int' })
   reservedQuantity: number = 0;
-
-  @Property({ type: 'timestamptz' })
-  createdAt: Date = new Date();
-
-  @Property({ type: 'timestamptz' })
-  updatedAt: Date = new Date();
 }

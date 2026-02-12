@@ -1,13 +1,16 @@
 import { ShipmentStatus } from '../../../shipment-status';
+import { BaseEntity } from '../../../../../../shared/domain/base.entity';
 
-export class Shipment {
+export class Shipment extends BaseEntity<string> {
   private constructor(
-    private readonly _id: string,
+    id: string,
     private readonly _orderId: string,
     private _status: ShipmentStatus,
     private readonly _createdAt: Date,
     private _updatedAt: Date,
-  ) {}
+  ) {
+    super(id, id);
+  }
 
   static createForOrder(input: {
     id: string;
@@ -40,10 +43,6 @@ export class Shipment {
     );
   }
 
-  get id(): string {
-    return this._id;
-  }
-
   get orderId(): string {
     return this._orderId;
   }
@@ -68,7 +67,7 @@ export class Shipment {
     updatedAt: Date;
   } {
     return {
-      shipmentId: this._id,
+      shipmentId: this.id,
       orderId: this._orderId,
       status: this._status,
       createdAt: this._createdAt,

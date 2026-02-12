@@ -1,13 +1,10 @@
-import { Entity, Index, PrimaryKey, Property } from '@mikro-orm/core';
-import { randomUUID } from 'node:crypto';
+import { Entity, Index, Property } from '@mikro-orm/core';
 import { OutboxEventStatus } from '../../../../shared/outbox';
+import { BaseSchema } from '../../../../shared/persistence/mikro-orm/base.schema';
 
 @Entity({ tableName: 'outbox_events' })
 @Index({ properties: ['status', 'nextAttemptAt'] })
-export class OutboxEventSchema {
-  @PrimaryKey({ type: 'uuid' })
-  uuid: string = randomUUID();
-
+export class OutboxEventSchema extends BaseSchema {
   @Property()
   eventType!: string;
 
@@ -25,9 +22,6 @@ export class OutboxEventSchema {
 
   @Property({ type: 'timestamptz', nullable: true })
   lockedUntil: Date | null = null;
-
-  @Property({ type: 'timestamptz' })
-  createdAt: Date = new Date();
 
   @Property({ type: 'timestamptz', nullable: true })
   publishedAt: Date | null = null;

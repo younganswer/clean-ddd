@@ -1,11 +1,15 @@
-export class InventoryReservation {
+import { BaseEntity } from '../../../../shared/domain/base.entity';
+
+export class InventoryReservation extends BaseEntity<string> {
   private constructor(
-    private readonly _id: string,
+    id: string,
     private readonly _orderId: string,
     private readonly _sku: string,
     private readonly _quantity: number,
     private readonly _createdAt: Date,
-  ) {}
+  ) {
+    super(id, id);
+  }
 
   static rehydrate(input: {
     id: string;
@@ -21,10 +25,6 @@ export class InventoryReservation {
       input.quantity,
       input.createdAt,
     );
-  }
-
-  get id(): string {
-    return this._id;
   }
 
   get orderId(): string {
@@ -51,7 +51,7 @@ export class InventoryReservation {
     createdAt: Date;
   } {
     return {
-      reservationId: this._id,
+      reservationId: this.id,
       orderId: this._orderId,
       sku: this._sku,
       quantity: this._quantity,

@@ -1,13 +1,10 @@
-import { Entity, Index, PrimaryKey, Property, Unique } from '@mikro-orm/core';
-import { randomUUID } from 'node:crypto';
+import { Entity, Index, Property, Unique } from '@mikro-orm/core';
+import { BaseSchema } from '../../../../shared/persistence/mikro-orm/base.schema';
 
 @Entity({ tableName: 'inventory_reservations' })
 @Unique({ properties: ['orderId', 'sku'] })
 @Index({ properties: ['createdAt'] })
-export class InventoryReservationSchema {
-  @PrimaryKey({ type: 'uuid' })
-  uuid: string = randomUUID();
-
+export class InventoryReservationSchema extends BaseSchema {
   @Property({ type: 'uuid' })
   orderId!: string;
 
@@ -16,7 +13,4 @@ export class InventoryReservationSchema {
 
   @Property({ type: 'int' })
   quantity!: number;
-
-  @Property({ type: 'timestamptz' })
-  createdAt: Date = new Date();
 }

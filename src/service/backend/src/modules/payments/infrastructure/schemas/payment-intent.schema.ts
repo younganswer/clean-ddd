@@ -1,13 +1,10 @@
-import { Entity, Index, PrimaryKey, Property } from '@mikro-orm/core';
-import { randomUUID } from 'node:crypto';
+import { Entity, Index, Property } from '@mikro-orm/core';
 import { PaymentStatus } from '../../domains/payment-status';
+import { BaseSchema } from '../../../../shared/persistence/mikro-orm/base.schema';
 
 @Entity({ tableName: 'payment_intents' })
 @Index({ properties: ['orderId', 'createdAt'] })
-export class PaymentIntentSchema {
-  @PrimaryKey({ type: 'uuid' })
-  uuid: string = randomUUID();
-
+export class PaymentIntentSchema extends BaseSchema {
   @Property({ type: 'uuid' })
   orderId!: string;
 
@@ -19,10 +16,4 @@ export class PaymentIntentSchema {
 
   @Property({ type: 'string' })
   status: PaymentStatus = PaymentStatus.PENDING;
-
-  @Property({ type: 'timestamptz' })
-  createdAt: Date = new Date();
-
-  @Property({ type: 'timestamptz' })
-  updatedAt: Date = new Date();
 }

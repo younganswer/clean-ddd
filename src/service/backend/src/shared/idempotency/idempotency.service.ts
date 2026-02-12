@@ -20,7 +20,6 @@ export class IdempotencyService {
       const row = em.create(ProcessedEventSchema, {
         consumerName,
         eventId,
-        processedAt: new Date(),
       });
       await em.persistAndFlush(row);
       return true;

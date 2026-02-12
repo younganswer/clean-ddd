@@ -9,7 +9,7 @@ function findBackendRoot(): string {
 
   for (const start of candidates) {
     let dir = path.resolve(start);
-    // eslint-disable-next-line no-constant-condition
+
     while (true) {
       const hasNestCli = fs.existsSync(path.join(dir, 'nest-cli.json'));
       const hasSrc = fs.existsSync(path.join(dir, 'src'));
