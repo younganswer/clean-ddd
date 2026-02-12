@@ -1,10 +1,14 @@
 import type { NextConfig } from "next";
 import { PHASE_DEVELOPMENT_SERVER } from "next/constants";
+import path from "node:path";
 
 const baseConfig: NextConfig = {
 	trailingSlash: true,
 	images: {
 		unoptimized: true,
+	},
+	turbopack: {
+		root: path.resolve(__dirname, "..", ".."),
 	},
 };
 
