@@ -7,6 +7,7 @@ import {
   ListInventoryReservationsQuery,
   type InventoryReservationView,
 } from '../../../shared/inventory';
+import type { PaginatedView } from '../../../shared/readers/paginated.view';
 
 @Controller('inventory')
 export class InventoryController {
@@ -15,10 +16,12 @@ export class InventoryController {
   @Get('items')
   async listItems(
     @Query('limit') limitRaw?: string,
-  ): Promise<InventoryItemView[]> {
+    @Query('page') pageRaw?: string,
+  ): Promise<PaginatedView<InventoryItemView>> {
     const limit = Math.min(Math.max(Number(limitRaw ?? 50) || 50, 1), 200);
+    const page = Math.max(1, Number(pageRaw ?? 1) || 1);
     return await this.queryBus.execute(
-      new ListInventoryItemsQuery(limit) as unknown as never,
+      new ListInventoryItemsQuery(limit, page) as unknown as never,
     );
   }
 

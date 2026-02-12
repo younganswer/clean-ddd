@@ -49,17 +49,23 @@ export class ShipmentRepository implements IShipmentRepository {
     return found ? this.mapper.toDomain(found) : null;
   }
 
-  async findRecent(limit: number): Promise<Shipment[]> {
+  async findRecent(limit: number, offset: number = 0): Promise<Shipment[]> {
     const em = this.emForContext();
     const found = await em.find(
       ShipmentSchema,
       {},
       {
         limit,
-        orderBy: { createdAt: 'desc' },
+        offset: Math.max(0, Number(offset ?? 0) || 0),
+        orderBy: { id: 'asc' },
       },
     );
 
     return found.map((s) => this.mapper.toDomain(s));
+  }
+
+  async countAll(): Promise<number> {
+    const em = this.emForContext();
+    return await em.count(ShipmentSchema, {});
   }
 }

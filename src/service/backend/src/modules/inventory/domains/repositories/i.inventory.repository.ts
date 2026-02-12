@@ -5,7 +5,8 @@ import { InventoryReservation } from '../entities/inventory-reservation.entity';
 export interface IInventoryRepository {
   seedIfEmpty(): Promise<void>;
 
-  findAll(limit: number): Promise<InventoryItem[]>;
+  findAll(limit: number, offset?: number): Promise<InventoryItem[]>;
+  countItems(): Promise<number>;
   findBySku(sku: string): Promise<InventoryItem | null>;
 
   reserveForOrder(orderId: string, items: InventoryOrderItem[]): Promise<void>;

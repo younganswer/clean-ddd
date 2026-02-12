@@ -8,7 +8,8 @@ export interface IOrderRepository {
   }): Promise<Order>;
 
   findById(orderId: string): Promise<Order | null>;
-  findRecent(limit: number): Promise<Order[]>;
+  findRecent(limit: number, offset?: number): Promise<Order[]>;
+  countAll(): Promise<number>;
 
   attachPayment(orderId: string, paymentId: string): Promise<void>;
   markPaid(orderId: string): Promise<void>;

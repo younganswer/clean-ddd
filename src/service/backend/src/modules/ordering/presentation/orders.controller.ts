@@ -11,6 +11,7 @@ import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { CreateOrderCommand } from '../../../shared/ordering/commands/create-order.command';
 import { GetOrderQuery } from '../../../shared/ordering/queries/get-order.query';
 import { ListOrdersQuery } from '../../../shared/ordering/queries/list-orders.query';
+import type { PaginatedView } from '../../../shared/readers/paginated.view';
 import type { OrderView } from '../../../shared/ordering/readers/order.view';
 import { CreateOrderRequest } from './dto/create-order.request';
 
@@ -39,10 +40,14 @@ export class OrdersController {
   }
 
   @Get()
-  async list(@Query('limit') limitRaw?: string): Promise<OrderView[]> {
-    const limit = Math.min(50, Math.max(1, Number(limitRaw ?? '20')));
+  async list(
+    @Query('limit') limitRaw?: string,
+    @Query('page') pageRaw?: string,
+  ): Promise<PaginatedView<OrderView>> {
+    const limit = Math.min(50, Math.max(1, Number(limitRaw ?? '20') || 20));
+    const page = Math.max(1, Number(pageRaw ?? '1') || 1);
     return await this.queryBus.execute(
-      new ListOrdersQuery(limit) as unknown as never,
+      new ListOrdersQuery(limit, page) as unknown as never,
     );
   }
 

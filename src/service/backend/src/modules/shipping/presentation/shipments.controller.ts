@@ -6,16 +6,21 @@ import {
   ListShipmentsQuery,
   type ShipmentView,
 } from '../../../shared/shipping';
+import type { PaginatedView } from '../../../shared/readers/paginated.view';
 
 @Controller('shipments')
 export class ShipmentsController {
   constructor(private readonly queryBus: QueryBus) {}
 
   @Get()
-  async list(@Query('limit') limitRaw?: string): Promise<ShipmentView[]> {
+  async list(
+    @Query('limit') limitRaw?: string,
+    @Query('page') pageRaw?: string,
+  ): Promise<PaginatedView<ShipmentView>> {
     const limit = Math.min(Math.max(Number(limitRaw ?? 20) || 20, 1), 100);
+    const page = Math.max(1, Number(pageRaw ?? 1) || 1);
     return await this.queryBus.execute(
-      new ListShipmentsQuery(limit) as unknown as never,
+      new ListShipmentsQuery(limit, page) as unknown as never,
     );
   }
 

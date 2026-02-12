@@ -41,18 +41,24 @@ export class InventoryRepository implements IInventoryRepository {
     await em.persistAndFlush(item);
   }
 
-  async findAll(limit: number): Promise<InventoryItem[]> {
+  async findAll(limit: number, offset: number = 0): Promise<InventoryItem[]> {
     const em = this.emForContext();
     const found = await em.find(
       InventoryItemSchema,
       {},
       {
         limit,
-        orderBy: { updatedAt: 'desc' },
+        offset: Math.max(0, Number(offset ?? 0) || 0),
+        orderBy: { id: 'asc' },
       },
     );
 
     return found.map((i) => this.itemMapper.toDomain(i));
+  }
+
+  async countItems(): Promise<number> {
+    const em = this.emForContext();
+    return await em.count(InventoryItemSchema, {});
   }
 
   async findBySku(sku: string): Promise<InventoryItem | null> {
@@ -119,7 +125,7 @@ export class InventoryRepository implements IInventoryRepository {
       InventoryReservationSchema,
       { orderId },
       {
-        orderBy: { createdAt: 'desc' },
+        orderBy: { id: 'asc' },
       },
     );
 

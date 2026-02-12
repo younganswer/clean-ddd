@@ -48,17 +48,23 @@ export class OrderRepository implements IOrderRepository {
     return found ? this.mapper.toDomain(found) : null;
   }
 
-  async findRecent(limit: number): Promise<Order[]> {
+  async findRecent(limit: number, offset: number = 0): Promise<Order[]> {
     const em = this.emForContext();
     const found = await em.find(
       OrderSchema,
       {},
       {
         limit,
-        orderBy: { createdAt: 'desc' },
+        offset: Math.max(0, Number(offset ?? 0) || 0),
+        orderBy: { id: 'asc' },
       },
     );
     return found.map((o) => this.mapper.toDomain(o));
+  }
+
+  async countAll(): Promise<number> {
+    const em = this.emForContext();
+    return await em.count(OrderSchema, {});
   }
 
   async attachPayment(orderId: string, paymentId: string): Promise<void> {

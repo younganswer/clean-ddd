@@ -20,10 +20,15 @@ export class OrderReader implements IOrderReader {
     return this.toView(order);
   }
 
-  async findRecent(limit: number): Promise<OrderView[]> {
+  async findRecent(limit: number, offset: number = 0): Promise<OrderView[]> {
     const safeLimit = Math.min(50, Math.max(1, Number(limit ?? 20)));
-    const orders = await this.orders.findRecent(safeLimit);
+    const safeOffset = Math.max(0, Number(offset ?? 0) || 0);
+    const orders = await this.orders.findRecent(safeLimit, safeOffset);
     return orders.map((o) => this.toView(o));
+  }
+
+  async countAll(): Promise<number> {
+    return await this.orders.countAll();
   }
 
   private toView(order: {
