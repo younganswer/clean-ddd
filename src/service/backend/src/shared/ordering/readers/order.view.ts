@@ -7,6 +7,7 @@ export type OrderItemView = {
 
 export type OrderView = {
   orderId: string;
+  userSubjectId: string | null;
   status: OrderStatus;
   amount: number;
   currency: string;

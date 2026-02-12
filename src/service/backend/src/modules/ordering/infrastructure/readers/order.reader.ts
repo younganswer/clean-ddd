@@ -27,12 +27,28 @@ export class OrderReader implements IOrderReader {
     return orders.map((o) => this.toView(o));
   }
 
+  async findByUserSubjectId(
+    userSubjectId: string,
+    limit: number,
+    offset: number = 0,
+  ): Promise<OrderView[]> {
+    const safeLimit = Math.min(200, Math.max(1, Number(limit ?? 50) || 50));
+    const safeOffset = Math.max(0, Number(offset ?? 0) || 0);
+    const orders = await this.orders.findByUserSubjectId(
+      userSubjectId,
+      safeLimit,
+      safeOffset,
+    );
+    return orders.map((o) => this.toView(o));
+  }
+
   async countAll(): Promise<number> {
     return await this.orders.countAll();
   }
 
   private toView(order: {
     id: string;
+    userSubjectId: string | null;
     status: OrderView['status'];
     amount: number;
     currency: string;
@@ -43,6 +59,7 @@ export class OrderReader implements IOrderReader {
   }): OrderView {
     return {
       orderId: order.id,
+      userSubjectId: order.userSubjectId,
       status: order.status,
       amount: order.amount,
       currency: order.currency,

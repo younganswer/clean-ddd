@@ -5,6 +5,9 @@ import { BaseSchema } from '../../../../shared/persistence/mikro-orm/base.schema
 @Entity({ tableName: 'orders' })
 @Index({ properties: ['status', 'createdAt'] })
 export class OrderSchema extends BaseSchema {
+  @Property({ type: 'string', nullable: true })
+  userSubjectId: string | null = null;
+
   @Property({ type: 'string' })
   status: OrderStatus = OrderStatus.PENDING_PAYMENT;
 

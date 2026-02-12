@@ -9,6 +9,7 @@ export class OrderMapper {
   toDomain(schema: OrderSchema): Order {
     return Order.rehydrate({
       id: schema.uuid,
+      userSubjectId: schema.userSubjectId,
       status: schema.status,
       total: Money.of(schema.amount, schema.currency),
       items: (schema.items ?? []).map((i) => OrderItem.of(i.sku, i.quantity)),

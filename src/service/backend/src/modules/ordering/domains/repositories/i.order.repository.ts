@@ -5,10 +5,16 @@ export interface IOrderRepository {
     amount: number;
     currency: string;
     items?: Array<{ sku: string; quantity: number }>;
+    userSubjectId?: string | null;
   }): Promise<Order>;
 
   findById(orderId: string): Promise<Order | null>;
   findRecent(limit: number, offset?: number): Promise<Order[]>;
+  findByUserSubjectId(
+    userSubjectId: string,
+    limit: number,
+    offset?: number,
+  ): Promise<Order[]>;
   countAll(): Promise<number>;
 
   attachPayment(orderId: string, paymentId: string): Promise<void>;

@@ -4,6 +4,7 @@ export class CreateOrderCommand {
       amount: number;
       currency: string;
       items?: Array<{ sku: string; quantity: number }>;
+      userSubjectId?: string | null;
     },
   ) {}
 }

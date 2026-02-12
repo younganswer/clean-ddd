@@ -111,6 +111,10 @@ paths:
             responses:
                 "200":
                     description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/OrderSummary"
     /orders/{orderId}/payments/intents:
         post:
             summary: Create payment intent (simulator)
@@ -241,6 +245,7 @@ components:
             required:
                 [
                     orderId,
+                    userSubjectId,
                     status,
                     amount,
                     currency,
@@ -252,6 +257,9 @@ components:
             properties:
                 orderId:
                     type: string
+                userSubjectId:
+                    type: string
+                    nullable: true
                 status:
                     type: string
                 amount:
