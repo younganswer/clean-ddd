@@ -34,6 +34,7 @@ async function http<T>(path: string, init?: RequestInit): Promise<T> {
 
 export type OrderSummary = {
 	orderId: string;
+	userSubjectId: string | null;
 	status: string;
 	amount: number;
 	currency: string;
@@ -75,6 +76,28 @@ export type UserProfile = {
 	displayName: string;
 	email: string;
 	avatarUrl?: string;
+};
+
+export type GraphNode = {
+	id: string;
+	type: "USER" | "ORDER" | "SHIPMENT" | "PAYMENT" | "EVENT";
+	label: string;
+	data?: Record<string, unknown>;
+};
+
+export type GraphEdge = {
+	id: string;
+	from: string;
+	to: string;
+	type: "OWNS" | "REFERENCES" | "EMITS";
+	label?: string;
+};
+
+export type GraphView = {
+	rootNodeId: string;
+	nodes: GraphNode[];
+	edges: GraphEdge[];
+	truncated?: boolean;
 };
 
 export async function apiCreateOrder(input: {
@@ -164,4 +187,31 @@ export async function apiListUsers(input: {
 	return http(
 		`/users?limit=${encodeURIComponent(String(input.limit))}&page=${encodeURIComponent(String(input.page))}`,
 	);
+}
+
+export async function apiGetGraph(input: {
+	rootType: "USER" | "ORDER" | "SHIPMENT" | "PAYMENT";
+	rootId: string;
+	depth?: number;
+	maxEvents?: number;
+	maxNodes?: number;
+	includeEvents?: boolean;
+}): Promise<GraphView> {
+	const params = new URLSearchParams({
+		rootType: input.rootType,
+		rootId: input.rootId,
+	});
+	if (typeof input.depth === "number") {
+		params.set("depth", String(input.depth));
+	}
+	if (typeof input.maxEvents === "number") {
+		params.set("maxEvents", String(input.maxEvents));
+	}
+	if (typeof input.maxNodes === "number") {
+		params.set("maxNodes", String(input.maxNodes));
+	}
+	if (typeof input.includeEvents === "boolean") {
+		params.set("includeEvents", String(input.includeEvents));
+	}
+	return http(`/bff/graph?${params.toString()}`);
 }
