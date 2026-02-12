@@ -50,6 +50,9 @@ export default function RootLayout({
 								>
 									배송
 								</Link>
+								<Link className="hover:underline" href="/graph">
+									그래프
+								</Link>
 								<Link
 									className="hover:underline"
 									href="/inventory"

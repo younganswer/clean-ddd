@@ -86,19 +86,36 @@ export default function OrdersPage() {
 						{orders.map((o) => (
 							<tr key={o.orderId} className="border-t">
 								<td className="px-4 py-3">
-									<Link
-										className="underline"
-										href={`/orders/detail/?id=${encodeURIComponent(o.orderId)}`}
-									>
-										{o.orderId}
-									</Link>
+									<div className="grid gap-1">
+										<Link
+											className="underline"
+											href={`/orders/detail/?id=${encodeURIComponent(o.orderId)}`}
+										>
+											{o.orderId}
+										</Link>
+										<Link
+											className="text-xs text-zinc-600 underline"
+											href={`/graph?rootType=ORDER&rootId=${encodeURIComponent(o.orderId)}`}
+										>
+											그래프 보기
+										</Link>
+									</div>
 								</td>
 								<td className="px-4 py-3">{o.status}</td>
 								<td className="px-4 py-3">
 									{o.amount} {o.currency}
 								</td>
 								<td className="px-4 py-3">
-									{o.paymentId ?? "-"}
+									{o.paymentId ? (
+										<Link
+											className="underline"
+											href={`/graph?rootType=PAYMENT&rootId=${encodeURIComponent(o.paymentId)}`}
+										>
+											{o.paymentId}
+										</Link>
+									) : (
+										"-"
+									)}
 								</td>
 								<td className="px-4 py-3">
 									{new Date(o.createdAt).toLocaleString()}

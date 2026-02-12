@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { apiListUsers, type UserProfile } from "@/lib/api";
 import { Pagination } from "@/app/_components/pagination";
@@ -85,7 +86,14 @@ export default function UsersPage() {
 						{users.map((u) => (
 							<tr key={u.subjectId} className="border-t">
 								<td className="px-4 py-3 font-mono text-xs">
-									{u.subjectId}
+									<div className="grid gap-1">
+										<Link
+											className="underline"
+											href={`/graph?rootType=USER&rootId=${encodeURIComponent(u.subjectId)}`}
+										>
+											{u.subjectId}
+										</Link>
+									</div>
 								</td>
 								<td className="px-4 py-3">{u.displayName}</td>
 								<td className="px-4 py-3">{u.email}</td>

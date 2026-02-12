@@ -85,15 +85,28 @@ export default function ShipmentsPage() {
 						{shipments.map((s) => (
 							<tr key={s.shipmentId} className="border-t">
 								<td className="px-4 py-3 font-mono text-xs">
-									{s.shipmentId}
-								</td>
-								<td className="px-4 py-3">
 									<Link
 										className="underline"
-										href={`/orders/detail/?id=${encodeURIComponent(s.orderId)}`}
+										href={`/graph?rootType=SHIPMENT&rootId=${encodeURIComponent(s.shipmentId)}`}
 									>
-										{s.orderId}
+										{s.shipmentId}
 									</Link>
+								</td>
+								<td className="px-4 py-3">
+									<div className="grid gap-1">
+										<Link
+											className="underline"
+											href={`/orders/detail/?id=${encodeURIComponent(s.orderId)}`}
+										>
+											{s.orderId}
+										</Link>
+										<Link
+											className="text-xs text-zinc-600 underline"
+											href={`/graph?rootType=ORDER&rootId=${encodeURIComponent(s.orderId)}`}
+										>
+											그래프 보기
+										</Link>
+									</div>
 								</td>
 								<td className="px-4 py-3">{s.status}</td>
 								<td className="px-4 py-3">
