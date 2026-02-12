@@ -6,6 +6,7 @@ import { InventoryItemSchema } from '../schemas/inventory-item.schema';
 export class InventoryItemMapper {
   toDomain(schema: InventoryItemSchema): InventoryItem {
     return InventoryItem.rehydrate({
+      id: schema.uuid,
       sku: schema.sku,
       availableQuantity: schema.availableQuantity,
       reservedQuantity: schema.reservedQuantity,
