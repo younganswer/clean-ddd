@@ -45,7 +45,7 @@ export class OutboxRepository implements IOutboxRepository {
       },
       {
         limit,
-        orderBy: { createdAt: 'asc' },
+        orderBy: { id: 'asc' },
       },
     );
 

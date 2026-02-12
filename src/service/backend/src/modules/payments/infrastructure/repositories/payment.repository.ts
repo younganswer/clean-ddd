@@ -52,7 +52,7 @@ export class PaymentRepository implements IPaymentRepository {
       PaymentIntentSchema,
       {},
       {
-        orderBy: { createdAt: 'DESC' },
+        orderBy: { id: 'asc' },
         limit: safeLimit,
       },
     );
