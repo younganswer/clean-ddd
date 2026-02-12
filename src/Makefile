@@ -13,6 +13,10 @@ DEPS_COMPOSE := infra/compose/docker-compose.deps.yml
 LOCAL_COMPOSE := infra/compose/docker-compose.local.yml
 LOCAL_DEV_COMPOSE := infra/compose/docker-compose.local.dev.yml
 
+# Ensure `make` and backend DB scripts target the same compose project.
+# Override via `.env`: COMPOSE_PROJECT=...
+COMPOSE_PROJECT ?= clean-ddd
+
 ifeq ($(NGINX_HTTP_PORT),80)
 	NGINX_BASE_URL := http://localhost
 else
@@ -27,7 +31,7 @@ else
   LOCAL_EXTRA_FILES := -f $(LOCAL_DEV_COMPOSE)
 endif
 
-COMPOSE := docker compose -f $(DEPS_COMPOSE) -f $(LOCAL_COMPOSE) $(LOCAL_EXTRA_FILES)
+COMPOSE := docker compose -p $(COMPOSE_PROJECT) -f $(DEPS_COMPOSE) -f $(LOCAL_COMPOSE) $(LOCAL_EXTRA_FILES)
 
 up:
 	@$(COMPOSE) up -d --build --remove-orphans
@@ -35,8 +39,13 @@ up:
 down:
 	@$(COMPOSE) down --remove-orphans
 
+start:
+	@$(COMPOSE) start
+
+stop:
+	@$(COMPOSE) stop
+
 prune:
-	@$(COMPOSE) down -v --remove-orphans
 	@docker system prune -af --volumes 2>&1 || true
 
 ps:
@@ -50,6 +59,9 @@ build:
 
 restart:
 	@$(COMPOSE) restart
+
+seed:
+	@$(COMPOSE) exec -T backend-api pnpm --dir service/backend db:seed:local
 
 migrate:
 	@$(COMPOSE) exec -T backend-api pnpm --dir service/backend db:migrate
@@ -70,7 +82,7 @@ e2e: up health
 	)
 	@$(COMPOSE) exec -T backend-api pnpm --dir service/backend test:e2e
 
-TARGETS := up down ps logs build prune restart migrate health e2e
+TARGETS := up down start stop ps logs build prune restart seed migrate health e2e
 
 .PHONY:
 .NOTPARALLEL: $(TARGETS)

@@ -8,17 +8,24 @@ import { normalizeQueueUrl } from './_url';
 
 const RETRY = { attempts: 3, delayMs: 10_000 };
 
+function composeProject(): string {
+  return (
+    process.env.COMPOSE_PROJECT ??
+    process.env.COMPOSE_PROJECT_NAME ??
+    'clean-ddd'
+  );
+}
+
 function repoRoot(): string {
   return path.resolve(__dirname, '../../../..');
 }
 
-function shimsPnpmPath(): string {
-  return path.join(repoRoot(), 'src', 'shims', 'pnpm');
-}
-
 async function dockerComposeUp(): Promise<void> {
+  const project = composeProject();
   await run('docker', [
     'compose',
+    '-p',
+    project,
     '-f',
     'src/infra/compose/docker-compose.deps.yml',
     'up',
@@ -140,15 +147,22 @@ async function main() {
 
   // 3) migrations (always)
   await run(
-    shimsPnpmPath(),
-    ['--dir', 'src/service/backend', 'db:migrate'],
+    'corepack',
+    ['pnpm', '--dir', 'src/service/backend', 'db:migrate'],
+    backendEnv,
+  );
+
+  // 3.5) seed (replace demo data deterministically)
+  await run(
+    'corepack',
+    ['pnpm', '--dir', 'src/service/backend', 'db:seed:local'],
     backendEnv,
   );
 
   // 4) run backend + frontend
   const backend = runLongLived(
-    shimsPnpmPath(),
-    ['--dir', 'src/service/backend', 'dev'],
+    'corepack',
+    ['pnpm', '--dir', 'src/service/backend', 'dev'],
     backendEnv,
   );
 
@@ -158,8 +172,15 @@ async function main() {
       `http://localhost:${backendPort}/api/v1`,
   };
   const frontend = runLongLived(
-    shimsPnpmPath(),
-    ['--dir', 'src/service/frontend', 'dev', '-p', String(frontendPort)],
+    'corepack',
+    [
+      'pnpm',
+      '--dir',
+      'src/service/frontend',
+      'dev',
+      '-p',
+      String(frontendPort),
+    ],
     frontendEnv,
   );
 

@@ -10,12 +10,30 @@ import { normalizeQueueUrl } from './_url';
 
 const RETRY_10S_3 = { attempts: 3, delayMs: 10_000 };
 
+function composeProject(): string {
+  return (
+    process.env.COMPOSE_PROJECT ??
+    process.env.COMPOSE_PROJECT_NAME ??
+    'clean-ddd'
+  );
+}
+
 function repoRoot(): string {
   return path.resolve(__dirname, '../../../..');
 }
 
-function shimsPnpmPath(): string {
-  return path.join(repoRoot(), 'src', 'shims', 'pnpm');
+async function dockerComposeUp(): Promise<void> {
+  const project = composeProject();
+  await run('docker', [
+    'compose',
+    '-p',
+    project,
+    '-f',
+    'src/infra/compose/docker-compose.deps.yml',
+    'up',
+    '-d',
+    '--remove-orphans',
+  ]);
 }
 
 async function run(
@@ -153,14 +171,7 @@ async function main() {
   const frontendBaseUrl = `http://localhost:${frontendPort}`;
 
   // 1) infra up
-  await run('docker', [
-    'compose',
-    '-f',
-    'src/infra/compose/docker-compose.deps.yml',
-    'up',
-    '-d',
-    '--remove-orphans',
-  ]);
+  await dockerComposeUp();
 
   // 2) health: Postgres + SQS queue exists (10s x 3)
   await withRetries({ ...RETRY_10S_3, label: 'Postgres' }, async () => {
@@ -214,15 +225,29 @@ async function main() {
 
   // 3) migrate (always)
   await run(
-    shimsPnpmPath(),
-    ['--dir', 'src/service/backend', 'db:migrate'],
+    'corepack',
+    ['pnpm', '--dir', 'src/service/backend', 'db:migrate'],
+    backendEnv,
+  );
+
+  // 3.25) updatedAt trigger (covers nativeUpdate paths too)
+  await run(
+    'corepack',
+    ['pnpm', '--dir', 'src/service/backend', 'db:triggers'],
+    backendEnv,
+  );
+
+  // 3.5) seed (replace demo data deterministically)
+  await run(
+    'corepack',
+    ['pnpm', '--dir', 'src/service/backend', 'db:seed:local'],
     backendEnv,
   );
 
   // 4) start servers
   const backend = runLongLived(
-    shimsPnpmPath(),
-    ['--dir', 'src/service/backend', 'dev'],
+    'corepack',
+    ['pnpm', '--dir', 'src/service/backend', 'dev'],
     backendEnv,
   );
 
@@ -241,8 +266,15 @@ async function main() {
 
   const frontend = shouldStartFrontend
     ? runLongLived(
-        shimsPnpmPath(),
-        ['--dir', 'src/service/frontend', 'dev', '-p', String(frontendPort)],
+        'corepack',
+        [
+          'pnpm',
+          '--dir',
+          'src/service/frontend',
+          'dev',
+          '-p',
+          String(frontendPort),
+        ],
         {
           NEXT_PUBLIC_API_BASE_URL:
             process.env.NEXT_PUBLIC_API_BASE_URL ?? apiBaseUrl,
