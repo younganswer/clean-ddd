@@ -35,7 +35,7 @@ export class OutboxDispatchJob extends MikroOrmCronJobAbstract {
   protected async handleJobWithContext(): Promise<void> {
     const result = (await this.queryBus.execute(
       new GetPendingOutboxEventsQuery(10, new Date()) as unknown as never,
-    )) as unknown as GetPendingOutboxEventsResult;
+    )) as GetPendingOutboxEventsResult;
 
     const getOrderId = (
       payload: Record<string, unknown>,
