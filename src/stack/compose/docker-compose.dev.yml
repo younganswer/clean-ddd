@@ -16,8 +16,6 @@ services:
     volumes:
       - ../../service/backend/src:/app/service/backend/src
       - ../../service/backend/scripts:/app/service/backend/scripts
-      - ../../service/backend/migrations:/app/service/backend/migrations
-      - ../../service/backend/mikro-orm.config.ts:/app/service/backend/mikro-orm.config.ts
       - ../../service/backend/tsconfig.json:/app/service/backend/tsconfig.json
       - ../../service/backend/tsconfig.build.json:/app/service/backend/tsconfig.build.json
       - ../../service/backend/nest-cli.json:/app/service/backend/nest-cli.json
@@ -28,8 +26,6 @@ services:
     volumes:
       - ../../service/backend/src:/app/service/backend/src
       - ../../service/backend/scripts:/app/service/backend/scripts
-      - ../../service/backend/migrations:/app/service/backend/migrations
-      - ../../service/backend/mikro-orm.config.ts:/app/service/backend/mikro-orm.config.ts
       - ../../service/backend/tsconfig.json:/app/service/backend/tsconfig.json
       - ../../service/backend/tsconfig.build.json:/app/service/backend/tsconfig.build.json
       - ../../service/backend/nest-cli.json:/app/service/backend/nest-cli.json
@@ -40,8 +36,6 @@ services:
     volumes:
       - ../../service/backend/src:/app/service/backend/src
       - ../../service/backend/scripts:/app/service/backend/scripts
-      - ../../service/backend/migrations:/app/service/backend/migrations
-      - ../../service/backend/mikro-orm.config.ts:/app/service/backend/mikro-orm.config.ts
       - ../../service/backend/tsconfig.json:/app/service/backend/tsconfig.json
       - ../../service/backend/tsconfig.build.json:/app/service/backend/tsconfig.build.json
       - ../../service/backend/nest-cli.json:/app/service/backend/nest-cli.json
