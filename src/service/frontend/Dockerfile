@@ -11,7 +11,7 @@ RUN pnpm install --frozen-lockfile
 FROM deps AS dev
 ENV PORT=8080
 EXPOSE 8080
-CMD ["sh", "-c", "pnpm --dir service/frontend dev -p ${PORT:-8080}"]
+CMD ["sh", "-c", "pnpm --dir service/frontend exec next dev --webpack -p ${PORT:-8080}"]
 
 FROM deps AS build
 ARG NEXT_PUBLIC_API_BASE_URL
