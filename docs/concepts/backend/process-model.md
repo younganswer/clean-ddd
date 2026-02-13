@@ -4,7 +4,7 @@
 
 ## 개요
 
-로컬 개발에서는 PM2가 아래 역할을 각각 별도 프로세스로 실행합니다.
+개발 환경에서는 Docker Compose가 아래 역할을 각각 별도 컨테이너로 실행합니다.
 
 - HTTP API: 요청을 받아 응답을 반환합니다.
 - Cron/Scheduler: 주기적으로 실행되는 작업을 수행합니다.
@@ -12,7 +12,12 @@
 
 ## 이 저장소에서의 형태
 
-PM2 설정은 저장소 루트 기준 `src/ecosystem.dev.config.cjs`에서 정의됩니다. 각 프로세스는 환경변수로 역할을 구분합니다.
+역할 분리는 Compose 서비스 단위로 이뤄집니다.
+
+- 기본 정의: `src/stack/compose/docker-compose.yml`
+- 개발용 override: `src/stack/compose/docker-compose.dev.yml`
+
+각 컨테이너는 환경변수로 역할을 구분합니다.
 
 - `PORT_LISTEN`: HTTP 포트 리스닝 여부
 - `OUTBOX_CRON_ENABLED`: Outbox 디스패치/스케줄러 역할 활성화 여부

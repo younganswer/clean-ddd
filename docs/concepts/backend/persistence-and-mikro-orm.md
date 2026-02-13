@@ -11,12 +11,16 @@ MikroORM은 아래 개념을 중심으로 동작합니다.
 
 ## 이 저장소에서의 형태
 
-이 저장소는 “런타임 구성”과 “마이그레이션 구성”을 분리합니다.
+이 저장소는 런타임에서 사용할 MikroORM 구성만 유지합니다.
 
 - 런타임 구성: 애플리케이션이 실행될 때 엔티티를 로딩하고 DB에 연결하는 설정
-- 마이그레이션 구성: CLI/스크립트가 마이그레이션을 생성/실행할 때 사용하는 설정
 
-또한 로컬/운영 환경에서 DB URL을 pooled/direct로 구분해 사용할 수 있도록 구성되어 있습니다.
+DB 초기 상태(스키마/데이터)는 초기화 스크립트가 책임집니다.
+
+- 초기화 스크립트: `src/service/backend/scripts/db-init.ts`
+    - 스키마 생성: `SchemaGenerator.createSchema()`
+    - 트리거 적용: `updated_at` 자동 갱신 트리거
+    - 기본 데이터 구성: users 100, orders/payments/shipments 200 등
 
 ## 범위 밖(Non-goals)
 
@@ -26,4 +30,3 @@ MikroORM은 아래 개념을 중심으로 동작합니다.
 ## 함께 읽기
 
 - [RequestContext와 EntityManager](request-context-and-entity-manager.md)
-- [마이그레이션](migrations.md)

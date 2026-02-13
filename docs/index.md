@@ -13,7 +13,7 @@
 
 ## 사용법/배포
 
-- [로컬 실행 및 사용법](usage.md)
+- [개발 환경 실행 및 사용법](usage.md)
 - [배포 가이드](deploy.md)
 
 ## 영역별 컨셉
@@ -24,7 +24,6 @@
 - [Nest 애플리케이션 모델](concepts/backend/nest-application-model.md)
 - [영속성과 MikroORM](concepts/backend/persistence-and-mikro-orm.md)
 - [RequestContext와 EntityManager](concepts/backend/request-context-and-entity-manager.md)
-- [마이그레이션](concepts/backend/migrations.md)
 - [Outbox 패턴(본 저장소 구현)](concepts/backend/outbox-pattern.md)
 - [SQS FIFO와 멱등성](concepts/backend/sqs-fifo-and-idempotency.md)
 - [서버리스 엔트리포인트](concepts/backend/serverless-entrypoints.md)
