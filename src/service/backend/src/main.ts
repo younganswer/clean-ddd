@@ -27,7 +27,7 @@ async function bootstrap(): Promise<void> {
       SwaggerModule.setup(swaggerPath, app, document);
     }
 
-    // PM2/Cluster 환경에서 PORT_LISTEN이 true(또는 미설정)일 때만 listen
+    // 멀티 프로세스/클러스터 환경에서 PORT_LISTEN이 true(또는 미설정)일 때만 listen
     if (
       process.env.PORT_LISTEN === undefined ||
       process.env.PORT_LISTEN === 'true'

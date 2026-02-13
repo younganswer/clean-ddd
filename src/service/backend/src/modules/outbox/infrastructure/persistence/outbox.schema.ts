@@ -5,7 +5,7 @@ import { BaseSchema } from '../../../../shared/persistence/mikro-orm/base.schema
 @Entity({ tableName: 'outbox_events' })
 @Index({ properties: ['status', 'nextAttemptAt'] })
 export class OutboxEventSchema extends BaseSchema {
-  @Property()
+  @Property({ type: 'text' })
   eventType!: string;
 
   @Property({ type: 'json' })

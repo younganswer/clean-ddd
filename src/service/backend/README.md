@@ -12,19 +12,17 @@
 - SQS FIFO(LocalStack/AWS) 연동
 - 서버리스 엔트리포인트(HTTP/SQS)
 
-## 로컬 DB 초기화/기본 데이터
+## DB 초기화/기본 데이터
 
-Docker 기반(Postgres) 로컬 DB를 **초기화 후 마이그레이션 + seed(기본 더미 데이터)** 까지 한 번에 적용하려면 아래를 실행합니다.
+DB 초기 상태(스키마/트리거/기본 데이터)는 초기화 스크립트가 책임집니다.
 
-- 초기화(볼륨 삭제) + 마이그레이션/seed: `pnpm db:reset:local`
-- (볼륨 유지) 기동 + 마이그레이션/seed: `pnpm db:setup:local`
+- 권장 실행(루트): `make -C src init`
+  - 동일 Compose project의 DB 볼륨 삭제
+  - 스키마 생성(MikroORM `SchemaGenerator.createSchema()`)
+  - 트리거 적용(`updated_at` 자동 갱신)
+  - 기본 데이터 구성(users 100, orders/payments/shipments 200 등)
 
-마이그레이션은 같은 DB에 대해 한 번만 적용되며, 앱을 실행하면서 주문/배송 데이터가 추가되면 초기 seed 위에 계속 쌓일 수 있습니다.
-로컬 개발/데모 목적의 "정확한" 초기 상태(예: users 100, orders 1000, shipments 1000, 재고 총 100000 중 1000 예약)를 원하면 seed를 **replace** 하는 스크립트를 실행하세요.
-
-- seed만 다시 적용(replace): `pnpm db:seed:local`
-
-기본 접속 정보는 `postgresql://app:app@localhost:54322/clean_ddd`이며, 포트 충돌 등이 있으면 `DATABASE_URL` 환경변수로 바꿀 수 있습니다.
+기본 접속 정보는 `postgresql://app:app@localhost:54322/clean_ddd`입니다.
 
 ## 관련 문서
 

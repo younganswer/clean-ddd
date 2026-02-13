@@ -71,51 +71,8 @@ export function mikroOrmConfigForRuntime(): Options {
       path.join(backendRoot, 'src/modules/**/*.schema.ts'),
       path.join(backendRoot, 'src/shared/idempotency/**/*.schema.ts'),
     ],
-    migrations: {
-      path: path.join(backendRoot, 'dist/migrations'),
-      pathTs: path.join(backendRoot, 'migrations'),
-    },
     pool: {
       min: 0,
-      max: 2,
-    },
-    allowGlobalContext: false,
-  });
-}
-
-export function mikroOrmConfigForMigrations(): Options {
-  const clientUrl =
-    process.env.DATABASE_URL_DIRECT ??
-    process.env.DATABASE_URL_POOLED ??
-    process.env.DATABASE_URL ??
-    '';
-  if (!clientUrl) {
-    throw new Error(
-      'DATABASE_URL_DIRECT (or DATABASE_URL_POOLED/DATABASE_URL) is required',
-    );
-  }
-
-  const backendRoot = findBackendRoot();
-
-  return defineConfig({
-    clientUrl,
-    namingStrategy: UnderscoreNamingStrategy,
-    baseDir: backendRoot,
-    preferTs: shouldPreferTs(),
-    entities: [
-      path.join(backendRoot, 'dist/src/modules/**/*.schema.js'),
-      path.join(backendRoot, 'dist/src/shared/idempotency/**/*.schema.js'),
-    ],
-    entitiesTs: [
-      path.join(backendRoot, 'src/modules/**/*.schema.ts'),
-      path.join(backendRoot, 'src/shared/idempotency/**/*.schema.ts'),
-    ],
-    migrations: {
-      path: path.join(backendRoot, 'dist/migrations'),
-      pathTs: path.join(backendRoot, 'migrations'),
-    },
-    pool: {
-      min: 1,
       max: 2,
     },
     allowGlobalContext: false,

@@ -1,34 +1,84 @@
+import 'reflect-metadata';
+
+import { MikroORM } from '@mikro-orm/core';
 import process from 'node:process';
 import { Client } from 'pg';
+import { mikroOrmConfigForRuntime } from '../src/lib/database/mikro-orm.config';
+import { checkPostgresSelect1 } from './_checks';
+import { withRetries } from './_retry';
 
-function localDatabaseUrl(): string {
-  return (
-    process.env.DATABASE_URL ?? 'postgresql://app:app@localhost:54322/clean_ddd'
-  );
+const RETRY = { attempts: 30, delayMs: 2_000 };
+
+function databaseUrl(): string {
+  const url = process.env.DATABASE_URL;
+  if (!url || url.trim().length === 0) {
+    throw new Error('DATABASE_URL is required (e.g. postgresql://...)');
+  }
+  return url;
 }
 
-async function main() {
-  const databaseUrl = localDatabaseUrl();
+function qIdent(identifier: string): string {
+  return `"${identifier.replaceAll('"', '""')}"`;
+}
 
-  const client = new Client({ connectionString: databaseUrl });
-  await client.connect();
+async function ensureUpdatedAtFunction(client: Client): Promise<void> {
+  await client.query(`
+    create or replace function public.set_updated_at()
+    returns trigger
+    language plpgsql
+    as $$
+    begin
+      new.updated_at = now();
+      return new;
+    end
+    $$;
+  `);
+}
 
-  const connInfo = await client.query<{
-    db: string;
-    usr: string;
-    server_addr: string | null;
-    server_port: number | null;
-  }>(
-    'select current_database() as db, current_user as usr, inet_server_addr()::text as server_addr, inet_server_port() as server_port;',
-  );
-  const info = connInfo.rows[0];
-  console.log(
-    `seeding database: db=${info.db}, user=${info.usr}, server=${info.server_addr ?? ''}:${info.server_port ?? ''}`,
-  );
+async function listTablesWithUpdatedAt(
+  client: Client,
+): Promise<Array<{ schema: string; table: string }>> {
+  const res = await client.query<{
+    schema: string;
+    table: string;
+  }>(`
+    select
+      c.table_schema as schema,
+      c.table_name as table
+    from information_schema.columns c
+    where c.column_name = 'updated_at'
+      and c.table_schema not in ('pg_catalog', 'information_schema')
+    group by c.table_schema, c.table_name
+    order by c.table_schema, c.table_name;
+  `);
+
+  return res.rows;
+}
+
+async function applyUpdatedAtTriggers(client: Client): Promise<number> {
+  await ensureUpdatedAtFunction(client);
+
+  const tables = await listTablesWithUpdatedAt(client);
+  for (const t of tables) {
+    const fullName = `${qIdent(t.schema)}.${qIdent(t.table)}`;
+
+    // Postgres has no CREATE TRIGGER IF NOT EXISTS.
+    await client.query(`drop trigger if exists set_updated_at on ${fullName};`);
+    await client.query(`
+      create trigger set_updated_at
+      before update on ${fullName}
+      for each row
+      execute function public.set_updated_at();
+    `);
+  }
+
+  return tables.length;
+}
+
+async function seed(client: Client): Promise<void> {
+  await client.query('begin;');
 
   try {
-    await client.query('begin;');
-
     await client.query('create extension if not exists pgcrypto;');
 
     // Replace (not append) the demo dataset so counts are deterministic.
@@ -44,13 +94,14 @@ async function main() {
 
     // Users: exactly 100
     await client.query(`
-      insert into "users" ("subject_id", "display_name", "email", "avatar_url", "created_at")
+      insert into "users" ("subject_id", "display_name", "email", "avatar_url", "created_at", "updated_at")
       select
         'dummy-' || s.i as subject_id,
         '더미 유저 ' || s.i as display_name,
         'dummy' || s.i || '@example.com' as email,
         'https://example.com/avatar/' || s.i || '.png' as avatar_url,
-        now() as created_at
+        now() as created_at,
+        now() as updated_at
       from generate_series(1, 100) as s(i);
     `);
 
@@ -202,29 +253,7 @@ async function main() {
         and not exists (select 1 from "inventory_reservations" r where r."sku" = i."sku");
     `);
 
-    const summary = await client.query(`
-      select
-        (select count(*) from "users")::int as users,
-        (select count(*) from "orders")::int as orders,
-        (select count(*) from "shipments")::int as shipments,
-        (select sum("available_quantity") from "inventory_items" where "sku" like 'SKU-%')::int as inventory_available_total,
-        (select sum("reserved_quantity") from "inventory_items" where "sku" like 'SKU-%')::int as inventory_reserved_total;
-    `);
-
     await client.query('commit;');
-
-    const row = summary.rows[0] as {
-      users: number;
-      orders: number;
-      shipments: number;
-      inventory_available_total: number;
-      inventory_reserved_total: number;
-    };
-
-    console.log(
-      `seed complete: users=${row.users}, orders=${row.orders}, shipments=${row.shipments}, ` +
-        `inventory_available_total=${row.inventory_available_total}, inventory_reserved_total=${row.inventory_reserved_total}`,
-    );
   } catch (error) {
     try {
       await client.query('rollback;');
@@ -232,6 +261,83 @@ async function main() {
       // ignore
     }
     throw error;
+  }
+}
+
+async function main() {
+  const url = databaseUrl();
+
+  await withRetries({ ...RETRY, label: 'Postgres' }, async () => {
+    await checkPostgresSelect1(url);
+  });
+
+  {
+    const client = new Client({ connectionString: url });
+    await client.connect();
+    try {
+      await client.query('create extension if not exists pgcrypto;');
+    } finally {
+      await client.end();
+    }
+  }
+
+  const orm = await MikroORM.init(mikroOrmConfigForRuntime());
+  try {
+    const generator = orm.getSchemaGenerator();
+    await generator.createSchema();
+  } finally {
+    await orm.close(true);
+  }
+
+  const client = new Client({ connectionString: url });
+  await client.connect();
+
+  try {
+    const connInfo = await client.query<{
+      db: string;
+      usr: string;
+      server_addr: string | null;
+      server_port: number | null;
+    }>(
+      'select current_database() as db, current_user as usr, inet_server_addr()::text as server_addr, inet_server_port() as server_port;',
+    );
+
+    const info = connInfo.rows[0];
+    // eslint-disable-next-line no-console
+    console.log(
+      `init database: db=${info.db}, user=${info.usr}, server=${info.server_addr ?? ''}:${info.server_port ?? ''}`,
+    );
+
+    const triggerTables = await applyUpdatedAtTriggers(client);
+    // eslint-disable-next-line no-console
+    console.log(`updatedAt triggers applied: tables=${triggerTables}`);
+
+    await seed(client);
+
+    const summary = await client.query(`
+      select
+        (select count(*) from "users")::int as users,
+        (select count(*) from "orders")::int as orders,
+        (select count(*) from "payment_intents")::int as payments,
+        (select count(*) from "shipments")::int as shipments,
+        (select sum("available_quantity") from "inventory_items" where "sku" like 'SKU-%')::int as inventory_available_total,
+        (select sum("reserved_quantity") from "inventory_items" where "sku" like 'SKU-%')::int as inventory_reserved_total;
+    `);
+
+    const row = summary.rows[0] as {
+      users: number;
+      orders: number;
+      payments: number;
+      shipments: number;
+      inventory_available_total: number;
+      inventory_reserved_total: number;
+    };
+
+    // eslint-disable-next-line no-console
+    console.log(
+      `init complete: users=${row.users}, orders=${row.orders}, payments=${row.payments}, shipments=${row.shipments}, ` +
+        `inventory_available_total=${row.inventory_available_total}, inventory_reserved_total=${row.inventory_reserved_total}`,
+    );
   } finally {
     await client.end();
   }
@@ -239,6 +345,7 @@ async function main() {
 
 main().catch((error) => {
   const message = error instanceof Error ? error.message : String(error);
-  console.error(`db:seed:local 실패: ${message}`);
+  // eslint-disable-next-line no-console
+  console.error(`db:init 실패: ${message}`);
   process.exitCode = 1;
 });
