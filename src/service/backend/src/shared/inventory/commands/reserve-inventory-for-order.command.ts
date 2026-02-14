@@ -1,4 +1,4 @@
-import type { InventoryOrderItemDto } from '../dto/inventory-order-item.dto';
+import type { InventoryOrderItemDto } from '@/shared/inventory/dto/inventory-order-item.dto';
 
 export class ReserveInventoryForOrderCommand {
   constructor(

@@ -1,16 +1,16 @@
 import { forwardRef, Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
-import { OrderingModule } from '../ordering/ordering.module';
-import { OutboxModule } from '../outbox/outbox.module';
-import { CreatePaymentIntentHandler } from './application/commands/handlers/create-payment-intent.handler';
-import { GetPaymentIntentHandler } from './application/queries/handlers/get-payment-intent.handler';
-import { ListPaymentIntentsHandler } from './application/queries/handlers/list-payment-intents.handler';
-import { IPaymentRepositorySymbol } from './domains/repositories/i.payment.repository';
-import { PaymentIntentReaderProvider } from './infrastructure/readers/payment-intent.reader';
-import { PaymentIntentMapper } from './infrastructure/mappers/payment-intent.mapper';
-import { PaymentRepository } from './infrastructure/repositories/payment.repository';
-import { PaymentsController } from './presentation/payments.controller';
-import { PaymentIntentsController } from './presentation/payment-intents.controller';
+import { OrderingModule } from '@/modules/ordering/ordering.module';
+import { OutboxModule } from '@/modules/outbox/outbox.module';
+import { CreatePaymentIntentHandler } from '@/modules/payments/application/commands/handlers/create-payment-intent.handler';
+import { GetPaymentIntentHandler } from '@/modules/payments/application/queries/handlers/get-payment-intent.handler';
+import { ListPaymentIntentsHandler } from '@/modules/payments/application/queries/handlers/list-payment-intents.handler';
+import { IPaymentRepositorySymbol } from '@/modules/payments/domains/repositories/i.payment.repository';
+import { PaymentIntentReaderProvider } from '@/modules/payments/infrastructure/readers/payment-intent.reader';
+import { PaymentIntentMapper } from '@/modules/payments/infrastructure/mappers/payment-intent.mapper';
+import { PaymentRepository } from '@/modules/payments/infrastructure/repositories/payment.repository';
+import { PaymentsController } from '@/modules/payments/presentation/payments.controller';
+import { PaymentIntentsController } from '@/modules/payments/presentation/payment-intents.controller';
 
 @Module({
   imports: [CqrsModule, OrderingModule, forwardRef(() => OutboxModule)],

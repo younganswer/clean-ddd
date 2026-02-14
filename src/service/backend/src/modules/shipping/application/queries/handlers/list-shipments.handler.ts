@@ -1,12 +1,9 @@
 import { Inject } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import { IShipmentRepositorySymbol } from '../../../domains/repositories/i.shipment.repository';
-import type { IShipmentRepository } from '../../../domains/repositories/i.shipment.repository';
-import {
-  ListShipmentsQuery,
-  type ShipmentView,
-} from '../../../../../shared/shipping';
-import type { PaginatedView } from '../../../../../shared/readers/paginated.view';
+import { IShipmentRepositorySymbol } from '@/modules/shipping/domains/repositories/i.shipment.repository';
+import type { IShipmentRepository } from '@/modules/shipping/domains/repositories/i.shipment.repository';
+import { ListShipmentsQuery, type ShipmentView } from '@/shared/shipping';
+import type { PaginatedView } from '@/shared/readers/paginated.view';
 
 @QueryHandler(ListShipmentsQuery)
 export class ListShipmentsHandler implements IQueryHandler<ListShipmentsQuery> {

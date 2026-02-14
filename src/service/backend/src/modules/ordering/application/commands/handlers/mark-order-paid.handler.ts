@@ -3,8 +3,8 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import {
   IOrderRepositorySymbol,
   type IOrderRepository,
-} from '../../../domains/repositories/i.order.repository';
-import { MarkOrderPaidCommand } from '../../../../../shared/ordering/commands/mark-order-paid.command';
+} from '@/modules/ordering/domains/repositories/i.order.repository';
+import { MarkOrderPaidCommand } from '@/shared/ordering/commands/mark-order-paid.command';
 
 @CommandHandler(MarkOrderPaidCommand)
 export class MarkOrderPaidHandler implements ICommandHandler<MarkOrderPaidCommand> {

@@ -1,6 +1,6 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import type { Request } from 'express';
-import { AuthContextAccessor } from '../context/auth-context';
+import { AuthContextAccessor } from '@/common/context/auth-context';
 
 /**
  * docs-first placeholder guard.

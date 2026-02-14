@@ -5,21 +5,21 @@ import {
   ICommandHandler,
   QueryBus,
 } from '@nestjs/cqrs';
-import { executeCommand, executeQuery } from 'src/common/utils/cqrs-executor';
-import { OutboxProducer } from '../../../../outbox/application/outbox.producer';
-import { IPaymentRepositorySymbol } from '../../../domains/repositories/i.payment.repository';
-import type { IPaymentRepository } from '../../../domains/repositories/i.payment.repository';
-import { AttachPaymentToOrderCommand } from '../../../../../shared/ordering/commands/attach-payment-to-order.command';
-import { GetOrderQuery } from '../../../../../shared/ordering/queries/get-order.query';
+import { executeCommand, executeQuery } from '@/common/utils/cqrs-executor';
+import { OutboxProducer } from '@/modules/outbox/application/outbox.producer';
+import { IPaymentRepositorySymbol } from '@/modules/payments/domains/repositories/i.payment.repository';
+import type { IPaymentRepository } from '@/modules/payments/domains/repositories/i.payment.repository';
+import { AttachPaymentToOrderCommand } from '@/shared/ordering/commands/attach-payment-to-order.command';
+import { GetOrderQuery } from '@/shared/ordering/queries/get-order.query';
 import {
   PaymentWebhookFailedEvent,
   PaymentWebhookSucceededEvent,
-} from '../../../../../shared/payments';
-import { assertOrderView } from '../../../../../shared/ordering/readers/order-view.guard';
+} from '@/shared/payments';
+import { assertOrderView } from '@/shared/ordering/readers/order-view.guard';
 import {
   CreatePaymentIntentCommand,
   type CreatePaymentIntentResult,
-} from '../../../../../shared/payments';
+} from '@/shared/payments';
 
 @CommandHandler(CreatePaymentIntentCommand)
 export class CreatePaymentIntentHandler implements ICommandHandler<CreatePaymentIntentCommand> {

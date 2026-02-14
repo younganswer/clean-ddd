@@ -9,8 +9,8 @@ import { CommandBus } from '@nestjs/cqrs';
 import {
   CreatePaymentIntentCommand,
   type CreatePaymentIntentResult,
-} from '../../../shared/payments';
-import { CreatePaymentIntentRequest } from './dto/create-payment-intent.request';
+} from '@/shared/payments';
+import { CreatePaymentIntentRequest } from '@/modules/payments/presentation/dto/create-payment-intent.request';
 
 function isHttpExceptionLike(error: unknown): error is { getStatus(): number } {
   return (

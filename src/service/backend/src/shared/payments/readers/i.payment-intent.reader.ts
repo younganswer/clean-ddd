@@ -1,4 +1,4 @@
 export {
   IPaymentIntentReaderSymbol,
   type IPaymentIntentReader,
-} from '../../readers/payments/i.payment-intent.reader';
+} from '@/shared/readers/payments/i.payment-intent.reader';

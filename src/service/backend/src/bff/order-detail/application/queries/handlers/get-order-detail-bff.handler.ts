@@ -1,21 +1,21 @@
 import { IQueryHandler, QueryBus, QueryHandler } from '@nestjs/cqrs';
 
-import { GetOrderQuery } from '../../../../../shared/ordering/queries/get-order.query';
-import type { OrderView } from '../../../../../shared/ordering/readers/order.view';
+import { GetOrderQuery } from '@/shared/ordering/queries/get-order.query';
+import type { OrderView } from '@/shared/ordering/readers/order.view';
 
-import { GetPaymentIntentQuery } from '../../../../../shared/payments/queries/get-payment-intent.query';
-import type { PaymentIntentView } from '../../../../../shared/readers/payments/dto/payment-intent.view';
+import { GetPaymentIntentQuery } from '@/shared/payments/queries/get-payment-intent.query';
+import type { PaymentIntentView } from '@/shared/readers/payments/dto/payment-intent.view';
 
-import { GetShipmentByOrderQuery } from '../../../../../shared/shipping/queries/get-shipment-by-order.query';
-import type { ShipmentView } from '../../../../../shared/readers/shipping/dto/shipment.view';
+import { GetShipmentByOrderQuery } from '@/shared/shipping/queries/get-shipment-by-order.query';
+import type { ShipmentView } from '@/shared/readers/shipping/dto/shipment.view';
 
-import { ListInventoryReservationsQuery } from '../../../../../shared/inventory/queries/list-inventory-reservations.query';
-import type { InventoryReservationView } from '../../../../../shared/readers/inventory/dto/inventory-reservation.view';
+import { ListInventoryReservationsQuery } from '@/shared/inventory/queries/list-inventory-reservations.query';
+import type { InventoryReservationView } from '@/shared/readers/inventory/dto/inventory-reservation.view';
 
 import {
   GetOrderDetailBffQuery,
   type OrderDetailBffView,
-} from '../get-order-detail-bff.query';
+} from '@/bff/order-detail/application/queries/get-order-detail-bff.query';
 
 @QueryHandler(GetOrderDetailBffQuery)
 export class GetOrderDetailBffHandler implements IQueryHandler<GetOrderDetailBffQuery> {

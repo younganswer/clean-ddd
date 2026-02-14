@@ -4,8 +4,8 @@ import { QueryBus } from '@nestjs/cqrs';
 import {
   GetGraphBffQuery,
   type GraphView,
-} from '../application/queries/get-graph-bff.query';
-import { GetGraphBffQueryDto } from './graph-bff.dto';
+} from '@/bff/graph/application/queries/get-graph-bff.query';
+import { GetGraphBffQueryDto } from '@/bff/graph/presentation/graph-bff.dto';
 
 @Controller('bff/graph')
 export class GraphBffController {

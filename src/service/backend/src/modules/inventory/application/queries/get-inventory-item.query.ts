@@ -1,1 +1,1 @@
-export { GetInventoryItemQuery } from '../../../../shared/inventory';
+export { GetInventoryItemQuery } from '@/shared/inventory';

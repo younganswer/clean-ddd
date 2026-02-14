@@ -1,7 +1,7 @@
 import type { Handler, SQSEvent } from 'aws-lambda';
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from '../../../app.module';
-import { OutboxConsumer } from '../../../modules/outbox/application/outbox.consumer';
+import { AppModule } from '@/app.module';
+import { OutboxConsumer } from '@/modules/outbox/application/outbox.consumer';
 
 let cachedConsumer: OutboxConsumer | undefined;
 

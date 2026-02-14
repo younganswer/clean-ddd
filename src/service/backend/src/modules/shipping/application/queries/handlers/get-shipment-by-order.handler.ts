@@ -1,11 +1,8 @@
 import { Inject } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import { IShipmentRepositorySymbol } from '../../../domains/repositories/i.shipment.repository';
-import type { IShipmentRepository } from '../../../domains/repositories/i.shipment.repository';
-import {
-  GetShipmentByOrderQuery,
-  type ShipmentView,
-} from '../../../../../shared/shipping';
+import { IShipmentRepositorySymbol } from '@/modules/shipping/domains/repositories/i.shipment.repository';
+import type { IShipmentRepository } from '@/modules/shipping/domains/repositories/i.shipment.repository';
+import { GetShipmentByOrderQuery, type ShipmentView } from '@/shared/shipping';
 
 @QueryHandler(GetShipmentByOrderQuery)
 export class GetShipmentByOrderHandler implements IQueryHandler<GetShipmentByOrderQuery> {

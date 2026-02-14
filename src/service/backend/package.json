@@ -83,6 +83,10 @@
       "ts"
     ],
     "moduleNameMapper": {
+      "^@/scripts/(.*)$": "<rootDir>/scripts/$1",
+      "^@/tests/(.*)$": "<rootDir>/tests/$1",
+      "^@/test-utils/(.*)$": "<rootDir>/test-utils/$1",
+      "^@/(.*)$": "<rootDir>/src/$1",
       "src/(.*)": "<rootDir>/src/$1",
       "tests/(.*)": "<rootDir>/tests/$1",
       "test-utils/(.*)": "<rootDir>/test-utils/$1"

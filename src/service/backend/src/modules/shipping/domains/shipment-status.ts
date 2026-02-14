@@ -1,1 +1,1 @@
-export { ShipmentStatus } from '../../../shared/shipping';
+export { ShipmentStatus } from '@/shared/shipping';

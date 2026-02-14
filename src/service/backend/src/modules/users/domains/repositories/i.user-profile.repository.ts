@@ -1,4 +1,4 @@
-import type { UserProfileView } from '../../../../shared/users/readers/user-profile.view';
+import type { UserProfileView } from '@/shared/users/readers/user-profile.view';
 
 export const IUserProfileRepositorySymbol = Symbol('IUserProfileRepository');
 

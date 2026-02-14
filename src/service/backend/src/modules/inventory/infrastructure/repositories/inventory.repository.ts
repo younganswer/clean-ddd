@@ -1,14 +1,14 @@
 import { RequestContext } from '@mikro-orm/core';
 import { EntityManager } from '@mikro-orm/postgresql';
 import { Injectable } from '@nestjs/common';
-import type { InventoryOrderItem } from '../../domains/inventory-item';
-import type { IInventoryRepository } from '../../domains/repositories/i.inventory.repository';
-import { InventoryItem } from '../../domains/entities/inventory-item.entity';
-import { InventoryReservation } from '../../domains/entities/inventory-reservation.entity';
-import { InventoryItemMapper } from '../mappers/inventory-item.mapper';
-import { InventoryReservationMapper } from '../mappers/inventory-reservation.mapper';
-import { InventoryItemSchema } from '../schemas/inventory-item.schema';
-import { InventoryReservationSchema } from '../schemas/inventory-reservation.schema';
+import type { InventoryOrderItem } from '@/modules/inventory/domains/inventory-item';
+import type { IInventoryRepository } from '@/modules/inventory/domains/repositories/i.inventory.repository';
+import { InventoryItem } from '@/modules/inventory/domains/entities/inventory-item.entity';
+import { InventoryReservation } from '@/modules/inventory/domains/entities/inventory-reservation.entity';
+import { InventoryItemMapper } from '@/modules/inventory/infrastructure/mappers/inventory-item.mapper';
+import { InventoryReservationMapper } from '@/modules/inventory/infrastructure/mappers/inventory-reservation.mapper';
+import { InventoryItemSchema } from '@/modules/inventory/infrastructure/schemas/inventory-item.schema';
+import { InventoryReservationSchema } from '@/modules/inventory/infrastructure/schemas/inventory-reservation.schema';
 
 @Injectable()
 export class InventoryRepository implements IInventoryRepository {

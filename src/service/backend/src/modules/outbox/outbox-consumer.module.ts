@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
-import { SqsModule } from 'src/lib/queue/sqs.module';
-import { OutboxConsumer } from './application/outbox.consumer';
-import { OutboxModule } from './outbox.module';
-import { OutboxSqsPoller } from './infrastructure/sqs/outbox.sqs-poller';
+import { SqsModule } from '@/lib/queue/sqs.module';
+import { OutboxConsumer } from '@/modules/outbox/application/outbox.consumer';
+import { OutboxModule } from '@/modules/outbox/outbox.module';
+import { OutboxSqsPoller } from '@/modules/outbox/infrastructure/sqs/outbox.sqs-poller';
 
 @Module({
   imports: [CqrsModule, OutboxModule, SqsModule],

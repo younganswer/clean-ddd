@@ -1,4 +1,4 @@
-import type { MoneyView } from '../../../money/money.view';
+import type { MoneyView } from '@/shared/money/money.view';
 
 export type InventoryItemView = {
   itemId: string;

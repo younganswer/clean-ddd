@@ -2,9 +2,9 @@ import { Inject, Injectable } from '@nestjs/common';
 import {
   IOutboxRepositorySymbol,
   type IOutboxRepository,
-} from 'src/shared/outbox';
-import { OutboxQueue } from '../infrastructure/queue/outbox.queue';
-import { getEventType, toPayload } from 'src/lib/outbox/event-registry';
+} from '@/shared/outbox';
+import { OutboxQueue } from '@/modules/outbox/infrastructure/queue/outbox.queue';
+import { getEventType, toPayload } from '@/lib/outbox/event-registry';
 
 @Injectable()
 export class OutboxProducer {

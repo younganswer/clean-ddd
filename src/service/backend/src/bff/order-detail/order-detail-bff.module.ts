@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 
-import { OrderDetailBffController } from './presentation/order-detail-bff.controller';
-import { QueryHandlers } from './application/queries';
+import { OrderDetailBffController } from '@/bff/order-detail/presentation/order-detail-bff.controller';
+import { QueryHandlers } from '@/bff/order-detail/application/queries';
 
 @Module({
   imports: [CqrsModule],

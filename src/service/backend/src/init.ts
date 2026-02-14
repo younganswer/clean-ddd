@@ -6,10 +6,10 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { NextFunction, Request, Response } from 'express';
-import { AppModule } from './app.module';
-import { AuthContextAccessor } from './common/context/auth-context';
-import { AuthGuard } from './common/guards/auth.guard';
-import { NestApp } from './nest-app';
+import { AppModule } from '@/app.module';
+import { AuthContextAccessor } from '@/common/context/auth-context';
+import { AuthGuard } from '@/common/guards/auth.guard';
+import { NestApp } from '@/nest-app';
 
 let isConfigured = false;
 

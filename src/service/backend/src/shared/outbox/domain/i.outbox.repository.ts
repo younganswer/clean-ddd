@@ -1,4 +1,4 @@
-import { OutboxEventDto } from './dto/outbox-event.dto';
+import { OutboxEventDto } from '@/shared/outbox/domain/dto/outbox-event.dto';
 
 export interface IOutboxRepository {
   save(event: OutboxEventDto): Promise<string>;

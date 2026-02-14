@@ -1,15 +1,15 @@
 import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
-import { CreateOrderCommand } from '../../../../../shared/ordering/commands/create-order.command';
+import { CreateOrderCommand } from '@/shared/ordering/commands/create-order.command';
 import {
   CreatePaymentIntentCommand,
   type CreatePaymentIntentResult,
-} from '../../../../../shared/payments/commands/create-payment-intent.command';
+} from '@/shared/payments/commands/create-payment-intent.command';
 
 import {
   CreateCheckoutBffCommand,
   type CreateCheckoutBffResult,
-} from '../create-checkout-bff.command';
+} from '@/bff/checkout/application/commands/create-checkout-bff.command';
 
 @CommandHandler(CreateCheckoutBffCommand)
 export class CreateCheckoutBffHandler implements ICommandHandler<CreateCheckoutBffCommand> {

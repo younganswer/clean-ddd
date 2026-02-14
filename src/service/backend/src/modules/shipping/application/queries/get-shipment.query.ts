@@ -1,1 +1,1 @@
-export { GetShipmentQuery } from '../../../../shared/shipping';
+export { GetShipmentQuery } from '@/shared/shipping';

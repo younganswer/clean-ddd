@@ -1,5 +1,5 @@
-import { checkPostgresSelect1 } from './_checks';
-import { withRetries } from './_retry';
+import { checkPostgresSelect1 } from '@/scripts/_checks';
+import { withRetries } from '@/scripts/_retry';
 
 const RETRY = { attempts: 3, delayMs: 10_000 };
 

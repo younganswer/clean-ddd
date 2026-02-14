@@ -1,1 +1,1 @@
-export { GetShipmentByOrderQuery } from '../../../../shared/shipping';
+export { GetShipmentByOrderQuery } from '@/shared/shipping';

@@ -1,11 +1,11 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 
-import { GetDashboardSummaryBffQueryDto } from './dashboard-bff.dto';
+import { GetDashboardSummaryBffQueryDto } from '@/bff/dashboard/presentation/dashboard-bff.dto';
 import {
   GetDashboardSummaryBffQuery,
   type DashboardSummaryBffView,
-} from '../application/queries/get-dashboard-summary-bff.query';
+} from '@/bff/dashboard/application/queries/get-dashboard-summary-bff.query';
 
 @Controller('bff/dashboard')
 export class DashboardBffController {

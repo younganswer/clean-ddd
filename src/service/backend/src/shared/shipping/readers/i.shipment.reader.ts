@@ -1,4 +1,4 @@
 export {
   IShipmentReaderSymbol,
   type IShipmentReader,
-} from '../../readers/shipping/i.shipment.reader';
+} from '@/shared/readers/shipping/i.shipment.reader';

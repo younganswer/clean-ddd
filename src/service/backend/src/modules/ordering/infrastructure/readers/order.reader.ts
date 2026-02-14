@@ -2,10 +2,10 @@ import { Inject, Injectable } from '@nestjs/common';
 import {
   IOrderReaderSymbol,
   type IOrderReader,
-} from '../../../../shared/ordering/readers/i.order.reader';
-import type { OrderView } from '../../../../shared/ordering/readers/order.view';
-import { IOrderRepositorySymbol } from '../../domains/repositories/i.order.repository';
-import type { IOrderRepository } from '../../domains/repositories/i.order.repository';
+} from '@/shared/ordering/readers/i.order.reader';
+import type { OrderView } from '@/shared/ordering/readers/order.view';
+import { IOrderRepositorySymbol } from '@/modules/ordering/domains/repositories/i.order.repository';
+import type { IOrderRepository } from '@/modules/ordering/domains/repositories/i.order.repository';
 
 @Injectable()
 export class OrderReader implements IOrderReader {

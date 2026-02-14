@@ -1,12 +1,12 @@
 import { Inject } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import { ListUserProfilesQuery } from '../../../../shared/users/queries/list-user-profiles.query';
-import type { UserProfileView } from '../../../../shared/users/readers/user-profile.view';
-import type { PaginatedView } from '../../../../shared/readers/paginated.view';
+import { ListUserProfilesQuery } from '@/shared/users/queries/list-user-profiles.query';
+import type { UserProfileView } from '@/shared/users/readers/user-profile.view';
+import type { PaginatedView } from '@/shared/readers/paginated.view';
 import {
   IUserProfileRepositorySymbol,
   type IUserProfileRepository,
-} from '../../domains/repositories/i.user-profile.repository';
+} from '@/modules/users/domains/repositories/i.user-profile.repository';
 
 @QueryHandler(ListUserProfilesQuery)
 export class ListUserProfilesQueryHandler implements IQueryHandler<ListUserProfilesQuery> {

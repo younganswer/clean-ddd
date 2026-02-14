@@ -1,8 +1,8 @@
 import { Inject } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { IShipmentRepositorySymbol } from '../../../domains/repositories/i.shipment.repository';
-import type { IShipmentRepository } from '../../../domains/repositories/i.shipment.repository';
-import { CreateShipmentForOrderCommand } from '../../../../../shared/shipping';
+import { IShipmentRepositorySymbol } from '@/modules/shipping/domains/repositories/i.shipment.repository';
+import type { IShipmentRepository } from '@/modules/shipping/domains/repositories/i.shipment.repository';
+import { CreateShipmentForOrderCommand } from '@/shared/shipping';
 
 @CommandHandler(CreateShipmentForOrderCommand)
 export class CreateShipmentForOrderHandler implements ICommandHandler<CreateShipmentForOrderCommand> {

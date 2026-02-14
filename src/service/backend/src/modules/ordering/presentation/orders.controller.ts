@@ -8,14 +8,14 @@ import {
   Query,
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { executeCommand, executeQuery } from 'src/common/utils/cqrs-executor';
-import { CreateOrderCommand } from '../../../shared/ordering/commands/create-order.command';
-import { GetOrderQuery } from '../../../shared/ordering/queries/get-order.query';
-import { ListOrdersQuery } from '../../../shared/ordering/queries/list-orders.query';
-import type { PaginatedView } from '../../../shared/readers/paginated.view';
-import type { OrderView } from '../../../shared/ordering/readers/order.view';
-import { isOrderView } from '../../../shared/ordering/readers/order-view.guard';
-import { CreateOrderRequest } from './dto/create-order.request';
+import { executeCommand, executeQuery } from '@/common/utils/cqrs-executor';
+import { CreateOrderCommand } from '@/shared/ordering/commands/create-order.command';
+import { GetOrderQuery } from '@/shared/ordering/queries/get-order.query';
+import { ListOrdersQuery } from '@/shared/ordering/queries/list-orders.query';
+import type { PaginatedView } from '@/shared/readers/paginated.view';
+import type { OrderView } from '@/shared/ordering/readers/order.view';
+import { isOrderView } from '@/shared/ordering/readers/order-view.guard';
+import { CreateOrderRequest } from '@/modules/ordering/presentation/dto/create-order.request';
 
 @Controller('orders')
 export class OrdersController {

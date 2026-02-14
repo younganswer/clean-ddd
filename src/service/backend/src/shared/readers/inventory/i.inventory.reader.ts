@@ -1,5 +1,5 @@
-import type { InventoryItemView } from './dto/inventory-item.view';
-import type { InventoryReservationView } from './dto/inventory-reservation.view';
+import type { InventoryItemView } from '@/shared/readers/inventory/dto/inventory-item.view';
+import type { InventoryReservationView } from '@/shared/readers/inventory/dto/inventory-reservation.view';
 
 export const IInventoryReaderSymbol = Symbol('IInventoryReader');
 

@@ -1,11 +1,11 @@
 import { Inject } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import { IInventoryRepositorySymbol } from '../../../domains/repositories/i.inventory.repository';
-import type { IInventoryRepository } from '../../../domains/repositories/i.inventory.repository';
+import { IInventoryRepositorySymbol } from '@/modules/inventory/domains/repositories/i.inventory.repository';
+import type { IInventoryRepository } from '@/modules/inventory/domains/repositories/i.inventory.repository';
 import {
   GetInventoryItemQuery,
   type InventoryItemView,
-} from '../../../../../shared/inventory';
+} from '@/shared/inventory';
 
 @QueryHandler(GetInventoryItemQuery)
 export class GetInventoryItemHandler implements IQueryHandler<GetInventoryItemQuery> {

@@ -1,16 +1,16 @@
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
-import { ReserveInventoryForOrderRequestedHandler } from './application/events/handlers/reserve-inventory-for-order-requested.handler';
-import { ReserveInventoryForOrderHandler } from './application/commands/handlers/reserve-inventory-for-order.handler';
-import { GetInventoryItemHandler } from './application/queries/handlers/get-inventory-item.handler';
-import { ListInventoryItemsHandler } from './application/queries/handlers/list-inventory-items.handler';
-import { ListInventoryReservationsHandler } from './application/queries/handlers/list-inventory-reservations.handler';
-import { IInventoryRepositorySymbol } from './domains/repositories/i.inventory.repository';
-import { InventoryItemMapper } from './infrastructure/mappers/inventory-item.mapper';
-import { InventoryReservationMapper } from './infrastructure/mappers/inventory-reservation.mapper';
-import { InventoryRepository } from './infrastructure/repositories/inventory.repository';
-import { InventoryController } from './presentation/inventory.controller';
-import { InventoryReaderProvider } from './infrastructure/readers/inventory.reader';
+import { ReserveInventoryForOrderRequestedHandler } from '@/modules/inventory/application/events/handlers/reserve-inventory-for-order-requested.handler';
+import { ReserveInventoryForOrderHandler } from '@/modules/inventory/application/commands/handlers/reserve-inventory-for-order.handler';
+import { GetInventoryItemHandler } from '@/modules/inventory/application/queries/handlers/get-inventory-item.handler';
+import { ListInventoryItemsHandler } from '@/modules/inventory/application/queries/handlers/list-inventory-items.handler';
+import { ListInventoryReservationsHandler } from '@/modules/inventory/application/queries/handlers/list-inventory-reservations.handler';
+import { IInventoryRepositorySymbol } from '@/modules/inventory/domains/repositories/i.inventory.repository';
+import { InventoryItemMapper } from '@/modules/inventory/infrastructure/mappers/inventory-item.mapper';
+import { InventoryReservationMapper } from '@/modules/inventory/infrastructure/mappers/inventory-reservation.mapper';
+import { InventoryRepository } from '@/modules/inventory/infrastructure/repositories/inventory.repository';
+import { InventoryController } from '@/modules/inventory/presentation/inventory.controller';
+import { InventoryReaderProvider } from '@/modules/inventory/infrastructure/readers/inventory.reader';
 
 @Module({
   imports: [CqrsModule],

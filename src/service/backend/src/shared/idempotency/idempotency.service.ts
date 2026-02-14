@@ -1,7 +1,7 @@
 import { RequestContext } from '@mikro-orm/core';
 import { EntityManager } from '@mikro-orm/postgresql';
 import { Injectable } from '@nestjs/common';
-import { ProcessedEventSchema } from './processed-event.schema';
+import { ProcessedEventSchema } from '@/shared/idempotency/processed-event.schema';
 
 @Injectable()
 export class IdempotencyService {

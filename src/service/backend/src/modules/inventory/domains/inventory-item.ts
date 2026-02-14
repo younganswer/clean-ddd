@@ -1,1 +1,1 @@
-export type { InventoryOrderItemDto as InventoryOrderItem } from '../../../shared/inventory';
+export type { InventoryOrderItemDto as InventoryOrderItem } from '@/shared/inventory';

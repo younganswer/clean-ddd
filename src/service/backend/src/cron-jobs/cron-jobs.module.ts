@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
-import { OutboxDispatchJob } from './jobs/outbox-dispatch.job';
+import { OutboxDispatchJob } from '@/cron-jobs/jobs/outbox-dispatch.job';
 
 @Module({
   imports: [CqrsModule],

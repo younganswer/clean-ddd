@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { PaymentIntent } from '../../domains/entities/aggregates/payment-intent/payment-intent.aggregate';
-import { PaymentIntentSchema } from '../schemas/payment-intent.schema';
+import { PaymentIntent } from '@/modules/payments/domains/entities/aggregates/payment-intent/payment-intent.aggregate';
+import { PaymentIntentSchema } from '@/modules/payments/infrastructure/schemas/payment-intent.schema';
 
 @Injectable()
 export class PaymentIntentMapper {

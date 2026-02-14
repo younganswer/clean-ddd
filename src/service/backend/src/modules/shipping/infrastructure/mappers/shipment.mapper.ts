@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { Shipment } from '../../domains/entities/aggregates/shipment/shipment.aggregate';
-import { ShipmentSchema } from '../schemas/shipment.schema';
+import { Shipment } from '@/modules/shipping/domains/entities/aggregates/shipment/shipment.aggregate';
+import { ShipmentSchema } from '@/modules/shipping/infrastructure/schemas/shipment.schema';
 
 @Injectable()
 export class ShipmentMapper {

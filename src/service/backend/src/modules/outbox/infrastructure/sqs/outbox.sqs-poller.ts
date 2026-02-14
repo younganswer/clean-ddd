@@ -11,8 +11,8 @@ import {
   ReceiveMessageCommand,
   SQSClient,
 } from '@aws-sdk/client-sqs';
-import { OutboxConsumer } from '../../application/outbox.consumer';
-import { SQS_CLIENT, SQS_OUTBOX_QUEUE_URL } from 'src/lib/queue/sqs.module';
+import { OutboxConsumer } from '@/modules/outbox/application/outbox.consumer';
+import { SQS_CLIENT, SQS_OUTBOX_QUEUE_URL } from '@/lib/queue/sqs.module';
 
 @Injectable()
 export class OutboxSqsPoller implements OnModuleInit, OnModuleDestroy {

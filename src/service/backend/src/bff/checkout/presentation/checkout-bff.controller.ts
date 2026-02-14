@@ -1,11 +1,11 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 
-import { CreateCheckoutBffBodyDto } from './checkout-bff.dto';
+import { CreateCheckoutBffBodyDto } from '@/bff/checkout/presentation/checkout-bff.dto';
 import {
   CreateCheckoutBffCommand,
   type CreateCheckoutBffResult,
-} from '../application/commands/create-checkout-bff.command';
+} from '@/bff/checkout/application/commands/create-checkout-bff.command';
 
 @Controller('bff/checkout')
 export class CheckoutBffController {

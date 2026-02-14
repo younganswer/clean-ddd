@@ -1,21 +1,21 @@
 import { IQueryHandler, QueryBus, QueryHandler } from '@nestjs/cqrs';
 
-import { ListOrdersQuery } from '../../../../../shared/ordering/queries/list-orders.query';
-import type { OrderView } from '../../../../../shared/ordering/readers/order.view';
+import { ListOrdersQuery } from '@/shared/ordering/queries/list-orders.query';
+import type { OrderView } from '@/shared/ordering/readers/order.view';
 
-import { ListPaymentIntentsQuery } from '../../../../../shared/payments/queries/list-payment-intents.query';
-import type { PaymentIntentView } from '../../../../../shared/readers/payments/dto/payment-intent.view';
+import { ListPaymentIntentsQuery } from '@/shared/payments/queries/list-payment-intents.query';
+import type { PaymentIntentView } from '@/shared/readers/payments/dto/payment-intent.view';
 
-import { ListShipmentsQuery } from '../../../../../shared/shipping/queries/list-shipments.query';
-import type { ShipmentView } from '../../../../../shared/readers/shipping/dto/shipment.view';
+import { ListShipmentsQuery } from '@/shared/shipping/queries/list-shipments.query';
+import type { ShipmentView } from '@/shared/readers/shipping/dto/shipment.view';
 
-import { ListInventoryItemsQuery } from '../../../../../shared/inventory/queries/list-inventory-items.query';
-import type { InventoryItemView } from '../../../../../shared/readers/inventory/dto/inventory-item.view';
+import { ListInventoryItemsQuery } from '@/shared/inventory/queries/list-inventory-items.query';
+import type { InventoryItemView } from '@/shared/readers/inventory/dto/inventory-item.view';
 
 import {
   GetDashboardSummaryBffQuery,
   type DashboardSummaryBffView,
-} from '../get-dashboard-summary-bff.query';
+} from '@/bff/dashboard/application/queries/get-dashboard-summary-bff.query';
 
 @QueryHandler(GetDashboardSummaryBffQuery)
 export class GetDashboardSummaryBffHandler implements IQueryHandler<GetDashboardSummaryBffQuery> {

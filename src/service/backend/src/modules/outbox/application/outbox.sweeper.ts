@@ -2,8 +2,8 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import {
   IOutboxRepositorySymbol,
   type IOutboxRepository,
-} from 'src/shared/outbox';
-import { OutboxQueue } from '../infrastructure/queue/outbox.queue';
+} from '@/shared/outbox';
+import { OutboxQueue } from '@/modules/outbox/infrastructure/queue/outbox.queue';
 
 @Injectable()
 export class OutboxSweeper {

@@ -1,1 +1,1 @@
-export type { InventoryReservationView } from '../../readers/inventory/dto/inventory-reservation.view';
+export type { InventoryReservationView } from '@/shared/readers/inventory/dto/inventory-reservation.view';

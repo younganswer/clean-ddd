@@ -1,1 +1,1 @@
-export { type InventoryItemView } from '../../../../shared/inventory';
+export { type InventoryItemView } from '@/shared/inventory';

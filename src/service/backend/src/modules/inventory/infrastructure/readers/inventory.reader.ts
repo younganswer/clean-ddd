@@ -3,11 +3,11 @@ import { Inject, Injectable } from '@nestjs/common';
 import {
   IInventoryReaderSymbol,
   type IInventoryReader,
-} from '../../../../shared/readers/inventory/i.inventory.reader';
-import type { InventoryItemView } from '../../../../shared/readers/inventory/dto/inventory-item.view';
-import type { InventoryReservationView } from '../../../../shared/readers/inventory/dto/inventory-reservation.view';
-import { IInventoryRepositorySymbol } from '../../domains/repositories/i.inventory.repository';
-import type { IInventoryRepository } from '../../domains/repositories/i.inventory.repository';
+} from '@/shared/readers/inventory/i.inventory.reader';
+import type { InventoryItemView } from '@/shared/readers/inventory/dto/inventory-item.view';
+import type { InventoryReservationView } from '@/shared/readers/inventory/dto/inventory-reservation.view';
+import { IInventoryRepositorySymbol } from '@/modules/inventory/domains/repositories/i.inventory.repository';
+import type { IInventoryRepository } from '@/modules/inventory/domains/repositories/i.inventory.repository';
 
 @Injectable()
 export class InventoryReader implements IInventoryReader {

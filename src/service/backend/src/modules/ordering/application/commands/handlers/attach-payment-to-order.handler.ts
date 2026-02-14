@@ -3,8 +3,8 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import {
   IOrderRepositorySymbol,
   type IOrderRepository,
-} from '../../../domains/repositories/i.order.repository';
-import { AttachPaymentToOrderCommand } from '../../../../../shared/ordering/commands/attach-payment-to-order.command';
+} from '@/modules/ordering/domains/repositories/i.order.repository';
+import { AttachPaymentToOrderCommand } from '@/shared/ordering/commands/attach-payment-to-order.command';
 
 @CommandHandler(AttachPaymentToOrderCommand)
 export class AttachPaymentToOrderHandler implements ICommandHandler<AttachPaymentToOrderCommand> {

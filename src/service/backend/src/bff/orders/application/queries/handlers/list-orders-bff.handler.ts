@@ -1,8 +1,8 @@
 import { IQueryHandler, QueryBus, QueryHandler } from '@nestjs/cqrs';
 
-import { ListOrdersQuery } from '../../../../../shared/ordering/queries/list-orders.query';
-import { ListOrdersBffQuery } from '../list-orders-bff.query';
-import type { OrderView } from '../../../../../shared/ordering/readers/order.view';
+import { ListOrdersQuery } from '@/shared/ordering/queries/list-orders.query';
+import { ListOrdersBffQuery } from '@/bff/orders/application/queries/list-orders-bff.query';
+import type { OrderView } from '@/shared/ordering/readers/order.view';
 
 @QueryHandler(ListOrdersBffQuery)
 export class ListOrdersBffHandler implements IQueryHandler<ListOrdersBffQuery> {

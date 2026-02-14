@@ -1,4 +1,4 @@
-import type { ShipmentView } from './dto/shipment.view';
+import type { ShipmentView } from '@/shared/readers/shipping/dto/shipment.view';
 
 export const IShipmentReaderSymbol = Symbol('IShipmentReader');
 

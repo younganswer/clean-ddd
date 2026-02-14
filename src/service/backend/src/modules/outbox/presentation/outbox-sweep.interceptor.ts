@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { Observable, tap } from 'rxjs';
 import { finalize } from 'rxjs/operators';
-import { OutboxSweeper } from '../application/outbox.sweeper';
+import { OutboxSweeper } from '@/modules/outbox/application/outbox.sweeper';
 
 @Injectable()
 export class OutboxSweepInterceptor implements NestInterceptor {

@@ -1,3 +1,3 @@
-import { GetGraphBffHandler } from './handlers/get-graph-bff.handler';
+import { GetGraphBffHandler } from '@/bff/graph/application/queries/handlers/get-graph-bff.handler';
 
 export const QueryHandlers = [GetGraphBffHandler];

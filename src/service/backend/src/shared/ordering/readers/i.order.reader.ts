@@ -1,4 +1,4 @@
-import type { OrderView } from './order.view';
+import type { OrderView } from '@/shared/ordering/readers/order.view';
 
 export const IOrderReaderSymbol = Symbol('IOrderReader');
 

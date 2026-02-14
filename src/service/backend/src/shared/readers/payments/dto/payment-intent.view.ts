@@ -1,4 +1,4 @@
-import type { PaymentStatus } from '../../../payments/enums/payment-status.enum';
+import type { PaymentStatus } from '@/shared/payments/enums/payment-status.enum';
 
 export type PaymentIntentView = {
   paymentId: string;

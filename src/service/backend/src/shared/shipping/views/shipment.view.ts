@@ -1,1 +1,1 @@
-export type { ShipmentView } from '../../readers/shipping/dto/shipment.view';
+export type { ShipmentView } from '@/shared/readers/shipping/dto/shipment.view';

@@ -3,11 +3,11 @@ import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import {
   GetPendingOutboxEventsQuery,
   GetPendingOutboxEventsResult,
-} from 'src/shared/outbox/queries/get-pending-outbox-events.query';
+} from '@/shared/outbox/queries/get-pending-outbox-events.query';
 import {
   IOutboxRepositorySymbol,
   type IOutboxRepository,
-} from 'src/shared/outbox';
+} from '@/shared/outbox';
 
 @QueryHandler(GetPendingOutboxEventsQuery)
 export class GetPendingOutboxEventsHandler implements IQueryHandler<

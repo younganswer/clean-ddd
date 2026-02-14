@@ -1,1 +1,1 @@
-export { PaymentStatus } from '../../../shared/payments';
+export { PaymentStatus } from '@/shared/payments';

@@ -1,11 +1,11 @@
 import { Inject } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { DispatchOutboxEventCommand } from 'src/shared/outbox/commands/dispatch-outbox-event.command';
+import { DispatchOutboxEventCommand } from '@/shared/outbox/commands/dispatch-outbox-event.command';
 import {
   IOutboxRepositorySymbol,
   type IOutboxRepository,
-} from 'src/shared/outbox';
-import { OutboxQueue } from '../../../infrastructure/queue/outbox.queue';
+} from '@/shared/outbox';
+import { OutboxQueue } from '@/modules/outbox/infrastructure/queue/outbox.queue';
 
 @CommandHandler(DispatchOutboxEventCommand)
 export class DispatchOutboxEventHandler implements ICommandHandler<DispatchOutboxEventCommand> {

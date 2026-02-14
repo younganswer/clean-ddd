@@ -1,1 +1,1 @@
-export * from './sqs.module';
+export * from '@/lib/queue/sqs.module';

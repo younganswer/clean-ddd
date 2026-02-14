@@ -5,7 +5,7 @@ import {
   IPaymentIntentReaderSymbol,
   type IPaymentIntentReader,
   type PaymentIntentView,
-} from '../../../../../shared/payments';
+} from '@/shared/payments';
 
 @QueryHandler(GetPaymentIntentQuery)
 export class GetPaymentIntentHandler implements IQueryHandler<GetPaymentIntentQuery> {

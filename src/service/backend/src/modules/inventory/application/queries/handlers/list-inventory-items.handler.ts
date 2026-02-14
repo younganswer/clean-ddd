@@ -1,12 +1,12 @@
 import { Inject } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import { IInventoryRepositorySymbol } from '../../../domains/repositories/i.inventory.repository';
-import type { IInventoryRepository } from '../../../domains/repositories/i.inventory.repository';
+import { IInventoryRepositorySymbol } from '@/modules/inventory/domains/repositories/i.inventory.repository';
+import type { IInventoryRepository } from '@/modules/inventory/domains/repositories/i.inventory.repository';
 import {
   ListInventoryItemsQuery,
   type InventoryItemView,
-} from '../../../../../shared/inventory';
-import type { PaginatedView } from '../../../../../shared/readers/paginated.view';
+} from '@/shared/inventory';
+import type { PaginatedView } from '@/shared/readers/paginated.view';
 
 @QueryHandler(ListInventoryItemsQuery)
 export class ListInventoryItemsHandler implements IQueryHandler<ListInventoryItemsQuery> {

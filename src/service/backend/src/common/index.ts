@@ -1,2 +1,2 @@
-export * from './types/brand.type';
-export * from './utils/sleep';
+export * from '@/common/types/brand.type';
+export * from '@/common/utils/sleep';

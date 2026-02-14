@@ -1,4 +1,4 @@
-import { BaseEntity } from '../../../../shared/domain/base.entity';
+import { BaseEntity } from '@/shared/domain/base.entity';
 
 export class InventoryReservation extends BaseEntity<string> {
   private constructor(

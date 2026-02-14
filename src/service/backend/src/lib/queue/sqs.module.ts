@@ -4,7 +4,7 @@ import {
   SQSClient,
 } from '@aws-sdk/client-sqs';
 import { Global, Module } from '@nestjs/common';
-import { optionalEnv, requireEnv } from '../../env';
+import { optionalEnv, requireEnv } from '@/env';
 
 export const SQS_OUTBOX_QUEUE_URL = Symbol('SQS_OUTBOX_QUEUE_URL');
 export const SQS_CLIENT = Symbol('SQS_CLIENT');

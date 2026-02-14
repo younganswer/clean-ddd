@@ -2,13 +2,13 @@ import { MikroORM } from '@mikro-orm/core';
 import { Injectable, Logger } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { MikroOrmCronJobAbstract } from 'src/common/abstracts/mikro-orm-cron-job.abstract';
-import { executeCommand, executeQuery } from 'src/common/utils/cqrs-executor';
-import { DispatchOutboxEventCommand } from 'src/shared/outbox/commands/dispatch-outbox-event.command';
+import { MikroOrmCronJobAbstract } from '@/common/abstracts/mikro-orm-cron-job.abstract';
+import { executeCommand, executeQuery } from '@/common/utils/cqrs-executor';
+import { DispatchOutboxEventCommand } from '@/shared/outbox/commands/dispatch-outbox-event.command';
 import {
   GetPendingOutboxEventsQuery,
   type GetPendingOutboxEventsResult,
-} from 'src/shared/outbox/queries/get-pending-outbox-events.query';
+} from '@/shared/outbox/queries/get-pending-outbox-events.query';
 
 @Injectable()
 export class OutboxDispatchJob extends MikroOrmCronJobAbstract {

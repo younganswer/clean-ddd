@@ -1,5 +1,5 @@
-import { ShipmentStatus } from '../../../shipment-status';
-import { BaseEntity } from '../../../../../../shared/domain/base.entity';
+import { ShipmentStatus } from '@/modules/shipping/domains/shipment-status';
+import { BaseEntity } from '@/shared/domain/base.entity';
 
 export class Shipment extends BaseEntity<string> {
   private constructor(

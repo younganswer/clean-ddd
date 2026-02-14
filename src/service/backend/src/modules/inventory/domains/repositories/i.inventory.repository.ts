@@ -1,6 +1,6 @@
-import type { InventoryOrderItem } from '../inventory-item';
-import { InventoryItem } from '../entities/inventory-item.entity';
-import { InventoryReservation } from '../entities/inventory-reservation.entity';
+import type { InventoryOrderItem } from '@/modules/inventory/domains/inventory-item';
+import { InventoryItem } from '@/modules/inventory/domains/entities/inventory-item.entity';
+import { InventoryReservation } from '@/modules/inventory/domains/entities/inventory-reservation.entity';
 
 export interface IInventoryRepository {
   seedIfEmpty(): Promise<void>;

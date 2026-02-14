@@ -1,11 +1,11 @@
 import { RequestContext } from '@mikro-orm/core';
 import { EntityManager } from '@mikro-orm/postgresql';
 import { Injectable } from '@nestjs/common';
-import type { IOrderRepository } from '../../domains/repositories/i.order.repository';
-import { OrderStatus } from '../../../../shared/ordering/enums/order-status.enum';
-import { Order } from '../../domains/entities/aggregates/order/order.aggregate';
-import { OrderMapper } from '../mappers/order.mapper';
-import { OrderSchema } from '../schemas/order.schema';
+import type { IOrderRepository } from '@/modules/ordering/domains/repositories/i.order.repository';
+import { OrderStatus } from '@/shared/ordering/enums/order-status.enum';
+import { Order } from '@/modules/ordering/domains/entities/aggregates/order/order.aggregate';
+import { OrderMapper } from '@/modules/ordering/infrastructure/mappers/order.mapper';
+import { OrderSchema } from '@/modules/ordering/infrastructure/schemas/order.schema';
 
 @Injectable()
 export class OrderRepository implements IOrderRepository {

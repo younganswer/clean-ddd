@@ -1,1 +1,1 @@
-export * from './domain/i.outbox.repository';
+export * from '@/shared/outbox/domain/i.outbox.repository';

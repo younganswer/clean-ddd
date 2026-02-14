@@ -1,1 +1,1 @@
-export { ListInventoryReservationsQuery } from '../../../../shared/inventory';
+export { ListInventoryReservationsQuery } from '@/shared/inventory';

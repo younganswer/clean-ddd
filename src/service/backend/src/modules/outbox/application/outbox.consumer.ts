@@ -3,14 +3,14 @@ import { EntityManager } from '@mikro-orm/postgresql';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { EventBus } from '@nestjs/cqrs';
 import type { SQSRecord } from 'aws-lambda';
-import { IdempotencyService } from 'src/shared/idempotency/idempotency.service';
+import { IdempotencyService } from '@/shared/idempotency/idempotency.service';
 import {
   IOutboxRepositorySymbol,
   type IOutboxRepository,
-} from 'src/shared/outbox';
-import { OutboxEventSchema } from '../infrastructure/persistence/outbox.schema';
-import { OutboxEventStatus } from 'src/shared/outbox';
-import { hydrateEvent } from 'src/lib/outbox/event-registry';
+} from '@/shared/outbox';
+import { OutboxEventSchema } from '@/modules/outbox/infrastructure/persistence/outbox.schema';
+import { OutboxEventStatus } from '@/shared/outbox';
+import { hydrateEvent } from '@/lib/outbox/event-registry';
 
 @Injectable()
 export class OutboxConsumer {

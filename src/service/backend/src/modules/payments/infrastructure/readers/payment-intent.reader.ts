@@ -2,10 +2,10 @@ import { Inject, Injectable } from '@nestjs/common';
 import {
   IPaymentIntentReaderSymbol,
   type IPaymentIntentReader,
-} from '../../../../shared/readers/payments/i.payment-intent.reader';
-import type { PaymentIntentView as PaymentIntentViewDto } from '../../../../shared/readers/payments/dto/payment-intent.view';
-import { IPaymentRepositorySymbol } from '../../domains/repositories/i.payment.repository';
-import type { IPaymentRepository } from '../../domains/repositories/i.payment.repository';
+} from '@/shared/readers/payments/i.payment-intent.reader';
+import type { PaymentIntentView as PaymentIntentViewDto } from '@/shared/readers/payments/dto/payment-intent.view';
+import { IPaymentRepositorySymbol } from '@/modules/payments/domains/repositories/i.payment.repository';
+import type { IPaymentRepository } from '@/modules/payments/domains/repositories/i.payment.repository';
 
 @Injectable()
 export class PaymentIntentReader implements IPaymentIntentReader {

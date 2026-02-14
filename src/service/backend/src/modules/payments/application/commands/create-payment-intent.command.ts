@@ -1,4 +1,4 @@
 export {
   CreatePaymentIntentCommand,
   type CreatePaymentIntentResult,
-} from '../../../../shared/payments';
+} from '@/shared/payments';

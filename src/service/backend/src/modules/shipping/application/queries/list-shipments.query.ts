@@ -1,1 +1,1 @@
-export { ListShipmentsQuery } from '../../../../shared/shipping';
+export { ListShipmentsQuery } from '@/shared/shipping';

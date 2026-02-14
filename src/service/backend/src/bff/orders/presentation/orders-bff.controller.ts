@@ -9,11 +9,14 @@ import {
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 
-import { CreateOrderBffBodyDto, ListOrdersBffQueryDto } from './orders-bff.dto';
-import { CreateOrderBffCommand } from '../application/commands/create-order-bff.command';
-import { GetOrderBffQuery } from '../application/queries/get-order-bff.query';
-import { ListOrdersBffQuery } from '../application/queries/list-orders-bff.query';
-import type { OrderView } from '../../../shared/ordering/readers/order.view';
+import {
+  CreateOrderBffBodyDto,
+  ListOrdersBffQueryDto,
+} from '@/bff/orders/presentation/orders-bff.dto';
+import { CreateOrderBffCommand } from '@/bff/orders/application/commands/create-order-bff.command';
+import { GetOrderBffQuery } from '@/bff/orders/application/queries/get-order-bff.query';
+import { ListOrdersBffQuery } from '@/bff/orders/application/queries/list-orders-bff.query';
+import type { OrderView } from '@/shared/ordering/readers/order.view';
 
 @Controller('bff/orders')
 export class OrdersBffController {

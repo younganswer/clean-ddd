@@ -1,8 +1,8 @@
 import { given, then, when } from 'test-utils/gwt.template.spec';
-import { Order } from 'src/modules/ordering/domains/entities/aggregates/order/order.aggregate';
-import { Money } from 'src/modules/ordering/domains/value-objects/money.vo';
-import { OrderItem } from 'src/modules/ordering/domains/value-objects/order-item.vo';
-import { OrderStatus } from 'src/shared/ordering/enums/order-status.enum';
+import { Order } from '@/modules/ordering/domains/entities/aggregates/order/order.aggregate';
+import { Money } from '@/modules/ordering/domains/value-objects/money.vo';
+import { OrderItem } from '@/modules/ordering/domains/value-objects/order-item.vo';
+import { OrderStatus } from '@/shared/ordering/enums/order-status.enum';
 
 describe('Order aggregate', () => {
   const userId = '00000000-0000-0000-0000-000000000001';

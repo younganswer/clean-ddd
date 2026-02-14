@@ -1,4 +1,4 @@
-import type { OutboxEventDto } from '../domain/dto/outbox-event.dto';
+import type { OutboxEventDto } from '@/shared/outbox/domain/dto/outbox-event.dto';
 
 export class GetPendingOutboxEventsQuery {
   constructor(

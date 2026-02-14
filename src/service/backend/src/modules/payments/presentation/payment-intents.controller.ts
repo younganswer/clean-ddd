@@ -7,12 +7,12 @@ import {
   Query,
 } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
-import { executeQuery } from 'src/common/utils/cqrs-executor';
+import { executeQuery } from '@/common/utils/cqrs-executor';
 import {
   GetPaymentIntentQuery,
   ListPaymentIntentsQuery,
   type PaymentIntentView,
-} from '../../../shared/payments';
+} from '@/shared/payments';
 
 function isPaymentIntentView(value: unknown): value is PaymentIntentView {
   if (!value || typeof value !== 'object') return false;

@@ -1,6 +1,6 @@
 import { CommandBus, EventsHandler, IEventHandler } from '@nestjs/cqrs';
-import { CreateShipmentForOrderRequestedEvent } from '../../../../../shared/shipping';
-import { CreateShipmentForOrderCommand } from '../../commands/create-shipment-for-order.command';
+import { CreateShipmentForOrderRequestedEvent } from '@/shared/shipping';
+import { CreateShipmentForOrderCommand } from '@/modules/shipping/application/commands/create-shipment-for-order.command';
 
 @EventsHandler(CreateShipmentForOrderRequestedEvent)
 export class CreateShipmentForOrderRequestedHandler implements IEventHandler<CreateShipmentForOrderRequestedEvent> {

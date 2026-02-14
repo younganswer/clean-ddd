@@ -1,1 +1,1 @@
-export type { PaymentIntentView } from '../../readers/payments/dto/payment-intent.view';
+export type { PaymentIntentView } from '@/shared/readers/payments/dto/payment-intent.view';

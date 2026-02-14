@@ -2,21 +2,21 @@ import { EntityManager } from '@mikro-orm/postgresql';
 import { Injectable } from '@nestjs/common';
 import { IQueryHandler, QueryBus, QueryHandler } from '@nestjs/cqrs';
 
-import { GetOrderQuery } from '../../../../../shared/ordering/queries/get-order.query';
-import type { OrderView } from '../../../../../shared/ordering/readers/order.view';
-import { ListOrdersByUserIdQuery } from '../../../../../shared/ordering/queries/list-orders-by-user-subject-id.query';
+import { GetOrderQuery } from '@/shared/ordering/queries/get-order.query';
+import type { OrderView } from '@/shared/ordering/readers/order.view';
+import { ListOrdersByUserIdQuery } from '@/shared/ordering/queries/list-orders-by-user-subject-id.query';
 
-import { GetShipmentQuery } from '../../../../../shared/shipping/queries/get-shipment.query';
-import type { ShipmentView } from '../../../../../shared/readers/shipping/dto/shipment.view';
-import { GetShipmentByOrderQuery } from '../../../../../shared/shipping/queries/get-shipment-by-order.query';
+import { GetShipmentQuery } from '@/shared/shipping/queries/get-shipment.query';
+import type { ShipmentView } from '@/shared/readers/shipping/dto/shipment.view';
+import { GetShipmentByOrderQuery } from '@/shared/shipping/queries/get-shipment-by-order.query';
 
-import { GetPaymentIntentQuery } from '../../../../../shared/payments/queries/get-payment-intent.query';
-import type { PaymentIntentView } from '../../../../../shared/readers/payments/dto/payment-intent.view';
+import { GetPaymentIntentQuery } from '@/shared/payments/queries/get-payment-intent.query';
+import type { PaymentIntentView } from '@/shared/readers/payments/dto/payment-intent.view';
 
-import { GetUserProfileQuery } from '../../../../../shared/users/queries/get-user-profile.query';
-import type { UserProfileView } from '../../../../../shared/users/readers/user-profile.view';
+import { GetUserProfileQuery } from '@/shared/users/queries/get-user-profile.query';
+import type { UserProfileView } from '@/shared/users/readers/user-profile.view';
 
-import { OutboxEventSchema } from '../../../../../modules/outbox/infrastructure/persistence/outbox.schema';
+import { OutboxEventSchema } from '@/modules/outbox/infrastructure/persistence/outbox.schema';
 
 import {
   GetGraphBffQuery,
@@ -24,7 +24,7 @@ import {
   type GraphNode,
   type GraphRootType,
   type GraphView,
-} from '../get-graph-bff.query';
+} from '@/bff/graph/application/queries/get-graph-bff.query';
 
 type EntityRef = { type: GraphRootType; id: string };
 

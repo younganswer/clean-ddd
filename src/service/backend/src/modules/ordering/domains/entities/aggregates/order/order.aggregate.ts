@@ -1,7 +1,7 @@
-import { OrderStatus } from '../../../../../../shared/ordering/enums/order-status.enum';
-import { BaseEntity } from '../../../../../../shared/domain/base.entity';
-import { Money } from '../../../value-objects/money.vo';
-import { OrderItem } from '../../../value-objects/order-item.vo';
+import { OrderStatus } from '@/shared/ordering/enums/order-status.enum';
+import { BaseEntity } from '@/shared/domain/base.entity';
+import { Money } from '@/modules/ordering/domains/value-objects/money.vo';
+import { OrderItem } from '@/modules/ordering/domains/value-objects/order-item.vo';
 
 export class Order extends BaseEntity<string> {
   private constructor(

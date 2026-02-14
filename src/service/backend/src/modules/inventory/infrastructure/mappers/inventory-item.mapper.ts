@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { InventoryItem } from '../../domains/entities/inventory-item.entity';
-import { InventoryItemSchema } from '../schemas/inventory-item.schema';
+import { InventoryItem } from '@/modules/inventory/domains/entities/inventory-item.entity';
+import { InventoryItemSchema } from '@/modules/inventory/infrastructure/schemas/inventory-item.schema';
 
 @Injectable()
 export class InventoryItemMapper {

@@ -1,6 +1,6 @@
 import { Global, Module } from '@nestjs/common';
-import { AuthGuard } from '../guards/auth.guard';
-import { AuthContextAccessor } from './auth-context';
+import { AuthGuard } from '@/common/guards/auth.guard';
+import { AuthContextAccessor } from '@/common/context/auth-context';
 
 @Global()
 @Module({

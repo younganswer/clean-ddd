@@ -1,4 +1,4 @@
-import { PaymentIntent } from '../entities/aggregates/payment-intent/payment-intent.aggregate';
+import { PaymentIntent } from '@/modules/payments/domains/entities/aggregates/payment-intent/payment-intent.aggregate';
 
 export interface IPaymentRepository {
   createIntent(input: {

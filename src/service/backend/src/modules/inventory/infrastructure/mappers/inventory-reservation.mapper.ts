@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { InventoryReservation } from '../../domains/entities/inventory-reservation.entity';
-import { InventoryReservationSchema } from '../schemas/inventory-reservation.schema';
+import { InventoryReservation } from '@/modules/inventory/domains/entities/inventory-reservation.entity';
+import { InventoryReservationSchema } from '@/modules/inventory/infrastructure/schemas/inventory-reservation.schema';
 
 @Injectable()
 export class InventoryReservationMapper {

@@ -1,4 +1,4 @@
-import type { PaymentIntentView } from './dto/payment-intent.view';
+import type { PaymentIntentView } from '@/shared/readers/payments/dto/payment-intent.view';
 
 export const IPaymentIntentReaderSymbol = Symbol('IPaymentIntentReader');
 

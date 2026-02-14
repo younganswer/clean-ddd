@@ -1,10 +1,10 @@
 import { given, then, when } from 'test-utils/gwt.template.spec';
 import type { EntityManager } from '@mikro-orm/postgresql';
 import { createTestOrm } from 'test-utils/db/test-orm';
-import { OrderRepository } from 'src/modules/ordering/infrastructure/repositories/order.repository';
-import { OrderMapper } from 'src/modules/ordering/infrastructure/mappers/order.mapper';
-import { OrderSchema } from 'src/modules/ordering/infrastructure/schemas/order.schema';
-import { OrderStatus } from 'src/shared/ordering/enums/order-status.enum';
+import { OrderRepository } from '@/modules/ordering/infrastructure/repositories/order.repository';
+import { OrderMapper } from '@/modules/ordering/infrastructure/mappers/order.mapper';
+import { OrderSchema } from '@/modules/ordering/infrastructure/schemas/order.schema';
+import { OrderStatus } from '@/shared/ordering/enums/order-status.enum';
 
 const describeDb = process.env.RUN_DB_TESTS === '1' ? describe : describe.skip;
 

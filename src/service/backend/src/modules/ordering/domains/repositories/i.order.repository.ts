@@ -1,4 +1,4 @@
-import { Order } from '../entities/aggregates/order/order.aggregate';
+import { Order } from '@/modules/ordering/domains/entities/aggregates/order/order.aggregate';
 
 export interface IOrderRepository {
   create(input: {

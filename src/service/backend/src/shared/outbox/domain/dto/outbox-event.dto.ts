@@ -1,4 +1,4 @@
-import { OutboxEventStatus } from '../outbox-event-status';
+import { OutboxEventStatus } from '@/shared/outbox/domain/outbox-event-status';
 
 export interface OutboxEventDto {
   uuid?: string;

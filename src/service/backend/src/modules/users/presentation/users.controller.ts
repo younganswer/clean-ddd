@@ -1,9 +1,9 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
-import { executeQuery } from 'src/common/utils/cqrs-executor';
-import { ListUserProfilesQuery } from '../../../shared/users/queries/list-user-profiles.query';
-import type { UserProfileView } from '../../../shared/users/readers/user-profile.view';
-import type { PaginatedView } from '../../../shared/readers/paginated.view';
+import { executeQuery } from '@/common/utils/cqrs-executor';
+import { ListUserProfilesQuery } from '@/shared/users/queries/list-user-profiles.query';
+import type { UserProfileView } from '@/shared/users/readers/user-profile.view';
+import type { PaginatedView } from '@/shared/readers/paginated.view';
 
 @Controller('users')
 export class UsersController {

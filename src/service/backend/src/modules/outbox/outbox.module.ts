@@ -1,14 +1,14 @@
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
-import { SqsModule } from 'src/lib/queue/sqs.module';
-import { IdempotencyService } from 'src/shared/idempotency/idempotency.service';
-import { IOutboxRepositorySymbol } from 'src/shared/outbox';
-import { OutboxCommandHandlers } from './application/commands';
-import { OutboxProducer } from './application/outbox.producer';
-import { OutboxQueryHandlers } from './application/queries';
-import { OutboxSweeper } from './application/outbox.sweeper';
-import { OutboxRepository } from './infrastructure/persistence/outbox.repository';
-import { OutboxQueue } from './infrastructure/queue/outbox.queue';
+import { SqsModule } from '@/lib/queue/sqs.module';
+import { IdempotencyService } from '@/shared/idempotency/idempotency.service';
+import { IOutboxRepositorySymbol } from '@/shared/outbox';
+import { OutboxCommandHandlers } from '@/modules/outbox/application/commands';
+import { OutboxProducer } from '@/modules/outbox/application/outbox.producer';
+import { OutboxQueryHandlers } from '@/modules/outbox/application/queries';
+import { OutboxSweeper } from '@/modules/outbox/application/outbox.sweeper';
+import { OutboxRepository } from '@/modules/outbox/infrastructure/persistence/outbox.repository';
+import { OutboxQueue } from '@/modules/outbox/infrastructure/queue/outbox.queue';
 
 @Module({
   imports: [CqrsModule, SqsModule],

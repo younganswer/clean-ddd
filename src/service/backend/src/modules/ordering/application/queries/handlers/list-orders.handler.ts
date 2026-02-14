@@ -1,12 +1,12 @@
 import { Inject } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import { ListOrdersQuery } from '../../../../../shared/ordering/queries/list-orders.query';
+import { ListOrdersQuery } from '@/shared/ordering/queries/list-orders.query';
 import {
   IOrderReaderSymbol,
   type IOrderReader,
-} from '../../../../../shared/ordering/readers/i.order.reader';
-import type { PaginatedView } from '../../../../../shared/readers/paginated.view';
-import type { OrderView } from '../../../../../shared/ordering/readers/order.view';
+} from '@/shared/ordering/readers/i.order.reader';
+import type { PaginatedView } from '@/shared/readers/paginated.view';
+import type { OrderView } from '@/shared/ordering/readers/order.view';
 
 @QueryHandler(ListOrdersQuery)
 export class ListOrdersHandler implements IQueryHandler<ListOrdersQuery> {

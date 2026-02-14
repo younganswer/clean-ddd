@@ -1,1 +1,1 @@
-export { type InventoryReservationView } from '../../../../shared/inventory';
+export { type InventoryReservationView } from '@/shared/inventory';

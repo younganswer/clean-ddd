@@ -2,9 +2,9 @@ import 'reflect-metadata';
 
 import { MikroORM } from '@mikro-orm/core';
 import process from 'node:process';
-import { mikroOrmConfigForRuntime } from '../src/lib/database/mikro-orm.config';
-import { checkPostgresSelect1 } from './_checks';
-import { withRetries } from './_retry';
+import { mikroOrmConfigForRuntime } from '@/lib/database/mikro-orm.config';
+import { checkPostgresSelect1 } from '@/scripts/_checks';
+import { withRetries } from '@/scripts/_retry';
 
 const RETRY = { attempts: 30, delayMs: 2_000 };
 

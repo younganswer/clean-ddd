@@ -1,13 +1,13 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
-import { executeQuery } from 'src/common/utils/cqrs-executor';
+import { executeQuery } from '@/common/utils/cqrs-executor';
 import {
   GetShipmentByOrderQuery,
   GetShipmentQuery,
   ListShipmentsQuery,
   type ShipmentView,
-} from '../../../shared/shipping';
-import type { PaginatedView } from '../../../shared/readers/paginated.view';
+} from '@/shared/shipping';
+import type { PaginatedView } from '@/shared/readers/paginated.view';
 
 @Controller('shipments')
 export class ShipmentsController {

@@ -1,4 +1,4 @@
-import { Shipment } from '../entities/aggregates/shipment/shipment.aggregate';
+import { Shipment } from '@/modules/shipping/domains/entities/aggregates/shipment/shipment.aggregate';
 
 export interface IShipmentRepository {
   createForOrder(orderId: string): Promise<Shipment>;

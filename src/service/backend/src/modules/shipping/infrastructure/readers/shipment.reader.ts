@@ -3,10 +3,10 @@ import { Inject, Injectable } from '@nestjs/common';
 import {
   IShipmentReaderSymbol,
   type IShipmentReader,
-} from '../../../../shared/readers/shipping/i.shipment.reader';
-import type { ShipmentView } from '../../../../shared/readers/shipping/dto/shipment.view';
-import { IShipmentRepositorySymbol } from '../../domains/repositories/i.shipment.repository';
-import type { IShipmentRepository } from '../../domains/repositories/i.shipment.repository';
+} from '@/shared/readers/shipping/i.shipment.reader';
+import type { ShipmentView } from '@/shared/readers/shipping/dto/shipment.view';
+import { IShipmentRepositorySymbol } from '@/modules/shipping/domains/repositories/i.shipment.repository';
+import type { IShipmentRepository } from '@/modules/shipping/domains/repositories/i.shipment.repository';
 
 @Injectable()
 export class ShipmentReader implements IShipmentReader {

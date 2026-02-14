@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 
-import { DashboardBffController } from './presentation/dashboard-bff.controller';
-import { QueryHandlers } from './application/queries';
+import { DashboardBffController } from '@/bff/dashboard/presentation/dashboard-bff.controller';
+import { QueryHandlers } from '@/bff/dashboard/application/queries';
 
 @Module({
   imports: [CqrsModule],

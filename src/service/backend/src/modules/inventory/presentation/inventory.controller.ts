@@ -1,14 +1,14 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
-import { executeQuery } from 'src/common/utils/cqrs-executor';
+import { executeQuery } from '@/common/utils/cqrs-executor';
 import {
   GetInventoryItemQuery,
   type InventoryItemView,
   ListInventoryItemsQuery,
   ListInventoryReservationsQuery,
   type InventoryReservationView,
-} from '../../../shared/inventory';
-import type { PaginatedView } from '../../../shared/readers/paginated.view';
+} from '@/shared/inventory';
+import type { PaginatedView } from '@/shared/readers/paginated.view';
 
 @Controller('inventory')
 export class InventoryController {

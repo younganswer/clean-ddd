@@ -1,11 +1,11 @@
 import { RequestContext } from '@mikro-orm/core';
 import { EntityManager } from '@mikro-orm/postgresql';
 import { Injectable } from '@nestjs/common';
-import { PaymentStatus } from '../../domains/payment-status';
-import type { IPaymentRepository } from '../../domains/repositories/i.payment.repository';
-import { PaymentIntent } from '../../domains/entities/aggregates/payment-intent/payment-intent.aggregate';
-import { PaymentIntentMapper } from '../mappers/payment-intent.mapper';
-import { PaymentIntentSchema } from '../schemas/payment-intent.schema';
+import { PaymentStatus } from '@/modules/payments/domains/payment-status';
+import type { IPaymentRepository } from '@/modules/payments/domains/repositories/i.payment.repository';
+import { PaymentIntent } from '@/modules/payments/domains/entities/aggregates/payment-intent/payment-intent.aggregate';
+import { PaymentIntentMapper } from '@/modules/payments/infrastructure/mappers/payment-intent.mapper';
+import { PaymentIntentSchema } from '@/modules/payments/infrastructure/schemas/payment-intent.schema';
 
 @Injectable()
 export class PaymentRepository implements IPaymentRepository {

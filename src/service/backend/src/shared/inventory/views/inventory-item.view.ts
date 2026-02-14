@@ -1,1 +1,1 @@
-export type { InventoryItemView } from '../../readers/inventory/dto/inventory-item.view';
+export type { InventoryItemView } from '@/shared/readers/inventory/dto/inventory-item.view';

@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { createHttpApp } from './init';
+import { createHttpApp } from '@/init';
 
 async function bootstrap(): Promise<void> {
   const app = await createHttpApp();

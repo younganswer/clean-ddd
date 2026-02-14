@@ -1,1 +1,1 @@
-export { ReserveInventoryForOrderCommand } from '../../../../shared/inventory';
+export { ReserveInventoryForOrderCommand } from '@/shared/inventory';

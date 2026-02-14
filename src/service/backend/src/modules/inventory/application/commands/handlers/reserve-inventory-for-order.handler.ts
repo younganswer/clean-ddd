@@ -1,8 +1,8 @@
 import { Inject } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { IInventoryRepositorySymbol } from '../../../domains/repositories/i.inventory.repository';
-import type { IInventoryRepository } from '../../../domains/repositories/i.inventory.repository';
-import { ReserveInventoryForOrderCommand } from '../../../../../shared/inventory';
+import { IInventoryRepositorySymbol } from '@/modules/inventory/domains/repositories/i.inventory.repository';
+import type { IInventoryRepository } from '@/modules/inventory/domains/repositories/i.inventory.repository';
+import { ReserveInventoryForOrderCommand } from '@/shared/inventory';
 
 @CommandHandler(ReserveInventoryForOrderCommand)
 export class ReserveInventoryForOrderHandler implements ICommandHandler<ReserveInventoryForOrderCommand> {

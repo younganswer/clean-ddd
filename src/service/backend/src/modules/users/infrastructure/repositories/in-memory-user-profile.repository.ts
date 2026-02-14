@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
-import type { IUserProfileRepository } from '../../domains/repositories/i.user-profile.repository';
-import type { UserProfileView } from '../../../../shared/users/readers/user-profile.view';
+import type { IUserProfileRepository } from '@/modules/users/domains/repositories/i.user-profile.repository';
+import type { UserProfileView } from '@/shared/users/readers/user-profile.view';
 
 const DEFAULT_DUMMY_PROFILE: UserProfileView = {
   userId: 'anonymous',

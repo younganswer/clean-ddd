@@ -5,7 +5,7 @@ import {
   ListPaymentIntentsQuery,
   type IPaymentIntentReader,
   type PaymentIntentView,
-} from '../../../../../shared/payments';
+} from '@/shared/payments';
 
 @QueryHandler(ListPaymentIntentsQuery)
 export class ListPaymentIntentsHandler implements IQueryHandler<ListPaymentIntentsQuery> {

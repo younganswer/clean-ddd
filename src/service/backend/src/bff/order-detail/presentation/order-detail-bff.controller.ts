@@ -7,9 +7,9 @@ import {
 } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 
-import { GetOrderDetailBffQuery } from '../application/queries/get-order-detail-bff.query';
-import type { OrderDetailBffView } from '../application/queries/get-order-detail-bff.query';
-import { GetOrderDetailBffQueryDto } from './order-detail-bff.dto';
+import { GetOrderDetailBffQuery } from '@/bff/order-detail/application/queries/get-order-detail-bff.query';
+import type { OrderDetailBffView } from '@/bff/order-detail/application/queries/get-order-detail-bff.query';
+import { GetOrderDetailBffQueryDto } from '@/bff/order-detail/presentation/order-detail-bff.dto';
 
 @Controller('bff/order-detail')
 export class OrderDetailBffController {

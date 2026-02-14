@@ -1,4 +1,4 @@
-import type { OrderStatus } from '../enums/order-status.enum';
+import type { OrderStatus } from '@/shared/ordering/enums/order-status.enum';
 
 export type OrderItemView = {
   sku: string;

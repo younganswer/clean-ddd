@@ -1,10 +1,10 @@
 import { RequestContext } from '@mikro-orm/core';
 import { EntityManager } from '@mikro-orm/postgresql';
 import { Injectable } from '@nestjs/common';
-import type { OutboxEventDto } from 'src/shared/outbox/domain/dto/outbox-event.dto';
-import type { IOutboxRepository } from 'src/shared/outbox/domain/i.outbox.repository';
-import { OutboxEventStatus } from 'src/shared/outbox';
-import { OutboxEventSchema } from './outbox.schema';
+import type { OutboxEventDto } from '@/shared/outbox/domain/dto/outbox-event.dto';
+import type { IOutboxRepository } from '@/shared/outbox/domain/i.outbox.repository';
+import { OutboxEventStatus } from '@/shared/outbox';
+import { OutboxEventSchema } from '@/modules/outbox/infrastructure/persistence/outbox.schema';
 
 @Injectable()
 export class OutboxRepository implements IOutboxRepository {

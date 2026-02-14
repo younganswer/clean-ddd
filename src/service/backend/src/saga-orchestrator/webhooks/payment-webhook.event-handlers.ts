@@ -5,22 +5,22 @@ import {
   IEventHandler,
   QueryBus,
 } from '@nestjs/cqrs';
-import { executeCommand, executeQuery } from 'src/common/utils/cqrs-executor';
+import { executeCommand, executeQuery } from '@/common/utils/cqrs-executor';
 import {
   PaymentWebhookFailedEvent,
   PaymentWebhookSucceededEvent,
-} from '../../shared/payments';
-import { IPaymentRepositorySymbol } from '../../modules/payments/domains/repositories/i.payment.repository';
-import type { IPaymentRepository } from '../../modules/payments/domains/repositories/i.payment.repository';
-import { MarkOrderPaidCommand } from '../../shared/ordering/commands/mark-order-paid.command';
-import { GetOrderQuery } from '../../shared/ordering/queries/get-order.query';
-import { isOrderView } from '../../shared/ordering/readers/order-view.guard';
-import { OutboxProducer } from '../../modules/outbox/application/outbox.producer';
+} from '@/shared/payments';
+import { IPaymentRepositorySymbol } from '@/modules/payments/domains/repositories/i.payment.repository';
+import type { IPaymentRepository } from '@/modules/payments/domains/repositories/i.payment.repository';
+import { MarkOrderPaidCommand } from '@/shared/ordering/commands/mark-order-paid.command';
+import { GetOrderQuery } from '@/shared/ordering/queries/get-order.query';
+import { isOrderView } from '@/shared/ordering/readers/order-view.guard';
+import { OutboxProducer } from '@/modules/outbox/application/outbox.producer';
 import {
   ReserveInventoryForOrderRequestedEvent,
   type InventoryOrderItemPayload,
-} from '../../shared/inventory';
-import { CreateShipmentForOrderRequestedEvent } from '../../shared/shipping';
+} from '@/shared/inventory';
+import { CreateShipmentForOrderRequestedEvent } from '@/shared/shipping';
 
 @Injectable()
 @EventsHandler(PaymentWebhookSucceededEvent)
