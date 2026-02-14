@@ -28,6 +28,9 @@ endif
 dev:
 	@$(COMPOSE_DEV) up -d --build --remove-orphans
 
+serve:
+	@$(COMPOSE_BASE) up -d --build --remove-orphans
+
 up:
 	@$(COMPOSE_BASE) up -d --build --remove-orphans
 

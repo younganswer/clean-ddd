@@ -22,7 +22,13 @@ graph TD
 
 ## 참고
 
-현재 템플릿의 코드 경로(`CodeUri`)나 핸들러 경로는 저장소의 폴더 구조 변화에 따라 맞춤 수정이 필요할 수 있습니다.
+현재 템플릿의 코드/핸들러 경로는 아래 기준으로 맞춰져 있습니다.
+
+- `CodeUri`: `src/service/backend`
+- `ApiFunction.Handler`: `dist/lib/lambda/http.handler.handler`
+- `OutboxConsumerFunction.Handler`: `dist/lib/lambda/sqs/outbox.handler.handler`
+
+저장소 구조가 바뀌면 위 경로를 함께 조정해야 합니다.
 
 ## 함께 읽기
 

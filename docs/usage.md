@@ -20,6 +20,9 @@ make -C src dev
 # 접속: http://localhost/
 ```
 
+- `make -C src dev`: 개발용 override 포함(watch/소스 마운트)
+- `make -C src serve`: base compose만 사용(운영 유사 실행)
+
 유용한 명령:
 
 - `make -C src logs` / `make -C src ps` / `make -C src down` / `make -C src prune`

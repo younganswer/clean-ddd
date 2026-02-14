@@ -29,7 +29,33 @@ export default tseslint.config(
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-floating-promises': 'warn',
       '@typescript-eslint/no-unsafe-argument': 'warn',
-      "prettier/prettier": ["error", { endOfLine: "auto" }],
+      'prettier/prettier': ['error', { endOfLine: 'auto' }],
+    },
+  },
+  {
+    files: ['src/modules/*/domains/**/*.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            '**/application/**',
+            '**/presentation/**',
+            '**/infrastructure/**',
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ['src/modules/*/presentation/**/*.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: ['**/infrastructure/**'],
+        },
+      ],
     },
   },
 );
