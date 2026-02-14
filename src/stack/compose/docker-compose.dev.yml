@@ -2,6 +2,7 @@ services:
   frontend:
     build:
       target: dev
+    restart: unless-stopped
     volumes:
       - ../../service/frontend/src:/app/service/frontend/src
       - ../../service/frontend/public:/app/service/frontend/public
