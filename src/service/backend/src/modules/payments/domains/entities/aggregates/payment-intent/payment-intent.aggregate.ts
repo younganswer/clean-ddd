@@ -1,4 +1,4 @@
-import { PaymentStatus } from '@/modules/payments/domains/payment-status';
+import { PaymentStatus } from '@/shared/payments';
 
 export class PaymentIntent {
   private constructor(

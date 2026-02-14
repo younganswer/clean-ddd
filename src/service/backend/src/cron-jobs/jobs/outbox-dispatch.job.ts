@@ -4,6 +4,7 @@ import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { MikroOrmCronJobAbstract } from '@/common/abstracts/mikro-orm-cron-job.abstract';
 import { executeCommand, executeQuery } from '@/common/utils/cqrs-executor';
+import { isOutboxCronEnabled } from '@/runtime-role';
 import { DispatchOutboxEventCommand } from '@/shared/outbox/commands/dispatch-outbox-event.command';
 import {
   GetPendingOutboxEventsQuery,
@@ -24,7 +25,7 @@ export class OutboxDispatchJob extends MikroOrmCronJobAbstract {
 
   @Cron(CronExpression.EVERY_5_SECONDS)
   async run(): Promise<void> {
-    if (process.env.OUTBOX_CRON_ENABLED === 'false') return;
+    if (!isOutboxCronEnabled()) return;
 
     try {
       await this.runWithRequestContext();

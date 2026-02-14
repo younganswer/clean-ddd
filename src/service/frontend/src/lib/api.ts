@@ -1,3 +1,30 @@
+import type {
+	CreateOrderRequest,
+	CreateOrderResponse,
+	CreatePaymentIntentRequest,
+	CreatePaymentIntentResponse,
+	InventoryItem,
+	InventoryReservation,
+	OrderDetail,
+	OrderSummary,
+	PaginatedInventoryItems,
+	PaginatedOrders,
+	PaginatedShipments,
+	PaginatedUsers,
+	ShipmentSummary,
+	UserProfile,
+} from "@clean-ddd/contracts";
+
+export type {
+	CreatePaymentIntentResponse,
+	InventoryItem,
+	InventoryReservation,
+	OrderDetail,
+	OrderSummary,
+	ShipmentSummary,
+	UserProfile,
+};
+
 const baseUrl =
 	process.env.NEXT_PUBLIC_API_BASE_URL ??
 	process.env.NEXT_PUBLIC_API_URL ??
@@ -32,41 +59,6 @@ async function http<T>(path: string, init?: RequestInit): Promise<T> {
 	return (await res.json()) as T;
 }
 
-export type OrderSummary = {
-	orderId: string;
-	userId: string;
-	status: string;
-	amount: number;
-	currency: string;
-	items?: Array<{ sku: string; quantity: number }>;
-	paymentId: string | null;
-	createdAt: string;
-	updatedAt: string;
-};
-
-export type OrderDetail = OrderSummary;
-
-export type ShipmentSummary = {
-	shipmentId: string;
-	orderId: string;
-	status: string;
-	createdAt: string;
-	updatedAt: string;
-};
-
-export type InventoryItem = {
-	itemId: string;
-	sku: string;
-	price: {
-		currency: string;
-		amountMinor: number;
-	};
-	availableQuantity: number;
-	reservedQuantity: number;
-	createdAt: string;
-	updatedAt: string;
-};
-
 export type Paginated<TItem> = {
 	items: TItem[];
 	page: number;
@@ -74,23 +66,6 @@ export type Paginated<TItem> = {
 	total: number;
 	totalPages: number;
 	hasNext: boolean;
-};
-
-export type UserProfile = {
-	userId: string;
-	displayName: string;
-	email: string;
-	avatarUrl?: string;
-};
-
-export type CreatePaymentIntentResponse = {
-	paymentId: string;
-	status: string;
-	scheduled: {
-		eventType: string;
-		delaySeconds: number;
-		outboxId: string;
-	};
 };
 
 export type GraphNode = {
@@ -120,17 +95,17 @@ export async function apiCreateOrder(input: {
 	amount: number;
 	currency: "KRW" | "USD";
 	items?: Array<{ sku: string; quantity: number }>;
-}): Promise<{ orderId: string }> {
+}): Promise<CreateOrderResponse> {
 	return http("/orders", {
 		method: "POST",
-		body: JSON.stringify(input),
+		body: JSON.stringify(input satisfies CreateOrderRequest),
 	});
 }
 
 export async function apiListOrders(input: {
 	limit: number;
 	page?: number;
-}): Promise<Paginated<OrderSummary>> {
+}): Promise<PaginatedOrders> {
 	const page = input.page ?? 1;
 	return http(
 		`/orders?limit=${encodeURIComponent(String(input.limit))}&page=${encodeURIComponent(String(page))}`,
@@ -147,14 +122,14 @@ export async function apiCreatePaymentIntent(
 ): Promise<CreatePaymentIntentResponse> {
 	return http(`/orders/${encodeURIComponent(orderId)}/payments/intents`, {
 		method: "POST",
-		body: JSON.stringify(input),
+		body: JSON.stringify(input satisfies CreatePaymentIntentRequest),
 	});
 }
 
 export async function apiListShipments(input: {
 	limit: number;
 	page?: number;
-}): Promise<Paginated<ShipmentSummary>> {
+}): Promise<PaginatedShipments> {
 	const page = input.page ?? 1;
 	return http(
 		`/shipments?limit=${encodeURIComponent(String(input.limit))}&page=${encodeURIComponent(String(page))}`,
@@ -170,7 +145,7 @@ export async function apiGetShipmentByOrderId(
 export async function apiListInventoryItems(input: {
 	limit: number;
 	page?: number;
-}): Promise<Paginated<InventoryItem>> {
+}): Promise<PaginatedInventoryItems> {
 	const page = input.page ?? 1;
 	return http(
 		`/inventory/items?limit=${encodeURIComponent(String(input.limit))}&page=${encodeURIComponent(String(page))}`,
@@ -184,13 +159,7 @@ export async function apiGetInventoryItem(
 }
 
 export async function apiListInventoryReservations(orderId: string): Promise<
-	Array<{
-		reservationId: string;
-		orderId: string;
-		sku: string;
-		quantity: number;
-		createdAt: string;
-	}>
+	InventoryReservation[]
 > {
 	return http(
 		`/inventory/reservations?orderId=${encodeURIComponent(orderId)}`,
@@ -200,7 +169,7 @@ export async function apiListInventoryReservations(orderId: string): Promise<
 export async function apiListUsers(input: {
 	limit: number;
 	page: number;
-}): Promise<Paginated<UserProfile>> {
+}): Promise<PaginatedUsers> {
 	return http(
 		`/users?limit=${encodeURIComponent(String(input.limit))}&page=${encodeURIComponent(String(input.page))}`,
 	);

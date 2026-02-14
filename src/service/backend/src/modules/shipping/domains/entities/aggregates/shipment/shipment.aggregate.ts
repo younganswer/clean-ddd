@@ -1,4 +1,4 @@
-import { ShipmentStatus } from '@/modules/shipping/domains/shipment-status';
+import { ShipmentStatus } from '@/shared/shipping';
 import { BaseEntity } from '@/shared/domain/base.entity';
 
 export class Shipment extends BaseEntity<string> {

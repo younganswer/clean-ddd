@@ -1,6 +1,6 @@
 import { CommandBus, EventsHandler, IEventHandler } from '@nestjs/cqrs';
 import { ReserveInventoryForOrderRequestedEvent } from '@/shared/inventory';
-import { ReserveInventoryForOrderCommand } from '@/modules/inventory/application/commands/reserve-inventory-for-order.command';
+import { ReserveInventoryForOrderCommand } from '@/shared/inventory';
 import type { InventoryOrderItem } from '@/modules/inventory/domains/inventory-item';
 
 @EventsHandler(ReserveInventoryForOrderRequestedEvent)

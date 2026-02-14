@@ -1,352 +1,557 @@
 openapi: 3.0.3
 info:
-    title: clean-ddd API
-    version: 0.0.1
+  title: clean-ddd API
+  version: 0.0.1
 servers:
-    - url: /api/v1
+  - url: /api/v1
+
 paths:
-    /me:
-        get:
-            summary: Get my profile (dummy)
-            parameters:
-                - in: header
-                  name: x-subject-id
-                  required: false
-                  schema:
-                      type: string
-                  description: Dummy auth subject id for boundary demo
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                required: [subjectId, displayName, email]
-                                properties:
-                                    subjectId:
-                                        type: string
-                                    displayName:
-                                        type: string
-                                    email:
-                                        type: string
-                                    avatarUrl:
-                                        type: string
-    /users:
-        get:
-            summary: List users (dummy)
-            parameters:
-                - in: query
-                  name: limit
-                  schema:
-                      type: integer
-                      default: 20
-                      minimum: 1
-                      maximum: 200
-                - in: query
-                  name: page
-                  schema:
-                      type: integer
-                      default: 1
-                      minimum: 1
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: "#/components/schemas/PaginatedUserProfiles"
-    /orders:
-        get:
-            summary: List orders
-            parameters:
-                - in: query
-                  name: limit
-                  schema:
-                      type: integer
-                      default: 20
-                      minimum: 1
-                      maximum: 50
-                - in: query
-                  name: page
-                  schema:
-                      type: integer
-                      default: 1
-                      minimum: 1
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: "#/components/schemas/PaginatedOrders"
-        post:
-            summary: Create order
-            requestBody:
-                required: true
-                content:
-                    application/json:
-                        schema:
-                            type: object
-                            required: [amount, currency]
-                            properties:
-                                amount:
-                                    type: integer
-                                    minimum: 1
-                                currency:
-                                    type: string
-                                    enum: [KRW, USD]
-            responses:
-                "200":
-                    description: OK
-    /orders/{id}:
-        get:
-            summary: Get order
-            parameters:
-                - in: path
-                  name: id
-                  required: true
-                  schema:
-                      type: string
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: "#/components/schemas/OrderSummary"
-    /orders/{orderId}/payments/intents:
-        post:
-            summary: Create payment intent (simulator)
-            parameters:
-                - in: path
-                  name: orderId
-                  required: true
-                  schema:
-                      type: string
-            requestBody:
-                required: false
-                content:
-                    application/json:
-                        schema:
-                            type: object
-                            properties:
-                                simulateOutcome:
-                                    type: string
-                                    enum: [SUCCEEDED, FAILED]
-                                simulateDelaySeconds:
-                                    type: string
-            responses:
-                "200":
-                    description: OK
-    /shipments:
-        get:
-            summary: List shipments
-            parameters:
-                - in: query
-                  name: limit
-                  schema:
-                      type: integer
-                      default: 20
-                      minimum: 1
-                      maximum: 100
-                - in: query
-                  name: page
-                  schema:
-                      type: integer
-                      default: 1
-                      minimum: 1
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: "#/components/schemas/PaginatedShipments"
-    /inventory/items:
-        get:
-            summary: List inventory items
-            parameters:
-                - in: query
-                  name: limit
-                  schema:
-                      type: integer
-                      default: 50
-                      minimum: 1
-                      maximum: 200
-                - in: query
-                  name: page
-                  schema:
-                      type: integer
-                      default: 1
-                      minimum: 1
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: "#/components/schemas/PaginatedInventoryItems"
+  /me:
+    get:
+      summary: Get my profile
+      parameters:
+        - in: header
+          name: x-user-id
+          required: false
+          schema:
+            type: string
+          description: Optional actor id used by sample AuthGuard
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+
+  /users:
+    get:
+      summary: List users
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 200
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedUserProfiles"
+
+  /orders:
+    get:
+      summary: List orders
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 50
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedOrders"
+    post:
+      summary: Create order
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateOrderRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateOrderResponse"
+
+  /orders/{id}:
+    get:
+      summary: Get order
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderSummary"
+
+  /orders/{orderId}/payments/intents:
+    post:
+      summary: Create payment intent (simulator)
+      parameters:
+        - in: path
+          name: orderId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePaymentIntentRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreatePaymentIntentResponse"
+
+  /payments/intents:
+    get:
+      summary: List payment intents
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 50
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PaymentIntent"
+
+  /payments/intents/{paymentId}:
+    get:
+      summary: Get payment intent
+      parameters:
+        - in: path
+          name: paymentId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentIntent"
+
+  /shipments:
+    get:
+      summary: List shipments
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 100
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedShipments"
+
+  /shipments/by-order/{orderId}:
+    get:
+      summary: Get shipment by order id
+      parameters:
+        - in: path
+          name: orderId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ShipmentSummary"
+                nullable: true
+
+  /shipments/{id}:
+    get:
+      summary: Get shipment
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ShipmentSummary"
+                nullable: true
+
+  /inventory/items:
+    get:
+      summary: List inventory items
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 50
+            minimum: 1
+            maximum: 200
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedInventoryItems"
+
+  /inventory/items/{sku}:
+    get:
+      summary: Get inventory item by sku
+      parameters:
+        - in: path
+          name: sku
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/InventoryItem"
+                nullable: true
+
+  /inventory/reservations:
+    get:
+      summary: List inventory reservations by order id
+      parameters:
+        - in: query
+          name: orderId
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/InventoryReservation"
 
 components:
-    schemas:
-        PaginatedMeta:
-            type: object
-            required: [page, limit, total, hasNext]
-            properties:
-                page:
-                    type: integer
-                    minimum: 1
-                limit:
-                    type: integer
-                    minimum: 1
-                total:
-                    type: integer
-                    minimum: 0
-                hasNext:
-                    type: boolean
+  schemas:
+    PaginatedMeta:
+      type: object
+      required: [page, limit, total, totalPages, hasNext]
+      properties:
+        page:
+          type: integer
+          minimum: 1
+        limit:
+          type: integer
+          minimum: 1
+        total:
+          type: integer
+          minimum: 0
+        totalPages:
+          type: integer
+          minimum: 0
+        hasNext:
+          type: boolean
 
-        UserProfile:
-            type: object
-            required: [subjectId, displayName, email]
-            properties:
-                subjectId:
-                    type: string
-                displayName:
-                    type: string
-                email:
-                    type: string
-                avatarUrl:
-                    type: string
+    UserProfile:
+      type: object
+      required: [userId, displayName, email]
+      properties:
+        userId:
+          type: string
+        displayName:
+          type: string
+        email:
+          type: string
+        avatarUrl:
+          type: string
 
-        PaginatedUserProfiles:
-            allOf:
-                - $ref: "#/components/schemas/PaginatedMeta"
-                - type: object
-                  required: [items]
-                  properties:
-                      items:
-                          type: array
-                          items:
-                              $ref: "#/components/schemas/UserProfile"
+    PaginatedUserProfiles:
+      allOf:
+        - $ref: "#/components/schemas/PaginatedMeta"
+        - type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items:
+                $ref: "#/components/schemas/UserProfile"
 
-        OrderItem:
-            type: object
-            required: [sku, quantity]
-            properties:
-                sku:
-                    type: string
-                quantity:
-                    type: integer
-                    minimum: 1
+    OrderItem:
+      type: object
+      required: [sku, quantity]
+      properties:
+        sku:
+          type: string
+        quantity:
+          type: integer
+          minimum: 1
 
-        OrderSummary:
-            type: object
-            required:
-                [
-                    orderId,
-                    userSubjectId,
-                    status,
-                    amount,
-                    currency,
-                    items,
-                    paymentId,
-                    createdAt,
-                    updatedAt,
-                ]
-            properties:
-                orderId:
-                    type: string
-                userSubjectId:
-                    type: string
-                    nullable: true
-                status:
-                    type: string
-                amount:
-                    type: integer
-                currency:
-                    type: string
-                    enum: [KRW, USD]
-                items:
-                    type: array
-                    items:
-                        $ref: "#/components/schemas/OrderItem"
-                paymentId:
-                    type: string
-                    nullable: true
-                createdAt:
-                    type: string
-                    format: date-time
-                updatedAt:
-                    type: string
-                    format: date-time
+    CreateOrderRequest:
+      type: object
+      required: [userId, amount, currency]
+      properties:
+        userId:
+          type: string
+        amount:
+          type: integer
+          minimum: 1
+        currency:
+          type: string
+          enum: [KRW, USD]
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrderItem"
 
-        PaginatedOrders:
-            allOf:
-                - $ref: "#/components/schemas/PaginatedMeta"
-                - type: object
-                  required: [items]
-                  properties:
-                      items:
-                          type: array
-                          items:
-                              $ref: "#/components/schemas/OrderSummary"
+    CreateOrderResponse:
+      type: object
+      required: [orderId]
+      properties:
+        orderId:
+          type: string
 
-        ShipmentSummary:
-            type: object
-            required: [shipmentId, orderId, status, createdAt, updatedAt]
-            properties:
-                shipmentId:
-                    type: string
-                orderId:
-                    type: string
-                status:
-                    type: string
-                createdAt:
-                    type: string
-                    format: date-time
-                updatedAt:
-                    type: string
-                    format: date-time
+    OrderSummary:
+      type: object
+      required: [orderId, userId, status, amount, currency, items, paymentId, createdAt, updatedAt]
+      properties:
+        orderId:
+          type: string
+        userId:
+          type: string
+        status:
+          type: string
+          enum: [PENDING_PAYMENT, PAID, CANCELLED]
+        amount:
+          type: integer
+        currency:
+          type: string
+          enum: [KRW, USD]
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrderItem"
+        paymentId:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
 
-        PaginatedShipments:
-            allOf:
-                - $ref: "#/components/schemas/PaginatedMeta"
-                - type: object
-                  required: [items]
-                  properties:
-                      items:
-                          type: array
-                          items:
-                              $ref: "#/components/schemas/ShipmentSummary"
+    PaginatedOrders:
+      allOf:
+        - $ref: "#/components/schemas/PaginatedMeta"
+        - type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items:
+                $ref: "#/components/schemas/OrderSummary"
 
-        InventoryItem:
-            type: object
-            required:
-                [sku, availableQuantity, reservedQuantity, createdAt, updatedAt]
-            properties:
-                sku:
-                    type: string
-                availableQuantity:
-                    type: integer
-                    minimum: 0
-                reservedQuantity:
-                    type: integer
-                    minimum: 0
-                createdAt:
-                    type: string
-                    format: date-time
-                updatedAt:
-                    type: string
-                    format: date-time
+    CreatePaymentIntentRequest:
+      type: object
+      properties:
+        simulateOutcome:
+          type: string
+          enum: [SUCCEEDED, FAILED]
+        simulateDelaySeconds:
+          type: string
 
-        PaginatedInventoryItems:
-            allOf:
-                - $ref: "#/components/schemas/PaginatedMeta"
-                - type: object
-                  required: [items]
-                  properties:
-                      items:
-                          type: array
-                          items:
-                              $ref: "#/components/schemas/InventoryItem"
+    CreatePaymentIntentResponse:
+      type: object
+      required: [paymentId, status, scheduled]
+      properties:
+        paymentId:
+          type: string
+        status:
+          type: string
+          enum: [PENDING, SUCCEEDED, FAILED]
+        scheduled:
+          type: object
+          required: [eventType, delaySeconds, outboxId]
+          properties:
+            eventType:
+              type: string
+            delaySeconds:
+              type: integer
+              minimum: 0
+            outboxId:
+              type: string
+
+    PaymentIntent:
+      type: object
+      required: [paymentId, orderId, amount, currency, status, createdAt, updatedAt]
+      properties:
+        paymentId:
+          type: string
+        orderId:
+          type: string
+        amount:
+          type: integer
+        currency:
+          type: string
+          enum: [KRW, USD]
+        status:
+          type: string
+          enum: [PENDING, SUCCEEDED, FAILED]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    ShipmentSummary:
+      type: object
+      required: [shipmentId, orderId, status, createdAt, updatedAt]
+      properties:
+        shipmentId:
+          type: string
+        orderId:
+          type: string
+        status:
+          type: string
+          enum: [PENDING, SHIPPED, DELIVERED]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    PaginatedShipments:
+      allOf:
+        - $ref: "#/components/schemas/PaginatedMeta"
+        - type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items:
+                $ref: "#/components/schemas/ShipmentSummary"
+
+    Money:
+      type: object
+      required: [currency, amountMinor]
+      properties:
+        currency:
+          type: string
+          enum: [KRW, USD]
+        amountMinor:
+          type: integer
+
+    InventoryItem:
+      type: object
+      required: [itemId, sku, price, availableQuantity, reservedQuantity, createdAt, updatedAt]
+      properties:
+        itemId:
+          type: string
+        sku:
+          type: string
+        price:
+          $ref: "#/components/schemas/Money"
+        availableQuantity:
+          type: integer
+          minimum: 0
+        reservedQuantity:
+          type: integer
+          minimum: 0
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    InventoryReservation:
+      type: object
+      required: [reservationId, orderId, sku, quantity, createdAt]
+      properties:
+        reservationId:
+          type: string
+        orderId:
+          type: string
+        sku:
+          type: string
+        quantity:
+          type: integer
+          minimum: 1
+        createdAt:
+          type: string
+          format: date-time
+
+    PaginatedInventoryItems:
+      allOf:
+        - $ref: "#/components/schemas/PaginatedMeta"
+        - type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items:
+                $ref: "#/components/schemas/InventoryItem"

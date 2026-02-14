@@ -11,6 +11,7 @@
 		"format": "prettier --write ."
 	},
 	"dependencies": {
+		"@clean-ddd/contracts": "workspace:*",
 		"cytoscape": "^3.31.0",
 		"cytoscape-fcose": "^2.2.0",
 		"next": "16.1.6",

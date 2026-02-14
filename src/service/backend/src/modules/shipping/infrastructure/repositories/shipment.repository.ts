@@ -1,9 +1,9 @@
 import { RequestContext } from '@mikro-orm/core';
 import { EntityManager } from '@mikro-orm/postgresql';
 import { Injectable } from '@nestjs/common';
+import { ShipmentStatus } from '@/shared/shipping';
 import type { IShipmentRepository } from '@/modules/shipping/domains/repositories/i.shipment.repository';
 import { ShipmentSchema } from '@/modules/shipping/infrastructure/schemas/shipment.schema';
-import { ShipmentStatus } from '@/modules/shipping/domains/shipment-status';
 import { Shipment } from '@/modules/shipping/domains/entities/aggregates/shipment/shipment.aggregate';
 import { ShipmentMapper } from '@/modules/shipping/infrastructure/mappers/shipment.mapper';
 

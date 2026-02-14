@@ -12,6 +12,7 @@ import {
   SQSClient,
 } from '@aws-sdk/client-sqs';
 import { OutboxConsumer } from '@/modules/outbox/application/outbox.consumer';
+import { isOutboxPollingEnabled } from '@/runtime-role';
 import { SQS_CLIENT, SQS_OUTBOX_QUEUE_URL } from '@/lib/queue/sqs.module';
 
 @Injectable()
@@ -28,7 +29,7 @@ export class OutboxSqsPoller implements OnModuleInit, OnModuleDestroy {
   ) {}
 
   onModuleInit() {
-    const enabled = process.env.OUTBOX_POLLING_ENABLED === 'true';
+    const enabled = isOutboxPollingEnabled();
     if (!enabled) return;
 
     this.logger.log('polling enabled');

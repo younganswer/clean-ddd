@@ -2,6 +2,7 @@ import 'reflect-metadata';
 import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { createHttpApp } from '@/init';
+import { isPortListenEnabled } from '@/runtime-role';
 
 async function bootstrap(): Promise<void> {
   const app = await createHttpApp();
@@ -28,10 +29,7 @@ async function bootstrap(): Promise<void> {
     }
 
     // 멀티 프로세스/클러스터 환경에서 PORT_LISTEN이 true(또는 미설정)일 때만 listen
-    if (
-      process.env.PORT_LISTEN === undefined ||
-      process.env.PORT_LISTEN === 'true'
-    ) {
+    if (isPortListenEnabled()) {
       const portFromConfig = configService.get<number>('APP.PORT');
       const port = portFromConfig ?? Number(process.env.PORT ?? 3000);
       await app.listen(port);
