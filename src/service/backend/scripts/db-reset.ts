@@ -78,12 +78,13 @@ async function applyUpdatedAtTriggers(client: Client): Promise<number> {
 }
 
 async function seed(client: Client): Promise<void> {
+  // Reuse the exact seeding approach from db-init.ts.
+  // (Kept inline to make db-reset.ts self-contained.)
   await client.query('begin;');
 
   try {
     await client.query('create extension if not exists pgcrypto;');
 
-    // Replace (not append) the demo dataset so counts are deterministic.
     await client.query(`
       truncate table
         "inventory_reservations",
@@ -94,7 +95,6 @@ async function seed(client: Client): Promise<void> {
       restart identity;
     `);
 
-    // Users: exactly 100
     await client.query(`
       insert into "users" ("uuid", "display_name", "email", "avatar_url", "created_at", "updated_at")
       select
@@ -107,7 +107,6 @@ async function seed(client: Client): Promise<void> {
       from generate_series(1, 100) as s(i);
     `);
 
-    // Inventory: 10 SKUs, 1,000 each (reserved will be recomputed below)
     await client.query(`
       delete from "inventory_items" where "sku" like 'SKU-%';
     `);
@@ -135,7 +134,6 @@ async function seed(client: Client): Promise<void> {
       from generate_series(1, 10) as s(i)
     `);
 
-    // Orders: exactly 200 (2 per user), each user orders random SKU.
     await client.query(`
       with user_rows as (
         select u."uuid" as user_id
@@ -188,7 +186,6 @@ async function seed(client: Client): Promise<void> {
       from order_rows r;
     `);
 
-    // Payment intents: SUCCEEDED for all orders
     await client.query(`
       insert into "payment_intents" (
         "uuid",
@@ -210,7 +207,6 @@ async function seed(client: Client): Promise<void> {
       from "orders" o;
     `);
 
-    // Shipments: exactly 1 per order
     await client.query(`
       insert into "shipments" ("uuid", "order_id", "status", "created_at", "updated_at")
       select
@@ -222,7 +218,6 @@ async function seed(client: Client): Promise<void> {
       from "orders" o;
     `);
 
-    // Inventory reservations: one per order, based on items
     await client.query(`
       insert into "inventory_reservations" (
         "uuid",
@@ -243,7 +238,6 @@ async function seed(client: Client): Promise<void> {
       cross join lateral jsonb_array_elements(o."items") as item;
     `);
 
-    // Reflect reservations into inventory stock (available/reserved)
     await client.query(`
       with agg as (
         select r."sku", sum(r."quantity")::int as qty
@@ -280,6 +274,24 @@ async function seed(client: Client): Promise<void> {
   }
 }
 
+async function dropAllInPublic(client: Client): Promise<void> {
+  // Full reset (data + schema). This is the most reliable way to resolve drift.
+  await client.query('begin;');
+  try {
+    await client.query('drop schema if exists public cascade;');
+    await client.query('create schema public;');
+    await client.query('grant all on schema public to public;');
+    await client.query('commit;');
+  } catch (error) {
+    try {
+      await client.query('rollback;');
+    } catch {
+      // ignore
+    }
+    throw error;
+  }
+}
+
 async function main() {
   const url = databaseUrl();
 
@@ -287,16 +299,19 @@ async function main() {
     await checkPostgresSelect1(url);
   });
 
+  // Drop schema first (DB 전체 삭제).
   {
     const client = new Client({ connectionString: url });
     await client.connect();
     try {
+      await dropAllInPublic(client);
       await client.query('create extension if not exists pgcrypto;');
     } finally {
       await client.end();
     }
   }
 
+  // Recreate tables from current MikroORM metadata.
   const orm = await MikroORM.init(mikroOrmConfigForRuntime());
   try {
     const generator = orm.getSchemaGenerator();
@@ -305,52 +320,16 @@ async function main() {
     await orm.close(true);
   }
 
+  // Apply triggers + seed.
   const client = new Client({ connectionString: url });
   await client.connect();
-
   try {
-    const connInfo = await client.query<{
-      db: string;
-      usr: string;
-      server_addr: string | null;
-      server_port: number | null;
-    }>(
-      'select current_database() as db, current_user as usr, inet_server_addr()::text as server_addr, inet_server_port() as server_port;',
-    );
-
-    const info = connInfo.rows[0];
-    console.log(
-      `init database: db=${info.db}, user=${info.usr}, server=${info.server_addr ?? ''}:${info.server_port ?? ''}`,
-    );
-
     const triggerTables = await applyUpdatedAtTriggers(client);
     console.log(`updatedAt triggers applied: tables=${triggerTables}`);
 
     await seed(client);
 
-    const summary = await client.query(`
-      select
-        (select count(*) from "users")::int as users,
-        (select count(*) from "orders")::int as orders,
-        (select count(*) from "payment_intents")::int as payments,
-        (select count(*) from "shipments")::int as shipments,
-        (select sum("available_quantity") from "inventory_items" where "sku" like 'SKU-%')::int as inventory_available_total,
-        (select sum("reserved_quantity") from "inventory_items" where "sku" like 'SKU-%')::int as inventory_reserved_total;
-    `);
-
-    const row = summary.rows[0] as {
-      users: number;
-      orders: number;
-      payments: number;
-      shipments: number;
-      inventory_available_total: number;
-      inventory_reserved_total: number;
-    };
-
-    console.log(
-      `init complete: users=${row.users}, orders=${row.orders}, payments=${row.payments}, shipments=${row.shipments}, ` +
-        `inventory_available_total=${row.inventory_available_total}, inventory_reserved_total=${row.inventory_reserved_total}`,
-    );
+    console.log('db:reset complete');
   } finally {
     await client.end();
   }
@@ -358,6 +337,6 @@ async function main() {
 
 main().catch((error) => {
   const message = error instanceof Error ? error.message : String(error);
-  console.error(`db:init 실패: ${message}`);
+  console.error(`db:reset 실패: ${message}`);
   process.exitCode = 1;
 });
