@@ -1,20 +1,20 @@
 {
-  "name": "@clean-ddd/contracts",
-  "version": "0.0.1",
-  "private": true,
-  "type": "module",
-  "exports": {
-    ".": "./index.ts"
-  },
-  "scripts": {
-    "generate:types": "openapi-typescript openapi.yaml -o types.generated.ts",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
-    "lint": "echo \"(skip)\"",
-    "format": "prettier --write ."
-  },
-  "devDependencies": {
-    "openapi-typescript": "^7.5.2",
-    "prettier": "^3.4.2",
-    "typescript": "^5.7.3"
-  }
+	"name": "@clean-ddd/contracts",
+	"version": "0.0.1",
+	"private": true,
+	"type": "module",
+	"exports": {
+		".": "./index.ts"
+	},
+	"scripts": {
+		"generate:types": "openapi-typescript openapi.yaml -o types.generated.ts",
+		"typecheck": "tsc -p tsconfig.json --noEmit",
+		"lint": "echo \"(skip)\"",
+		"format": "prettier --write ."
+	},
+	"devDependencies": {
+		"openapi-typescript": "^7.5.2",
+		"prettier": "^3.4.2",
+		"typescript": "^5.7.3"
+	}
 }

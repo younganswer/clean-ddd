@@ -17,11 +17,11 @@
 `src/service/backend/tests` 아래의 구조는 다음과 같은 의미로 사용됩니다.
 
 - `tests/units/**`
-  - 외부 인프라 없이도 성립하는 규칙/로직을 설명합니다.
+    - 외부 인프라 없이도 성립하는 규칙/로직을 설명합니다.
 - `tests/db/**`
-  - MikroORM/SQL/스키마/쿼리 같은 영속성 계층의 정합성을 설명합니다.
+    - MikroORM/SQL/스키마/쿼리 같은 영속성 계층의 정합성을 설명합니다.
 - `tests/*.e2e-spec.ts`
-  - HTTP 경계까지 포함한 end-to-end 형태의 테스트를 둡니다.
+    - HTTP 경계까지 포함한 end-to-end 형태의 테스트를 둡니다.
 
 `tests/scenarios/**`는 필요 시 도입 가능한 확장 레이어로 유지합니다.
 

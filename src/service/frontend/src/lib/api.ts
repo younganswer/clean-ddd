@@ -158,9 +158,9 @@ export async function apiGetInventoryItem(
 	return http(`/inventory/items/${encodeURIComponent(sku)}`);
 }
 
-export async function apiListInventoryReservations(orderId: string): Promise<
-	InventoryReservation[]
-> {
+export async function apiListInventoryReservations(
+	orderId: string,
+): Promise<InventoryReservation[]> {
 	return http(
 		`/inventory/reservations?orderId=${encodeURIComponent(orderId)}`,
 	);
