@@ -77,7 +77,9 @@ export default function InventoryPage() {
 				<table className="w-full text-left text-sm">
 					<thead className="bg-zinc-50 text-xs text-zinc-600">
 						<tr>
+							<th className="px-4 py-3">Item ID</th>
 							<th className="px-4 py-3">SKU</th>
+							<th className="px-4 py-3">Price</th>
 							<th className="px-4 py-3">Available</th>
 							<th className="px-4 py-3">Reserved</th>
 							<th className="px-4 py-3">Updated</th>
@@ -85,9 +87,15 @@ export default function InventoryPage() {
 					</thead>
 					<tbody>
 						{items.map((i) => (
-							<tr key={i.sku} className="border-t">
+							<tr key={i.itemId} className="border-t">
+								<td className="px-4 py-3 font-mono text-xs">
+									{i.itemId}
+								</td>
 								<td className="px-4 py-3 font-mono text-xs">
 									{i.sku}
+								</td>
+								<td className="px-4 py-3 font-mono text-xs">
+									{i.price.currency} {i.price.amountMinor}
 								</td>
 								<td className="px-4 py-3">
 									{i.availableQuantity}
@@ -104,7 +112,7 @@ export default function InventoryPage() {
 							<tr>
 								<td
 									className="px-4 py-6 text-zinc-500"
-									colSpan={4}
+									colSpan={6}
 								>
 									데이터 없음
 								</td>

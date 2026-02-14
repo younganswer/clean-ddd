@@ -34,7 +34,7 @@ async function http<T>(path: string, init?: RequestInit): Promise<T> {
 
 export type OrderSummary = {
 	orderId: string;
-	userSubjectId: string | null;
+	userId: string;
 	status: string;
 	amount: number;
 	currency: string;
@@ -55,7 +55,12 @@ export type ShipmentSummary = {
 };
 
 export type InventoryItem = {
+	itemId: string;
 	sku: string;
+	price: {
+		currency: string;
+		amountMinor: number;
+	};
 	availableQuantity: number;
 	reservedQuantity: number;
 	createdAt: string;
@@ -72,7 +77,7 @@ export type Paginated<TItem> = {
 };
 
 export type UserProfile = {
-	subjectId: string;
+	userId: string;
 	displayName: string;
 	email: string;
 	avatarUrl?: string;
@@ -101,8 +106,10 @@ export type GraphView = {
 };
 
 export async function apiCreateOrder(input: {
+	userId: string;
 	amount: number;
 	currency: "KRW" | "USD";
+	items?: Array<{ sku: string; quantity: number }>;
 }): Promise<{ orderId: string }> {
 	return http("/orders", {
 		method: "POST",

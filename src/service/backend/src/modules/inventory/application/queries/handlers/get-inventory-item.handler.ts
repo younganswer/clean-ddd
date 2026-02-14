@@ -22,7 +22,12 @@ export class GetInventoryItemHandler implements IQueryHandler<GetInventoryItemQu
     if (!i) return null;
 
     return {
+      itemId: i.id,
       sku: i.sku,
+      price: {
+        currency: i.priceCurrency,
+        amountMinor: i.priceAmountMinor,
+      },
       availableQuantity: i.availableQuantity,
       reservedQuantity: i.reservedQuantity,
       createdAt: i.createdAt.toISOString(),

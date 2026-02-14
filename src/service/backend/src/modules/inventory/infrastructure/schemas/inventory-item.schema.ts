@@ -8,6 +8,12 @@ export class InventoryItemSchema extends BaseSchema {
   @Property()
   sku!: string;
 
+  @Property({ length: 3 })
+  priceCurrency: string = 'USD';
+
+  @Property({ type: 'int' })
+  priceAmountMinor: number = 100;
+
   @Property({ type: 'int' })
   availableQuantity: number = 0;
 

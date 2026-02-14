@@ -22,7 +22,12 @@ export class InventoryReader implements IInventoryReader {
     if (!i) return null;
 
     return {
+      itemId: i.id,
       sku: i.sku,
+      price: {
+        currency: i.priceCurrency,
+        amountMinor: i.priceAmountMinor,
+      },
       availableQuantity: i.availableQuantity,
       reservedQuantity: i.reservedQuantity,
       createdAt: i.createdAt.toISOString(),
@@ -36,7 +41,12 @@ export class InventoryReader implements IInventoryReader {
     const list = await this.inventory.findAll(safeLimit);
 
     return list.map((i) => ({
+      itemId: i.id,
       sku: i.sku,
+      price: {
+        currency: i.priceCurrency,
+        amountMinor: i.priceAmountMinor,
+      },
       availableQuantity: i.availableQuantity,
       reservedQuantity: i.reservedQuantity,
       createdAt: i.createdAt.toISOString(),

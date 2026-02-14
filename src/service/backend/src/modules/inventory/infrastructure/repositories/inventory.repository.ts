@@ -30,15 +30,24 @@ export class InventoryRepository implements IInventoryRepository {
     const count = await em.count(InventoryItemSchema, {});
     if (count > 0) return;
 
-    const item = em.create(InventoryItemSchema, {
-      sku: 'SKU-001',
-      availableQuantity: 100,
-      reservedQuantity: 0,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
+    const now = new Date();
+    const items: InventoryItemSchema[] = [];
+    for (let i = 1; i <= 10; i += 1) {
+      const sku = `SKU-${String(i).padStart(3, '0')}`;
+      items.push(
+        em.create(InventoryItemSchema, {
+          sku,
+          priceCurrency: i % 2 === 0 ? 'USD' : 'KRW',
+          priceAmountMinor: 100 + i * 137,
+          availableQuantity: 1000,
+          reservedQuantity: 0,
+          createdAt: now,
+          updatedAt: now,
+        }),
+      );
+    }
 
-    await em.persistAndFlush(item);
+    await em.persistAndFlush(items);
   }
 
   async findAll(limit: number, offset: number = 0): Promise<InventoryItem[]> {
@@ -89,6 +98,8 @@ export class InventoryRepository implements IInventoryRepository {
       if (!stock) {
         stock = em.create(InventoryItemSchema, {
           sku,
+          priceCurrency: 'USD',
+          priceAmountMinor: 100,
           availableQuantity: 0,
           reservedQuantity: 0,
           createdAt: new Date(),

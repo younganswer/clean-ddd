@@ -4,6 +4,8 @@ export class InventoryItem extends BaseEntity<string> {
   private constructor(
     id: string,
     private readonly _sku: string,
+    private readonly _priceCurrency: string,
+    private readonly _priceAmountMinor: number,
     private _availableQuantity: number,
     private _reservedQuantity: number,
     private readonly _createdAt: Date,
@@ -15,6 +17,8 @@ export class InventoryItem extends BaseEntity<string> {
   static rehydrate(input: {
     id: string;
     sku: string;
+    priceCurrency: string;
+    priceAmountMinor: number;
     availableQuantity: number;
     reservedQuantity: number;
     createdAt: Date;
@@ -23,6 +27,8 @@ export class InventoryItem extends BaseEntity<string> {
     return new InventoryItem(
       input.id,
       input.sku,
+      input.priceCurrency,
+      input.priceAmountMinor,
       input.availableQuantity,
       input.reservedQuantity,
       input.createdAt,
@@ -32,6 +38,14 @@ export class InventoryItem extends BaseEntity<string> {
 
   get sku(): string {
     return this._sku;
+  }
+
+  get priceCurrency(): string {
+    return this._priceCurrency;
+  }
+
+  get priceAmountMinor(): number {
+    return this._priceAmountMinor;
   }
 
   get availableQuantity(): number {
@@ -54,6 +68,8 @@ export class InventoryItem extends BaseEntity<string> {
     id: string;
     uuid: string;
     sku: string;
+    priceCurrency: string;
+    priceAmountMinor: number;
     availableQuantity: number;
     reservedQuantity: number;
     createdAt: Date;
@@ -63,6 +79,8 @@ export class InventoryItem extends BaseEntity<string> {
       id: this.id,
       uuid: this.uuid,
       sku: this._sku,
+      priceCurrency: this._priceCurrency,
+      priceAmountMinor: this._priceAmountMinor,
       availableQuantity: this._availableQuantity,
       reservedQuantity: this._reservedQuantity,
       createdAt: this._createdAt,
