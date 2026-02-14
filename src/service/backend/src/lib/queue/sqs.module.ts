@@ -1,4 +1,8 @@
-import { GetQueueUrlCommand, SQSClient } from '@aws-sdk/client-sqs';
+import {
+  CreateQueueCommand,
+  GetQueueUrlCommand,
+  SQSClient,
+} from '@aws-sdk/client-sqs';
 import { Global, Module } from '@nestjs/common';
 import { optionalEnv, requireEnv } from '../../env';
 
@@ -30,6 +34,19 @@ function inferSqsEndpointFromQueueUrl(queueUrl: string): string | undefined {
     return `${parsed.protocol}//${parsed.host}`;
   } catch {
     return undefined;
+  }
+}
+
+function isLocalSqsEndpoint(endpoint: string): boolean {
+  try {
+    const parsed = new URL(endpoint);
+    return (
+      parsed.hostname === 'localhost' ||
+      parsed.hostname === '127.0.0.1' ||
+      parsed.hostname === 'localstack'
+    );
+  } catch {
+    return false;
   }
 }
 
@@ -66,6 +83,33 @@ function inferSqsEndpointFromQueueUrl(queueUrl: string): string | undefined {
               return normalizeOutboxQueueUrl(result.QueueUrl);
             }
           } catch {
+            if (isLocalSqsEndpoint(endpoint)) {
+              try {
+                await client.send(
+                  new CreateQueueCommand({
+                    QueueName: queueName,
+                    Attributes: queueName.endsWith('.fifo')
+                      ? {
+                          FifoQueue: 'true',
+                          ContentBasedDeduplication: 'false',
+                        }
+                      : undefined,
+                  }),
+                );
+
+                const created = await client.send(
+                  new GetQueueUrlCommand({
+                    QueueName: queueName,
+                  }),
+                );
+                if (created.QueueUrl && created.QueueUrl.trim().length > 0) {
+                  return normalizeOutboxQueueUrl(created.QueueUrl);
+                }
+              } catch {
+                // fallback below
+              }
+            }
+
             if (rawQueueUrl) {
               return normalizeOutboxQueueUrl(rawQueueUrl);
             }
