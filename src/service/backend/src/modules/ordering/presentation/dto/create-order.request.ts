@@ -19,6 +19,9 @@ class CreateOrderItemRequest {
 }
 
 export class CreateOrderRequest {
+  @IsString()
+  userId!: string;
+
   @IsInt()
   @Min(1)
   amount!: number;

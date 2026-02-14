@@ -5,7 +5,7 @@ import type { IUserProfileRepository } from '../../domains/repositories/i.user-p
 import type { UserProfileView } from '../../../../shared/users/readers/user-profile.view';
 
 const DEFAULT_DUMMY_PROFILE: UserProfileView = {
-  subjectId: 'dummy-default',
+  userId: 'anonymous',
   displayName: '기본 더미 유저',
   email: 'dummy-default@example.com',
   avatarUrl: 'https://example.com/avatar/default.png',
@@ -22,26 +22,26 @@ export class SqlUserProfileRepository implements IUserProfileRepository {
     );
   }
 
-  async getProfileBySubjectId(subjectId: string): Promise<UserProfileView> {
-    const normalized = subjectId.trim();
+  async getProfileByUserId(userId: string): Promise<UserProfileView> {
+    const normalized = userId.trim();
     if (!normalized) return DEFAULT_DUMMY_PROFILE;
 
     const em = this.emForContext();
     const rows = await em.getConnection().execute<
       Array<{
-        subjectId: string;
+        userId: string;
         displayName: string;
         email: string;
         avatarUrl: string | null;
       }>
     >(
       `select
-        u.subject_id as "subjectId",
+        u.uuid as "userId",
         u.display_name as "displayName",
         u.email as "email",
         u.avatar_url as "avatarUrl"
       from users u
-      where u.subject_id = ?
+      where u.uuid = ?
       limit 1`,
       [normalized],
     );
@@ -50,7 +50,7 @@ export class SqlUserProfileRepository implements IUserProfileRepository {
     if (!row) return DEFAULT_DUMMY_PROFILE;
 
     return {
-      subjectId: row.subjectId,
+      userId: row.userId,
       displayName: row.displayName,
       email: row.email,
       avatarUrl: row.avatarUrl ?? undefined,
@@ -68,14 +68,14 @@ export class SqlUserProfileRepository implements IUserProfileRepository {
     const em = this.emForContext();
     const rows = await em.getConnection().execute<
       Array<{
-        subjectId: string;
+        userId: string;
         displayName: string;
         email: string;
         avatarUrl: string | null;
       }>
     >(
       `select
-        u.subject_id as "subjectId",
+        u.uuid as "userId",
         u.display_name as "displayName",
         u.email as "email",
         u.avatar_url as "avatarUrl"
@@ -86,7 +86,7 @@ export class SqlUserProfileRepository implements IUserProfileRepository {
     );
 
     return rows.map((row) => ({
-      subjectId: row.subjectId,
+      userId: row.userId,
       displayName: row.displayName,
       email: row.email,
       avatarUrl: row.avatarUrl ?? undefined,

@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
 import type { IUserProfileRepository } from '../../domains/repositories/i.user-profile.repository';
 import type { UserProfileView } from '../../../../shared/users/readers/user-profile.view';
 
 const DEFAULT_DUMMY_PROFILE: UserProfileView = {
-  subjectId: 'dummy-default',
+  userId: 'anonymous',
   displayName: '기본 더미 유저',
   email: 'dummy-default@example.com',
   avatarUrl: 'https://example.com/avatar/default.png',
@@ -13,11 +14,11 @@ const DEFAULT_DUMMY_PROFILE: UserProfileView = {
 export class InMemoryUserProfileRepository implements IUserProfileRepository {
   private readonly profiles: UserProfileView[] = buildDummyProfiles(100);
   private readonly profileMap = new Map<string, UserProfileView>(
-    this.profiles.map((p) => [p.subjectId, p]),
+    this.profiles.map((p) => [p.userId, p]),
   );
 
-  async getProfileBySubjectId(subjectId: string): Promise<UserProfileView> {
-    const normalized = subjectId.trim();
+  async getProfileByUserId(userId: string): Promise<UserProfileView> {
+    const normalized = userId.trim();
     return this.profileMap.get(normalized) ?? DEFAULT_DUMMY_PROFILE;
   }
 
@@ -40,9 +41,8 @@ function buildDummyProfiles(total: number): UserProfileView[] {
   const safeTotal = Math.min(5000, Math.max(1, Number(total) || 1));
   const list: UserProfileView[] = [];
   for (let i = 1; i <= safeTotal; i += 1) {
-    const subjectId = `dummy-${i}`;
     list.push({
-      subjectId,
+      userId: randomUUID(),
       displayName: `더미 유저 ${i}`,
       email: `dummy${i}@example.com`,
       avatarUrl: `https://example.com/avatar/${i}.png`,

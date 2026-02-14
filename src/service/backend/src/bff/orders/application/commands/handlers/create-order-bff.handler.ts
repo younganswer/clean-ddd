@@ -11,6 +11,7 @@ export class CreateOrderBffHandler implements ICommandHandler<CreateOrderBffComm
     // BFF는 도메인 로직을 갖지 않고, 도메인 Command를 호출하는 오케스트레이션만 담당합니다.
     const body = command.input.body;
     const domainCommand = new CreateOrderCommand({
+      userId: body.userId,
       amount: body.amount,
       currency: body.currency,
       items: body.items?.map((i) => ({ sku: i.sku, quantity: i.quantity })),

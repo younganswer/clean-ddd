@@ -77,33 +77,36 @@ export default function UsersPage() {
 				<table className="w-full text-left text-sm">
 					<thead className="bg-zinc-50 text-xs text-zinc-600">
 						<tr>
-							<th className="px-4 py-3">SubjectId</th>
 							<th className="px-4 py-3">DisplayName</th>
 							<th className="px-4 py-3">Email</th>
 						</tr>
 					</thead>
 					<tbody>
 						{users.map((u) => (
-							<tr key={u.subjectId} className="border-t">
-								<td className="px-4 py-3 font-mono text-xs">
-									<div className="grid gap-1">
-										<Link
-											className="underline"
-											href={`/graph?rootType=USER&rootId=${encodeURIComponent(u.subjectId)}`}
-										>
-											{u.subjectId}
-										</Link>
-									</div>
+							<tr key={u.userId} className="border-t">
+								<td className="px-4 py-3">
+									<Link
+										className="underline"
+										href={`/?rootType=USER&rootId=${encodeURIComponent(u.userId)}`}
+									>
+										{u.displayName}
+									</Link>
 								</td>
-								<td className="px-4 py-3">{u.displayName}</td>
-								<td className="px-4 py-3">{u.email}</td>
+								<td className="px-4 py-3">
+									<Link
+										className="underline"
+										href={`/?rootType=USER&rootId=${encodeURIComponent(u.userId)}`}
+									>
+										{u.email}
+									</Link>
+								</td>
 							</tr>
 						))}
 						{users.length === 0 && (
 							<tr>
 								<td
 									className="px-4 py-6 text-zinc-500"
-									colSpan={3}
+									colSpan={2}
 								>
 									데이터 없음
 								</td>

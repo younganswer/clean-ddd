@@ -14,13 +14,13 @@ export class AuthGuard implements CanActivate {
 
   canActivate(context: ExecutionContext): boolean {
     const req = context.switchToHttp().getRequest<Request>();
-    const header = req.headers['x-subject-id'];
-    const subjectIdRaw = Array.isArray(header) ? header[0] : header;
-    const subjectId = (subjectIdRaw ?? '').trim();
+    const header = req.headers['x-user-id'];
+    const userIdRaw = Array.isArray(header) ? header[0] : header;
+    const userId = (userIdRaw ?? '').trim();
 
     this.authContextAccessor.setActor({
-      subjectId: subjectId.length > 0 ? subjectId : 'anonymous',
-      type: subjectId.length > 0 ? 'user' : 'anonymous',
+      userId: userId.length > 0 ? userId : 'anonymous',
+      type: userId.length > 0 ? 'user' : 'anonymous',
     });
 
     return true;

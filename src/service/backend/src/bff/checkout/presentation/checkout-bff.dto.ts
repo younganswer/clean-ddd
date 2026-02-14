@@ -7,6 +7,7 @@ import {
   IsOptional,
   IsPositive,
   IsString,
+  IsUUID,
   Min,
   ValidateNested,
   IsArray,
@@ -24,6 +25,10 @@ export class CheckoutOrderItemDto {
 }
 
 export class CreateCheckoutBffBodyDto {
+  @IsUUID()
+  @IsNotEmpty()
+  userId!: string;
+
   @Type(() => Number)
   @IsNumber()
   @IsPositive()

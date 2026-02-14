@@ -76,9 +76,8 @@ export default function OrdersPage() {
 					<thead className="bg-zinc-50 text-xs text-zinc-600">
 						<tr>
 							<th className="px-4 py-3">OrderId</th>
-							<th className="px-4 py-3">Status</th>
-							<th className="px-4 py-3">Amount</th>
-							<th className="px-4 py-3">Payment</th>
+							<th className="px-4 py-3">UserId</th>
+							<th className="px-4 py-3">PaymentId</th>
 							<th className="px-4 py-3">Created</th>
 						</tr>
 					</thead>
@@ -86,30 +85,30 @@ export default function OrdersPage() {
 						{orders.map((o) => (
 							<tr key={o.orderId} className="border-t">
 								<td className="px-4 py-3">
-									<div className="grid gap-1">
+									<Link
+										className="underline"
+										href={`/?rootType=ORDER&rootId=${encodeURIComponent(o.orderId)}`}
+									>
+										{o.orderId}
+									</Link>
+								</td>
+								<td className="px-4 py-3 font-mono text-xs">
+									{o.userId ? (
 										<Link
 											className="underline"
-											href={`/orders/detail/?id=${encodeURIComponent(o.orderId)}`}
+											href={`/?rootType=USER&rootId=${encodeURIComponent(o.userId)}`}
 										>
-											{o.orderId}
+											{o.userId}
 										</Link>
-										<Link
-											className="text-xs text-zinc-600 underline"
-											href={`/graph?rootType=ORDER&rootId=${encodeURIComponent(o.orderId)}`}
-										>
-											그래프 보기
-										</Link>
-									</div>
+									) : (
+										"-"
+									)}
 								</td>
-								<td className="px-4 py-3">{o.status}</td>
-								<td className="px-4 py-3">
-									{o.amount} {o.currency}
-								</td>
-								<td className="px-4 py-3">
+								<td className="px-4 py-3 font-mono text-xs">
 									{o.paymentId ? (
 										<Link
 											className="underline"
-											href={`/graph?rootType=PAYMENT&rootId=${encodeURIComponent(o.paymentId)}`}
+											href={`/?rootType=PAYMENT&rootId=${encodeURIComponent(o.paymentId)}`}
 										>
 											{o.paymentId}
 										</Link>
@@ -126,7 +125,7 @@ export default function OrdersPage() {
 							<tr>
 								<td
 									className="px-4 py-6 text-zinc-500"
-									colSpan={5}
+									colSpan={4}
 								>
 									데이터 없음
 								</td>

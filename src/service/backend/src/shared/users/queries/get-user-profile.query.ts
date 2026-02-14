@@ -1,3 +1,3 @@
 export class GetUserProfileQuery {
-  constructor(public readonly subjectId: string) {}
+  constructor(public readonly userId: string) {}
 }

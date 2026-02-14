@@ -3,7 +3,7 @@ import type { UserProfileView } from '../../../../shared/users/readers/user-prof
 export const IUserProfileRepositorySymbol = Symbol('IUserProfileRepository');
 
 export interface IUserProfileRepository {
-  getProfileBySubjectId(subjectId: string): Promise<UserProfileView>;
+  getProfileByUserId(userId: string): Promise<UserProfileView>;
 
   listProfiles(input: {
     limit: number;

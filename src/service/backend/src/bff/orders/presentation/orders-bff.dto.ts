@@ -7,6 +7,7 @@ import {
   IsOptional,
   IsPositive,
   IsString,
+  IsUUID,
   Min,
   ValidateNested,
 } from 'class-validator';
@@ -22,6 +23,10 @@ export class BffOrderItemDto {
 }
 
 export class CreateOrderBffBodyDto {
+  @IsUUID()
+  @IsNotEmpty()
+  userId!: string;
+
   @IsNumber()
   @IsPositive()
   amount!: number;

@@ -4,7 +4,7 @@ import { AsyncLocalStorage } from 'node:async_hooks';
 export type AuthActorType = 'user' | 'anonymous' | 'system';
 
 export interface AuthActor {
-  subjectId: string;
+  userId: string;
   type: AuthActorType;
 }
 
@@ -13,7 +13,7 @@ export interface AuthContext {
 }
 
 const DEFAULT_ANONYMOUS_ACTOR: AuthActor = {
-  subjectId: 'anonymous',
+  userId: 'anonymous',
   type: 'anonymous',
 };
 

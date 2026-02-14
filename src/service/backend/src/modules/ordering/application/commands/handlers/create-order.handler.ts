@@ -10,17 +10,11 @@ export class CreateOrderHandler implements ICommandHandler<CreateOrderCommand> {
   constructor(
     @Inject(IOrderRepositorySymbol)
     private readonly orders: IOrderRepository,
-    private readonly authContextAccessor: AuthContextAccessor,
   ) {}
 
   async execute(command: CreateOrderCommand): Promise<{ orderId: string }> {
-    const actor = this.authContextAccessor.getOrAnonymous().actor;
-    const userSubjectId =
-      command.input.userSubjectId ?? (actor.subjectId ? actor.subjectId : null);
-
     const order = await this.orders.create({
       ...command.input,
-      userSubjectId,
     });
     return { orderId: order.id };
   }

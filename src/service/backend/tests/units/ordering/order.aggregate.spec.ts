@@ -5,11 +5,14 @@ import { OrderItem } from 'src/modules/ordering/domains/value-objects/order-item
 import { OrderStatus } from 'src/shared/ordering/enums/order-status.enum';
 
 describe('Order aggregate', () => {
+  const userId = '00000000-0000-0000-0000-000000000001';
+
   given('신규 주문을 생성하면', () => {
     when('Order.createNew를 호출하면', () => {
       const now = new Date('2026-02-10T00:00:00.000Z');
       const order = Order.createNew({
         id: 'order-1',
+        userId,
         total: Money.of(100, 'krw'),
         items: [OrderItem.of('SKU-001', 1)],
         now,
@@ -30,6 +33,7 @@ describe('Order aggregate', () => {
       then('예외가 발생합니다', () => {
         const order = Order.createNew({
           id: 'order-1',
+          userId,
           total: Money.of(100, 'KRW'),
           items: [OrderItem.of('SKU-001', 1)],
         });
@@ -41,6 +45,7 @@ describe('Order aggregate', () => {
       const now = new Date('2026-02-10T01:00:00.000Z');
       const order = Order.createNew({
         id: 'order-1',
+        userId,
         total: Money.of(100, 'KRW'),
         items: [OrderItem.of('SKU-001', 1)],
         now: new Date('2026-02-10T00:00:00.000Z'),
@@ -59,6 +64,7 @@ describe('Order aggregate', () => {
       const now = new Date('2026-02-10T02:00:00.000Z');
       const order = Order.createNew({
         id: 'order-1',
+        userId,
         total: Money.of(100, 'KRW'),
         items: [OrderItem.of('SKU-001', 1)],
       });

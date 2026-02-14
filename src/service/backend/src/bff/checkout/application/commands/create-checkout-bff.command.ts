@@ -1,4 +1,5 @@
 import type { CreatePaymentIntentResult } from '../../../../shared/payments/commands/create-payment-intent.command';
+import type { CreateCheckoutBffBodyDto } from '../../presentation/checkout-bff.dto';
 
 export type CreateCheckoutBffResult = {
   orderId: string;
@@ -8,13 +9,7 @@ export type CreateCheckoutBffResult = {
 export class CreateCheckoutBffCommand {
   constructor(
     public readonly input: {
-      body: {
-        amount: number;
-        currency: string;
-        items?: Array<{ sku: string; quantity: number }>;
-        simulateOutcome?: 'SUCCEEDED' | 'FAILED';
-        simulateDelaySeconds?: number;
-      };
+      body: CreateCheckoutBffBodyDto;
     },
   ) {}
 }

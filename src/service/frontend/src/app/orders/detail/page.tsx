@@ -85,18 +85,17 @@ function OrderDetailInner() {
 		<>
 			<div className="flex items-center justify-between">
 				<div className="grid gap-1">
-					<h1 className="text-2xl font-semibold">
-						{orderId || "(id 없음)"}
-					</h1>
-					{orderId && (
-						<div className="text-xs text-zinc-600">
+					{orderId ? (
+						<h1 className="text-2xl font-semibold">
 							<Link
 								className="underline"
-								href={`/graph?rootType=ORDER&rootId=${encodeURIComponent(orderId)}`}
+								href={`/?rootType=ORDER&rootId=${encodeURIComponent(orderId)}`}
 							>
-								그래프 보기
+								{orderId}
 							</Link>
-						</div>
+						</h1>
+					) : (
+						<h1 className="text-2xl font-semibold">(id 없음)</h1>
 					)}
 				</div>
 
@@ -127,14 +126,14 @@ function OrderDetailInner() {
 						<h2 className="text-lg font-semibold">주문 정보</h2>
 						<dl className="mt-4 grid gap-2 text-sm">
 							<div className="flex justify-between">
-								<dt className="text-zinc-600">UserSubjectId</dt>
+								<dt className="text-zinc-600">UserId</dt>
 								<dd>
-									{order.userSubjectId ? (
+									{order.userId ? (
 										<Link
 											className="font-mono text-xs underline"
-											href={`/graph?rootType=USER&rootId=${encodeURIComponent(order.userSubjectId)}`}
+											href={`/?rootType=USER&rootId=${encodeURIComponent(order.userId)}`}
 										>
-											{order.userSubjectId}
+											{order.userId}
 										</Link>
 									) : (
 										"-"
@@ -168,7 +167,7 @@ function OrderDetailInner() {
 									{order.paymentId ? (
 										<Link
 											className="font-mono text-xs underline"
-											href={`/graph?rootType=PAYMENT&rootId=${encodeURIComponent(order.paymentId)}`}
+											href={`/?rootType=PAYMENT&rootId=${encodeURIComponent(order.paymentId)}`}
 										>
 											{order.paymentId}
 										</Link>
@@ -190,15 +189,12 @@ function OrderDetailInner() {
 								<dd>
 									{shipment ? (
 										<span className="flex flex-wrap items-center justify-end gap-2">
-											<span>
-												{shipment.status} (
-												{shipment.shipmentId})
-											</span>
+											<span>{shipment.status}</span>
 											<Link
-												className="text-xs text-zinc-600 underline"
-												href={`/graph?rootType=SHIPMENT&rootId=${encodeURIComponent(shipment.shipmentId)}`}
+												className="font-mono text-xs underline"
+												href={`/?rootType=SHIPMENT&rootId=${encodeURIComponent(shipment.shipmentId)}`}
 											>
-												그래프
+												{shipment.shipmentId}
 											</Link>
 										</span>
 									) : (

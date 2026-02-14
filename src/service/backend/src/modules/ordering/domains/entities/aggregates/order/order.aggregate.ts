@@ -6,7 +6,7 @@ import { OrderItem } from '../../../value-objects/order-item.vo';
 export class Order extends BaseEntity<string> {
   private constructor(
     id: string,
-    private readonly _userSubjectId: string | null,
+    private readonly _userId: string,
     private _status: OrderStatus,
     private readonly _total: Money,
     private readonly _items: OrderItem[],
@@ -19,7 +19,7 @@ export class Order extends BaseEntity<string> {
 
   static createNew(input: {
     id: string;
-    userSubjectId?: string | null;
+    userId: string;
     total: Money;
     items: OrderItem[];
     now?: Date;
@@ -27,7 +27,7 @@ export class Order extends BaseEntity<string> {
     const now = input.now ?? new Date();
     return new Order(
       input.id,
-      input.userSubjectId ?? null,
+      input.userId,
       OrderStatus.PENDING_PAYMENT,
       input.total,
       input.items,
@@ -39,7 +39,7 @@ export class Order extends BaseEntity<string> {
 
   static rehydrate(input: {
     id: string;
-    userSubjectId: string | null;
+    userId: string;
     status: OrderStatus;
     total: Money;
     items: OrderItem[];
@@ -49,7 +49,7 @@ export class Order extends BaseEntity<string> {
   }): Order {
     return new Order(
       input.id,
-      input.userSubjectId,
+      input.userId,
       input.status,
       input.total,
       input.items,
@@ -76,8 +76,8 @@ export class Order extends BaseEntity<string> {
     return this._status;
   }
 
-  get userSubjectId(): string | null {
-    return this._userSubjectId;
+  get userId(): string {
+    return this._userId;
   }
 
   get amount(): number {
@@ -110,7 +110,7 @@ export class Order extends BaseEntity<string> {
 
   toPrimitives(): {
     id: string;
-    userSubjectId: string | null;
+    userId: string;
     status: OrderStatus;
     amount: number;
     currency: string;
@@ -121,7 +121,7 @@ export class Order extends BaseEntity<string> {
   } {
     return {
       id: this.id,
-      userSubjectId: this._userSubjectId,
+      userId: this._userId,
       status: this._status,
       amount: this.amount,
       currency: this.currency,

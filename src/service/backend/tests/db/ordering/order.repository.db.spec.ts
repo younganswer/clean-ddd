@@ -9,6 +9,8 @@ import { OrderStatus } from 'src/shared/ordering/enums/order-status.enum';
 const describeDb = process.env.RUN_DB_TESTS === '1' ? describe : describe.skip;
 
 describeDb('OrderRepository (DB)', () => {
+  const userId = '00000000-0000-0000-0000-000000000001';
+
   let em: EntityManager;
   let repo: OrderRepository;
   let closeOrm: (() => Promise<void>) | null = null;
@@ -44,6 +46,7 @@ describeDb('OrderRepository (DB)', () => {
 
       beforeEach(async () => {
         const created = await repo.create({
+          userId,
           amount: 100,
           currency: 'KRW',
           items: [{ sku: 'SKU-001', quantity: 1 }],
@@ -74,7 +77,11 @@ describeDb('OrderRepository (DB)', () => {
       let orderId: string;
 
       beforeEach(async () => {
-        const created = await repo.create({ amount: 100, currency: 'KRW' });
+        const created = await repo.create({
+          userId,
+          amount: 100,
+          currency: 'KRW',
+        });
         orderId = created.id;
         await repo.attachPayment(
           orderId,
@@ -103,7 +110,11 @@ describeDb('OrderRepository (DB)', () => {
       let orderId: string;
 
       beforeEach(async () => {
-        const created = await repo.create({ amount: 100, currency: 'KRW' });
+        const created = await repo.create({
+          userId,
+          amount: 100,
+          currency: 'KRW',
+        });
         orderId = created.id;
         await repo.markPaid(orderId);
       });

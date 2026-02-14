@@ -13,9 +13,9 @@ export class MeController {
 
   @Get()
   async getMyProfile(): Promise<UserProfileView> {
-    const subjectId = this.authContextAccessor.getOrAnonymous().actor.subjectId;
+    const userId = this.authContextAccessor.getOrAnonymous().actor.userId;
     return await this.queryBus.execute(
-      new GetUserProfileQuery(subjectId) as unknown as never,
+      new GetUserProfileQuery(userId) as unknown as never,
     );
   }
 }

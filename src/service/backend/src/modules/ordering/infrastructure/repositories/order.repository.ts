@@ -25,7 +25,7 @@ export class OrderRepository implements IOrderRepository {
     amount: number;
     currency: string;
     items?: Array<{ sku: string; quantity: number }>;
-    userSubjectId?: string | null;
+    userId: string;
   }): Promise<Order> {
     const em = this.emForContext();
     const order = em.create(OrderSchema, {
@@ -34,7 +34,7 @@ export class OrderRepository implements IOrderRepository {
       items: input.items?.length
         ? input.items
         : [{ sku: 'SKU-001', quantity: 1 }],
-      userSubjectId: input.userSubjectId ?? null,
+      userId: input.userId,
       status: OrderStatus.PENDING_PAYMENT,
       paymentId: null,
       createdAt: new Date(),
@@ -64,12 +64,12 @@ export class OrderRepository implements IOrderRepository {
     return found.map((o) => this.mapper.toDomain(o));
   }
 
-  async findByUserSubjectId(
-    userSubjectId: string,
+  async findByUserId(
+    userId: string,
     limit: number,
     offset: number = 0,
   ): Promise<Order[]> {
-    const normalized = String(userSubjectId ?? '').trim();
+    const normalized = String(userId ?? '').trim();
     if (!normalized) return [];
 
     const em = this.emForContext();
@@ -77,7 +77,7 @@ export class OrderRepository implements IOrderRepository {
     const safeOffset = Math.max(0, Number(offset ?? 0) || 0);
     const found = await em.find(
       OrderSchema,
-      { userSubjectId: normalized },
+      { userId: normalized },
       {
         limit: safeLimit,
         offset: safeOffset,

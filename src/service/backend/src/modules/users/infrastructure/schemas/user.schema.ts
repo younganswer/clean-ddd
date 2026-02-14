@@ -2,12 +2,8 @@ import { Entity, Property, Unique } from '@mikro-orm/core';
 import { BaseSchema } from '../../../../shared/persistence/mikro-orm/base.schema';
 
 @Entity({ tableName: 'users' })
-@Unique({ properties: ['subjectId'] })
 @Unique({ properties: ['email'] })
 export class UserSchema extends BaseSchema {
-  @Property({ length: 64 })
-  subjectId!: string;
-
   @Property({ length: 255 })
   displayName!: string;
 

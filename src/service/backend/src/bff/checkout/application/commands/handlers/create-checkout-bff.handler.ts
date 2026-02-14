@@ -25,6 +25,7 @@ export class CreateCheckoutBffHandler implements ICommandHandler<CreateCheckoutB
       { orderId: string }
     >(
       new CreateOrderCommand({
+        userId: body.userId,
         amount: body.amount,
         currency: body.currency,
         items: body.items,

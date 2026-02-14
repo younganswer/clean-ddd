@@ -5,8 +5,8 @@ export const IOrderReaderSymbol = Symbol('IOrderReader');
 export interface IOrderReader {
   findById(orderId: string): Promise<OrderView | null>;
   findRecent(limit: number, offset?: number): Promise<OrderView[]>;
-  findByUserSubjectId(
-    userSubjectId: string,
+  findByUserId(
+    userId: string,
     limit: number,
     offset?: number,
   ): Promise<OrderView[]>;

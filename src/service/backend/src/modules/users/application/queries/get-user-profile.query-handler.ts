@@ -15,8 +15,6 @@ export class GetUserProfileQueryHandler implements IQueryHandler<GetUserProfileQ
   ) {}
 
   async execute(query: GetUserProfileQuery): Promise<UserProfileView> {
-    return await this.userProfileRepository.getProfileBySubjectId(
-      query.subjectId,
-    );
+    return await this.userProfileRepository.getProfileByUserId(query.userId);
   }
 }

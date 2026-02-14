@@ -5,13 +5,13 @@ export interface IOrderRepository {
     amount: number;
     currency: string;
     items?: Array<{ sku: string; quantity: number }>;
-    userSubjectId?: string | null;
+    userId: string;
   }): Promise<Order>;
 
   findById(orderId: string): Promise<Order | null>;
   findRecent(limit: number, offset?: number): Promise<Order[]>;
-  findByUserSubjectId(
-    userSubjectId: string,
+  findByUserId(
+    userId: string,
     limit: number,
     offset?: number,
   ): Promise<Order[]>;
