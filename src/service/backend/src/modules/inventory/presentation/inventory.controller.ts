@@ -21,7 +21,10 @@ export class InventoryController {
   ): Promise<PaginatedView<InventoryItemView>> {
     const limit = Math.min(Math.max(Number(limitRaw ?? 50) || 50, 1), 200);
     const page = Math.max(1, Number(pageRaw ?? 1) || 1);
-    return await executeQuery(this.queryBus, new ListInventoryItemsQuery(limit, page));
+    return await executeQuery(
+      this.queryBus,
+      new ListInventoryItemsQuery(limit, page),
+    );
   }
 
   @Get('items/:sku')
@@ -35,6 +38,9 @@ export class InventoryController {
   ): Promise<InventoryReservationView[]> {
     const id = String(orderId ?? '');
     if (!id) return [];
-    return await executeQuery(this.queryBus, new ListInventoryReservationsQuery(id));
+    return await executeQuery(
+      this.queryBus,
+      new ListInventoryReservationsQuery(id),
+    );
   }
 }

@@ -24,6 +24,17 @@ DB 초기 상태(스키마/트리거/기본 데이터)는 초기화 스크립트
 
 기본 접속 정보는 `postgresql://app:app@localhost:54322/clean_ddd`입니다.
 
+### DB 스크립트 실행
+
+- 실행 위치: `src/service/backend`
+- 명령: `corepack pnpm db:init`, `corepack pnpm db:reset`, `corepack pnpm db:diff`
+- 위 스크립트는 `node --env-file=.env`로 `.env`를 자동 로딩합니다.
+
+`queue does not exist` 오류가 나면 LocalStack이 올라왔는지와 큐 생성 상태를 먼저 확인하세요.
+
+- `make -C src up`
+- `docker compose -p clean-ddd -f src/stack/compose/docker-compose.yml ps`
+
 ## 관련 문서
 
 문서 허브는 루트의 [docs/index.md](/docs/index.md)입니다. 백엔드 관련 문서는 아래에서 시작하시면 됩니다.

@@ -50,7 +50,9 @@ export default function DashboardPage() {
 						<select
 							className="h-10 rounded-md border px-3"
 							value={currency}
-							onChange={(e) => setCurrency(toCurrency(e.target.value))}
+							onChange={(e) =>
+								setCurrency(toCurrency(e.target.value))
+							}
 						>
 							<option value="KRW">KRW</option>
 							<option value="USD">USD</option>

@@ -237,7 +237,9 @@ function OrderDetailInner() {
 								<select
 									className="h-10 rounded-md border px-3"
 									value={outcome}
-									onChange={(e) => setOutcome(toOutcome(e.target.value))}
+									onChange={(e) =>
+										setOutcome(toOutcome(e.target.value))
+									}
 								>
 									<option value="SUCCEEDED">SUCCEEDED</option>
 									<option value="FAILED">FAILED</option>

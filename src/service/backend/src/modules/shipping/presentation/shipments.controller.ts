@@ -20,14 +20,20 @@ export class ShipmentsController {
   ): Promise<PaginatedView<ShipmentView>> {
     const limit = Math.min(Math.max(Number(limitRaw ?? 20) || 20, 1), 100);
     const page = Math.max(1, Number(pageRaw ?? 1) || 1);
-    return await executeQuery(this.queryBus, new ListShipmentsQuery(limit, page));
+    return await executeQuery(
+      this.queryBus,
+      new ListShipmentsQuery(limit, page),
+    );
   }
 
   @Get('by-order/:orderId')
   async byOrder(
     @Param('orderId') orderId: string,
   ): Promise<ShipmentView | null> {
-    return await executeQuery(this.queryBus, new GetShipmentByOrderQuery(orderId));
+    return await executeQuery(
+      this.queryBus,
+      new GetShipmentByOrderQuery(orderId),
+    );
   }
 
   @Get(':id')

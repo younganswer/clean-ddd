@@ -1,6 +1,6 @@
-import { SQSClient } from '@aws-sdk/client-sqs';
+import { GetQueueUrlCommand, SQSClient } from '@aws-sdk/client-sqs';
 import { Global, Module } from '@nestjs/common';
-import { requireEnv } from '../../env';
+import { optionalEnv, requireEnv } from '../../env';
 
 export const SQS_OUTBOX_QUEUE_URL = Symbol('SQS_OUTBOX_QUEUE_URL');
 export const SQS_CLIENT = Symbol('SQS_CLIENT');
@@ -38,8 +38,44 @@ function inferSqsEndpointFromQueueUrl(queueUrl: string): string | undefined {
   providers: [
     {
       provide: SQS_OUTBOX_QUEUE_URL,
-      useFactory: () =>
-        normalizeOutboxQueueUrl(requireEnv('SQS_OUTBOX_QUEUE_URL')),
+      useFactory: async () => {
+        const rawQueueUrl = optionalEnv('SQS_OUTBOX_QUEUE_URL');
+        const endpoint = optionalEnv('SQS_ENDPOINT');
+        const queueName =
+          optionalEnv('SQS_OUTBOX_QUEUE_NAME') ?? 'OutboxDispatchQueue.fifo';
+
+        if (endpoint) {
+          const region = process.env.AWS_REGION ?? 'ap-northeast-2';
+          const client = new SQSClient({
+            region,
+            endpoint,
+            credentials: {
+              accessKeyId: process.env.AWS_ACCESS_KEY_ID ?? 'test',
+              secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY ?? 'test',
+            },
+          });
+
+          try {
+            const result = await client.send(
+              new GetQueueUrlCommand({
+                QueueName: queueName,
+              }),
+            );
+
+            if (result.QueueUrl && result.QueueUrl.trim().length > 0) {
+              return normalizeOutboxQueueUrl(result.QueueUrl);
+            }
+          } catch {
+            if (rawQueueUrl) {
+              return normalizeOutboxQueueUrl(rawQueueUrl);
+            }
+          }
+        }
+
+        return normalizeOutboxQueueUrl(
+          rawQueueUrl ?? requireEnv('SQS_OUTBOX_QUEUE_URL'),
+        );
+      },
     },
     {
       provide: SQS_CLIENT,

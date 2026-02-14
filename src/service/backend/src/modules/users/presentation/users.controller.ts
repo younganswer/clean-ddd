@@ -16,6 +16,9 @@ export class UsersController {
   ): Promise<PaginatedView<UserProfileView>> {
     const limit = Math.min(200, Math.max(1, Number(limitRaw ?? 20) || 20));
     const page = Math.max(1, Number(pageRaw ?? 1) || 1);
-    return await executeQuery(this.queryBus, new ListUserProfilesQuery({ limit, page }));
+    return await executeQuery(
+      this.queryBus,
+      new ListUserProfilesQuery({ limit, page }),
+    );
   }
 }
