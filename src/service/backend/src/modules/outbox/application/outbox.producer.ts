@@ -36,24 +36,44 @@ export class OutboxProducer {
         ? payload.orderId
         : 'outbox');
 
+    const strictEnqueue =
+      process.env.OUTBOX_ENQUEUE_STRICT === 'true' ||
+      process.env.NODE_ENV === 'production';
+
+    const safeEnqueue = async (enqueueDelaySeconds?: number) => {
+      try {
+        await this.outboxQueue.enqueue(outboxId, {
+          delaySeconds: enqueueDelaySeconds,
+          messageGroupId: inferredMessageGroupId,
+        });
+      } catch (e) {
+        console.error(
+          '[OutboxProducer.publish] enqueue failed',
+          {
+            outboxId,
+            eventType,
+            queue: 'outbox',
+            delaySeconds: enqueueDelaySeconds,
+          },
+          e,
+        );
+        if (strictEnqueue) throw e;
+      }
+    };
+
     if (
       disableDelaySeconds &&
       typeof delaySeconds === 'number' &&
       delaySeconds > 0
     ) {
       setTimeout(() => {
-        void this.outboxQueue.enqueue(outboxId, {
-          messageGroupId: inferredMessageGroupId,
-        });
+        void safeEnqueue(undefined);
       }, delaySeconds * 1000);
 
       return outboxId;
     }
 
-    await this.outboxQueue.enqueue(outboxId, {
-      delaySeconds,
-      messageGroupId: inferredMessageGroupId,
-    });
+    await safeEnqueue(delaySeconds);
 
     return outboxId;
   }
@@ -78,24 +98,44 @@ export class OutboxProducer {
         ? payload.orderId
         : 'outbox');
 
+    const strictEnqueue =
+      process.env.OUTBOX_ENQUEUE_STRICT === 'true' ||
+      process.env.NODE_ENV === 'production';
+
+    const safeEnqueue = async (enqueueDelaySeconds?: number) => {
+      try {
+        await this.outboxQueue.enqueue(outboxId, {
+          delaySeconds: enqueueDelaySeconds,
+          messageGroupId: inferredMessageGroupId,
+        });
+      } catch (e) {
+        console.error(
+          '[OutboxProducer.emit] enqueue failed',
+          {
+            outboxId,
+            eventType,
+            queue: 'outbox',
+            delaySeconds: enqueueDelaySeconds,
+          },
+          e,
+        );
+        if (strictEnqueue) throw e;
+      }
+    };
+
     if (
       disableDelaySeconds &&
       typeof delaySeconds === 'number' &&
       delaySeconds > 0
     ) {
       setTimeout(() => {
-        void this.outboxQueue.enqueue(outboxId, {
-          messageGroupId: inferredMessageGroupId,
-        });
+        void safeEnqueue(undefined);
       }, delaySeconds * 1000);
 
       return outboxId;
     }
 
-    await this.outboxQueue.enqueue(outboxId, {
-      delaySeconds,
-      messageGroupId: inferredMessageGroupId,
-    });
+    await safeEnqueue(delaySeconds);
 
     return outboxId;
   }
