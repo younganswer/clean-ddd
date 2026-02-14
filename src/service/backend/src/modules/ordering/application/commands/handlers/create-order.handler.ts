@@ -3,7 +3,6 @@ import { CreateOrderCommand } from '@/shared/ordering/commands/create-order.comm
 import { Inject } from '@nestjs/common';
 import { IOrderRepositorySymbol } from '@/modules/ordering/domains/repositories/i.order.repository';
 import type { IOrderRepository } from '@/modules/ordering/domains/repositories/i.order.repository';
-import { AuthContextAccessor } from '@/common/context/auth-context';
 
 @CommandHandler(CreateOrderCommand)
 export class CreateOrderHandler implements ICommandHandler<CreateOrderCommand> {

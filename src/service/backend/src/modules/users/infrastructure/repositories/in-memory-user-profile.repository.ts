@@ -17,23 +17,25 @@ export class InMemoryUserProfileRepository implements IUserProfileRepository {
     this.profiles.map((p) => [p.userId, p]),
   );
 
-  async getProfileByUserId(userId: string): Promise<UserProfileView> {
+  getProfileByUserId(userId: string): Promise<UserProfileView> {
     const normalized = userId.trim();
-    return this.profileMap.get(normalized) ?? DEFAULT_DUMMY_PROFILE;
+    return Promise.resolve(
+      this.profileMap.get(normalized) ?? DEFAULT_DUMMY_PROFILE,
+    );
   }
 
-  async listProfiles(input: {
+  listProfiles(input: {
     limit: number;
     page: number;
   }): Promise<UserProfileView[]> {
     const limit = Math.min(200, Math.max(1, Number(input.limit ?? 20) || 20));
     const page = Math.max(1, Number(input.page ?? 1) || 1);
     const offset = (page - 1) * limit;
-    return this.profiles.slice(offset, offset + limit);
+    return Promise.resolve(this.profiles.slice(offset, offset + limit));
   }
 
-  async countProfiles(): Promise<number> {
-    return this.profiles.length;
+  countProfiles(): Promise<number> {
+    return Promise.resolve(this.profiles.length);
   }
 }
 
