@@ -87,26 +87,18 @@ export default function ShipmentsPage() {
 								<td className="px-4 py-3 font-mono text-xs">
 									<Link
 										className="underline"
-										href={`/graph?rootType=SHIPMENT&rootId=${encodeURIComponent(s.shipmentId)}`}
+										href={`/?rootType=SHIPMENT&rootId=${encodeURIComponent(s.shipmentId)}`}
 									>
 										{s.shipmentId}
 									</Link>
 								</td>
 								<td className="px-4 py-3">
-									<div className="grid gap-1">
-										<Link
-											className="underline"
-											href={`/orders/detail/?id=${encodeURIComponent(s.orderId)}`}
-										>
-											{s.orderId}
-										</Link>
-										<Link
-											className="text-xs text-zinc-600 underline"
-											href={`/graph?rootType=ORDER&rootId=${encodeURIComponent(s.orderId)}`}
-										>
-											그래프 보기
-										</Link>
-									</div>
+									<Link
+										className="underline"
+										href={`/?rootType=ORDER&rootId=${encodeURIComponent(s.orderId)}`}
+									>
+										{s.orderId}
+									</Link>
 								</td>
 								<td className="px-4 py-3">{s.status}</td>
 								<td className="px-4 py-3">

@@ -35,6 +35,9 @@ export default function RootLayout({
 								clean-ddd Admin
 							</Link>
 							<nav className="flex gap-4 text-sm">
+								<Link className="hover:underline" href="/">
+									그래프
+								</Link>
 								<Link className="hover:underline" href="/users">
 									사용자
 								</Link>
@@ -49,9 +52,6 @@ export default function RootLayout({
 									href="/shipments"
 								>
 									배송
-								</Link>
-								<Link className="hover:underline" href="/graph">
-									그래프
 								</Link>
 								<Link
 									className="hover:underline"

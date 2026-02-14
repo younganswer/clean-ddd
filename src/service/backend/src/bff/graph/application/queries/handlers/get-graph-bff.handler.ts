@@ -4,7 +4,7 @@ import { IQueryHandler, QueryBus, QueryHandler } from '@nestjs/cqrs';
 
 import { GetOrderQuery } from '../../../../../shared/ordering/queries/get-order.query';
 import type { OrderView } from '../../../../../shared/ordering/readers/order.view';
-import { ListOrdersByUserSubjectIdQuery } from '../../../../../shared/ordering/queries/list-orders-by-user-subject-id.query';
+import { ListOrdersByUserIdQuery } from '../../../../../shared/ordering/queries/list-orders-by-user-subject-id.query';
 
 import { GetShipmentQuery } from '../../../../../shared/shipping/queries/get-shipment.query';
 import type { ShipmentView } from '../../../../../shared/readers/shipping/dto/shipment.view';
@@ -12,6 +12,9 @@ import { GetShipmentByOrderQuery } from '../../../../../shared/shipping/queries/
 
 import { GetPaymentIntentQuery } from '../../../../../shared/payments/queries/get-payment-intent.query';
 import type { PaymentIntentView } from '../../../../../shared/readers/payments/dto/payment-intent.view';
+
+import { GetUserProfileQuery } from '../../../../../shared/users/queries/get-user-profile.query';
+import type { UserProfileView } from '../../../../../shared/users/readers/user-profile.view';
 
 import { OutboxEventSchema } from '../../../../../modules/outbox/infrastructure/persistence/outbox.schema';
 
@@ -102,6 +105,8 @@ export class GetGraphBffHandler implements IQueryHandler<GetGraphBffQuery> {
     const knownShipments = new Set<string>();
     const knownPayments = new Set<string>();
 
+    const userProfileCache = new Map<string, UserProfileView>();
+
     const userToOrderIds = new Map<string, Set<string>>();
     const orderToShipmentId = new Map<string, string>();
 
@@ -128,8 +133,8 @@ export class GetGraphBffHandler implements IQueryHandler<GetGraphBffQuery> {
       if (!edges.has(id)) edges.set(id, { id, ...edge });
     };
 
-    const addUser = (subjectId: string): void => {
-      const normalized = normalizeId(subjectId);
+    const addUser = (userId: string): void => {
+      const normalized = normalizeId(userId);
       if (!normalized) return;
       if (knownUsers.has(normalized)) return;
       knownUsers.add(normalized);
@@ -140,18 +145,66 @@ export class GetGraphBffHandler implements IQueryHandler<GetGraphBffQuery> {
       });
     };
 
+    const upsertUserProfile = (profile: UserProfileView): void => {
+      const userId = normalizeId(profile.userId);
+      if (!userId) return;
+
+      const id = nodeId('USER', userId);
+      const existing = nodes.get(id);
+      const displayName = normalizeId(profile.displayName);
+      const email = normalizeId(profile.email);
+      const label = displayName || email || userId;
+
+      // Update label/data even if the node was already added as a placeholder.
+      nodes.set(id, {
+        ...(existing ?? {
+          id,
+          type: 'USER',
+          label: userId,
+          data: {},
+        }),
+        id,
+        type: 'USER',
+        label,
+        data: {
+          ...(existing?.data ?? {}),
+          userId,
+          displayName: displayName || null,
+          email: email || null,
+          avatarUrl: profile.avatarUrl ?? null,
+        },
+      });
+
+      // Ensure bookkeeping remains consistent.
+      knownUsers.add(userId);
+    };
+
+    const fetchUserProfile = async (
+      userId: string,
+    ): Promise<UserProfileView | null> => {
+      const id = normalizeId(userId);
+      if (!id) return null;
+      const cached = userProfileCache.get(id);
+      if (cached) return cached;
+
+      const profile = await this.queryBus.execute<
+        GetUserProfileQuery,
+        UserProfileView
+      >(new GetUserProfileQuery(id));
+
+      userProfileCache.set(id, profile);
+      return profile;
+    };
+
     const addOrder = (order: OrderView): void => {
       const id = normalizeId(order.orderId);
       if (!id) return;
       if (knownOrders.has(id)) return;
       knownOrders.add(id);
 
-      const userSubjectId = (() => {
-        const raw = (order as unknown as Record<string, unknown>)[
-          'userSubjectId'
-        ];
-        return typeof raw === 'string' ? raw.trim() : '';
-      })();
+      const userId = normalizeId(
+        (order as unknown as { userId?: string }).userId,
+      );
 
       addNode({
         id: nodeId('ORDER', id),
@@ -161,22 +214,22 @@ export class GetGraphBffHandler implements IQueryHandler<GetGraphBffQuery> {
           status: order.status,
           amount: order.amount,
           currency: order.currency,
-          userSubjectId: userSubjectId || null,
+          userId: userId || null,
           paymentId: order.paymentId,
         },
       });
-      if (userSubjectId) {
-        addUser(userSubjectId);
+      if (userId) {
+        addUser(userId);
         addEdge({
-          from: nodeId('USER', userSubjectId),
+          from: nodeId('USER', userId),
           to: nodeId('ORDER', id),
           type: 'OWNS',
-          label: 'userSubjectId',
+          label: 'userId',
         });
 
-        const set = userToOrderIds.get(userSubjectId) ?? new Set<string>();
+        const set = userToOrderIds.get(userId) ?? new Set<string>();
         set.add(id);
-        userToOrderIds.set(userSubjectId, set);
+        userToOrderIds.set(userId, set);
       }
 
       const pid = normalizeId(order.paymentId);
@@ -274,14 +327,22 @@ export class GetGraphBffHandler implements IQueryHandler<GetGraphBffQuery> {
     const expandEntity = async (ref: EntityRef): Promise<void> => {
       switch (ref.type) {
         case 'USER': {
-          const subjectId = normalizeId(ref.id);
-          if (!subjectId) return;
-          addUser(subjectId);
+          const userId = normalizeId(ref.id);
+          if (!userId) return;
+          addUser(userId);
+
+          // Enrich user node with displayName/email so the graph UI can show something useful.
+          try {
+            const profile = await fetchUserProfile(userId);
+            if (profile) upsertUserProfile(profile);
+          } catch {
+            // ignore (fallback label=userId)
+          }
 
           const list = await this.queryBus.execute<
-            ListOrdersByUserSubjectIdQuery,
+            ListOrdersByUserIdQuery,
             OrderView[]
-          >(new ListOrdersByUserSubjectIdQuery(subjectId, 200, 0));
+          >(new ListOrdersByUserIdQuery(userId, 200, 0));
 
           for (const o of list) addOrder(o);
           return;
@@ -342,8 +403,8 @@ export class GetGraphBffHandler implements IQueryHandler<GetGraphBffQuery> {
 
       // enqueue neighbors discovered so far
       if (item.ref.type === 'USER') {
-        const subjectId = normalizeId(item.ref.id);
-        const orderIds = userToOrderIds.get(subjectId);
+        const userId = normalizeId(item.ref.id);
+        const orderIds = userToOrderIds.get(userId);
         if (orderIds) {
           for (const oid of orderIds) {
             enqueue.push({
@@ -357,17 +418,16 @@ export class GetGraphBffHandler implements IQueryHandler<GetGraphBffQuery> {
       if (item.ref.type === 'ORDER') {
         const orderNode = nodes.get(nodeId('ORDER', item.ref.id));
         const data = orderNode?.data;
-        const userSubjectId =
-          typeof data?.userSubjectId === 'string' ? data.userSubjectId : null;
+        const userId = typeof data?.userId === 'string' ? data.userId : null;
         const paymentId = (() => {
           const fromMap = orderToPaymentId.get(normalizeId(item.ref.id));
           if (fromMap) return fromMap;
           return typeof data?.paymentId === 'string' ? data.paymentId : null;
         })();
 
-        if (userSubjectId) {
+        if (userId) {
           enqueue.push({
-            ref: { type: 'USER', id: userSubjectId },
+            ref: { type: 'USER', id: userId },
             depth: item.depth + 1,
           });
         }
@@ -549,6 +609,65 @@ export class GetGraphBffHandler implements IQueryHandler<GetGraphBffQuery> {
     const finalEdges = Array.from(edges.values()).filter(
       (e) => nodeIds.has(e.from) && nodeIds.has(e.to),
     );
+
+    // Enforce maxDepth on the final graph.
+    // Note: During expansion we may add nodes opportunistically (e.g. ORDER -> PAYMENT)
+    // even when the caller requested a smaller depth. To make depth behavior intuitive,
+    // prune nodes/edges based on actual shortest-path distance from the root.
+    if (maxDepth >= 0) {
+      const adjacency = new Map<string, Set<string>>();
+      const addAdj = (a: string, b: string) => {
+        const set = adjacency.get(a) ?? new Set<string>();
+        set.add(b);
+        adjacency.set(a, set);
+      };
+
+      for (const e of finalEdges) {
+        // Treat graph depth as undirected hop distance for UX.
+        addAdj(e.from, e.to);
+        addAdj(e.to, e.from);
+      }
+
+      const dist = new Map<string, number>();
+      const q: string[] = [];
+      dist.set(rootNodeId, 0);
+      q.push(rootNodeId);
+
+      while (q.length > 0) {
+        const cur = q.shift()!;
+        const d = dist.get(cur)!;
+        if (d >= maxDepth) continue;
+        const nexts = adjacency.get(cur);
+        if (!nexts) continue;
+        for (const nxt of nexts) {
+          if (dist.has(nxt)) continue;
+          dist.set(nxt, d + 1);
+          q.push(nxt);
+        }
+      }
+
+      const allowedNodeIds = new Set(
+        Array.from(dist.entries())
+          .filter(([, d]) => d <= maxDepth)
+          .map(([id]) => id),
+      );
+      // Ensure root is always included.
+      allowedNodeIds.add(rootNodeId);
+
+      const prunedNodes = Array.from(nodes.values()).filter((n) =>
+        allowedNodeIds.has(n.id),
+      );
+      const prunedEdges = finalEdges.filter(
+        (e) => allowedNodeIds.has(e.from) && allowedNodeIds.has(e.to),
+      );
+
+      return {
+        rootNodeId,
+        nodes: prunedNodes,
+        edges: prunedEdges,
+        truncated: truncated || nodes.size >= maxNodes,
+      };
+    }
 
     return {
       rootNodeId,

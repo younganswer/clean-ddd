@@ -3,8 +3,16 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { apiGetGraph, type GraphView } from "@/lib/api";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import {
+	apiCreateOrder,
+	apiCreatePaymentIntent,
+	apiGetGraph,
+	apiListInventoryItems,
+	apiListUsers,
+	type InventoryItem,
+	type GraphView,
+} from "@/lib/api";
 
 import CytoscapeComponent from "react-cytoscapejs";
 import cytoscape, {
@@ -47,6 +55,20 @@ function parseNodeKey(nodeId: string): { type: string; key: string } {
 }
 
 export default function GraphPage() {
+	return (
+		<Suspense
+			fallback={
+				<div className="p-4 text-sm text-zinc-500">
+					그래프 로딩 중...
+				</div>
+			}
+		>
+			<GraphPageInner />
+		</Suspense>
+	);
+}
+
+function GraphPageInner() {
 	const params = useSearchParams();
 	const router = useRouter();
 	const rootType = params.get("rootType");
@@ -64,6 +86,18 @@ export default function GraphPage() {
 	const [error, setError] = useState<string | null>(null);
 	const [selectedId, setSelectedId] = useState<string | null>(null);
 	const cyRef = useRef<Core | null>(null);
+	const autoSelectedRef = useRef(false);
+	const autoLayoutKeyRef = useRef<string | null>(null);
+
+	const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
+	const [inventoryLoading, setInventoryLoading] = useState(false);
+	const [selectedSku, setSelectedSku] = useState<string>("");
+	const [selectedQuantity, setSelectedQuantity] = useState("1");
+	const [creatingOrder, setCreatingOrder] = useState(false);
+	const [createPaymentOutcome, setCreatePaymentOutcome] = useState<
+		"SUCCEEDED" | "FAILED"
+	>("SUCCEEDED");
+	const [creatingPayment, setCreatingPayment] = useState(false);
 
 	const [formRootType, setFormRootType] = useState<RootType>(
 		isRootType(rootType) ? rootType : "USER",
@@ -90,10 +124,98 @@ export default function GraphPage() {
 		setFormIncludeEvents(includeEvents);
 	}, [rootType, rootId, depth, maxEvents, maxNodes, includeEvents]);
 
+	useEffect(() => {
+		let active = true;
+		setInventoryLoading(true);
+		void (async () => {
+			try {
+				const res = await apiListInventoryItems({ limit: 50, page: 1 });
+				if (!active) return;
+				const list = res.items ?? [];
+				setInventoryItems(list);
+				if (list.length > 0 && !selectedSku) {
+					setSelectedSku(list[0]?.sku ?? "");
+				}
+			} catch (e: unknown) {
+				if (!active) return;
+				const message = e instanceof Error ? e.message : String(e);
+				setError(message);
+			} finally {
+				if (active) setInventoryLoading(false);
+			}
+		})();
+		return () => {
+			active = false;
+		};
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
+
+	useEffect(() => {
+		if (autoSelectedRef.current) return;
+		if (isRootType(rootType) && rootId) return;
+		autoSelectedRef.current = true;
+		let active = true;
+		setError(null);
+		void (async () => {
+			try {
+				const res = await apiListUsers({ limit: 1, page: 1 });
+				if (!active) return;
+				const first = res.items[0];
+				if (!first?.userId) {
+					setError(
+						"기본 사용자 선택 실패: 사용자 데이터가 없습니다.",
+					);
+					return;
+				}
+
+				const sp = new URLSearchParams();
+				sp.set("rootType", "USER");
+				sp.set("rootId", first.userId);
+				sp.set("depth", String(Number.isFinite(depth) ? depth : 2));
+				sp.set(
+					"maxEvents",
+					String(Number.isFinite(maxEvents) ? maxEvents : 500),
+				);
+				sp.set(
+					"maxNodes",
+					String(Number.isFinite(maxNodes) ? maxNodes : 600),
+				);
+				sp.set("includeEvents", String(includeEvents));
+				router.replace(`/?${sp.toString()}`);
+			} catch (e: unknown) {
+				if (!active) return;
+				const message = e instanceof Error ? e.message : String(e);
+				setError(`기본 사용자 선택 실패: ${message}`);
+			}
+		})();
+		return () => {
+			active = false;
+		};
+	}, [rootType, rootId, router, depth, maxEvents, maxNodes, includeEvents]);
+
 	const selectedNode = useMemo(() => {
 		if (!graph || !selectedId) return null;
 		return graph.nodes.find((n) => n.id === selectedId) ?? null;
 	}, [graph, selectedId]);
+
+	const selectedInventory = useMemo(() => {
+		if (!selectedSku) return null;
+		return inventoryItems.find((i) => i.sku === selectedSku) ?? null;
+	}, [inventoryItems, selectedSku]);
+
+	const orderQuantity = useMemo(() => {
+		const n = Math.trunc(Number(selectedQuantity));
+		if (!Number.isFinite(n)) return 1;
+		return Math.min(999, Math.max(1, n));
+	}, [selectedQuantity]);
+
+	const computedOrderMoney = useMemo(() => {
+		if (!selectedInventory) return null;
+		return {
+			currency: selectedInventory.price.currency,
+			amountMinor: selectedInventory.price.amountMinor * orderQuantity,
+		};
+	}, [selectedInventory, orderQuantity]);
 
 	useEffect(() => {
 		const rt = rootType;
@@ -152,7 +274,7 @@ export default function GraphPage() {
 		if (next.maxEvents.trim()) sp.set("maxEvents", next.maxEvents.trim());
 		if (next.maxNodes.trim()) sp.set("maxNodes", next.maxNodes.trim());
 		sp.set("includeEvents", String(next.includeEvents));
-		router.push(`/graph?${sp.toString()}`);
+		router.push(`/?${sp.toString()}`);
 	};
 
 	const elements = useMemo(() => {
@@ -200,10 +322,18 @@ export default function GraphPage() {
 		}
 	};
 
-	useEffect(() => {
+	const maybeAutoLayout = () => {
 		const cy = cyRef.current;
 		if (!cy || !graph) return;
+		const key = `${graph.rootNodeId}|${graph.nodes.length}|${graph.edges.length}`;
+		if (autoLayoutKeyRef.current === key) return;
+		autoLayoutKeyRef.current = key;
 		runLayout(cy);
+	};
+
+	useEffect(() => {
+		if (!graph) return;
+		maybeAutoLayout();
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [graph?.rootNodeId, graph?.nodes.length, graph?.edges.length]);
 
@@ -447,9 +577,9 @@ export default function GraphPage() {
 					<div className="mt-4 flex flex-wrap gap-3">
 						<Link
 							className="rounded-md border bg-white px-3 py-2 hover:bg-zinc-50"
-							href="/graph?rootType=USER&rootId=dummy-default"
+							href="/?rootType=USER&rootId=00000000-0000-0000-0000-000000000001"
 						>
-							예시(사용자 dummy-default)
+							예시(USER)
 						</Link>
 					</div>
 				</div>
@@ -477,7 +607,7 @@ export default function GraphPage() {
 									onClick={() => {
 										const cy = cyRef.current;
 										if (!cy) return;
-													runLayout(cy);
+										runLayout(cy);
 									}}
 								>
 									재정렬
@@ -504,8 +634,8 @@ export default function GraphPage() {
 								style={{ width: "100%", height: "100%" }}
 								cy={(cy: Core) => {
 									cyRef.current = cy;
-															cy.off("tap", "node");
-															cy.on("tap", "node", (evt: EventObject) => {
+									cy.off("tap", "node");
+									cy.on("tap", "node", (evt: EventObject) => {
 										const id = evt.target.id();
 										setSelectedId(id);
 										const original =
@@ -532,6 +662,7 @@ export default function GraphPage() {
 											}
 										}
 									});
+									maybeAutoLayout();
 								}}
 							/>
 						</div>
@@ -568,7 +699,7 @@ export default function GraphPage() {
 								{selectedNode.type !== "EVENT" ? (
 									<Link
 										className="rounded-md bg-zinc-900 px-3 py-2 text-center text-xs text-white hover:bg-zinc-800"
-										href={`/graph?rootType=${encodeURIComponent(
+										href={`/?rootType=${encodeURIComponent(
 											selectedNode.type,
 										)}&rootId=${encodeURIComponent(parseNodeKey(selectedNode.id).key)}&depth=${encodeURIComponent(String(Number.isFinite(depth) ? depth : 2))}&maxEvents=${encodeURIComponent(String(Number.isFinite(maxEvents) ? maxEvents : 500))}&maxNodes=${encodeURIComponent(String(Number.isFinite(maxNodes) ? maxNodes : 600))}`}
 									>
@@ -588,6 +719,267 @@ export default function GraphPage() {
 										)}
 									</pre>
 								</div>
+
+								{selectedNode.type === "USER" ? (
+									<div className="mt-2 rounded-md border px-3 py-3">
+										<div className="text-sm font-semibold">
+											주문 생성
+										</div>
+										<div className="mt-3 grid gap-3">
+											<div className="grid gap-1">
+												<div className="text-xs text-zinc-600">
+													UserId
+												</div>
+												<div className="font-mono text-xs">
+													{
+														parseNodeKey(
+															selectedNode.id,
+														).key
+													}
+												</div>
+											</div>
+											<label className="grid gap-1">
+												<span className="text-xs text-zinc-600">
+													재고(SKU)
+												</span>
+												<select
+													className="h-10 rounded-md border px-3 font-mono text-xs"
+													value={selectedSku}
+													onChange={(e) =>
+														setSelectedSku(
+															e.target.value,
+														)
+													}
+													disabled={
+														inventoryLoading ||
+														inventoryItems.length ===
+															0
+													}
+												>
+													{inventoryItems.map(
+														(it) => (
+															<option
+																key={it.itemId}
+																value={it.sku}
+															>
+																{it.sku} (
+																{
+																	it.price
+																		.currency
+																}{" "}
+																{
+																	it.price
+																		.amountMinor
+																}
+																)
+															</option>
+														),
+													)}
+												</select>
+											</label>
+
+											<div className="grid grid-cols-2 gap-3">
+												<label className="grid gap-1">
+													<span className="text-xs text-zinc-600">
+														수량
+													</span>
+													<input
+														className="h-10 rounded-md border px-3"
+														value={selectedQuantity}
+														onChange={(e) =>
+															setSelectedQuantity(
+																e.target.value,
+															)
+														}
+														inputMode="numeric"
+													/>
+												</label>
+												<div className="grid gap-1">
+													<span className="text-xs text-zinc-600">
+														총액
+													</span>
+													<div className="h-10 rounded-md border bg-zinc-50 px-3 text-sm leading-10">
+														{computedOrderMoney
+															? `${computedOrderMoney.currency} ${computedOrderMoney.amountMinor}`
+															: "-"}
+													</div>
+												</div>
+											</div>
+
+											<button
+												className="h-10 rounded-md bg-zinc-900 px-3 text-sm text-white hover:bg-zinc-800 disabled:opacity-50"
+												disabled={
+													creatingOrder ||
+													!selectedInventory ||
+													!computedOrderMoney
+												}
+												onClick={async () => {
+													setError(null);
+													setCreatingOrder(true);
+													try {
+														const userId =
+															parseNodeKey(
+																selectedNode.id,
+															).key;
+														if (
+															!selectedInventory ||
+															!computedOrderMoney
+														) {
+															setError(
+																"재고를 선택해 주세요.",
+															);
+															return;
+														}
+														const res =
+															await apiCreateOrder(
+																{
+																	userId,
+																	amount: computedOrderMoney.amountMinor,
+																	currency:
+																		(() => {
+																			const c =
+																				computedOrderMoney.currency;
+																			if (
+																				c ===
+																					"KRW" ||
+																				c ===
+																					"USD"
+																			)
+																				return c;
+																			throw new Error(
+																				`지원하지 않는 통화입니다: ${c}`,
+																			);
+																		})(),
+																	items: [
+																		{
+																			sku: selectedInventory.sku,
+																			quantity:
+																				orderQuantity,
+																		},
+																	],
+																},
+															);
+														pushQuery({
+															rootType: "ORDER",
+															rootId: res.orderId,
+															depth: formDepth,
+															maxEvents:
+																formMaxEvents,
+															maxNodes:
+																formMaxNodes,
+															includeEvents:
+																formIncludeEvents,
+														});
+													} catch (e: unknown) {
+														const message =
+															e instanceof Error
+																? e.message
+																: String(e);
+														setError(message);
+													} finally {
+														setCreatingOrder(false);
+													}
+												}}
+											>
+												주문 생성
+											</button>
+										</div>
+									</div>
+								) : null}
+
+								{selectedNode.type === "ORDER" ? (
+									<div className="mt-2 rounded-md border px-3 py-3">
+										<div className="text-sm font-semibold">
+											결제 인텐트 생성(시뮬레이터)
+										</div>
+										<div className="mt-3 grid gap-3">
+											<label className="grid gap-1">
+												<span className="text-xs text-zinc-600">
+													결과
+												</span>
+												<select
+													className="h-10 rounded-md border px-3"
+													value={createPaymentOutcome}
+													onChange={(e) => {
+														const v =
+															e.target.value;
+														setCreatePaymentOutcome(
+															v === "FAILED"
+																? "FAILED"
+																: "SUCCEEDED",
+														);
+													}}
+												>
+													<option value="SUCCEEDED">
+														SUCCEEDED
+													</option>
+													<option value="FAILED">
+														FAILED
+													</option>
+												</select>
+											</label>
+
+											<button
+												className="h-10 rounded-md bg-zinc-900 px-3 text-sm text-white hover:bg-zinc-800 disabled:opacity-50"
+												disabled={creatingPayment}
+												onClick={async () => {
+													setError(null);
+													setCreatingPayment(true);
+													try {
+														const orderId =
+															parseNodeKey(
+																selectedNode.id,
+															).key;
+														const res =
+															(await apiCreatePaymentIntent(
+																orderId,
+																{
+																	simulateOutcome:
+																		createPaymentOutcome,
+																},
+															)) as {
+																paymentId?: string;
+															};
+														const paymentId =
+															typeof res?.paymentId ===
+															"string"
+																? res.paymentId
+																: null;
+														if (!paymentId) {
+															setError(
+																"결제 인텐트 생성에 실패했습니다.",
+															);
+															return;
+														}
+														pushQuery({
+															rootType: "PAYMENT",
+															rootId: paymentId,
+															depth: formDepth,
+															maxEvents:
+																formMaxEvents,
+															maxNodes:
+																formMaxNodes,
+															includeEvents:
+																formIncludeEvents,
+														});
+													} catch (e: unknown) {
+														const message =
+															e instanceof Error
+																? e.message
+																: String(e);
+														setError(message);
+													} finally {
+														setCreatingPayment(
+															false,
+														);
+													}
+												}}
+											>
+												결제 인텐트 생성
+											</button>
+										</div>
+									</div>
+								) : null}
 							</div>
 						) : (
 							<div className="mt-3 text-sm text-zinc-600">
