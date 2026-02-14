@@ -5,6 +5,7 @@ import {
   IEventHandler,
   QueryBus,
 } from '@nestjs/cqrs';
+import { executeCommand, executeQuery } from 'src/common/utils/cqrs-executor';
 import {
   PaymentWebhookFailedEvent,
   PaymentWebhookSucceededEvent,
@@ -13,23 +14,13 @@ import { IPaymentRepositorySymbol } from '../../modules/payments/domains/reposit
 import type { IPaymentRepository } from '../../modules/payments/domains/repositories/i.payment.repository';
 import { MarkOrderPaidCommand } from '../../shared/ordering/commands/mark-order-paid.command';
 import { GetOrderQuery } from '../../shared/ordering/queries/get-order.query';
-import type { OrderView } from '../../shared/ordering/readers/order.view';
+import { isOrderView } from '../../shared/ordering/readers/order-view.guard';
 import { OutboxProducer } from '../../modules/outbox/application/outbox.producer';
 import {
   ReserveInventoryForOrderRequestedEvent,
   type InventoryOrderItemPayload,
 } from '../../shared/inventory';
 import { CreateShipmentForOrderRequestedEvent } from '../../shared/shipping';
-
-function isOrderView(value: unknown): value is OrderView {
-  if (!value || typeof value !== 'object') return false;
-  const record = value as Record<string, unknown>;
-  return (
-    typeof record.amount === 'number' &&
-    typeof record.currency === 'string' &&
-    Array.isArray(record.items)
-  );
-}
 
 @Injectable()
 @EventsHandler(PaymentWebhookSucceededEvent)
@@ -48,13 +39,9 @@ export class PaymentWebhookSucceededHandler implements IEventHandler<PaymentWebh
     if (!orderId || !paymentId) throw new Error('invalid webhook payload');
 
     await this.payments.markSucceeded(paymentId);
-    await this.commandBus.execute(
-      new MarkOrderPaidCommand(orderId) as unknown as never,
-    );
+    await executeCommand(this.commandBus, new MarkOrderPaidCommand(orderId));
 
-    const order = await this.queryBus.execute(
-      new GetOrderQuery(orderId) as unknown as never,
-    );
+    const order = await executeQuery(this.queryBus, new GetOrderQuery(orderId));
 
     const items: InventoryOrderItemPayload[] =
       isOrderView(order) && order.items.length

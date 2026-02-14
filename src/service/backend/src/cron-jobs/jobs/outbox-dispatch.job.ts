@@ -3,6 +3,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { MikroOrmCronJobAbstract } from 'src/common/abstracts/mikro-orm-cron-job.abstract';
+import { executeCommand, executeQuery } from 'src/common/utils/cqrs-executor';
 import { DispatchOutboxEventCommand } from 'src/shared/outbox/commands/dispatch-outbox-event.command';
 import {
   GetPendingOutboxEventsQuery,
@@ -33,9 +34,10 @@ export class OutboxDispatchJob extends MikroOrmCronJobAbstract {
   }
 
   protected async handleJobWithContext(): Promise<void> {
-    const result = (await this.queryBus.execute(
-      new GetPendingOutboxEventsQuery(10, new Date()) as unknown as never,
-    )) as GetPendingOutboxEventsResult;
+    const result = await executeQuery<GetPendingOutboxEventsResult>(
+      this.queryBus,
+      new GetPendingOutboxEventsQuery(10, new Date()),
+    );
 
     const getOrderId = (
       payload: Record<string, unknown>,
@@ -51,11 +53,9 @@ export class OutboxDispatchJob extends MikroOrmCronJobAbstract {
       if (!event.uuid) continue;
 
       const messageGroupId = getOrderId(event.payload) ?? 'outbox';
-      await this.commandBus.execute(
-        new DispatchOutboxEventCommand(
-          event.uuid,
-          messageGroupId,
-        ) as unknown as never,
+      await executeCommand(
+        this.commandBus,
+        new DispatchOutboxEventCommand(event.uuid, messageGroupId),
       );
       dispatched += 1;
     }

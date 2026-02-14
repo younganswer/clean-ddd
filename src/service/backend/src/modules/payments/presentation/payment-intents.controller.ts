@@ -7,6 +7,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
+import { executeQuery } from 'src/common/utils/cqrs-executor';
 import {
   GetPaymentIntentQuery,
   ListPaymentIntentsQuery,
@@ -36,8 +37,9 @@ export class PaymentIntentsController {
   async list(@Query('limit') limitRaw?: string): Promise<PaymentIntentView[]> {
     const limit = Math.min(50, Math.max(1, Number(limitRaw ?? '20')));
 
-    const result = await this.queryBus.execute(
-      new ListPaymentIntentsQuery(limit) as unknown as never,
+    const result = await executeQuery(
+      this.queryBus,
+      new ListPaymentIntentsQuery(limit),
     );
 
     if (!Array.isArray(result) || !result.every(isPaymentIntentView)) {
@@ -49,8 +51,9 @@ export class PaymentIntentsController {
 
   @Get(':paymentId')
   async get(@Param('paymentId') paymentId: string): Promise<PaymentIntentView> {
-    const result = await this.queryBus.execute(
-      new GetPaymentIntentQuery(paymentId) as unknown as never,
+    const result = await executeQuery(
+      this.queryBus,
+      new GetPaymentIntentQuery(paymentId),
     );
 
     if (result === null || result === undefined) {

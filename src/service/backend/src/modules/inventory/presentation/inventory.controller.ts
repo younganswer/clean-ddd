@@ -1,5 +1,6 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
+import { executeQuery } from 'src/common/utils/cqrs-executor';
 import {
   GetInventoryItemQuery,
   type InventoryItemView,
@@ -20,16 +21,12 @@ export class InventoryController {
   ): Promise<PaginatedView<InventoryItemView>> {
     const limit = Math.min(Math.max(Number(limitRaw ?? 50) || 50, 1), 200);
     const page = Math.max(1, Number(pageRaw ?? 1) || 1);
-    return await this.queryBus.execute(
-      new ListInventoryItemsQuery(limit, page) as unknown as never,
-    );
+    return await executeQuery(this.queryBus, new ListInventoryItemsQuery(limit, page));
   }
 
   @Get('items/:sku')
   async getItem(@Param('sku') sku: string): Promise<InventoryItemView | null> {
-    return await this.queryBus.execute(
-      new GetInventoryItemQuery(sku) as unknown as never,
-    );
+    return await executeQuery(this.queryBus, new GetInventoryItemQuery(sku));
   }
 
   @Get('reservations')
@@ -38,8 +35,6 @@ export class InventoryController {
   ): Promise<InventoryReservationView[]> {
     const id = String(orderId ?? '');
     if (!id) return [];
-    return await this.queryBus.execute(
-      new ListInventoryReservationsQuery(id) as unknown as never,
-    );
+    return await executeQuery(this.queryBus, new ListInventoryReservationsQuery(id));
   }
 }

@@ -5,6 +5,7 @@ import {
   ICommandHandler,
   QueryBus,
 } from '@nestjs/cqrs';
+import { executeCommand, executeQuery } from 'src/common/utils/cqrs-executor';
 import { OutboxProducer } from '../../../../outbox/application/outbox.producer';
 import { IPaymentRepositorySymbol } from '../../../domains/repositories/i.payment.repository';
 import type { IPaymentRepository } from '../../../domains/repositories/i.payment.repository';
@@ -14,25 +15,11 @@ import {
   PaymentWebhookFailedEvent,
   PaymentWebhookSucceededEvent,
 } from '../../../../../shared/payments';
-import type { OrderView } from '../../../../../shared/ordering/readers/order.view';
+import { assertOrderView } from '../../../../../shared/ordering/readers/order-view.guard';
 import {
   CreatePaymentIntentCommand,
   type CreatePaymentIntentResult,
 } from '../../../../../shared/payments';
-
-function assertOrderView(value: unknown): asserts value is OrderView {
-  if (!value || typeof value !== 'object') {
-    throw new Error('order not found');
-  }
-
-  const record = value as Record<string, unknown>;
-  if (
-    typeof record.amount !== 'number' ||
-    typeof record.currency !== 'string'
-  ) {
-    throw new Error('order not found');
-  }
-}
 
 @CommandHandler(CreatePaymentIntentCommand)
 export class CreatePaymentIntentHandler implements ICommandHandler<CreatePaymentIntentCommand> {
@@ -50,9 +37,7 @@ export class CreatePaymentIntentHandler implements ICommandHandler<CreatePayment
     const orderId = String(command.input.orderId ?? '').trim();
     if (!orderId) throw new Error('orderId is required');
 
-    const order = await this.queryBus.execute(
-      new GetOrderQuery(orderId) as unknown as never,
-    );
+    const order = await executeQuery(this.queryBus, new GetOrderQuery(orderId));
     assertOrderView(order);
 
     const payment = await this.payments.createIntent({
@@ -61,11 +46,12 @@ export class CreatePaymentIntentHandler implements ICommandHandler<CreatePayment
       currency: order.currency,
     });
 
-    await this.commandBus.execute(
+    await executeCommand(
+      this.commandBus,
       new AttachPaymentToOrderCommand({
         orderId,
         paymentId: payment.id,
-      }) as unknown as never,
+      }),
     );
 
     const outcome = command.input.simulateOutcome ?? 'SUCCEEDED';
