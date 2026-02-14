@@ -12,6 +12,10 @@ import {
 	type ShipmentSummary,
 } from "@/lib/api";
 
+const toOutcome = (value: string): "SUCCEEDED" | "FAILED" => {
+	return value === "FAILED" ? "FAILED" : "SUCCEEDED";
+};
+
 export default function OrderDetailPage() {
 	return (
 		<Suspense
@@ -233,9 +237,7 @@ function OrderDetailInner() {
 								<select
 									className="h-10 rounded-md border px-3"
 									value={outcome}
-									onChange={(e) =>
-										setOutcome(e.target.value as any)
-									}
+									onChange={(e) => setOutcome(toOutcome(e.target.value))}
 								>
 									<option value="SUCCEEDED">SUCCEEDED</option>
 									<option value="FAILED">FAILED</option>

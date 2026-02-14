@@ -83,6 +83,16 @@ export type UserProfile = {
 	avatarUrl?: string;
 };
 
+export type CreatePaymentIntentResponse = {
+	paymentId: string;
+	status: string;
+	scheduled: {
+		eventType: string;
+		delaySeconds: number;
+		outboxId: string;
+	};
+};
+
 export type GraphNode = {
 	id: string;
 	type: "USER" | "ORDER" | "SHIPMENT" | "PAYMENT" | "EVENT";
@@ -134,7 +144,7 @@ export async function apiGetOrder(orderId: string): Promise<OrderDetail> {
 export async function apiCreatePaymentIntent(
 	orderId: string,
 	input: { simulateOutcome?: "SUCCEEDED" | "FAILED" },
-): Promise<any> {
+): Promise<CreatePaymentIntentResponse> {
 	return http(`/orders/${encodeURIComponent(orderId)}/payments/intents`, {
 		method: "POST",
 		body: JSON.stringify(input),

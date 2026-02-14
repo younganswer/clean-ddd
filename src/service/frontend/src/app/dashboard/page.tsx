@@ -4,6 +4,10 @@ import Link from "next/link";
 import { useState } from "react";
 import { apiCreateOrder } from "@/lib/api";
 
+const toCurrency = (value: string): "KRW" | "USD" => {
+	return value === "USD" ? "USD" : "KRW";
+};
+
 export default function DashboardPage() {
 	const [userId, setUserId] = useState("");
 	const [amount, setAmount] = useState("1000");
@@ -46,7 +50,7 @@ export default function DashboardPage() {
 						<select
 							className="h-10 rounded-md border px-3"
 							value={currency}
-							onChange={(e) => setCurrency(e.target.value as any)}
+							onChange={(e) => setCurrency(toCurrency(e.target.value))}
 						>
 							<option value="KRW">KRW</option>
 							<option value="USD">USD</option>
@@ -66,8 +70,12 @@ export default function DashboardPage() {
 										currency,
 									});
 									setCreatedOrderId(res.orderId);
-								} catch (e: any) {
-									setError(String(e?.message ?? e));
+								} catch (error: unknown) {
+									setError(
+										error instanceof Error
+											? error.message
+											: String(error),
+									);
 								}
 							}}
 						>
