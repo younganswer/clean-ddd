@@ -14,7 +14,6 @@ graph TD
   IDX --> B2[backend: nest-application-model]
   IDX --> B3[backend: persistence-and-mikro-orm]
   IDX --> B4[backend: request-context-and-entity-manager]
-  IDX --> B5[backend: migrations]
   IDX --> B6[backend: outbox-pattern]
   IDX --> B7[backend: sqs-fifo-and-idempotency]
   IDX --> B8[backend: serverless-entrypoints]
@@ -26,6 +25,4 @@ graph TD
   IDX --> I2[infra: sam-resource-mapping]
 
   IDX --> C1[contracts: openapi-and-shared-types]
-
-  IDX --> T1[tools: localstack-sqs]
 ```

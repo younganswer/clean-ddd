@@ -4,6 +4,12 @@
 
 이 문서들은 코드베이스에 나타나는 기술적 구조, 경계, 흐름을 소개하는 것을 목표로 합니다. 업무/도메인 자체 소개는 범위에서 제외합니다.
 
+## 문서 권한
+
+- 개념/아키텍처 원문은 `docs/`를 기준으로 유지합니다.
+- 디렉터리별 README는 실행 맥락/탐색 가이드를 제공합니다.
+- 디렉터리 하위 `docs/`는 보조 메모 성격으로 제한합니다.
+
 ## 개요
 
 - [시스템 한눈에 보기](system-at-a-glance.md)
@@ -11,22 +17,17 @@
 - [데이터 흐름](data-flows.md)
 - [컨셉 맵](concept-map.md)
 
-## 사용법/배포
+## 런타임 부록
 
-- [개발 환경 실행 및 사용법](usage.md)
-- [배포 가이드](deploy.md)
+- [Runtime Appendix](runtime-appendix.md)
 
 ## 영역별 컨셉
 
 ### 백엔드
 
+- [백엔드 개념 허브](concepts/backend/index.md)
 - [프로세스 모델](concepts/backend/process-model.md)
-- [Nest 애플리케이션 모델](concepts/backend/nest-application-model.md)
-- [영속성과 MikroORM](concepts/backend/persistence-and-mikro-orm.md)
-- [RequestContext와 EntityManager](concepts/backend/request-context-and-entity-manager.md)
 - [Outbox 패턴(본 저장소 구현)](concepts/backend/outbox-pattern.md)
-- [SQS FIFO와 멱등성](concepts/backend/sqs-fifo-and-idempotency.md)
-- [서버리스 엔트리포인트](concepts/backend/serverless-entrypoints.md)
 - [테스트 전략(백엔드)](concepts/backend/testing-strategy.md)
 
 ### 프론트엔드
@@ -42,6 +43,13 @@
 
 - [OpenAPI와 공유 타입](concepts/contracts/openapi-and-shared-types.md)
 
-### 도구
+## 디렉터리 레벨 가이드
 
-- [LocalStack SQS](concepts/tools/localstack-sqs.md)
+코드 디렉터리에서 바로 문맥을 파악하려면 아래 README부터 확인하세요.
+
+- [src 가이드](../src/README.md)
+- [service 가이드](../src/service/README.md)
+- [backend 가이드](../src/service/backend/README.md)
+- [packages 가이드](../src/packages/README.md)
+- [infra 가이드](../src/infra/README.md)
+- [stack 가이드](../src/stack/README.md)

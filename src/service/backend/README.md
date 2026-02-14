@@ -1,48 +1,49 @@
 # backend
 
-`src/service/backend`는 NestJS 기반의 백엔드 애플리케이션입니다.
+`src/service/backend`는 이 저장소에서 **Clean Architecture + DDD를 실제 코드 예시로 정리한 핵심 영역**입니다.
 
-이 저장소의 백엔드는 단일 코드베이스를 여러 실행 역할(role)로 구동하는 형태를 갖습니다. 예를 들어, 동일한 `dist/src/main.js`가 HTTP API로도 실행되고, cron/scheduler 역할로도 실행되며, SQS 폴링 워커 역할로도 실행됩니다.
+핵심 정리 포인트는 아래 두 가지입니다.
 
-## 주요 구성요소
+- 기술 프레임워크(NestJS/ORM/Queue)가 바뀌어도, 핵심 비즈니스 규칙이 쉽게 흔들리지 않는 구조 만들기
+- 동기 요청(HTTP)과 비동기 처리(SQS/Outbox)를 하나의 일관된 애플리케이션 모델로 다루기
 
-- NestJS 애플리케이션 부팅/구성
-- MikroORM 기반 영속성
-- Outbox 패턴 기반 비동기 처리
-- SQS FIFO(LocalStack/AWS) 연동
-- 서버리스 엔트리포인트(HTTP/SQS)
+## 이 폴더에서 확인할 수 있는 것
 
-## DB 초기화/기본 데이터
+- 경계(레이어/모듈)를 통해 의존성 방향을 통제하는 방법
+- Command/Query/Event 흐름에서 애플리케이션 서비스의 책임 분리
+- Outbox와 FIFO 큐를 이용한 비동기 일관성 패턴
+- 서버리스 엔트리포인트(HTTP/SQS)와 앱 코어의 분리
 
-DB 초기 상태(스키마/트리거/기본 데이터)는 초기화 스크립트가 책임집니다.
+## 빠른 확인 경로
 
-- 권장 실행(루트): `make -C src init`
-  - 동일 Compose project의 DB 볼륨 삭제
-  - 스키마 생성(MikroORM `SchemaGenerator.createSchema()`)
-  - 트리거 적용(`updated_at` 자동 갱신)
-  - 기본 데이터 구성(users 100, orders/payments/shipments 200 등)
+1. [백엔드 개념 문서 허브](../../../docs/concepts/backend/index.md)
+2. [프로세스 모델](../../../docs/concepts/backend/process-model.md)
+3. [Outbox 패턴(본 저장소 구현)](../../../docs/concepts/backend/outbox-pattern.md)
+4. [테스트 전략](../../../docs/concepts/backend/testing-strategy.md)
 
-기본 접속 정보는 `postgresql://app:app@localhost:54322/clean_ddd`입니다.
+## 소스 디렉터리 가이드
 
-### DB 스크립트 실행
+- [backend src 개요](src/README.md)
+- [도메인 모듈(modules)](src/modules/README.md)
+- [인프라 어댑터(lib)](src/lib/README.md)
 
-- 실행 위치: `src/service/backend`
-- 명령: `corepack pnpm db:init`, `corepack pnpm db:reset`, `corepack pnpm db:diff`
-- 위 스크립트는 `node --env-file=.env`로 `.env`를 자동 로딩합니다.
+## 구현 확인 체크리스트
 
-`queue does not exist` 오류가 나면 LocalStack이 올라왔는지와 큐 생성 상태를 먼저 확인하세요.
+- Controller/Handler/Domain/Infra 책임이 섞이지 않는지
+- Outbox 경계에서 상태 변경과 비동기 발행이 일관되게 연결되는지
+- 런타임 역할(HTTP/Cron/Worker) 분리가 코드 경계를 깨지 않는지
 
-- `make -C src up`
-- `docker compose -p clean-ddd -f src/stack/compose/docker-compose.yml ps`
+## 실행 관점 요약
+
+동일 코드베이스가 실행 역할(role)에 따라 다른 진입점으로 동작합니다.
+
+- HTTP API
+- cron/scheduler
+- queue worker(SQS poller)
+
+이 구조는 “진입점은 다르지만, 애플리케이션/도메인 코어는 공통으로 재사용”하는 패턴을 실제 운영 관점에서 정리합니다.
 
 ## 관련 문서
 
-문서 허브는 루트의 [docs/index.md](/docs/index.md)입니다. 백엔드 관련 문서는 아래에서 시작하시면 됩니다.
-
-- [프로세스 모델](/docs/concepts/backend/process-model.md)
-- [Nest 애플리케이션 모델](/docs/concepts/backend/nest-application-model.md)
-- [영속성과 MikroORM](/docs/concepts/backend/persistence-and-mikro-orm.md)
-- [RequestContext와 EntityManager](/docs/concepts/backend/request-context-and-entity-manager.md)
-- [Outbox 패턴(본 저장소 구현)](/docs/concepts/backend/outbox-pattern.md)
-- [SQS FIFO와 멱등성](/docs/concepts/backend/sqs-fifo-and-idempotency.md)
-- [서버리스 엔트리포인트](/docs/concepts/backend/serverless-entrypoints.md)
+- 전체 문서 허브: [../../../docs/index.md](../../../docs/index.md)
+- 백엔드 개념 문서 묶음(기준): [../../../docs/concepts/backend/index.md](../../../docs/concepts/backend/index.md)

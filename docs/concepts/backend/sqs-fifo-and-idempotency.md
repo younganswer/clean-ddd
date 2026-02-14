@@ -17,4 +17,4 @@ SQS FIFO 큐는 메시지 순서(ordering)와 중복 제거(deduplication)에 �
 ## 함께 읽기
 
 - [Outbox 패턴(본 저장소 구현)](outbox-pattern.md)
-- [LocalStack SQS](../tools/localstack-sqs.md)
+- [Runtime Appendix](../../runtime-appendix.md)

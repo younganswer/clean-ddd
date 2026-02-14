@@ -18,5 +18,5 @@
 
 ## 관련 문서
 
-- 문서 허브: [docs/index.md](/docs/index.md)
-- 개념 문서: [OpenAPI와 공유 타입](/docs/concepts/contracts/openapi-and-shared-types.md)
+- 문서 허브: [docs/index.md](../../../docs/index.md)
+- 개념 문서: [OpenAPI와 공유 타입](../../../docs/concepts/contracts/openapi-and-shared-types.md)
