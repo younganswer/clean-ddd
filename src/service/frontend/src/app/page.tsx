@@ -1,1 +1,1 @@
-export { default } from "./graph/page";
+export { default } from "@/app/graph/page";
