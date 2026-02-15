@@ -12,11 +12,11 @@
 ```mermaid
 graph LR
   subgraph LocalMachine[Local]
-    NGINX[Nginx reverse proxy] -->|HTTP| FE[Frontend\nsrc/service/frontend]
-    NGINX -->|HTTP /api| API[Backend HTTP API\nbackend-api]
+    NGINX[Nginx reverse proxy] -->|HTTP| FE["Frontend<br/>src/service/frontend"]
+    NGINX -->|HTTP /api| API["Backend HTTP API<br/>backend-api"]
 
-    CRON[Backend cron/scheduler\nbackend-cron]
-    QP[Backend queue poller\nbackend-queue]
+    CRON["Backend cron/scheduler<br/>backend-cron"]
+    QP["Backend queue poller<br/>backend-queue"]
 
     API --> DB[(Postgres)]
     CRON --> DB
@@ -51,11 +51,11 @@ AWS에서도 역할은 유사하며, API Gateway/Lambda/SQS로 매핑됩니다.
 graph LR
   CF[CloudFront] --> S3[(S3 static site)]
 
-  APIGW[API Gateway] --> LHTTP[HTTP Lambda\nbackend handler]
+  APIGW[API Gateway] --> LHTTP["HTTP Lambda<br/>backend handler"]
   LHTTP --> DB[(Postgres)]
   LHTTP --> SQS[(SQS FIFO)]
 
-  SQS --> LSQS[SQS consumer Lambda\nworker handler]
+  SQS --> LSQS["SQS consumer Lambda<br/>worker handler"]
   LSQS --> DB
 ```
 

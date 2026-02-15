@@ -2,6 +2,9 @@
 
 `src/service/backend`는 이 저장소에서 **Clean Architecture + DDD를 실제 코드 예시로 정리한 핵심 영역**입니다.
 
+<br/>
+<br/>
+
 ## 목차
 
 1. [핵심 목표](#핵심-목표)
@@ -12,7 +15,6 @@
 6. [소스 디렉터리 가이드](#소스-디렉터리-가이드)
 7. [구현 확인 체크리스트](#구현-확인-체크리스트)
 8. [실행 관점 요약](#실행-관점-요약)
-9. [추가 개념 링크](#추가-개념-링크)
 
 <br/>
 <br/>
@@ -115,12 +117,3 @@
 - queue worker(SQS poller)
 
 이 구조는 “진입점은 다르지만, 애플리케이션/도메인 코어는 공통으로 재사용”하는 패턴을 실제 운영 관점에서 정리합니다.
-
-<br/>
-<br/>
-
-## 추가 개념 링크
-
-- [Clean Architecture + DDD 통합 문서](../../../docs/clean-architecture-ddd.md)
-- [도메인 간 연동 패턴](../../../docs/backend-integration-patterns.md)
-- [데이터 흐름](../../../docs/data-flows.md)

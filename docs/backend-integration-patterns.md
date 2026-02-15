@@ -35,6 +35,15 @@ Reader는 단순한 조회 편의가 아니라 도메인 경계를 보호하는 
 - 반환 모델은 Entity 전체가 아니라 "타 도메인에 필요한 최소 DTO"로 제한합니다.
 - 테스트에서는 Reader를 mock 하여 도메인 규칙을 독립 검증합니다.
 
+### Reader 계약 규칙 (페이지네이션/카운트)
+
+Reader는 타 도메인에서 필요한 조회 요구를 계약으로 고정해야 하므로, 반환 형태를 예측 가능하게 유지합니다.
+
+- 목록 조회는 `items + page + pageSize + hasNext` 또는 이에 준하는 명시적 페이지 정보를 포함합니다.
+- 총 개수가 의미 있는 화면/정산 시나리오는 `totalCount`를 계약에 포함합니다.
+- 정렬 기준(`sortBy`, `direction`)과 필터 조건은 계약 필드로 명시합니다.
+- Reader 구현체가 DB 최적화를 바꿔도 계약 시그니처는 안정적으로 유지합니다.
+
 <br/>
 <br/>
 
@@ -53,6 +62,19 @@ BFF는 다음 3개 레이어만 사용합니다.
 - Infrastructure(Reader): 각 도메인 조회 어댑터
 
 즉, BFF에는 Domain 레이어를 두지 않고, 도메인 규칙은 기존 모듈에만 유지합니다.
+
+### BFF에서 Command 위임이 가능한 경우
+
+기본 원칙은 Query 조합이지만, 다음 조건에서는 Command 위임을 허용할 수 있습니다.
+
+- BFF는 요청 형태/채널 특화 입력을 표준 유스케이스 입력으로 변환만 수행합니다.
+- 실제 상태 변경 규칙, 트랜잭션, 이벤트/Outbox는 도메인 모듈 Command Handler가 담당합니다.
+- 실패/보상 정책은 도메인 모듈 또는 Saga 경계에서 관리합니다.
+
+금지:
+
+- BFF에서 repository/Entity를 직접 다루는 것
+- BFF가 다중 도메인 정책을 새로 정의하는 것
 
 <br/>
 <br/>
@@ -74,7 +96,7 @@ BFF는 다음 3개 레이어만 사용합니다.
 | 실패 영향 | 메인 트랜잭션 성공/실패에 직접 영향         | 메인 트랜잭션과 분리된 side effect                              |
 | 기본 위치 | `src/service/backend/src/saga-orchestrator` | `src/service/backend/src/modules/*/application/events/handlers` |
 
-선택 기준은 아래 두 가지입니다.
+선택 기준:
 
 - 핵심 비즈니스 성공 조건을 좌우하면 Saga
 - 실패해도 본 트랜잭션을 되돌릴 필요가 없으면 Domain Event Handler
@@ -93,7 +115,7 @@ Hybrid Outbox는 즉시 처리성과 재처리 안정성을 함께 가져가기 
 | FAILED    | 전달 또는 소비 실패          | RETRY(PENDING)     |
 | CONSUMED  | 소비 처리 완료               | 종료               |
 
-핵심은 “상태 변경과 outbox 기록의 원자성”을 먼저 보장하고, 외부 전달은 재시도로 복구한다는 점입니다.
+핵심은 상태 변경과 outbox 기록의 원자성을 먼저 보장하고, 외부 전달은 재시도로 복구하는 것입니다.
 
 <br/>
 <br/>

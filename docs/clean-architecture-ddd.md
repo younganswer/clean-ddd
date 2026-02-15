@@ -70,6 +70,16 @@
 - 가능하면 `common`
 - 도메인 언어가 들어가면 `shared`
 
+### Shared / Common / Lib 배치 원칙 (Do/Don’t)
+
+`shared`, `common`, `lib`는 재사용 대상이 아니라 **의존성 방향과 도메인 언어 포함 여부**로 구분합니다.
+
+| 위치     | 두는 것(Do)                                                 | 두지 말아야 할 것(Don’t)                              |
+| -------- | ----------------------------------------------------------- | ----------------------------------------------------- |
+| `shared` | Command/Query/Event 계약, Reader DTO, 도메인 간 합의된 타입 | ORM Entity, framework provider, 특정 인프라 구현 의존 |
+| `common` | 기술 공통 유틸, base type, 에러 추상화                      | 특정 도메인 용어가 포함된 규칙, 비즈니스 정책         |
+| `lib`    | 런타임 어댑터(outbox/queue/lambda), 실행 경계 wiring        | 도메인 규칙 자체, aggregate 상태 전이 정책            |
+
 <br/>
 <br/>
 
@@ -118,6 +128,21 @@
 - 조회 유스케이스를 수행합니다.
 - 조회 최적화가 필요한 경우 조회 전용 접근을 허용하되, 도메인 규칙 변경은 수행하지 않습니다.
 
+### BFF 경계: Query 조합 + 제한적 Command 위임
+
+BFF는 기본적으로 조회 조합(Query composition) 경계이지만, **도메인 규칙을 소유하지 않는 조건**에서 Command 위임을 허용할 수 있습니다.
+
+허용 조건:
+
+- BFF는 유효성/화면 조합 책임만 갖고, 상태 전이 규칙은 원 도메인 Command Handler가 소유합니다.
+- 트랜잭션 경계/도메인 이벤트/Outbox 기록은 도메인 모듈 내부에서 수행합니다.
+- BFF의 Command는 “새 정책”이 아니라 “기존 유스케이스 라우팅/위임”이어야 합니다.
+
+금지 조건:
+
+- BFF가 도메인 엔티티를 직접 변경하거나 repository를 직접 호출하는 것
+- BFF에서 다중 도메인 상태 전이를 임의로 조합해 신규 정책을 만드는 것
+
 ### Repository
 
 - Aggregate Root 저장/조회의 최소 인터페이스를 유지합니다.
@@ -164,6 +189,8 @@ Nest 애플리케이션은 역할에 따라 두 형태로 실행됩니다.
 - `OUTBOX_CRON_ENABLED`: Outbox 디스패처/스케줄러 활성화 여부
 - `OUTBOX_POLLING_ENABLED`: Queue 소비자 활성화 여부
 
+핵심은 진입점만 분기하고 Application/Domain 경계는 동일하게 유지하는 것입니다.
+
 <br/>
 <br/>
 
@@ -171,13 +198,13 @@ Nest 애플리케이션은 역할에 따라 두 형태로 실행됩니다.
 
 Outbox는 “DB 기록 이후 메시지 전달”을 통해 동기 트랜잭션과 비동기 처리를 연결합니다.
 
-1. 애플리케이션이 상태 변경과 outbox 레코드를 DB에 기록
-2. 디스패처가 pending outbox를 읽어 SQS FIFO에 `outboxId` 전송
-3. 소비자가 `outboxId`로 레코드를 조회해 타입 이벤트로 발행
+1. 애플리케이션이 상태 변경과 outbox 레코드를 DB에 기록합니다.
+2. 디스패처가 pending outbox를 읽어 SQS FIFO에 `outboxId`를 전송합니다.
+3. 소비자가 `outboxId`로 레코드를 조회해 타입 이벤트로 발행합니다.
 
-운영/로컬의 엔드포인트·자격 증명은 다르지만, 흐름은 동일하게 유지합니다.
+운영/로컬 엔드포인트 차이가 있어도 흐름 원칙은 동일합니다.
 
-- 로컬(LocalStack)에서는 FIFO 일부 속성 제한을 고려한 우회 설정이 포함됩니다.
+- 로컬(LocalStack)에서는 FIFO 일부 속성 제한을 고려한 우회 설정을 사용합니다.
 - 소비 측은 처리 이력 기록으로 멱등성을 보장합니다.
 
 <br/>
@@ -198,6 +225,34 @@ Outbox는 “DB 기록 이후 메시지 전달”을 통해 동기 트랜잭션�
 - Application은 인터페이스(Repository/Reader) 기반 주입으로 테스트 대상을 고립하기 쉽습니다.
 - Domain은 프레임워크/ORM 의존이 없어 순수 규칙 테스트가 가능합니다.
 - Infrastructure 변경(ORM/외부 SDK)이 Domain/Application 테스트에 미치는 영향을 줄입니다.
+
+<br/>
+<br/>
+
+## Actor(AuthContext) 전파 원칙
+
+요청 주체(Actor: 사용자/시스템 계정)는 `AuthContext`로 애플리케이션 경계에 주입하고, 하위 유스케이스는 이를 참조해 감사/권한/행위 주체를 일관되게 처리합니다.
+
+- Controller/Entrypoint에서 Actor를 결정하고 컨텍스트를 설정합니다.
+- Application/Domain은 HTTP 프레임워크 객체를 참조하지 않고 Actor 정보만 사용합니다.
+- 비동기 경로(Queue/Cron)에서는 시스템 Actor를 명시해 동일 규칙을 유지합니다.
+
+<br/>
+<br/>
+
+## RequestContext와 Unit of Work
+
+`RequestContext`는 실행 단위(HTTP 요청 1회, cron 배치 1회, queue 메시지 1회)에 대해 EntityManager 스코프를 고정해 Unit of Work 일관성을 보장합니다.
+
+- HTTP: 요청당 컨텍스트 1개를 생성해 같은 유스케이스 내 영속 일관성을 유지합니다.
+- Cron/Worker: 반복 루프마다 독립 컨텍스트를 생성해 누적 오염을 방지합니다.
+- Outbox 소비: lock/멱등성/상태 갱신을 동일 실행 컨텍스트에서 처리합니다.
+
+실무 규칙:
+
+- 루프 외부에서 공유된 EntityManager를 재사용하지 않습니다.
+- 컨텍스트 경계와 재시도 경계를 일치시킵니다.
+- 실패 기록(`attempt`, `nextAttemptAt`, `lastError`)은 같은 Unit of Work에서 갱신합니다.
 
 <br/>
 <br/>
