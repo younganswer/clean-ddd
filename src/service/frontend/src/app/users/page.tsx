@@ -1,100 +1,61 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { apiListUsers, type UserProfile } from "@/lib/api";
 import { Pagination } from "@/app/_components/pagination";
+import { usePaginatedList } from "@/lib/use-paginated-list";
 
 const DEFAULT_PAGE_SIZE = 10;
 
 export default function UsersPage() {
-	const [page, setPage] = useState(1);
 	const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
-	const [users, setUsers] = useState<UserProfile[]>([]);
-	const [hasNext, setHasNext] = useState(false);
-	const [totalPages, setTotalPages] = useState(1);
-	const [error, setError] = useState<string | null>(null);
-
-	async function load(currentPage: number, currentPageSize: number) {
-		setError(null);
-		try {
-			const res = await apiListUsers({
-				limit: currentPageSize,
-				page: currentPage,
-			});
-			setTotalPages(res.totalPages);
-			if (currentPage > res.totalPages) {
-				setPage(res.totalPages);
-				return;
-			}
-			setUsers(res.items);
-			setHasNext(res.hasNext);
-		} catch (e: unknown) {
-			const message = e instanceof Error ? e.message : String(e);
-			setError(message);
-		}
-	}
-
-	useEffect(() => {
-		let active = true;
-		void (async () => {
-			try {
-				const res = await apiListUsers({ limit: pageSize, page });
-				if (!active) return;
-				setTotalPages(res.totalPages);
-				if (page > res.totalPages) {
-					setPage(res.totalPages);
-					return;
-				}
-				setUsers(res.items);
-				setHasNext(res.hasNext);
-			} catch (e: unknown) {
-				if (!active) return;
-				const message = e instanceof Error ? e.message : String(e);
-				setError(message);
-			}
-		})();
-		return () => {
-			active = false;
-		};
-	}, [page, pageSize]);
+	const fetchUsers = useCallback(
+		({ page, limit }: { page: number; limit: number }) => {
+			return apiListUsers({ limit, page });
+		},
+		[],
+	);
+	const {
+		page,
+		setPage,
+		items: users,
+		hasNext,
+		totalPages,
+		error,
+	} = usePaginatedList<UserProfile>({
+		pageSize,
+		fetchPage: fetchUsers,
+	});
 
 	return (
-		<>
-			<div className="flex items-center justify-between">
-				<h1 className="text-2xl font-semibold">사용자</h1>
-				<button
-					className="h-9 rounded-md border bg-white px-3 text-sm hover:bg-zinc-50"
-					onClick={() => void load(page, pageSize)}
-				>
-					새로고침
-				</button>
-			</div>
+		<div className="page-shell">
+			<h1 className="text-2xl font-semibold">사용자</h1>
 
-			{error && <div className="mt-4 text-sm text-red-600">{error}</div>}
+			{error && <div className="mt-4 text-sm text-danger">{error}</div>}
 
-			<div className="mt-6 overflow-hidden rounded-xl border bg-white">
-				<table className="w-full text-left text-sm">
-					<thead className="bg-zinc-50 text-xs text-zinc-600">
+			<div className="table-shell mt-6">
+				<table className="data-table">
+					<thead>
 						<tr>
-							<th className="px-4 py-3">DisplayName</th>
-							<th className="px-4 py-3">Email</th>
+							<th>Display Name</th>
+							<th>Email</th>
 						</tr>
 					</thead>
 					<tbody>
 						{users.map((u) => (
-							<tr key={u.userId} className="border-t">
-								<td className="px-4 py-3">
+							<tr key={u.userId}>
+								<td>
 									<Link
-										className="underline"
+										className="table-link"
 										href={`/?rootType=USER&rootId=${encodeURIComponent(u.userId)}`}
 									>
 										{u.displayName}
 									</Link>
 								</td>
-								<td className="px-4 py-3">
+								<td>
 									<Link
-										className="underline"
+										className="table-link"
 										href={`/?rootType=USER&rootId=${encodeURIComponent(u.userId)}`}
 									>
 										{u.email}
@@ -104,10 +65,7 @@ export default function UsersPage() {
 						))}
 						{users.length === 0 && (
 							<tr>
-								<td
-									className="px-4 py-6 text-zinc-500"
-									colSpan={2}
-								>
+								<td className="empty-row" colSpan={2}>
 									데이터 없음
 								</td>
 							</tr>
@@ -125,6 +83,6 @@ export default function UsersPage() {
 				onPrev={() => setPage((p) => Math.max(1, p - 1))}
 				onNext={() => setPage((p) => p + 1)}
 			/>
-		</>
+		</div>
 	);
 }

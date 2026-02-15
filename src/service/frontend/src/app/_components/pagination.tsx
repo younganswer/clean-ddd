@@ -23,11 +23,11 @@ export function Pagination({
 }: Props) {
 	return (
 		<div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-			<div className="flex flex-wrap items-center gap-3 text-xs text-zinc-600">
+			<div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
 				<label className="flex items-center gap-2">
 					<span>페이지 크기</span>
 					<select
-						className="h-9 w-[72px] rounded-md border bg-white px-2 text-sm font-medium"
+						className="input h-9 w-[72px] px-2 text-sm font-medium"
 						value={pageSize}
 						onChange={(e) =>
 							onPageSizeChange(Number(e.target.value))
@@ -46,14 +46,14 @@ export function Pagination({
 			</div>
 			<div className="flex gap-2">
 				<button
-					className="h-9 rounded-md border bg-white px-3 text-sm disabled:opacity-50"
+					className="btn h-9"
 					disabled={page <= 1}
 					onClick={onPrev}
 				>
 					이전
 				</button>
 				<button
-					className="h-9 rounded-md border bg-white px-3 text-sm disabled:opacity-50"
+					className="btn h-9"
 					disabled={!hasNext || page >= totalPages}
 					onClick={onNext}
 				>

@@ -135,7 +135,7 @@ async function seed(client: Client): Promise<void> {
       from generate_series(1, 10) as s(i)
     `);
 
-    // Orders: exactly 200 (2 per user), each user orders random SKU.
+    // Orders: exactly 200 (2 per user), each order picks a random SKU.
     await client.query(`
       with user_rows as (
         select u."uuid" as user_id
@@ -160,7 +160,7 @@ async function seed(client: Client): Promise<void> {
 			select i."sku", i."price_currency", i."price_amount_minor"
 			from "inventory_items" i
 			where i."sku" like 'SKU-%'
-			order by random()
+			order by md5(u.user_id::text || ':' || o.n::text || ':' || i."sku")
 			limit 1
 		) inv
       )
@@ -269,6 +269,36 @@ async function seed(client: Client): Promise<void> {
         and not exists (select 1 from "inventory_reservations" r where r."sku" = i."sku");
     `);
 
+    const dist = await client.query<{
+      orders: number;
+      reservations: number;
+      distinct_skus: number;
+      max_sku_orders: number;
+    }>(`
+      with sku_dist as (
+        select r."sku", count(*)::int as cnt
+        from "inventory_reservations" r
+        group by r."sku"
+      )
+      select
+        (select count(*) from "orders")::int as orders,
+        (select count(*) from "inventory_reservations")::int as reservations,
+        coalesce((select count(*) from sku_dist), 0)::int as distinct_skus,
+        coalesce((select max(cnt) from sku_dist), 0)::int as max_sku_orders;
+    `);
+
+    const row = dist.rows[0];
+    if (row.orders !== 200 || row.reservations !== 200) {
+      throw new Error(
+        `seed invariant failed: orders=${row.orders}, reservations=${row.reservations}`,
+      );
+    }
+    if (row.distinct_skus <= 1) {
+      throw new Error(
+        `seed randomness failed: distinct_skus=${row.distinct_skus}, max_sku_orders=${row.max_sku_orders}`,
+      );
+    }
+
     await client.query('commit;');
   } catch (error) {
     try {
@@ -280,7 +310,7 @@ async function seed(client: Client): Promise<void> {
   }
 }
 
-async function main() {
+export async function runDbInit() {
   const url = databaseUrl();
 
   await withRetries({ ...RETRY, label: 'Postgres' }, async () => {
@@ -356,8 +386,10 @@ async function main() {
   }
 }
 
-main().catch((error) => {
-  const message = error instanceof Error ? error.message : String(error);
-  console.error(`db:init 실패: ${message}`);
-  process.exitCode = 1;
-});
+if (require.main === module) {
+  runDbInit().catch((error) => {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`db:init 실패: ${message}`);
+    process.exitCode = 1;
+  });
+}

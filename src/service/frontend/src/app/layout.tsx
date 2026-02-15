@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import Link from "next/link";
 import "@/app/globals.css";
+import { AppSidebarNav } from "@/app/_components/app-sidebar-nav";
 
 const geistSans = Geist({
 	variable: "--font-geist-sans",
@@ -28,44 +28,35 @@ export default function RootLayout({
 			<body
 				className={`${geistSans.variable} ${geistMono.variable} antialiased`}
 			>
-				<div className="min-h-screen bg-zinc-50 text-zinc-900">
-					<header className="border-b bg-white">
-						<div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
-							<Link href="/" className="text-lg font-semibold">
+				<div className="app-shell">
+					<aside className="app-sidebar">
+						<div className="border-b border-border px-4 py-4">
+							<div className="text-sm font-semibold text-foreground">
 								clean-ddd Admin
-							</Link>
-							<nav className="flex gap-4 text-sm">
-								<Link className="hover:underline" href="/">
-									그래프
-								</Link>
-								<Link className="hover:underline" href="/users">
-									사용자
-								</Link>
-								<Link
-									className="hover:underline"
-									href="/orders"
-								>
-									주문
-								</Link>
-								<Link
-									className="hover:underline"
-									href="/shipments"
-								>
-									배송
-								</Link>
-								<Link
-									className="hover:underline"
-									href="/inventory"
-								>
-									재고
-								</Link>
-							</nav>
+							</div>
+							<div className="mt-1 text-xs text-muted-foreground">
+								Logical structure visibility
+							</div>
 						</div>
-					</header>
+						<div className="px-3 py-4">
+							<AppSidebarNav />
+						</div>
+					</aside>
 
-					<main className="mx-auto max-w-5xl px-6 py-8">
-						{children}
-					</main>
+					<div className="app-content">
+						<header className="app-topbar">
+							<div>
+								<div className="text-sm font-medium text-foreground">
+									Service UI
+								</div>
+								<div className="text-xs text-muted-foreground">
+									Clean Architecture + DDD
+								</div>
+							</div>
+						</header>
+
+						<main className="app-main">{children}</main>
+					</div>
 				</div>
 			</body>
 		</html>
