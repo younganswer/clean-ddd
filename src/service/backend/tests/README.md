@@ -4,7 +4,7 @@
 
 테스트 전략의 개념 설명은 다음 문서에서 소개합니다.
 
-- [docs/concepts/backend/testing-strategy.md](../../../../docs/concepts/backend/testing-strategy.md)
+- [docs/clean-architecture-ddd.md](../../../../docs/clean-architecture-ddd.md)
 
 ## 레이어(폴더) 구조
 

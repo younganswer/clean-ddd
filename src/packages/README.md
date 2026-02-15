@@ -8,4 +8,5 @@
 
 ## 개념 기준 문서
 
-- [OpenAPI와 공유 타입](../../docs/concepts/contracts/openapi-and-shared-types.md)
+- [시스템 한눈에 보기](../../docs/system-at-a-glance.md)
+- [Clean Architecture + DDD 통합 문서](../../docs/clean-architecture-ddd.md)

@@ -4,6 +4,6 @@
 
 ## 관련 문서
 
-- 문서 허브: [docs/index.md](../../../docs/index.md)
-- 프론트엔드 기술 모델: [본 저장소의 Next.js 모델](../../../docs/concepts/frontend/nextjs-model.md)
+- 문서 허브: [docs/README.md](../../../docs/README.md)
+- 비핵심 영역 요약: [시스템 한눈에 보기](../../../docs/system-at-a-glance.md)
 - 큰 그림: [런타임 토폴로지](../../../docs/runtime-topology.md)

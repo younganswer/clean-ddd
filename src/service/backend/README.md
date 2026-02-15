@@ -2,10 +2,30 @@
 
 `src/service/backend`는 이 저장소에서 **Clean Architecture + DDD를 실제 코드 예시로 정리한 핵심 영역**입니다.
 
+## 목차
+
+1. [핵심 목표](#핵심-목표)
+2. [이 폴더에서 확인할 수 있는 것](#이-폴더에서-확인할-수-있는-것)
+3. [폴더별 책임 요약](#폴더별-책임-요약)
+4. [Write(명령) 구현 순서](#write명령-구현-순서)
+5. [Read(조회) 구현 순서](#read조회-구현-순서)
+6. [소스 디렉터리 가이드](#소스-디렉터리-가이드)
+7. [구현 확인 체크리스트](#구현-확인-체크리스트)
+8. [실행 관점 요약](#실행-관점-요약)
+9. [추가 개념 링크](#추가-개념-링크)
+
+<br/>
+<br/>
+
+## 핵심 목표
+
 핵심 정리 포인트는 아래 두 가지입니다.
 
 - 기술 프레임워크(NestJS/ORM/Queue)가 바뀌어도, 핵심 비즈니스 규칙이 쉽게 흔들리지 않는 구조 만들기
 - 동기 요청(HTTP)과 비동기 처리(SQS/Outbox)를 하나의 일관된 애플리케이션 모델로 다루기
+
+<br/>
+<br/>
 
 ## 이 폴더에서 확인할 수 있는 것
 
@@ -14,12 +34,55 @@
 - Outbox와 FIFO 큐를 이용한 비동기 일관성 패턴
 - 서버리스 엔트리포인트(HTTP/SQS)와 앱 코어의 분리
 
-## 빠른 확인 경로
+<br/>
+<br/>
 
-1. [백엔드 개념 문서 허브](../../../docs/concepts/backend/index.md)
-2. [프로세스 모델](../../../docs/concepts/backend/process-model.md)
-3. [Outbox 패턴(본 저장소 구현)](../../../docs/concepts/backend/outbox-pattern.md)
-4. [테스트 전략](../../../docs/concepts/backend/testing-strategy.md)
+## 폴더별 책임 요약
+
+| 폴더                           | 역할            | 핵심 확인 포인트               |
+| ------------------------------ | --------------- | ------------------------------ |
+| `src/modules/*/presentation`   | HTTP 진입점     | DTO, Controller 경계           |
+| `src/modules/*/application`    | 유스케이스 실행 | command/query/event handler    |
+| `src/modules/*/domains`        | 비즈니스 규칙   | entity, repository interface   |
+| `src/modules/*/infrastructure` | 기술 구현       | repository 구현, mapper/schema |
+| `src/lib`                      | 런타임 어댑터   | lambda, queue, outbox 결합     |
+
+<br/>
+<br/>
+
+## Write(명령) 구현 순서
+
+1. 유스케이스 입력/출력을 먼저 정의합니다.
+2. 도메인 규칙(엔티티/도메인 서비스)을 확정합니다.
+3. repository interface를 정의/수정합니다.
+4. infrastructure에서 영속 구현을 연결합니다.
+5. command handler에서 유스케이스를 조합합니다.
+6. controller 엔드포인트와 DTO를 연결합니다.
+7. 비동기 발행이 필요한 경우 Outbox 경계를 거쳐 이벤트를 전달합니다.
+
+권장 순서는 “도메인 규칙 → 애플리케이션 orchestration → 진입점”입니다.
+
+<br/>
+<br/>
+
+## Read(조회) 구현 순서
+
+1. query 입력/출력 모델을 정의합니다.
+2. 조회 대상이 Aggregate Root인지 먼저 판별합니다.
+3. Aggregate Root 조회는 repository를 우선 사용합니다.
+4. 복합 조회/통계 조회는 조회 전용 접근을 선택합니다.
+5. query handler에서 조회 흐름과 예외를 정리합니다.
+6. controller에서 응답 DTO를 명확히 매핑합니다.
+
+조회는 “조회 최적화”와 “도메인 규칙 변경 금지”를 동시에 만족해야 합니다.
+
+추가 기준:
+
+- 도메인 간 조회가 필요하면 Reader 계약 패턴을 우선 검토합니다.
+- 배치/대량 조회는 단건 유스케이스를 무리하게 확장하지 않고 Bulk 단위로 분리합니다.
+
+<br/>
+<br/>
 
 ## 소스 디렉터리 가이드
 
@@ -27,11 +90,21 @@
 - [도메인 모듈(modules)](src/modules/README.md)
 - [인프라 어댑터(lib)](src/lib/README.md)
 
+<br/>
+<br/>
+
 ## 구현 확인 체크리스트
 
 - Controller/Handler/Domain/Infra 책임이 섞이지 않는지
 - Outbox 경계에서 상태 변경과 비동기 발행이 일관되게 연결되는지
 - 런타임 역할(HTTP/Cron/Worker) 분리가 코드 경계를 깨지 않는지
+- Write/Read에서 repository 책임이 과도하게 섞이지 않았는지
+- Query 로직이 상태 변경을 유발하지 않는지
+- cron/worker가 내부 구현을 직접 호출하지 않고 Bus 경계를 지키는지
+- 도메인 간 조회가 직접 의존 대신 Reader 계약으로 분리되어 있는지
+
+<br/>
+<br/>
 
 ## 실행 관점 요약
 
@@ -43,7 +116,11 @@
 
 이 구조는 “진입점은 다르지만, 애플리케이션/도메인 코어는 공통으로 재사용”하는 패턴을 실제 운영 관점에서 정리합니다.
 
-## 관련 문서
+<br/>
+<br/>
 
-- 전체 문서 허브: [../../../docs/index.md](../../../docs/index.md)
-- 백엔드 개념 문서 묶음(기준): [../../../docs/concepts/backend/index.md](../../../docs/concepts/backend/index.md)
+## 추가 개념 링크
+
+- [Clean Architecture + DDD 통합 문서](../../../docs/clean-architecture-ddd.md)
+- [도메인 간 연동 패턴](../../../docs/backend-integration-patterns.md)
+- [데이터 흐름](../../../docs/data-flows.md)
