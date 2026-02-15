@@ -35,8 +35,8 @@ export default function ShipmentsPage() {
 
 			{error && <div className="mt-4 text-sm text-danger">{error}</div>}
 
-			<div className="table-shell mt-6">
-				<table className="data-table">
+			<div className="table-shell table-shell-readable mt-6">
+				<table className="data-table data-table-mobile-cards">
 					<thead>
 						<tr>
 							<th>Shipment ID</th>
@@ -48,7 +48,10 @@ export default function ShipmentsPage() {
 					<tbody>
 						{shipments.map((s) => (
 							<tr key={s.shipmentId}>
-								<td className="mono-cell">
+								<td
+									data-label="Shipment ID"
+									className="mono-cell"
+								>
 									<Link
 										className="table-link"
 										href={`/?rootType=SHIPMENT&rootId=${encodeURIComponent(s.shipmentId)}`}
@@ -56,7 +59,7 @@ export default function ShipmentsPage() {
 										{s.shipmentId}
 									</Link>
 								</td>
-								<td className="mono-cell">
+								<td data-label="Order ID" className="mono-cell">
 									<Link
 										className="table-link"
 										href={`/?rootType=ORDER&rootId=${encodeURIComponent(s.orderId)}`}
@@ -64,10 +67,10 @@ export default function ShipmentsPage() {
 										{s.orderId}
 									</Link>
 								</td>
-								<td>
+								<td data-label="Status">
 									<StatusPill status={s.status} />
 								</td>
-								<td>
+								<td data-label="Created">
 									{new Date(s.createdAt).toLocaleString()}
 								</td>
 							</tr>
@@ -84,6 +87,7 @@ export default function ShipmentsPage() {
 			</div>
 
 			<Pagination
+				className="table-shell-readable"
 				page={page}
 				pageSize={pageSize}
 				totalPages={totalPages}

@@ -112,7 +112,7 @@ export function GraphCanvas({
 				</div>
 			</div>
 
-			<div className="relative z-0 h-[640px] overflow-hidden">
+			<div className="relative z-0 h-[440px] overflow-hidden md:h-[560px] xl:h-[640px]">
 				<CytoscapeComponent
 					elements={elements}
 					stylesheet={stylesheet}

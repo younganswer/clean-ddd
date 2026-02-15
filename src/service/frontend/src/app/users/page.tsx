@@ -34,8 +34,8 @@ export default function UsersPage() {
 
 			{error && <div className="mt-4 text-sm text-danger">{error}</div>}
 
-			<div className="table-shell mt-6">
-				<table className="data-table">
+			<div className="table-shell table-shell-readable mt-6">
+				<table className="data-table data-table-mobile-cards">
 					<thead>
 						<tr>
 							<th>Display Name</th>
@@ -45,7 +45,7 @@ export default function UsersPage() {
 					<tbody>
 						{users.map((u) => (
 							<tr key={u.userId}>
-								<td>
+								<td data-label="Display Name">
 									<Link
 										className="table-link"
 										href={`/?rootType=USER&rootId=${encodeURIComponent(u.userId)}`}
@@ -53,7 +53,7 @@ export default function UsersPage() {
 										{u.displayName}
 									</Link>
 								</td>
-								<td>
+								<td data-label="Email">
 									<Link
 										className="table-link"
 										href={`/?rootType=USER&rootId=${encodeURIComponent(u.userId)}`}
@@ -75,6 +75,7 @@ export default function UsersPage() {
 			</div>
 
 			<Pagination
+				className="table-shell-readable"
 				page={page}
 				pageSize={pageSize}
 				totalPages={totalPages}

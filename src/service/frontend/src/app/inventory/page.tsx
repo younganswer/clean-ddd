@@ -27,8 +27,8 @@ export default function InventoryPage() {
 
 			{error && <div className="mt-4 text-sm text-danger">{error}</div>}
 
-			<div className="table-shell mt-6">
-				<table className="data-table">
+			<div className="table-shell table-shell-readable mt-6">
+				<table className="data-table data-table-mobile-cards">
 					<thead>
 						<tr>
 							<th>Item ID</th>
@@ -42,14 +42,22 @@ export default function InventoryPage() {
 					<tbody>
 						{items.map((i) => (
 							<tr key={i.itemId}>
-								<td className="mono-cell">{i.itemId}</td>
-								<td className="mono-cell">{i.sku}</td>
-								<td className="mono-cell">
+								<td data-label="Item ID" className="mono-cell">
+									{i.itemId}
+								</td>
+								<td data-label="SKU" className="mono-cell">
+									{i.sku}
+								</td>
+								<td data-label="Price" className="mono-cell">
 									{i.price.currency} {i.price.amountMinor}
 								</td>
-								<td>{i.availableQuantity}</td>
-								<td>{i.reservedQuantity}</td>
-								<td>
+								<td data-label="Available">
+									{i.availableQuantity}
+								</td>
+								<td data-label="Reserved">
+									{i.reservedQuantity}
+								</td>
+								<td data-label="Updated">
 									{new Date(i.updatedAt).toLocaleString()}
 								</td>
 							</tr>
@@ -66,6 +74,7 @@ export default function InventoryPage() {
 			</div>
 
 			<Pagination
+				className="table-shell-readable"
 				page={page}
 				pageSize={pageSize}
 				totalPages={totalPages}

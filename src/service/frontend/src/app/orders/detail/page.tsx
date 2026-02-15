@@ -97,7 +97,7 @@ function OrderDetailInner() {
 
 	return (
 		<div className="page-shell">
-			<div className="flex items-center justify-between">
+			<div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
 				<div className="grid gap-1">
 					{orderId ? (
 						<h1 className="text-2xl font-semibold">
@@ -113,9 +113,9 @@ function OrderDetailInner() {
 					)}
 				</div>
 
-				<div className="flex items-center gap-2">
+				<div className="flex w-full items-center gap-2 sm:w-auto">
 					<button
-						className="btn h-9"
+						className="btn h-9 w-full sm:w-auto"
 						disabled={!orderId}
 						onClick={() => void refresh()}
 					>
@@ -141,11 +141,11 @@ function OrderDetailInner() {
 					<section className="surface p-6">
 						<h2 className="text-lg font-semibold">주문 정보</h2>
 						<dl className="mt-4 grid gap-2 text-sm">
-							<div className="flex justify-between">
+							<div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
 								<dt className="text-muted-foreground">
 									UserId
 								</dt>
-								<dd>
+								<dd className="break-all sm:text-right">
 									{order.userId ? (
 										<Link
 											className="font-mono text-xs underline"
@@ -158,25 +158,25 @@ function OrderDetailInner() {
 									)}
 								</dd>
 							</div>
-							<div className="flex justify-between">
+							<div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
 								<dt className="text-muted-foreground">
 									Status
 								</dt>
-								<dd>
+								<dd className="sm:text-right">
 									<StatusPill status={order.status} />
 								</dd>
 							</div>
-							<div className="flex justify-between">
+							<div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
 								<dt className="text-muted-foreground">
 									Amount
 								</dt>
-								<dd>
+								<dd className="sm:text-right">
 									{order.amount} {order.currency}
 								</dd>
 							</div>
-							<div className="flex justify-between">
+							<div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
 								<dt className="text-muted-foreground">Items</dt>
-								<dd className="text-right">
+								<dd className="text-left sm:text-right">
 									{(order.items ?? []).map((it, idx) => (
 										<div key={idx}>
 											{it.sku} × {it.quantity}
@@ -185,11 +185,11 @@ function OrderDetailInner() {
 									{(order.items ?? []).length === 0 && "-"}
 								</dd>
 							</div>
-							<div className="flex justify-between">
+							<div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
 								<dt className="text-muted-foreground">
 									PaymentId
 								</dt>
-								<dd>
+								<dd className="break-all sm:text-right">
 									{order.paymentId ? (
 										<Link
 											className="font-mono text-xs underline"
@@ -208,11 +208,11 @@ function OrderDetailInner() {
 					<section className="surface p-6">
 						<h2 className="text-lg font-semibold">컨텍스트 상태</h2>
 						<dl className="mt-4 grid gap-2 text-sm">
-							<div className="flex justify-between">
+							<div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
 								<dt className="text-muted-foreground">
 									배송(Shipment)
 								</dt>
-								<dd>
+								<dd className="sm:text-right">
 									{shipment ? (
 										<span className="flex flex-wrap items-center justify-end gap-2">
 											<StatusPill
@@ -230,11 +230,11 @@ function OrderDetailInner() {
 									)}
 								</dd>
 							</div>
-							<div className="flex justify-between">
+							<div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
 								<dt className="text-muted-foreground">
 									재고 예약
 								</dt>
-								<dd>
+								<dd className="sm:text-right">
 									{reservationCount === null
 										? "-"
 										: `${reservationCount}건`}
@@ -271,7 +271,7 @@ function OrderDetailInner() {
 							</label>
 
 							<button
-								className="btn btn-primary h-10"
+								className="btn btn-primary h-10 w-full sm:w-auto"
 								onClick={async () => {
 									setError(null);
 									try {

@@ -55,7 +55,7 @@ export function GraphDetailPanel({
 }: Props) {
 	return (
 		<div className="surface relative z-10 p-4">
-			<div className="flex items-center justify-between">
+			<div className="flex flex-wrap items-center justify-between gap-2">
 				<div className="text-sm font-semibold">상세</div>
 				<button
 					type="button"
@@ -137,7 +137,7 @@ export function GraphDetailPanel({
 									</select>
 								</label>
 
-								<div className="grid grid-cols-2 gap-3">
+								<div className="grid gap-3 sm:grid-cols-2">
 									<label className="grid gap-1">
 										<span className="field-label">
 											수량

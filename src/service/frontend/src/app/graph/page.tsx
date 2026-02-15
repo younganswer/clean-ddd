@@ -366,7 +366,7 @@ function GraphPageInner() {
 
 	return (
 		<div className="page-shell">
-			<div className="flex items-center justify-between">
+			<div className="flex flex-col items-start justify-between gap-2 md:flex-row md:items-center">
 				<h1 className="text-2xl font-semibold">그래프 뷰</h1>
 				<div className="text-sm text-muted-foreground">
 					{rootType && rootId ? (
@@ -430,7 +430,7 @@ function GraphPageInner() {
 			)}
 
 			{graph && (
-				<div className="mt-6 grid gap-4 lg:grid-cols-[1fr_320px]">
+				<div className="mt-6 grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
 					<GraphCanvas
 						graph={graph}
 						elements={elements}

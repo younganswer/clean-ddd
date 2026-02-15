@@ -60,39 +60,60 @@ a {
 }
 
 .app-shell {
-	display: grid;
-	grid-template-columns: 232px minmax(0, 1fr);
 	min-height: 100vh;
+	position: relative;
 }
 
 .app-sidebar {
-	position: sticky;
+	position: fixed;
 	top: 0;
 	height: 100vh;
+	width: 232px;
 	border-right: 1px solid var(--border);
 	background: var(--surface);
+	z-index: 40;
+	transform: translateX(-100%);
+	transition: transform 180ms ease;
+}
+
+.app-sidebar-open {
+	transform: translateX(0);
 }
 
 .app-content {
 	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	min-height: 100vh;
 }
 
 .app-topbar {
 	display: flex;
-	height: 56px;
+	min-height: 56px;
 	align-items: center;
 	justify-content: space-between;
 	border-bottom: 1px solid var(--border);
 	background: var(--surface);
-	padding-inline: 24px;
+	padding: 8px 16px;
 }
 
 .app-main {
-	padding: 24px;
+	padding: 16px;
+}
+
+.app-overlay {
+	position: fixed;
+	inset: 0;
+	background: color-mix(in srgb, var(--foreground) 35%, transparent);
+	z-index: 30;
+}
+
+.app-menu-btn {
+	display: inline-flex;
 }
 
 .page-shell {
-	max-width: 1200px;
+	max-width: 1920px;
 }
 
 .surface {
@@ -182,6 +203,12 @@ a {
 	border-radius: 12px;
 	border: 1px solid var(--border);
 	background: var(--surface);
+}
+
+.table-shell-readable {
+	width: 100%;
+	max-width: none;
+	margin-inline: 0;
 }
 
 .data-table {
@@ -288,15 +315,96 @@ a {
 	border-color: var(--border);
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 767px) {
+	.table-shell {
+		overflow: visible;
+	}
+
+	.data-table-mobile-cards {
+		border-collapse: separate;
+		border-spacing: 0;
+	}
+
+	.data-table-mobile-cards thead {
+		display: none;
+	}
+
+	.data-table-mobile-cards tbody {
+		display: grid;
+		gap: 12px;
+		padding: 12px;
+	}
+
+	.data-table-mobile-cards tbody tr {
+		display: grid;
+		gap: 10px;
+		border: 1px solid var(--border);
+		border-radius: 10px;
+		background: var(--surface);
+		padding: 12px;
+	}
+
+	.data-table-mobile-cards tbody td {
+		display: grid;
+		gap: 6px;
+		padding: 0;
+		border-bottom: none;
+	}
+
+	.data-table-mobile-cards td::before {
+		content: attr(data-label);
+		font-size: 11px;
+		line-height: 1.1;
+		font-weight: 600;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: var(--muted-foreground);
+	}
+
+	.data-table-mobile-cards tbody tr:last-child td {
+		border-bottom: none;
+	}
+
+	.data-table-mobile-cards .empty-row {
+		padding: 0;
+	}
+}
+
+@media (min-width: 768px) {
+	.app-topbar {
+		padding-inline: 24px;
+	}
+
+	.app-main {
+		padding: 24px;
+	}
+}
+
+@media (min-width: 1024px) {
 	.app-shell {
+		display: grid;
 		grid-template-columns: 1fr;
+		grid-template-columns: 232px minmax(0, 1fr);
 	}
 
 	.app-sidebar {
-		position: static;
-		height: auto;
-		border-right: none;
-		border-bottom: 1px solid var(--border);
+		position: sticky;
+		transform: none;
+	}
+
+	.app-overlay {
+		display: none;
+	}
+
+	.app-menu-btn {
+		display: none;
+	}
+}
+
+@media (min-width: 1536px) {
+	.table-shell-readable {
+		width: min(1400px, calc(100vw - 232px - 48px));
+		max-width: none;
+		margin-inline: 0;
 	}
 }

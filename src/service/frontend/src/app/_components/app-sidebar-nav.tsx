@@ -34,7 +34,11 @@ function isActive(pathname: string, href: string) {
 	return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-export function AppSidebarNav() {
+type Props = {
+	onNavigate?: () => void;
+};
+
+export function AppSidebarNav({ onNavigate }: Props) {
 	const pathname = usePathname();
 
 	return (
@@ -51,6 +55,7 @@ export function AppSidebarNav() {
 								<Link
 									key={item.href}
 									href={item.href}
+									onClick={onNavigate}
 									className={
 										active
 											? "nav-item nav-item-active"

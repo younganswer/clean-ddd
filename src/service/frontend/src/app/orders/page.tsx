@@ -34,8 +34,8 @@ export default function OrdersPage() {
 
 			{error && <div className="mt-4 text-sm text-danger">{error}</div>}
 
-			<div className="table-shell mt-6">
-				<table className="data-table">
+			<div className="table-shell table-shell-readable mt-6">
+				<table className="data-table data-table-mobile-cards">
 					<thead>
 						<tr>
 							<th>Order ID</th>
@@ -47,7 +47,7 @@ export default function OrdersPage() {
 					<tbody>
 						{orders.map((o) => (
 							<tr key={o.orderId}>
-								<td className="mono-cell">
+								<td data-label="Order ID" className="mono-cell">
 									<Link
 										className="table-link"
 										href={`/?rootType=ORDER&rootId=${encodeURIComponent(o.orderId)}`}
@@ -55,7 +55,7 @@ export default function OrdersPage() {
 										{o.orderId}
 									</Link>
 								</td>
-								<td className="mono-cell">
+								<td data-label="User ID" className="mono-cell">
 									{o.userId ? (
 										<Link
 											className="table-link"
@@ -67,7 +67,10 @@ export default function OrdersPage() {
 										"-"
 									)}
 								</td>
-								<td className="mono-cell">
+								<td
+									data-label="Payment ID"
+									className="mono-cell"
+								>
 									{o.paymentId ? (
 										<Link
 											className="table-link"
@@ -79,7 +82,7 @@ export default function OrdersPage() {
 										"-"
 									)}
 								</td>
-								<td>
+								<td data-label="Created">
 									{new Date(o.createdAt).toLocaleString()}
 								</td>
 							</tr>
@@ -96,6 +99,7 @@ export default function OrdersPage() {
 			</div>
 
 			<Pagination
+				className="table-shell-readable"
 				page={page}
 				pageSize={pageSize}
 				totalPages={totalPages}

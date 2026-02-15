@@ -64,7 +64,7 @@ export function GraphQueryForm({
 			<label className="grid gap-1">
 				<span className="field-label">RootId</span>
 				<input
-					className="input h-10 w-[340px] max-w-full font-mono text-xs"
+					className="input h-10 w-full min-w-0 font-mono text-xs md:w-[340px]"
 					value={formRootId}
 					onChange={(e) => onFormRootIdChange(e.target.value)}
 					placeholder="예: dummy-1 또는 주문/결제/배송 ID"
@@ -78,7 +78,7 @@ export function GraphQueryForm({
 					min={0}
 					max={4}
 					step={1}
-					className="input w-20"
+					className="input w-full sm:w-20"
 					value={formDepth}
 					onChange={(e) => onFormDepthChange(e.target.value)}
 				/>
@@ -87,7 +87,7 @@ export function GraphQueryForm({
 			<label className="grid gap-1">
 				<span className="field-label">MaxEvents</span>
 				<input
-					className="input w-28"
+					className="input w-full sm:w-28"
 					value={formMaxEvents}
 					onChange={(e) => onFormMaxEventsChange(e.target.value)}
 				/>
@@ -107,7 +107,7 @@ export function GraphQueryForm({
 			<label className="grid gap-1">
 				<span className="field-label">MaxNodes</span>
 				<input
-					className="input w-28"
+					className="input w-full sm:w-28"
 					value={formMaxNodes}
 					onChange={(e) => onFormMaxNodesChange(e.target.value)}
 				/>
@@ -117,11 +117,11 @@ export function GraphQueryForm({
 				조회
 			</button>
 
-			<div className="ml-auto flex flex-wrap items-end gap-2">
+			<div className="flex w-full flex-wrap items-end gap-2 md:ml-auto md:w-auto">
 				<label className="grid gap-1">
 					<span className="field-label">노드 검색</span>
 					<input
-						className="input h-10 w-[260px] max-w-full"
+						className="input h-10 w-full min-w-0 md:w-[260px]"
 						value={searchText}
 						onChange={(e) => onSearchTextChange(e.target.value)}
 						placeholder="id/label 일부 입력"
