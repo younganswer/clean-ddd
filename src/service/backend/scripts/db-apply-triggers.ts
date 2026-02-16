@@ -1,7 +1,7 @@
 import process from 'node:process';
 import { Client } from 'pg';
 
-function databaseUrl(): string {
+const databaseUrl = (): string => {
   const url = process.env.DATABASE_URL_DIRECT ?? process.env.DATABASE_URL;
   if (!url || url.trim().length === 0) {
     throw new Error(
@@ -9,9 +9,9 @@ function databaseUrl(): string {
     );
   }
   return url;
-}
+};
 
-async function ensureUpdatedAtFunction(client: Client): Promise<void> {
+const ensureUpdatedAtFunction = async (client: Client): Promise<void> => {
   await client.query(`
     create or replace function public.set_updated_at()
     returns trigger
@@ -23,11 +23,9 @@ async function ensureUpdatedAtFunction(client: Client): Promise<void> {
     end
     $$;
   `);
-}
+};
 
-async function listTablesWithUpdatedAt(
-  client: Client,
-): Promise<Array<{ schema: string; table: string }>> {
+const listTablesWithUpdatedAt = async (client: Client): Promise<Array<{ schema: string; table: string }>> => {
   const res = await client.query<{
     schema: string;
     table: string;
@@ -43,13 +41,13 @@ async function listTablesWithUpdatedAt(
   `);
 
   return res.rows;
-}
+};
 
-function qIdent(identifier: string): string {
+const qIdent = (identifier: string): string => {
   return `"${identifier.replaceAll('"', '""')}"`;
-}
+};
 
-async function applyUpdatedAtTriggers(client: Client): Promise<number> {
+const applyUpdatedAtTriggers = async (client: Client): Promise<number> => {
   await ensureUpdatedAtFunction(client);
 
   const tables = await listTablesWithUpdatedAt(client);
@@ -67,9 +65,9 @@ async function applyUpdatedAtTriggers(client: Client): Promise<number> {
   }
 
   return tables.length;
-}
+};
 
-async function main() {
+const main = async () => {
   const url = databaseUrl();
   const client = new Client({ connectionString: url });
   await client.connect();
@@ -88,7 +86,7 @@ async function main() {
   } finally {
     await client.end();
   }
-}
+};
 
 main().catch((error) => {
   const message = error instanceof Error ? error.message : String(error);

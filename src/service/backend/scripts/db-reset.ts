@@ -8,7 +8,7 @@ import { runDbInit } from '@/scripts/db-init';
 
 const RETRY = { attempts: 30, delayMs: 2_000 };
 
-function databaseUrl(): string {
+const databaseUrl = (): string => {
   const url = process.env.DATABASE_URL_DIRECT ?? process.env.DATABASE_URL;
   if (!url || url.trim().length === 0) {
     throw new Error(
@@ -16,9 +16,9 @@ function databaseUrl(): string {
     );
   }
   return url;
-}
+};
 
-async function dropAllInPublic(client: Client): Promise<void> {
+const dropAllInPublic = async (client: Client): Promise<void> => {
   await client.query('begin;');
   try {
     await client.query('drop schema if exists public cascade;');
@@ -33,9 +33,9 @@ async function dropAllInPublic(client: Client): Promise<void> {
     }
     throw error;
   }
-}
+};
 
-async function main() {
+const main = async () => {
   const url = databaseUrl();
 
   await withRetries({ ...RETRY, label: 'Postgres' }, async () => {
@@ -52,7 +52,7 @@ async function main() {
 
   await runDbInit();
   console.log('db:reset complete');
-}
+};
 
 main().catch((error) => {
   const message = error instanceof Error ? error.message : String(error);

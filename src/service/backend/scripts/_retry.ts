@@ -4,14 +4,11 @@ export type RetryOptions = {
   label?: string;
 };
 
-export function sleep(ms: number): Promise<void> {
+export const sleep = (ms: number): Promise<void> => {
   return new Promise((resolve) => setTimeout(resolve, ms));
-}
+};
 
-export async function withRetries<T>(
-  options: RetryOptions,
-  fn: (attempt: number) => Promise<T>,
-): Promise<T> {
+export const withRetries = async <T>(options: RetryOptions, fn: (attempt: number) => Promise<T>): Promise<T> => {
   const { attempts, delayMs, label } = options;
   let lastError: unknown;
 
@@ -38,4 +35,4 @@ export async function withRetries<T>(
   }
 
   throw lastError instanceof Error ? lastError : new Error(String(lastError));
-}
+};

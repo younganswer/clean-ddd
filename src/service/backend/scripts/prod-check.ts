@@ -3,15 +3,15 @@ import { withRetries } from '@/scripts/_retry';
 
 const RETRY = { attempts: 3, delayMs: 10_000 };
 
-function requireEnv(name: string): string {
+const requireEnv = (name: string): string => {
   const value = process.env[name];
   if (!value || value.trim().length === 0) {
     throw new Error(`필수 환경변수가 누락되었습니다: ${name}`);
   }
   return value;
-}
+};
 
-async function main() {
+const main = async () => {
   const pooled = requireEnv('DATABASE_URL_POOLED');
   const direct = requireEnv('DATABASE_URL_DIRECT');
 
@@ -29,7 +29,7 @@ async function main() {
   console.log('- DATABASE_URL_POOLED: OK');
   // eslint-disable-next-line no-console
   console.log('- DATABASE_URL_DIRECT: OK');
-}
+};
 
 main().catch((error) => {
   const message = error instanceof Error ? error.message : String(error);

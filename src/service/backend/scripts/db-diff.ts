@@ -8,7 +8,7 @@ import { withRetries } from '@/scripts/_retry';
 
 const RETRY = { attempts: 30, delayMs: 2_000 };
 
-function databaseUrl(): string {
+const databaseUrl = (): string => {
   const url = process.env.DATABASE_URL_DIRECT ?? process.env.DATABASE_URL;
   if (!url || url.trim().length === 0) {
     throw new Error(
@@ -16,9 +16,9 @@ function databaseUrl(): string {
     );
   }
   return url;
-}
+};
 
-async function main() {
+const main = async () => {
   // Ensure DB is reachable first (clearer error message than MikroORM init).
   const url = databaseUrl();
   await withRetries({ ...RETRY, label: 'Postgres' }, async () => {
@@ -41,7 +41,7 @@ async function main() {
   } finally {
     await orm.close(true);
   }
-}
+};
 
 main().catch((error) => {
   const message = error instanceof Error ? error.message : String(error);

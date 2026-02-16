@@ -11,7 +11,7 @@ import { withRetries } from '@/scripts/_retry';
 
 const RETRY = { attempts: 30, delayMs: 2_000 };
 
-function databaseUrl(): string {
+const databaseUrl = (): string => {
   const url = process.env.DATABASE_URL_DIRECT ?? process.env.DATABASE_URL;
   if (!url || url.trim().length === 0) {
     throw new Error(
@@ -19,13 +19,13 @@ function databaseUrl(): string {
     );
   }
   return url;
-}
+};
 
-function qIdent(identifier: string): string {
+const qIdent = (identifier: string): string => {
   return `"${identifier.replaceAll('"', '""')}"`;
-}
+};
 
-async function ensureUpdatedAtFunction(client: Client): Promise<void> {
+const ensureUpdatedAtFunction = async (client: Client): Promise<void> => {
   await client.query(`
     create or replace function public.set_updated_at()
     returns trigger
@@ -37,11 +37,9 @@ async function ensureUpdatedAtFunction(client: Client): Promise<void> {
     end
     $$;
   `);
-}
+};
 
-async function listTablesWithUpdatedAt(
-  client: Client,
-): Promise<Array<{ schema: string; table: string }>> {
+const listTablesWithUpdatedAt = async (client: Client): Promise<Array<{ schema: string; table: string }>> => {
   const res = await client.query<{
     schema: string;
     table: string;
@@ -57,9 +55,9 @@ async function listTablesWithUpdatedAt(
   `);
 
   return res.rows;
-}
+};
 
-async function applyUpdatedAtTriggers(client: Client): Promise<number> {
+const applyUpdatedAtTriggers = async (client: Client): Promise<number> => {
   await ensureUpdatedAtFunction(client);
 
   const tables = await listTablesWithUpdatedAt(client);
@@ -77,9 +75,9 @@ async function applyUpdatedAtTriggers(client: Client): Promise<number> {
   }
 
   return tables.length;
-}
+};
 
-async function seed(client: Client): Promise<void> {
+const seed = async (client: Client): Promise<void> => {
   await client.query('begin;');
 
   try {
@@ -310,9 +308,9 @@ async function seed(client: Client): Promise<void> {
     }
     throw error;
   }
-}
+};
 
-async function seedMongoAvatars(client: Client): Promise<number> {
+const seedMongoAvatars = async (client: Client): Promise<number> => {
   const mongoUrl = process.env.MONGODB_URL?.trim();
   if (!mongoUrl) {
     console.log('mongo avatar seed skipped: MONGODB_URL is not set');
@@ -377,9 +375,9 @@ async function seedMongoAvatars(client: Client): Promise<number> {
   } finally {
     await mongoClient.close();
   }
-}
+};
 
-export async function runDbInit() {
+export const runDbInit = async () => {
   const url = databaseUrl();
 
   await withRetries({ ...RETRY, label: 'Postgres' }, async () => {
@@ -457,7 +455,7 @@ export async function runDbInit() {
   } finally {
     await client.end();
   }
-}
+};
 
 if (require.main === module) {
   runDbInit().catch((error) => {

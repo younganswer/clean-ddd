@@ -7,7 +7,7 @@ export type SqsCheckInput = {
   queueName: string;
 };
 
-export async function checkPostgresSelect1(databaseUrl: string): Promise<void> {
+export const checkPostgresSelect1 = async (databaseUrl: string): Promise<void> => {
   const client = new Client({
     connectionString: databaseUrl,
     connectionTimeoutMillis: 5_000,
@@ -21,9 +21,9 @@ export async function checkPostgresSelect1(databaseUrl: string): Promise<void> {
   } finally {
     await client.end();
   }
-}
+};
 
-export async function getSqsQueueUrl(input: SqsCheckInput): Promise<string> {
+export const getSqsQueueUrl = async (input: SqsCheckInput): Promise<string> => {
   const { endpoint, region, queueName } = input;
 
   const client = new SQSClient({
@@ -47,4 +47,4 @@ export async function getSqsQueueUrl(input: SqsCheckInput): Promise<string> {
   }
 
   return queueUrl;
-}
+};

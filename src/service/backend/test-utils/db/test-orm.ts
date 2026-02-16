@@ -1,7 +1,7 @@
 import { UnderscoreNamingStrategy } from '@mikro-orm/core';
 import { defineConfig, MikroORM } from '@mikro-orm/postgresql';
 
-export async function createTestOrm(): Promise<MikroORM> {
+export const createTestOrm = async (): Promise<MikroORM> => {
   if (process.env.RUN_DB_TESTS !== '1') {
     throw new Error('RUN_DB_TESTS=1 is required to run DB tests');
   }
@@ -37,4 +37,4 @@ export async function createTestOrm(): Promise<MikroORM> {
 
   await orm.getMigrator().up();
   return orm;
-}
+};
