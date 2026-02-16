@@ -3,10 +3,8 @@ services:
     image: localstack/localstack:3.2
     ports:
       - "${LOCALSTACK_PORT:-45666}:4566"
-    environment:
-      - SERVICES=sqs
-      - AWS_REGION=ap-northeast-2
-      - AWS_DEFAULT_REGION=ap-northeast-2
+    env_file:
+      - ../localstack/.env
     volumes:
       - ../localstack:/etc/localstack/init/ready.d
 
@@ -59,13 +57,11 @@ services:
       - "${NGINX_HTTP_PORT:-80}:80"
     volumes:
       - ../nginx/default.conf.template:/etc/nginx/templates/default.conf.template:ro
+    env_file:
+      - ../nginx/.env
     environment:
-      BACKEND_HOST: ${BACKEND_HOST:-backend-api}
       BACKEND_PORT: ${BACKEND_PORT:-3000}
-      FRONTEND_HOST: ${FRONTEND_HOST:-frontend}
       FRONTEND_PORT: ${FRONTEND_PORT:-8080}
-      NGINX_CLIENT_MAX_BODY_SIZE: ${NGINX_CLIENT_MAX_BODY_SIZE:-10m}
-      NGINX_PROXY_READ_TIMEOUT: ${NGINX_PROXY_READ_TIMEOUT:-300s}
     depends_on:
       - frontend
       - backend-api
@@ -76,9 +72,10 @@ services:
       dockerfile: service/frontend/Dockerfile
       target: prod
       args:
-        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-/api/v1}
+        NEXT_PUBLIC_API_BASE_URL: /api/v1
+    env_file:
+      - ../../service/frontend/.env
     environment:
-      NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-/api/v1}
       PORT: ${FRONTEND_PORT:-8080}
     expose:
       - "${FRONTEND_PORT:-8080}"
@@ -88,23 +85,19 @@ services:
       context: ../..
       dockerfile: service/backend/Dockerfile
       target: prod
+    env_file:
+      - ../../service/backend/.env
     environment:
-      NODE_ENV: ${NODE_ENV:-dev}
       PORT: ${BACKEND_PORT:-3000}
       PORT_LISTEN: "true"
-      SWAGGER_ENABLED: ${SWAGGER_ENABLED:-true}
       OUTBOX_CRON_ENABLED: "false"
       OUTBOX_POLLING_ENABLED: "false"
       DATABASE_URL: postgresql://app:app@postgres:5432/clean_ddd
       DATABASE_URL_DIRECT: postgresql://app:app@postgres:5432/clean_ddd
-      AWS_REGION: ap-northeast-2
-      AWS_ACCESS_KEY_ID: test
-      AWS_SECRET_ACCESS_KEY: test
+      DATABASE_URL_POOLED: postgresql://app:app@postgres:5432/clean_ddd
       SQS_ENDPOINT: http://localstack:4566
       SQS_OUTBOX_QUEUE_URL: http://localstack:4566/000000000000/OutboxDispatchQueue.fifo
       MONGODB_URL: mongodb://mongodb:27017
-      MONGODB_DB_NAME: clean_ddd
-      MONGODB_AVATAR_COLLECTION: avatars
     depends_on:
       postgres:
         condition: service_healthy
@@ -118,22 +111,19 @@ services:
       context: ../..
       dockerfile: service/backend/Dockerfile
       target: prod
+    env_file:
+      - ../../service/backend/.env
     environment:
-      NODE_ENV: ${NODE_ENV:-dev}
       PORT: ${BACKEND_PORT:-3000}
       PORT_LISTEN: "false"
       OUTBOX_CRON_ENABLED: "true"
       OUTBOX_POLLING_ENABLED: "false"
       DATABASE_URL: postgresql://app:app@postgres:5432/clean_ddd
       DATABASE_URL_DIRECT: postgresql://app:app@postgres:5432/clean_ddd
-      AWS_REGION: ap-northeast-2
-      AWS_ACCESS_KEY_ID: test
-      AWS_SECRET_ACCESS_KEY: test
+      DATABASE_URL_POOLED: postgresql://app:app@postgres:5432/clean_ddd
       SQS_ENDPOINT: http://localstack:4566
       SQS_OUTBOX_QUEUE_URL: http://localstack:4566/000000000000/OutboxDispatchQueue.fifo
       MONGODB_URL: mongodb://mongodb:27017
-      MONGODB_DB_NAME: clean_ddd
-      MONGODB_AVATAR_COLLECTION: avatars
     depends_on:
       postgres:
         condition: service_healthy
@@ -147,22 +137,19 @@ services:
       context: ../..
       dockerfile: service/backend/Dockerfile
       target: prod
+    env_file:
+      - ../../service/backend/.env
     environment:
-      NODE_ENV: ${NODE_ENV:-dev}
       PORT: ${BACKEND_PORT:-3000}
       PORT_LISTEN: "false"
       OUTBOX_CRON_ENABLED: "false"
       OUTBOX_POLLING_ENABLED: "true"
       DATABASE_URL: postgresql://app:app@postgres:5432/clean_ddd
       DATABASE_URL_DIRECT: postgresql://app:app@postgres:5432/clean_ddd
-      AWS_REGION: ap-northeast-2
-      AWS_ACCESS_KEY_ID: test
-      AWS_SECRET_ACCESS_KEY: test
+      DATABASE_URL_POOLED: postgresql://app:app@postgres:5432/clean_ddd
       SQS_ENDPOINT: http://localstack:4566
       SQS_OUTBOX_QUEUE_URL: http://localstack:4566/000000000000/OutboxDispatchQueue.fifo
       MONGODB_URL: mongodb://mongodb:27017
-      MONGODB_DB_NAME: clean_ddd
-      MONGODB_AVATAR_COLLECTION: avatars
     depends_on:
       postgres:
         condition: service_healthy
