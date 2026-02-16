@@ -12,14 +12,16 @@ import {
 } from '@/shared/payments';
 import { CreatePaymentIntentRequest } from '@/modules/payments/presentation/dto/create-payment-intent.request';
 
-function isHttpExceptionLike(error: unknown): error is { getStatus(): number } {
+const isHttpExceptionLike = (
+  error: unknown,
+): error is { getStatus(): number } => {
   return (
     !!error &&
     typeof error === 'object' &&
     'getStatus' in error &&
     typeof (error as Record<string, unknown>).getStatus === 'function'
   );
-}
+};
 
 @Controller('orders/:orderId/payments')
 export class PaymentsController {

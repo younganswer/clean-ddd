@@ -9,7 +9,7 @@ import { optionalEnv, requireEnv } from '@/env';
 export const SQS_OUTBOX_QUEUE_URL = Symbol('SQS_OUTBOX_QUEUE_URL');
 export const SQS_CLIENT = Symbol('SQS_CLIENT');
 
-function normalizeOutboxQueueUrl(raw: string): string {
+const normalizeOutboxQueueUrl = (raw: string): string => {
   const url = String(raw ?? '').trim();
   if (!url) return url;
 
@@ -26,18 +26,18 @@ function normalizeOutboxQueueUrl(raw: string): string {
     // ignore
   }
   return url;
-}
+};
 
-function inferSqsEndpointFromQueueUrl(queueUrl: string): string | undefined {
+const inferSqsEndpointFromQueueUrl = (queueUrl: string): string | undefined => {
   try {
     const parsed = new URL(queueUrl);
     return `${parsed.protocol}//${parsed.host}`;
   } catch {
     return undefined;
   }
-}
+};
 
-function isLocalSqsEndpoint(endpoint: string): boolean {
+const isLocalSqsEndpoint = (endpoint: string): boolean => {
   try {
     const parsed = new URL(endpoint);
     return (
@@ -48,7 +48,7 @@ function isLocalSqsEndpoint(endpoint: string): boolean {
   } catch {
     return false;
   }
-}
+};
 
 @Global()
 @Module({

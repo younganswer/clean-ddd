@@ -14,12 +14,12 @@ import {
   type PaymentIntentView,
 } from '@/shared/payments';
 
-function isDateTimeString(value: unknown): value is string {
+const isDateTimeString = (value: unknown): value is string => {
   if (typeof value !== 'string') return false;
   return Number.isFinite(Date.parse(value));
-}
+};
 
-function isPaymentIntentView(value: unknown): value is PaymentIntentView {
+const isPaymentIntentView = (value: unknown): value is PaymentIntentView => {
   if (!value || typeof value !== 'object') return false;
   const record = value as Record<string, unknown>;
 
@@ -32,7 +32,7 @@ function isPaymentIntentView(value: unknown): value is PaymentIntentView {
     isDateTimeString(record.createdAt) &&
     isDateTimeString(record.updatedAt)
   );
-}
+};
 
 @Controller('payments/intents')
 export class PaymentIntentsController {
