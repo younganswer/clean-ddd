@@ -24,6 +24,14 @@
 - `localstack/`: AWS 대체 리소스(예: SQS) 부트스트랩 스크립트를 제공합니다.
 - `nginx/`: 외부 진입 URL과 라우팅 규칙을 제공합니다.
 
+### 환경 변수 파일 기준
+
+- `compose/.env`: Docker Compose 치환 변수(포트/프로젝트명)
+- `nginx/.env`: Nginx 템플릿 변수(업스트림 호스트/타임아웃)
+- `localstack/.env`: LocalStack 및 부트스트랩 스크립트 변수
+
+`make -C src ...`는 기본으로 `stack/compose/.env`를 사용합니다.
+
 ### 확인 순서
 
 1. `make -C src up`
