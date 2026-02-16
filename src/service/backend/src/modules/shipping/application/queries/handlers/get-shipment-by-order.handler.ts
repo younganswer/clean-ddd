@@ -16,7 +16,7 @@ export class GetShipmentByOrderHandler implements IQueryHandler<GetShipmentByOrd
     if (!s) return null;
 
     return {
-      shipmentId: s.id,
+      shipmentId: s.uuid,
       orderId: s.orderId,
       status: s.status,
       createdAt: s.createdAt.toISOString(),

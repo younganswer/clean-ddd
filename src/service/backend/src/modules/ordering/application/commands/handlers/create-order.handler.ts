@@ -15,6 +15,6 @@ export class CreateOrderHandler implements ICommandHandler<CreateOrderCommand> {
     const order = await this.orders.create({
       ...command.input,
     });
-    return { orderId: order.id };
+    return { orderId: order.uuid };
   }
 }

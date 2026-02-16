@@ -28,7 +28,7 @@ export class ListInventoryItemsHandler implements IQueryHandler<ListInventoryIte
     ]);
 
     const items = rows.map((i) => ({
-      itemId: i.id,
+      itemId: i.uuid,
       sku: i.sku,
       price: {
         currency: i.priceCurrency,

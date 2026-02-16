@@ -7,8 +7,13 @@ import { OrderSchema } from '@/modules/ordering/infrastructure/schemas/order.sch
 @Injectable()
 export class OrderMapper {
   toDomain(schema: OrderSchema): Order {
+    if (schema.id == null) {
+      throw new Error('OrderSchema.id is required');
+    }
+
     return Order.rehydrate({
-      id: schema.uuid,
+      id: schema.id,
+      uuid: schema.uuid,
       userId: schema.userId,
       status: schema.status,
       total: Money.of(schema.amount, schema.currency),

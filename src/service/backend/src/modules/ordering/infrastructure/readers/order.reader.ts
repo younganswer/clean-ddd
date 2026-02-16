@@ -47,7 +47,7 @@ export class OrderReader implements IOrderReader {
   }
 
   private toView(order: {
-    id: string;
+    uuid: string;
     userId: string;
     status: OrderView['status'];
     amount: number;
@@ -58,7 +58,7 @@ export class OrderReader implements IOrderReader {
     updatedAt: Date;
   }): OrderView {
     return {
-      orderId: order.id,
+      orderId: order.uuid,
       userId: order.userId,
       status: order.status,
       amount: order.amount,

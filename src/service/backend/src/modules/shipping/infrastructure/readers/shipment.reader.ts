@@ -34,14 +34,14 @@ export class ShipmentReader implements IShipmentReader {
   }
 
   private toView(s: {
-    id: string;
+    uuid: string;
     orderId: string;
     status: ShipmentView['status'];
     createdAt: Date;
     updatedAt: Date;
   }): ShipmentView {
     return {
-      shipmentId: s.id,
+      shipmentId: s.uuid,
       orderId: s.orderId,
       status: s.status,
       createdAt: s.createdAt.toISOString(),

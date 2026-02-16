@@ -1,17 +1,10 @@
-import {
-  Index,
-  OptionalProps,
-  PrimaryKey,
-  Property,
-  Unique,
-} from '@mikro-orm/core';
+import { Index, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
 import { randomUUID } from 'node:crypto';
 
 export abstract class BaseSchema {
   [OptionalProps]?: 'id' | 'uuid' | 'createdAt' | 'updatedAt';
 
-  @Property({ type: 'bigint', nullable: true })
-  @Unique()
+  @Property({ type: 'integer', autoincrement: true })
   @Index()
   id?: number;
 

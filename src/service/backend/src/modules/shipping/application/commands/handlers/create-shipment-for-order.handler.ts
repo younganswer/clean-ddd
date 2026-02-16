@@ -18,6 +18,6 @@ export class CreateShipmentForOrderHandler implements ICommandHandler<CreateShip
     if (!orderId) throw new Error('orderId is required');
 
     const shipment = await this.shipments.createForOrder(orderId);
-    return { shipmentId: shipment.id };
+    return { shipmentId: shipment.uuid };
   }
 }

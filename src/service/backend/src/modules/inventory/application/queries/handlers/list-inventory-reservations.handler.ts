@@ -22,7 +22,7 @@ export class ListInventoryReservationsHandler implements IQueryHandler<ListInven
 
     const rows = await this.inventory.findReservationsByOrderId(orderId);
     return rows.map((r) => ({
-      reservationId: r.id,
+      reservationId: r.uuid,
       orderId: r.orderId,
       sku: r.sku,
       quantity: r.quantity,

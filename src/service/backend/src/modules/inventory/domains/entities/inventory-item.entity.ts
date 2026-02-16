@@ -1,8 +1,9 @@
 import { BaseEntity } from '@/shared/domain/base.entity';
 
-export class InventoryItem extends BaseEntity<string> {
+export class InventoryItem extends BaseEntity {
   private constructor(
-    id: string,
+    id: number,
+    uuid: string,
     private readonly _sku: string,
     private readonly _priceCurrency: string,
     private readonly _priceAmountMinor: number,
@@ -11,11 +12,12 @@ export class InventoryItem extends BaseEntity<string> {
     private readonly _createdAt: Date,
     private _updatedAt: Date,
   ) {
-    super(id, id);
+    super(id, uuid);
   }
 
   static rehydrate(input: {
-    id: string;
+    id: number;
+    uuid: string;
     sku: string;
     priceCurrency: string;
     priceAmountMinor: number;
@@ -26,6 +28,7 @@ export class InventoryItem extends BaseEntity<string> {
   }): InventoryItem {
     return new InventoryItem(
       input.id,
+      input.uuid,
       input.sku,
       input.priceCurrency,
       input.priceAmountMinor,
@@ -65,7 +68,7 @@ export class InventoryItem extends BaseEntity<string> {
   }
 
   toPrimitives(): {
-    id: string;
+    id: number;
     uuid: string;
     sku: string;
     priceCurrency: string;

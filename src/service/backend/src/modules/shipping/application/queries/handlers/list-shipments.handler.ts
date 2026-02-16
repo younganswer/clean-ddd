@@ -24,7 +24,7 @@ export class ListShipmentsHandler implements IQueryHandler<ListShipmentsQuery> {
     ]);
 
     const items = shipments.map((s) => ({
-      shipmentId: s.id,
+      shipmentId: s.uuid,
       orderId: s.orderId,
       status: s.status,
       createdAt: s.createdAt.toISOString(),

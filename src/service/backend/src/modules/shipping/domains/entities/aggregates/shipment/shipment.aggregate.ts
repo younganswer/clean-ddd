@@ -1,25 +1,28 @@
 import { ShipmentStatus } from '@/shared/shipping';
 import { BaseEntity } from '@/shared/domain/base.entity';
 
-export class Shipment extends BaseEntity<string> {
+export class Shipment extends BaseEntity {
   private constructor(
-    id: string,
+    id: number,
+    uuid: string,
     private readonly _orderId: string,
     private _status: ShipmentStatus,
     private readonly _createdAt: Date,
     private _updatedAt: Date,
   ) {
-    super(id, id);
+    super(id, uuid);
   }
 
   static createForOrder(input: {
-    id: string;
+    id: number;
+    uuid: string;
     orderId: string;
     now?: Date;
   }): Shipment {
     const now = input.now ?? new Date();
     return new Shipment(
       input.id,
+      input.uuid,
       input.orderId,
       ShipmentStatus.PENDING,
       now,
@@ -28,7 +31,8 @@ export class Shipment extends BaseEntity<string> {
   }
 
   static rehydrate(input: {
-    id: string;
+    id: number;
+    uuid: string;
     orderId: string;
     status: ShipmentStatus;
     createdAt: Date;
@@ -36,6 +40,7 @@ export class Shipment extends BaseEntity<string> {
   }): Shipment {
     return new Shipment(
       input.id,
+      input.uuid,
       input.orderId,
       input.status,
       input.createdAt,
@@ -67,7 +72,7 @@ export class Shipment extends BaseEntity<string> {
     updatedAt: Date;
   } {
     return {
-      shipmentId: this.id,
+      shipmentId: this.uuid,
       orderId: this._orderId,
       status: this._status,
       createdAt: this._createdAt,

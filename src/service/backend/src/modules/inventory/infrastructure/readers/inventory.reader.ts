@@ -22,7 +22,7 @@ export class InventoryReader implements IInventoryReader {
     if (!i) return null;
 
     return {
-      itemId: i.id,
+      itemId: i.uuid,
       sku: i.sku,
       price: {
         currency: i.priceCurrency,
@@ -41,7 +41,7 @@ export class InventoryReader implements IInventoryReader {
     const list = await this.inventory.findAll(safeLimit);
 
     return list.map((i) => ({
-      itemId: i.id,
+      itemId: i.uuid,
       sku: i.sku,
       price: {
         currency: i.priceCurrency,
@@ -59,7 +59,7 @@ export class InventoryReader implements IInventoryReader {
   ): Promise<InventoryReservationView[]> {
     const list = await this.inventory.findReservationsByOrderId(orderId);
     return list.map((r) => ({
-      reservationId: r.id,
+      reservationId: r.uuid,
       orderId: r.orderId,
       sku: r.sku,
       quantity: r.quantity,

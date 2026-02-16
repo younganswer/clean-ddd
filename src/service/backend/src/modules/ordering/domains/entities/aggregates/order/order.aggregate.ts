@@ -3,9 +3,10 @@ import { BaseEntity } from '@/shared/domain/base.entity';
 import { Money } from '@/modules/ordering/domains/value-objects/money.vo';
 import { OrderItem } from '@/modules/ordering/domains/value-objects/order-item.vo';
 
-export class Order extends BaseEntity<string> {
+export class Order extends BaseEntity {
   private constructor(
-    id: string,
+    id: number,
+    uuid: string,
     private readonly _userId: string,
     private _status: OrderStatus,
     private readonly _total: Money,
@@ -14,11 +15,12 @@ export class Order extends BaseEntity<string> {
     private readonly _createdAt: Date,
     private _updatedAt: Date,
   ) {
-    super(id, id);
+    super(id, uuid);
   }
 
   static createNew(input: {
-    id: string;
+    id: number;
+    uuid: string;
     userId: string;
     total: Money;
     items: OrderItem[];
@@ -27,6 +29,7 @@ export class Order extends BaseEntity<string> {
     const now = input.now ?? new Date();
     return new Order(
       input.id,
+      input.uuid,
       input.userId,
       OrderStatus.PENDING_PAYMENT,
       input.total,
@@ -38,7 +41,8 @@ export class Order extends BaseEntity<string> {
   }
 
   static rehydrate(input: {
-    id: string;
+    id: number;
+    uuid: string;
     userId: string;
     status: OrderStatus;
     total: Money;
@@ -49,6 +53,7 @@ export class Order extends BaseEntity<string> {
   }): Order {
     return new Order(
       input.id,
+      input.uuid,
       input.userId,
       input.status,
       input.total,
@@ -109,7 +114,8 @@ export class Order extends BaseEntity<string> {
   }
 
   toPrimitives(): {
-    id: string;
+    id: number;
+    uuid: string;
     userId: string;
     status: OrderStatus;
     amount: number;
@@ -121,6 +127,7 @@ export class Order extends BaseEntity<string> {
   } {
     return {
       id: this.id,
+      uuid: this.uuid,
       userId: this._userId,
       status: this._status,
       amount: this.amount,

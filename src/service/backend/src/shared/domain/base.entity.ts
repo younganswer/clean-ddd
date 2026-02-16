@@ -1,10 +1,10 @@
-export abstract class BaseEntity<TId extends string | number | null = string> {
+export abstract class BaseEntity {
   protected constructor(
-    protected readonly _id: TId,
+    protected readonly _id: number,
     protected readonly _uuid: string,
   ) {}
 
-  get id(): TId {
+  get id(): number {
     return this._id;
   }
 

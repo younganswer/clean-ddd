@@ -51,7 +51,7 @@ describeDb('OrderRepository (DB)', () => {
           currency: 'KRW',
           items: [{ sku: 'SKU-001', quantity: 1 }],
         });
-        orderId = created.id;
+        orderId = created.uuid;
       });
 
       then('DB에 저장되고 조회 가능합니다', (done: jest.DoneCallback) => {
@@ -59,7 +59,7 @@ describeDb('OrderRepository (DB)', () => {
           try {
             const found = await repo.findById(orderId);
             expect(found).not.toBeNull();
-            expect(found?.id).toBe(orderId);
+            expect(found?.uuid).toBe(orderId);
             expect(found?.status).toBe(OrderStatus.PENDING_PAYMENT);
             expect(found?.amount).toBe(100);
             expect(found?.currency).toBe('KRW');
@@ -82,7 +82,7 @@ describeDb('OrderRepository (DB)', () => {
           amount: 100,
           currency: 'KRW',
         });
-        orderId = created.id;
+        orderId = created.uuid;
         await repo.attachPayment(
           orderId,
           '00000000-0000-0000-0000-000000000001',
@@ -115,7 +115,7 @@ describeDb('OrderRepository (DB)', () => {
           amount: 100,
           currency: 'KRW',
         });
-        orderId = created.id;
+        orderId = created.uuid;
         await repo.markPaid(orderId);
       });
 
