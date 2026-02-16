@@ -8,7 +8,6 @@ const DEFAULT_DUMMY_PROFILE: UserProfileView = {
   userId: 'anonymous',
   displayName: '기본 더미 유저',
   email: 'dummy-default@example.com',
-  avatarUrl: 'https://example.com/avatar/default.png',
 };
 
 @Injectable()
@@ -32,14 +31,14 @@ export class SqlUserProfileRepository implements IUserProfileRepository {
         userId: string;
         displayName: string;
         email: string;
-        avatarUrl: string | null;
+        avatarId: string | null;
       }>
     >(
       `select
         u.uuid as "userId",
         u.display_name as "displayName",
         u.email as "email",
-        u.avatar_url as "avatarUrl"
+        u.avatar_id as "avatarId"
       from users u
       where u.uuid = ?
       limit 1`,
@@ -53,7 +52,7 @@ export class SqlUserProfileRepository implements IUserProfileRepository {
       userId: row.userId,
       displayName: row.displayName,
       email: row.email,
-      avatarUrl: row.avatarUrl ?? undefined,
+      avatarId: row.avatarId ?? undefined,
     };
   }
 
@@ -71,14 +70,14 @@ export class SqlUserProfileRepository implements IUserProfileRepository {
         userId: string;
         displayName: string;
         email: string;
-        avatarUrl: string | null;
+        avatarId: string | null;
       }>
     >(
       `select
         u.uuid as "userId",
         u.display_name as "displayName",
         u.email as "email",
-        u.avatar_url as "avatarUrl"
+        u.avatar_id as "avatarId"
       from users u
       order by u.id asc
       limit ? offset ?`,
@@ -89,7 +88,7 @@ export class SqlUserProfileRepository implements IUserProfileRepository {
       userId: row.userId,
       displayName: row.displayName,
       email: row.email,
-      avatarUrl: row.avatarUrl ?? undefined,
+      avatarId: row.avatarId ?? undefined,
     }));
   }
 

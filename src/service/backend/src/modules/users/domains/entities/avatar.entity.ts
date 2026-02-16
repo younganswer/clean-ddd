@@ -1,12 +1,11 @@
 import { BaseEntity } from '@/shared/domain/base.entity';
 
-export class User extends BaseEntity {
+export class Avatar extends BaseEntity {
   private constructor(
     id: number,
     uuid: string,
-    private readonly _displayName: string,
-    private readonly _email: string,
-    private readonly _avatarId: string | null,
+    private readonly _userId: string,
+    private readonly _imageUrl: string,
     private readonly _createdAt: Date,
     private readonly _updatedAt: Date,
   ) {
@@ -16,33 +15,27 @@ export class User extends BaseEntity {
   static rehydrate(input: {
     id: number;
     uuid: string;
-    displayName: string;
-    email: string;
-    avatarId: string | null;
+    userId: string;
+    imageUrl: string;
     createdAt: Date;
     updatedAt: Date;
-  }): User {
-    return new User(
+  }): Avatar {
+    return new Avatar(
       input.id,
       input.uuid,
-      input.displayName,
-      input.email,
-      input.avatarId,
+      input.userId,
+      input.imageUrl,
       input.createdAt,
       input.updatedAt,
     );
   }
 
-  get displayName(): string {
-    return this._displayName;
+  get userId(): string {
+    return this._userId;
   }
 
-  get email(): string {
-    return this._email;
-  }
-
-  get avatarId(): string | null {
-    return this._avatarId;
+  get imageUrl(): string {
+    return this._imageUrl;
   }
 
   get createdAt(): Date {

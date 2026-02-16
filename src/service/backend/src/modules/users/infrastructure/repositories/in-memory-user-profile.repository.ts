@@ -7,7 +7,6 @@ const DEFAULT_DUMMY_PROFILE: UserProfileView = {
   userId: 'anonymous',
   displayName: '기본 더미 유저',
   email: 'dummy-default@example.com',
-  avatarUrl: 'https://example.com/avatar/default.png',
 };
 
 @Injectable()
@@ -47,7 +46,7 @@ function buildDummyProfiles(total: number): UserProfileView[] {
       userId: randomUUID(),
       displayName: `더미 유저 ${i}`,
       email: `dummy${i}@example.com`,
-      avatarUrl: `https://example.com/avatar/${i}.png`,
+      avatarId: randomUUID(),
     });
   }
   return list;

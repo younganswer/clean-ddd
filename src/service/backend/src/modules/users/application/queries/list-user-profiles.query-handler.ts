@@ -7,12 +7,18 @@ import {
   IUserProfileRepositorySymbol,
   type IUserProfileRepository,
 } from '@/modules/users/domains/repositories/i.user-profile.repository';
+import {
+  IUserAvatarRepositorySymbol,
+  type IUserAvatarRepository,
+} from '@/modules/users/domains/repositories/i.user-avatar.repository';
 
 @QueryHandler(ListUserProfilesQuery)
 export class ListUserProfilesQueryHandler implements IQueryHandler<ListUserProfilesQuery> {
   constructor(
     @Inject(IUserProfileRepositorySymbol)
     private readonly userProfileRepository: IUserProfileRepository,
+    @Inject(IUserAvatarRepositorySymbol)
+    private readonly userAvatarRepository: IUserAvatarRepository,
   ) {}
 
   async execute(
@@ -30,10 +36,26 @@ export class ListUserProfilesQueryHandler implements IQueryHandler<ListUserProfi
       this.userProfileRepository.countProfiles(),
     ]);
 
+    const avatarIds = [...new Set(items.map((item) => item.avatarId ?? ''))]
+      .map((id) => id.trim())
+      .filter((id) => id.length > 0);
+
+    const avatars = await this.userAvatarRepository.findByAvatarIds(avatarIds);
+    const avatarById = new Map(
+      avatars.map((avatar) => [avatar.avatarId, avatar]),
+    );
+
+    const enrichedItems = items.map((item) => ({
+      ...item,
+      avatarUrl: item.avatarId
+        ? avatarById.get(item.avatarId)?.imageUrl
+        : undefined,
+    }));
+
     const totalPages = Math.max(1, Math.ceil(total / limit));
 
     return {
-      items,
+      items: enrichedItems,
       page,
       limit,
       total,

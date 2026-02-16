@@ -23,6 +23,21 @@ paths:
                         application/json:
                             schema:
                                 $ref: "#/components/schemas/UserProfile"
+        patch:
+            summary: Update my avatar
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/UpdateMyAvatarRequest"
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/UpdateMyAvatarResponse"
 
     /users:
         get:
@@ -324,8 +339,28 @@ components:
                     type: string
                 email:
                     type: string
+                avatarId:
+                    type: string
                 avatarUrl:
                     type: string
+
+        UpdateMyAvatarRequest:
+            type: object
+            required: [avatarUrl]
+            properties:
+                avatarUrl:
+                    type: string
+                    format: uri
+
+        UpdateMyAvatarResponse:
+            type: object
+            required: [avatarId, avatarUrl]
+            properties:
+                avatarId:
+                    type: string
+                avatarUrl:
+                    type: string
+                    format: uri
 
         PaginatedUserProfiles:
             allOf:

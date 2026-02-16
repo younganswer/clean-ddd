@@ -1,4 +1,7 @@
 services:
+  mongodb:
+    restart: unless-stopped
+
   frontend:
     build:
       target: dev

@@ -40,7 +40,31 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        patch?: never;
+        /** Update my avatar */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateMyAvatarRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["UpdateMyAvatarResponse"];
+                    };
+                };
+            };
+        };
         trace?: never;
     };
     "/users": {
@@ -546,7 +570,17 @@ export interface components {
             userId: string;
             displayName: string;
             email: string;
+            avatarId?: string;
             avatarUrl?: string;
+        };
+        UpdateMyAvatarRequest: {
+            /** Format: uri */
+            avatarUrl: string;
+        };
+        UpdateMyAvatarResponse: {
+            avatarId: string;
+            /** Format: uri */
+            avatarUrl: string;
         };
         PaginatedUserProfiles: components["schemas"]["PaginatedMeta"] & {
             items: components["schemas"]["UserProfile"][];

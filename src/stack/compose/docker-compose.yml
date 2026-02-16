@@ -38,6 +38,21 @@ services:
       timeout: 3s
       retries: 10
 
+  mongodb:
+    image: mongo:7
+    ports:
+      - "${MONGODB_PORT:-27017}:27017"
+    environment:
+      - MONGO_INITDB_DATABASE=clean_ddd
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test:
+        ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand({ ping: 1 })"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
   nginx:
     image: nginx:1.27-alpine
     ports:
@@ -87,10 +102,15 @@ services:
       AWS_SECRET_ACCESS_KEY: test
       SQS_ENDPOINT: http://localstack:4566
       SQS_OUTBOX_QUEUE_URL: http://localstack:4566/000000000000/OutboxDispatchQueue.fifo
+      MONGODB_URL: mongodb://mongodb:27017
+      MONGODB_DB_NAME: clean_ddd
+      MONGODB_AVATAR_COLLECTION: avatars
     depends_on:
       postgres:
         condition: service_healthy
       localstack:
+        condition: service_healthy
+      mongodb:
         condition: service_healthy
 
   backend-cron:
@@ -111,10 +131,15 @@ services:
       AWS_SECRET_ACCESS_KEY: test
       SQS_ENDPOINT: http://localstack:4566
       SQS_OUTBOX_QUEUE_URL: http://localstack:4566/000000000000/OutboxDispatchQueue.fifo
+      MONGODB_URL: mongodb://mongodb:27017
+      MONGODB_DB_NAME: clean_ddd
+      MONGODB_AVATAR_COLLECTION: avatars
     depends_on:
       postgres:
         condition: service_healthy
       localstack:
+        condition: service_healthy
+      mongodb:
         condition: service_healthy
 
   backend-queue:
@@ -135,11 +160,17 @@ services:
       AWS_SECRET_ACCESS_KEY: test
       SQS_ENDPOINT: http://localstack:4566
       SQS_OUTBOX_QUEUE_URL: http://localstack:4566/000000000000/OutboxDispatchQueue.fifo
+      MONGODB_URL: mongodb://mongodb:27017
+      MONGODB_DB_NAME: clean_ddd
+      MONGODB_AVATAR_COLLECTION: avatars
     depends_on:
       postgres:
         condition: service_healthy
       localstack:
         condition: service_healthy
+      mongodb:
+        condition: service_healthy
 
 volumes:
   postgres_data:
+  mongodb_data:
