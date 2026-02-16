@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import {
 	apiCreatePaymentIntent,
@@ -41,42 +41,57 @@ function OrderDetailInner() {
 	const [error, setError] = useState<string | null>(null);
 	const [outcome, setOutcome] = useState<"SUCCEEDED" | "FAILED">("SUCCEEDED");
 
-	async function refresh() {
+	const fetchOrderContext = useCallback(async () => {
+		if (!orderId) return null;
+		const [data, ship, reservations] = await Promise.all([
+			apiGetOrder(orderId),
+			apiGetShipmentByOrderId(orderId),
+			apiListInventoryReservations(orderId),
+		]);
+		return {
+			order: data,
+			shipment: ship,
+			reservationCount: Array.isArray(reservations)
+				? reservations.length
+				: null,
+		};
+	}, [orderId]);
+
+	const applyOrderContext = useCallback(
+		(result: {
+			order: OrderDetail;
+			shipment: ShipmentSummary | null;
+			reservationCount: number | null;
+		}) => {
+			setOrder(result.order);
+			setShipment(result.shipment);
+			setReservationCount(result.reservationCount);
+		},
+		[],
+	);
+
+	const refresh = useCallback(async () => {
 		if (!orderId) return;
 		setError(null);
 		try {
-			const [data, ship, reservations] = await Promise.all([
-				apiGetOrder(orderId),
-				apiGetShipmentByOrderId(orderId),
-				apiListInventoryReservations(orderId),
-			]);
-			setOrder(data);
-			setShipment(ship);
-			setReservationCount(
-				Array.isArray(reservations) ? reservations.length : null,
-			);
+			const result = await fetchOrderContext();
+			if (!result) return;
+			applyOrderContext(result);
 		} catch (e: unknown) {
 			const message = e instanceof Error ? e.message : String(e);
 			setError(message);
 		}
-	}
+	}, [applyOrderContext, fetchOrderContext, orderId]);
 
 	useEffect(() => {
 		if (!orderId) return;
 		let active = true;
 		void (async () => {
+			setError(null);
 			try {
-				const [data, ship, reservations] = await Promise.all([
-					apiGetOrder(orderId),
-					apiGetShipmentByOrderId(orderId),
-					apiListInventoryReservations(orderId),
-				]);
-				if (!active) return;
-				setOrder(data);
-				setShipment(ship);
-				setReservationCount(
-					Array.isArray(reservations) ? reservations.length : null,
-				);
+				const result = await fetchOrderContext();
+				if (!active || !result) return;
+				applyOrderContext(result);
 			} catch (e: unknown) {
 				if (!active) return;
 				const message = e instanceof Error ? e.message : String(e);
@@ -86,7 +101,7 @@ function OrderDetailInner() {
 		return () => {
 			active = false;
 		};
-	}, [orderId]);
+	}, [applyOrderContext, fetchOrderContext, orderId]);
 
 	return (
 		<div className="page-shell">
