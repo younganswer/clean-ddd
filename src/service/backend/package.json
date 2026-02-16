@@ -24,7 +24,9 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "db:init": "node --env-file=.env -r ts-node/register/transpile-only -r tsconfig-paths/register scripts/db-init.ts",
     "db:reset": "node --env-file=.env -r ts-node/register/transpile-only -r tsconfig-paths/register scripts/db-reset.ts",
-    "db:diff": "node --env-file=.env -r ts-node/register/transpile-only -r tsconfig-paths/register scripts/db-diff.ts"
+    "db:diff": "node --env-file=.env -r ts-node/register/transpile-only -r tsconfig-paths/register scripts/db-diff.ts",
+    "codemod:arrow-functions": "tsx scripts/codemod-functions-to-arrows.ts",
+    "codemod:arrow-functions:stage-a": "tsx scripts/codemod-functions-to-arrows.ts ../scripts ../test-utils ../../frontend/src/lib ../../frontend/src/app ../../frontend/next.config.ts"
   },
   "dependencies": {
     "@aws-sdk/client-sqs": "^3.985.0",
