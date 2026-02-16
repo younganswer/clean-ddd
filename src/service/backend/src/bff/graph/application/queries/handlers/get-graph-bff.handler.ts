@@ -28,32 +28,32 @@ import {
 
 type EntityRef = { type: GraphRootType; id: string };
 
-function clampInt(
+const clampInt = (
   value: unknown,
   min: number,
   max: number,
   fallback: number,
-): number {
+): number => {
   const n = Number(value);
   if (!Number.isFinite(n)) return fallback;
   return Math.min(max, Math.max(min, Math.trunc(n)));
-}
+};
 
-function isDefinedNumber(value: unknown): value is number {
+const isDefinedNumber = (value: unknown): value is number => {
   return typeof value === 'number' && Number.isFinite(value);
-}
+};
 
-function nodeId(type: string, key: string): string {
+const nodeId = (type: string, key: string): string => {
   return `${type}:${key}`;
-}
+};
 
-function normalizeId(value: unknown): string {
+const normalizeId = (value: unknown): string => {
   if (typeof value === 'string') return value.trim();
   if (typeof value === 'number') return String(value).trim();
   if (typeof value === 'bigint') return String(value).trim();
   if (typeof value === 'boolean') return String(value).trim();
   return '';
-}
+};
 
 @QueryHandler(GetGraphBffQuery)
 @Injectable()
