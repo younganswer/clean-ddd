@@ -1,43 +1,30 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { apiListUsers, type UserProfile } from "@/lib/api";
+import { useCallback, useState } from "react";
+import { apiListUsers } from "@/lib/api";
 import { Pagination } from "@/app/_components/pagination";
+import { usePaginatedList } from "@/lib/use-paginated-list";
 
 const DEFAULT_PAGE_SIZE = 10;
 
 export default function UsersPage() {
-	const [page, setPage] = useState(1);
 	const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
-	const [users, setUsers] = useState<UserProfile[]>([]);
-	const [hasNext, setHasNext] = useState(false);
-	const [totalPages, setTotalPages] = useState(1);
-	const [error, setError] = useState<string | null>(null);
-
-	useEffect(() => {
-		let active = true;
-		void (async () => {
-			try {
-				const res = await apiListUsers({ limit: pageSize, page });
-				if (!active) return;
-				setTotalPages(res.totalPages);
-				if (page > res.totalPages) {
-					setPage(res.totalPages);
-					return;
-				}
-				setUsers(res.items);
-				setHasNext(res.hasNext);
-			} catch (e: unknown) {
-				if (!active) return;
-				const message = e instanceof Error ? e.message : String(e);
-				setError(message);
-			}
-		})();
-		return () => {
-			active = false;
-		};
-	}, [page, pageSize]);
+	const fetchPage = useCallback(
+		(input: { page: number; limit: number }) => apiListUsers(input),
+		[],
+	);
+	const {
+		page,
+		setPage,
+		items: users,
+		hasNext,
+		totalPages,
+		error,
+	} = usePaginatedList({
+		pageSize,
+		fetchPage,
+	});
 
 	return (
 		<div className="page-shell">

@@ -1,46 +1,24 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { apiListInventoryItems, type InventoryItem } from "@/lib/api";
+import { useCallback, useState } from "react";
+import { apiListInventoryItems } from "@/lib/api";
 import { Pagination } from "@/app/_components/pagination";
+import { usePaginatedList } from "@/lib/use-paginated-list";
 
 const DEFAULT_PAGE_SIZE = 10;
 
 export default function InventoryPage() {
-	const [page, setPage] = useState(1);
 	const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
-	const [items, setItems] = useState<InventoryItem[]>([]);
-	const [hasNextState, setHasNextState] = useState(false);
-	const [totalPages, setTotalPages] = useState(1);
-	const [error, setError] = useState<string | null>(null);
-	const hasNext = hasNextState;
-
-	useEffect(() => {
-		let active = true;
-		void (async () => {
-			try {
-				const res = await apiListInventoryItems({
-					limit: pageSize,
-					page,
-				});
-				if (!active) return;
-				setTotalPages(res.totalPages);
-				if (page > res.totalPages) {
-					setPage(res.totalPages);
-					return;
-				}
-				setItems(res.items);
-				setHasNextState(res.hasNext);
-			} catch (e: unknown) {
-				if (!active) return;
-				const message = e instanceof Error ? e.message : String(e);
-				setError(message);
-			}
-		})();
-		return () => {
-			active = false;
-		};
-	}, [page, pageSize]);
+	const fetchPage = useCallback(
+		(input: { page: number; limit: number }) =>
+			apiListInventoryItems(input),
+		[],
+	);
+	const { page, setPage, items, hasNext, totalPages, error } =
+		usePaginatedList({
+			pageSize,
+			fetchPage,
+		});
 
 	return (
 		<div className="page-shell">

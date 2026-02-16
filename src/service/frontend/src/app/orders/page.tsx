@@ -1,44 +1,30 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { apiListOrders, type OrderSummary } from "@/lib/api";
+import { useCallback, useState } from "react";
+import { apiListOrders } from "@/lib/api";
 import { Pagination } from "@/app/_components/pagination";
+import { usePaginatedList } from "@/lib/use-paginated-list";
 
 const DEFAULT_PAGE_SIZE = 10;
 
 export default function OrdersPage() {
-	const [page, setPage] = useState(1);
 	const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
-	const [orders, setOrders] = useState<OrderSummary[]>([]);
-	const [hasNextState, setHasNextState] = useState(false);
-	const [totalPages, setTotalPages] = useState(1);
-	const [error, setError] = useState<string | null>(null);
-	const hasNext = hasNextState;
-
-	useEffect(() => {
-		let active = true;
-		void (async () => {
-			try {
-				const res = await apiListOrders({ limit: pageSize, page });
-				if (!active) return;
-				setTotalPages(res.totalPages);
-				if (page > res.totalPages) {
-					setPage(res.totalPages);
-					return;
-				}
-				setOrders(res.items);
-				setHasNextState(res.hasNext);
-			} catch (e: unknown) {
-				if (!active) return;
-				const message = e instanceof Error ? e.message : String(e);
-				setError(message);
-			}
-		})();
-		return () => {
-			active = false;
-		};
-	}, [page, pageSize]);
+	const fetchPage = useCallback(
+		(input: { page: number; limit: number }) => apiListOrders(input),
+		[],
+	);
+	const {
+		page,
+		setPage,
+		items: orders,
+		hasNext,
+		totalPages,
+		error,
+	} = usePaginatedList({
+		pageSize,
+		fetchPage,
+	});
 
 	return (
 		<div className="page-shell">
