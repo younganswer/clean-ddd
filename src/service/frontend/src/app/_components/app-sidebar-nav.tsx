@@ -16,7 +16,10 @@ type NavSection = {
 const sections: NavSection[] = [
 	{
 		title: "Overview",
-		items: [{ label: "Graph", href: "/" }],
+		items: [
+			{ label: "Graph", href: "/" },
+			{ label: "System Concepts", href: "/system-concepts" },
+		],
 	},
 	{
 		title: "Bounded Contexts",

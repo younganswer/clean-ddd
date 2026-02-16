@@ -14,6 +14,11 @@ import {
   type PaymentIntentView,
 } from '@/shared/payments';
 
+function isDateTimeString(value: unknown): value is string {
+  if (typeof value !== 'string') return false;
+  return Number.isFinite(Date.parse(value));
+}
+
 function isPaymentIntentView(value: unknown): value is PaymentIntentView {
   if (!value || typeof value !== 'object') return false;
   const record = value as Record<string, unknown>;
@@ -24,8 +29,8 @@ function isPaymentIntentView(value: unknown): value is PaymentIntentView {
     typeof record.amount === 'number' &&
     typeof record.currency === 'string' &&
     typeof record.status === 'string' &&
-    record.createdAt instanceof Date &&
-    record.updatedAt instanceof Date
+    isDateTimeString(record.createdAt) &&
+    isDateTimeString(record.updatedAt)
   );
 }
 

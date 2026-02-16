@@ -24,6 +24,7 @@ export type CreatePaymentIntentRequest =
 	ContractSchemas["CreatePaymentIntentRequest"];
 export type CreatePaymentIntentResponse =
 	ContractSchemas["CreatePaymentIntentResponse"];
+export type PaymentIntent = ContractSchemas["PaymentIntent"];
 
 export type PaginatedOrders = ContractSchemas["PaginatedOrders"];
 export type PaginatedUsers = ContractSchemas["PaginatedUserProfiles"];

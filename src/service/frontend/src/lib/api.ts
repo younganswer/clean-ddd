@@ -7,6 +7,7 @@ import type {
 	InventoryReservation,
 	OrderDetail,
 	OrderSummary,
+	PaymentIntent,
 	PaginatedInventoryItems,
 	PaginatedOrders,
 	PaginatedShipments,
@@ -21,6 +22,7 @@ export type {
 	InventoryReservation,
 	OrderDetail,
 	OrderSummary,
+	PaymentIntent,
 	ShipmentSummary,
 	UserProfile,
 };
@@ -56,7 +58,21 @@ async function http<T>(path: string, init?: RequestInit): Promise<T> {
 			`${res.status} ${res.statusText}${text ? `: ${text}` : ""}`,
 		);
 	}
-	return (await res.json()) as T;
+
+	if (res.status === 204) {
+		return null as T;
+	}
+
+	const text = await res.text();
+	if (!text.trim()) {
+		return null as T;
+	}
+
+	try {
+		return JSON.parse(text) as T;
+	} catch {
+		throw new Error(`Invalid JSON response for ${path}`);
+	}
 }
 
 export type Paginated<TItem> = {
@@ -124,6 +140,12 @@ export async function apiCreatePaymentIntent(
 		method: "POST",
 		body: JSON.stringify(input satisfies CreatePaymentIntentRequest),
 	});
+}
+
+export async function apiGetPaymentIntent(
+	paymentId: string,
+): Promise<PaymentIntent> {
+	return http(`/payments/intents/${encodeURIComponent(paymentId)}`);
 }
 
 export async function apiListShipments(input: {
