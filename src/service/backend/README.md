@@ -83,6 +83,13 @@
 - 도메인 간 조회가 필요하면 Reader 계약 패턴을 우선 검토합니다.
 - 배치/대량 조회는 단건 유스케이스를 무리하게 확장하지 않고 Bulk 단위로 분리합니다.
 
+### DIP 구현 포인트
+
+- Handler는 포트(Repository Interface)만 의존하고, 구현체 타입은 모릅니다.
+- 구현 기술(SQL/Mongo/Queue)은 Infrastructure 어댑터로 격리합니다.
+- 구현체 교체/추가는 모듈 DI 바인딩 변경으로 끝나야 합니다.
+- Avatar 케이스도 핵심은 weak relation 자체가 아니라, `포트 -> 구현체` 의존성 역전 구조를 유지하는 데 있습니다.
+
 <br/>
 <br/>
 

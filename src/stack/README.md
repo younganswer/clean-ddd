@@ -16,6 +16,7 @@
 
 - 백엔드(HTTP/worker), DB, LocalStack, 프록시를 함께 띄우는 개발 환경을 표준화합니다.
 - 팀원 간 동일 런타임 조건을 확보합니다.
+- 여러 저장소(Postgres/Mongo) 조합에서도 Application이 포트만 의존하는 DIP 구조를 검증합니다.
 
 ### 디렉터리별 역할
 

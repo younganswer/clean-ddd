@@ -15,6 +15,13 @@
 6. Controller/BFF에서 요청 포맷을 연결합니다.
 7. 비동기 후속 처리가 필요하면 Outbox로 발행을 연결합니다.
 
+### DIP 체크(Write/Read 공통)
+
+1. Application이 구체 클래스(`Sql...Repository`, `Mongo...Repository`)를 직접 주입받지 않는지 확인합니다.
+2. Domain 포트(인터페이스) 기준으로 유스케이스를 설계합니다.
+3. 구현체 교체는 `Module`의 provider 바인딩만 바꾸도록 제한합니다.
+4. DB 구조 차이/연결 방식은 Infrastructure 어댑터 내부에서 흡수합니다.
+
 <br/>
 <br/>
 
@@ -45,3 +52,4 @@
 - 조회 편의 때문에 Repository를 범용 조회 API로 비대화
 - BFF에서 신규 비즈니스 정책을 생성
 - 배치 처리에서 컨텍스트를 전역 공유
+- Application/Domain에서 특정 DB 클라이언트나 구현체 타입에 직접 의존

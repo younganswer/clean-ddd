@@ -148,6 +148,13 @@ BFF는 기본적으로 조회 조합(Query composition) 경계이지만, **도�
 - Aggregate Root 저장/조회의 최소 인터페이스를 유지합니다.
 - 조회 편의를 위해 범용 쿼리 저장소로 비대화하지 않습니다.
 
+### DIP 표현 체크(핵심)
+
+- Domain/Application은 구현체가 아니라 **포트(Repository Interface)** 에만 의존합니다.
+- Infrastructure는 포트를 구현하는 **어댑터**로만 동작하며, 정책을 소유하지 않습니다.
+- 모듈 wiring에서는 `Symbol/Interface -> Concrete` 바인딩으로 의존성 방향을 고정합니다.
+- 즉, DB가 Postgres/Mongo로 나뉘어도 핵심은 저장소 종류가 아니라 **의존성 역전 구조 유지**입니다.
+
 <br/>
 <br/>
 

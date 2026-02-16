@@ -22,6 +22,10 @@ graph LR
     CRON --> DB
     QP --> DB
 
+    API --> MDB[(MongoDB avatars)]
+    CRON --> MDB
+    QP --> MDB
+
     API --> SQS[(LocalStack SQS FIFO)]
     CRON --> SQS
     QP --> SQS
@@ -29,6 +33,8 @@ graph LR
 ```
 
 `backend-api`, `backend-cron`, `backend-queue` 같은 역할(role)은 동일한 백엔드 코드베이스를 환경변수로 분기해 실행하는 형태로 구성됩니다.
+
+User avatar 경로는 다중 저장소 예시이며, 문서의 핵심은 Application이 포트에만 의존하고 Infrastructure가 구현체를 제공하는 DIP 구조입니다.
 
 ### 역할 분기 스위치
 
