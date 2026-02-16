@@ -17,7 +17,7 @@ const toOutcome = (value: string): "SUCCEEDED" | "FAILED" => {
 	return value === "FAILED" ? "FAILED" : "SUCCEEDED";
 };
 
-export default function OrderDetailPage() {
+const OrderDetailPage = () => {
 	return (
 		<Suspense
 			fallback={
@@ -27,9 +27,10 @@ export default function OrderDetailPage() {
 			<OrderDetailInner />
 		</Suspense>
 	);
-}
+};
+export default OrderDetailPage;
 
-function OrderDetailInner() {
+const OrderDetailInner = () => {
 	const search = useSearchParams();
 	const orderId = search.get("id") ?? "";
 
@@ -304,4 +305,4 @@ function OrderDetailInner() {
 			)}
 		</div>
 	);
-}
+};

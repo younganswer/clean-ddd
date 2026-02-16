@@ -12,7 +12,7 @@ import {
 	buildLaneSteps,
 } from "@/app/system-concepts/_lib/system-concepts";
 
-export default function SystemConceptsPage() {
+const SystemConceptsPage = () => {
 	const {
 		users,
 		inventoryItems,
@@ -110,4 +110,5 @@ export default function SystemConceptsPage() {
 			<DocLinks docs={DOC_LINKS} />
 		</div>
 	);
-}
+};
+export default SystemConceptsPage;

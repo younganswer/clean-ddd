@@ -23,7 +23,7 @@ import {
 	type RootType,
 } from "@/app/graph/_lib/graph-helpers";
 
-export function useGraphPageState() {
+export const useGraphPageState = () => {
 	const params = useSearchParams();
 	const router = useRouter();
 
@@ -425,4 +425,4 @@ export function useGraphPageState() {
 		onCreateOrder: handleCreateOrder,
 		onCreatePaymentIntent: handleCreatePaymentIntent,
 	};
-}
+};

@@ -26,7 +26,7 @@ type Input = {
 	onReplaceRoute: (href: string) => void;
 };
 
-export function useGraphData(input: Input) {
+export const useGraphData = (input: Input) => {
 	const {
 		rootType,
 		rootId,
@@ -186,4 +186,4 @@ export function useGraphData(input: Input) {
 		selectedSku,
 		setSelectedSku,
 	};
-}
+};

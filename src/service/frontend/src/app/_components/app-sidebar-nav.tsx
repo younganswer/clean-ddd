@@ -32,16 +32,16 @@ const sections: NavSection[] = [
 	},
 ];
 
-function isActive(pathname: string, href: string) {
+const isActive = (pathname: string, href: string) => {
 	if (href === "/") return pathname === "/";
 	return pathname === href || pathname.startsWith(`${href}/`);
-}
+};
 
 type Props = {
 	onNavigate?: () => void;
 };
 
-export function AppSidebarNav({ onNavigate }: Props) {
+export const AppSidebarNav = ({ onNavigate }: Props) => {
 	const pathname = usePathname();
 
 	return (
@@ -74,4 +74,4 @@ export function AppSidebarNav({ onNavigate }: Props) {
 			))}
 		</nav>
 	);
-}
+};

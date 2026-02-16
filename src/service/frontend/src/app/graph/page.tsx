@@ -12,7 +12,7 @@ import { useGraphPageState } from "@/app/graph/_hooks/use-graph-page-state";
 
 cytoscape.use(fcose);
 
-export default function GraphPage() {
+const GraphPage = () => {
 	return (
 		<Suspense
 			fallback={
@@ -24,9 +24,10 @@ export default function GraphPage() {
 			<GraphPageInner />
 		</Suspense>
 	);
-}
+};
+export default GraphPage;
 
-function GraphPageInner() {
+const GraphPageInner = () => {
 	const {
 		rootType,
 		rootId,
@@ -192,4 +193,4 @@ function GraphPageInner() {
 			)}
 		</div>
 	);
-}
+};

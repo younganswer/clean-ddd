@@ -253,16 +253,16 @@ export const STEPS: StepDef[] = [
 	},
 ];
 
-export function normalizeStatus(status: StepStatus): string {
+export const normalizeStatus = (status: StepStatus): string => {
 	if (status === "idle") return "IDLE";
 	if (status === "succeeded") return "SUCCEEDED";
 	if (status === "failed") return "FAILED";
 	if (status === "running") return "RUNNING";
 	if (status === "skipped") return "SKIPPED";
 	return "PENDING";
-}
+};
 
-export function formatPhaseLabel(phase: RunPhase): string {
+export const formatPhaseLabel = (phase: RunPhase): string => {
 	if (phase === "starting-order") return "STARTING_ORDER";
 	if (phase === "order-ready") return "ORDER_READY";
 	if (phase === "starting-payment") return "STARTING_PAYMENT";
@@ -272,16 +272,16 @@ export function formatPhaseLabel(phase: RunPhase): string {
 	if (phase === "failed") return "FAILED";
 	if (phase === "timeout") return "TIMEOUT";
 	return "IDLE";
-}
+};
 
-export function deriveApiStepStatuses(input: {
+export const deriveApiStepStatuses = (input: {
 	orderId: string;
 	paymentId: string;
 	outboxId: string;
 	order: OrderDetail | null;
 	payment: PaymentIntent | null;
 	shipment: ShipmentSummary | null;
-}): { statuses: Record<string, StepStatus> } {
+}): { statuses: Record<string, StepStatus> } => {
 	const hasOrderRequestAccepted = input.orderId.length > 0;
 	const hasOrderData = Boolean(input.order);
 	const hasPaymentRequestAccepted = input.paymentId.length > 0;
@@ -338,13 +338,13 @@ export function deriveApiStepStatuses(input: {
 	}
 
 	return { statuses };
-}
+};
 
-export function buildLaneSteps() {
+export const buildLaneSteps = () => {
 	return {
 		presentation: STEPS.filter((step) => step.layer === "presentation"),
 		application: STEPS.filter((step) => step.layer === "application"),
 		domain: STEPS.filter((step) => step.layer === "domain"),
 		infrastructure: STEPS.filter((step) => step.layer === "infrastructure"),
 	};
-}
+};

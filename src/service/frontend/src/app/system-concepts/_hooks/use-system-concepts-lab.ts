@@ -21,7 +21,7 @@ import {
 	type StepStatus,
 } from "@/app/system-concepts/_lib/system-concepts";
 
-export function useSystemConceptsLab() {
+export const useSystemConceptsLab = () => {
 	const [users, setUsers] = useState<UserProfile[]>([]);
 	const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
 	const [selectedUserId, setSelectedUserId] = useState("");
@@ -434,4 +434,4 @@ export function useSystemConceptsLab() {
 		handlePrevStep,
 		handleNextStep,
 	};
-}
+};

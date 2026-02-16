@@ -7,7 +7,7 @@ import { usePaginatedList } from "@/lib/use-paginated-list";
 
 const DEFAULT_PAGE_SIZE = 10;
 
-export default function InventoryPage() {
+const InventoryPage = () => {
 	const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
 	const fetchPage = useCallback(
 		(input: { page: number; limit: number }) =>
@@ -80,4 +80,5 @@ export default function InventoryPage() {
 			</p>
 		</div>
 	);
-}
+};
+export default InventoryPage;

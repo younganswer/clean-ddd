@@ -32,16 +32,16 @@ const baseUrl =
 	process.env.NEXT_PUBLIC_API_URL ??
 	"/api/v1";
 
-function requireBaseUrl(): string {
+const requireBaseUrl = (): string => {
 	if (!baseUrl) {
 		throw new Error(
 			"NEXT_PUBLIC_API_BASE_URL (or NEXT_PUBLIC_API_URL) is required",
 		);
 	}
 	return baseUrl.replace(/\/$/, "");
-}
+};
 
-async function http<T>(path: string, init?: RequestInit): Promise<T> {
+const http = async <T>(path: string, init?: RequestInit): Promise<T> => {
 	const url = `${requireBaseUrl()}${path.startsWith("/") ? path : `/${path}`}`;
 	const res = await fetch(url, {
 		...init,
@@ -73,7 +73,7 @@ async function http<T>(path: string, init?: RequestInit): Promise<T> {
 	} catch {
 		throw new Error(`Invalid JSON response for ${path}`);
 	}
-}
+};
 
 export type Paginated<TItem> = {
 	items: TItem[];
@@ -106,105 +106,94 @@ export type GraphView = {
 	truncated?: boolean;
 };
 
-export async function apiCreateOrder(input: {
+export const apiCreateOrder = async (input: {
 	userId: string;
 	amount: number;
 	currency: "KRW" | "USD";
 	items?: Array<{ sku: string; quantity: number }>;
-}): Promise<CreateOrderResponse> {
+}): Promise<CreateOrderResponse> => {
 	return http("/orders", {
 		method: "POST",
 		body: JSON.stringify(input satisfies CreateOrderRequest),
 	});
-}
+};
 
-export async function apiListOrders(input: {
+export const apiListOrders = async (input: {
 	limit: number;
 	page?: number;
-}): Promise<PaginatedOrders> {
+}): Promise<PaginatedOrders> => {
 	const page = input.page ?? 1;
 	return http(
 		`/orders?limit=${encodeURIComponent(String(input.limit))}&page=${encodeURIComponent(String(page))}`,
 	);
-}
+};
 
-export async function apiGetOrder(orderId: string): Promise<OrderDetail> {
+export const apiGetOrder = async (orderId: string): Promise<OrderDetail> => {
 	return http(`/orders/${encodeURIComponent(orderId)}`);
-}
+};
 
-export async function apiCreatePaymentIntent(
-	orderId: string,
-	input: { simulateOutcome?: "SUCCEEDED" | "FAILED" },
-): Promise<CreatePaymentIntentResponse> {
+export const apiCreatePaymentIntent = async (orderId: string, input: { simulateOutcome?: "SUCCEEDED" | "FAILED" }): Promise<CreatePaymentIntentResponse> => {
 	return http(`/orders/${encodeURIComponent(orderId)}/payments/intents`, {
 		method: "POST",
 		body: JSON.stringify(input satisfies CreatePaymentIntentRequest),
 	});
-}
+};
 
-export async function apiGetPaymentIntent(
-	paymentId: string,
-): Promise<PaymentIntent> {
+export const apiGetPaymentIntent = async (paymentId: string): Promise<PaymentIntent> => {
 	return http(`/payments/intents/${encodeURIComponent(paymentId)}`);
-}
+};
 
-export async function apiListShipments(input: {
+export const apiListShipments = async (input: {
 	limit: number;
 	page?: number;
-}): Promise<PaginatedShipments> {
+}): Promise<PaginatedShipments> => {
 	const page = input.page ?? 1;
 	return http(
 		`/shipments?limit=${encodeURIComponent(String(input.limit))}&page=${encodeURIComponent(String(page))}`,
 	);
-}
+};
 
-export async function apiGetShipmentByOrderId(
-	orderId: string,
-): Promise<ShipmentSummary | null> {
+export const apiGetShipmentByOrderId = async (orderId: string): Promise<ShipmentSummary | null> => {
 	return http(`/shipments/by-order/${encodeURIComponent(orderId)}`);
-}
+};
 
-export async function apiListInventoryItems(input: {
+export const apiListInventoryItems = async (input: {
 	limit: number;
 	page?: number;
-}): Promise<PaginatedInventoryItems> {
+}): Promise<PaginatedInventoryItems> => {
 	const page = input.page ?? 1;
 	return http(
 		`/inventory/items?limit=${encodeURIComponent(String(input.limit))}&page=${encodeURIComponent(String(page))}`,
 	);
-}
+};
 
-export async function apiGetInventoryItem(
-	sku: string,
-): Promise<InventoryItem | null> {
+export const apiGetInventoryItem = async (sku: string): Promise<InventoryItem | null> => {
 	return http(`/inventory/items/${encodeURIComponent(sku)}`);
-}
+};
 
-export async function apiListInventoryReservations(
-	orderId: string,
-): Promise<InventoryReservation[]> {
+export const apiListInventoryReservations = async (orderId: string): Promise<InventoryReservation[]> => {
 	return http(
 		`/inventory/reservations?orderId=${encodeURIComponent(orderId)}`,
 	);
-}
+};
 
-export async function apiListUsers(input: {
+export const apiListUsers = async (input: {
 	limit: number;
 	page: number;
-}): Promise<PaginatedUsers> {
+}): Promise<PaginatedUsers> => {
 	return http(
 		`/users?limit=${encodeURIComponent(String(input.limit))}&page=${encodeURIComponent(String(input.page))}`,
 	);
-}
+};
 
-export async function apiGetGraph(input: {
+export const apiGetGraph = async (input: {
 	rootType: "USER" | "ORDER" | "SHIPMENT" | "PAYMENT";
 	rootId: string;
 	depth?: number;
 	maxEvents?: number;
 	maxNodes?: number;
 	includeEvents?: boolean;
-}): Promise<GraphView> {
+}): Promise<GraphView> => {
 	const params = new URLSearchParams({
 		rootType: input.rootType,
 		rootId: input.rootId,
@@ -222,4 +211,4 @@ export async function apiGetGraph(input: {
 		params.set("includeEvents", String(input.includeEvents));
 	}
 	return http(`/bff/graph?${params.toString()}`);
-}
+};

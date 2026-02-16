@@ -27,7 +27,7 @@ type Props = {
 	onNodeTap: (nodeId: string, shiftKey: boolean) => void;
 };
 
-export function GraphCanvas({
+export const GraphCanvas = ({
 	graph,
 	elements,
 	stylesheet,
@@ -43,7 +43,7 @@ export function GraphCanvas({
 	onShowEdgeLabelsChange,
 	onCyReady,
 	onNodeTap,
-}: Props) {
+}: Props) => {
 	return (
 		<div className="table-shell relative z-0">
 			<div className="flex flex-wrap items-center justify-between gap-2 border-b border-border bg-surface-muted px-3 py-2 text-xs text-muted-foreground">
@@ -132,4 +132,4 @@ export function GraphCanvas({
 			</div>
 		</div>
 	);
-}
+};

@@ -12,7 +12,7 @@ const baseConfig: NextConfig = {
 	},
 };
 
-export default function nextConfig(phase: string): NextConfig {
+const nextConfig = (phase: string): NextConfig => {
 	const apiProxyTarget = process.env.API_PROXY_TARGET?.replace(/\/$/, "");
 
 	if (phase === PHASE_DEVELOPMENT_SERVER) {
@@ -34,4 +34,5 @@ export default function nextConfig(phase: string): NextConfig {
 		...baseConfig,
 		output: "export",
 	};
-}
+};
+export default nextConfig;

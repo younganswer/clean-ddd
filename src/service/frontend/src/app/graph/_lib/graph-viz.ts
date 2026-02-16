@@ -40,9 +40,7 @@ type GraphColors = {
 	edgeText: string;
 };
 
-export function buildGraphElements(
-	graph: GraphView | null,
-): ElementDefinition[] {
+export const buildGraphElements = (graph: GraphView | null): ElementDefinition[] => {
 	if (!graph) return [];
 	const elements: ElementDefinition[] = [];
 
@@ -74,9 +72,9 @@ export function buildGraphElements(
 	}
 
 	return elements;
-}
+};
 
-export function getGraphColors(): GraphColors {
+export const getGraphColors = (): GraphColors => {
 	return {
 		nodeBg: readCssVar("--graph-node-bg", "#ffffff"),
 		nodeBorder: readCssVar("--graph-node-border", "#d4d4d8"),
@@ -96,15 +94,15 @@ export function getGraphColors(): GraphColors {
 		edge: readCssVar("--graph-edge", "#a1a1aa"),
 		edgeText: readCssVar("--graph-edge-text", "#71717a"),
 	};
-}
+};
 
-export function buildGraphStylesheet(input: {
+export const buildGraphStylesheet = (input: {
 	rootNodeId?: string;
 	density: GraphDensity;
 	showNodeLabels: boolean;
 	showEdgeLabels: boolean;
 	colors: GraphColors;
-}): StylesheetJson {
+}): StylesheetJson => {
 	const { rootNodeId, density, showNodeLabels, showEdgeLabels, colors } =
 		input;
 
@@ -194,9 +192,9 @@ export function buildGraphStylesheet(input: {
 			},
 		},
 	];
-}
+};
 
-export function runFcoseLayout(cy: Core, layoutPadding: string): void {
+export const runFcoseLayout = (cy: Core, layoutPadding: string): void => {
 	const paddingParsed = Math.trunc(Number(layoutPadding));
 	const padding = Number.isFinite(paddingParsed)
 		? Math.min(120, Math.max(10, paddingParsed))
@@ -208,4 +206,4 @@ export function runFcoseLayout(cy: Core, layoutPadding: string): void {
 		padding,
 	};
 	cy.layout(options as unknown as LayoutOptions).run();
-}
+};

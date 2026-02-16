@@ -34,7 +34,7 @@ type Props = {
 	onRefresh: () => void;
 };
 
-export function ControlPanel(props: Props) {
+export const ControlPanel = (props: Props) => {
 	const {
 		displayPhaseLabel,
 		isPolling,
@@ -179,4 +179,4 @@ export function ControlPanel(props: Props) {
 			{error && <div className="mt-3 text-sm text-danger">{error}</div>}
 		</section>
 	);
-}
+};

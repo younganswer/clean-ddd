@@ -8,7 +8,7 @@ import { usePaginatedList } from "@/lib/use-paginated-list";
 
 const DEFAULT_PAGE_SIZE = 10;
 
-export default function UsersPage() {
+const UsersPage = () => {
 	const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
 	const fetchPage = useCallback(
 		(input: { page: number; limit: number }) => apiListUsers(input),
@@ -83,4 +83,5 @@ export default function UsersPage() {
 			/>
 		</div>
 	);
-}
+};
+export default UsersPage;

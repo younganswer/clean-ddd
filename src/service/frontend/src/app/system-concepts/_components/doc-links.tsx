@@ -9,7 +9,7 @@ type Props = {
 	docs: LinkItem[];
 };
 
-export function DocLinks({ docs }: Props) {
+export const DocLinks = ({ docs }: Props) => {
 	return (
 		<section className="surface p-6">
 			<h2 className="text-lg font-semibold">Concept Docs</h2>
@@ -34,4 +34,4 @@ export function DocLinks({ docs }: Props) {
 			</div>
 		</section>
 	);
-}
+};

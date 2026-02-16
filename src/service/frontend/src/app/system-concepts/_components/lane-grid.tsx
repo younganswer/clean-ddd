@@ -19,7 +19,7 @@ type Props = {
 	onSelectStep: (index: number) => void;
 };
 
-export function LaneGrid(props: Props) {
+export const LaneGrid = (props: Props) => {
 	const {
 		laneSteps,
 		statuses,
@@ -81,4 +81,4 @@ export function LaneGrid(props: Props) {
 			))}
 		</section>
 	);
-}
+};

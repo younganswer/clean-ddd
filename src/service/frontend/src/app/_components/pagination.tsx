@@ -12,7 +12,7 @@ type Props = {
 
 const PAGE_SIZE_OPTIONS = [5, 10, 20] as const;
 
-export function Pagination({
+export const Pagination = ({
 	page,
 	pageSize,
 	totalPages,
@@ -20,7 +20,7 @@ export function Pagination({
 	onPageSizeChange,
 	onPrev,
 	onNext,
-}: Props) {
+}: Props) => {
 	return (
 		<div className="mt-4 flex flex-wrap items-center justify-between gap-3">
 			<div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
@@ -62,4 +62,4 @@ export function Pagination({
 			</div>
 		</div>
 	);
-}
+};

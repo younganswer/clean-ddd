@@ -23,7 +23,7 @@ type Props = {
 	onNext: () => void;
 };
 
-export function StepPreview(props: Props) {
+export const StepPreview = (props: Props) => {
 	const {
 		showCompletionSummary,
 		previewIndex,
@@ -177,4 +177,4 @@ export function StepPreview(props: Props) {
 			)}
 		</section>
 	);
-}
+};

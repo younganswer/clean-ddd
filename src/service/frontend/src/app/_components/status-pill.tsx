@@ -1,6 +1,6 @@
 type Tone = "success" | "danger" | "warning" | "pending" | "neutral";
 
-function getTone(status: string): Tone {
+const getTone = (status: string): Tone => {
 	const normalized = status.trim().toUpperCase();
 
 	if (
@@ -39,17 +39,17 @@ function getTone(status: string): Tone {
 	}
 
 	return "neutral";
-}
+};
 
 type StatusPillProps = {
 	status: string | null | undefined;
 };
 
-export function StatusPill({ status }: StatusPillProps) {
+export const StatusPill = ({ status }: StatusPillProps) => {
 	if (!status) {
 		return <span className="status-pill status-neutral">-</span>;
 	}
 
 	const tone = getTone(status);
 	return <span className={`status-pill status-${tone}`}>{status}</span>;
-}
+};

@@ -9,7 +9,7 @@ import { usePaginatedList } from "@/lib/use-paginated-list";
 
 const DEFAULT_PAGE_SIZE = 10;
 
-export default function ShipmentsPage() {
+const ShipmentsPage = () => {
 	const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
 	const fetchPage = useCallback(
 		(input: { page: number; limit: number }) => apiListShipments(input),
@@ -92,4 +92,5 @@ export default function ShipmentsPage() {
 			/>
 		</div>
 	);
-}
+};
+export default ShipmentsPage;

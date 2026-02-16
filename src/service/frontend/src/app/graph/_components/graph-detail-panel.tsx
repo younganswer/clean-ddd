@@ -33,7 +33,7 @@ type Props = {
 	onCreatePaymentIntent: () => Promise<void>;
 };
 
-export function GraphDetailPanel({
+export const GraphDetailPanel = ({
 	selectedNode,
 	depth,
 	maxEvents,
@@ -52,7 +52,7 @@ export function GraphDetailPanel({
 	onCreatePaymentOutcomeChange,
 	onCreateOrder,
 	onCreatePaymentIntent,
-}: Props) {
+}: Props) => {
 	return (
 		<div className="surface relative z-10 p-4">
 			<div className="flex flex-wrap items-center justify-between gap-2">
@@ -224,4 +224,4 @@ export function GraphDetailPanel({
 			)}
 		</div>
 	);
-}
+};

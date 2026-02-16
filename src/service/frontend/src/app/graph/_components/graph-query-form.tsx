@@ -19,7 +19,7 @@ type Props = {
 	onSelectAndCenter: () => void;
 };
 
-export function GraphQueryForm({
+export const GraphQueryForm = ({
 	formRootType,
 	formRootId,
 	formDepth,
@@ -36,7 +36,7 @@ export function GraphQueryForm({
 	onSearchTextChange,
 	onSubmit,
 	onSelectAndCenter,
-}: Props) {
+}: Props) => {
 	return (
 		<form
 			className="surface mt-4 flex flex-wrap items-end gap-3 p-4 text-sm"
@@ -137,4 +137,4 @@ export function GraphQueryForm({
 			</div>
 		</form>
 	);
-}
+};
