@@ -1,6 +1,8 @@
 import 'reflect-metadata';
 
 import { MikroORM } from '@mikro-orm/core';
+import { MongoClient } from 'mongodb';
+import { randomUUID } from 'node:crypto';
 import process from 'node:process';
 import { Client } from 'pg';
 import { mikroOrmConfigForRuntime } from '@/lib/database/mikro-orm.config';
@@ -96,12 +98,12 @@ async function seed(client: Client): Promise<void> {
 
     // Users: exactly 100
     await client.query(`
-      insert into "users" ("uuid", "display_name", "email", "avatar_url", "created_at", "updated_at")
+      insert into "users" ("uuid", "display_name", "email", "avatar_id", "created_at", "updated_at")
       select
         gen_random_uuid() as uuid,
         '더미 유저 ' || s.i as display_name,
         'dummy' || s.i || '@example.com' as email,
-        'https://example.com/avatar/' || s.i || '.png' as avatar_url,
+        null as avatar_id,
         now() as created_at,
         now() as updated_at
       from generate_series(1, 100) as s(i);
@@ -310,6 +312,73 @@ async function seed(client: Client): Promise<void> {
   }
 }
 
+async function seedMongoAvatars(client: Client): Promise<number> {
+  const mongoUrl = process.env.MONGODB_URL?.trim();
+  if (!mongoUrl) {
+    console.log('mongo avatar seed skipped: MONGODB_URL is not set');
+    return 0;
+  }
+
+  const dbName = process.env.MONGODB_DB_NAME?.trim() || 'clean_ddd';
+  const collectionName =
+    process.env.MONGODB_AVATAR_COLLECTION?.trim() || 'avatars';
+
+  const users = await client.query<{ userId: string }>(`
+    select u."uuid" as "userId"
+    from "users" u
+    order by u."id" asc;
+  `);
+
+  if (users.rows.length === 0) return 0;
+
+  const now = new Date();
+  const docs = users.rows.map((user, index) => ({
+    _id: randomUUID(),
+    userId: user.userId,
+    imageUrl: `https://example.com/avatar/${index + 1}.png`,
+    createdAt: now,
+    updatedAt: now,
+  }));
+
+  const mongoClient = new MongoClient(mongoUrl);
+  await mongoClient.connect();
+
+  try {
+    const avatars = mongoClient.db(dbName).collection<{
+      _id: string;
+      userId: string;
+      imageUrl: string;
+      createdAt: Date;
+      updatedAt: Date;
+    }>(collectionName);
+
+    await avatars.deleteMany({});
+    await avatars.insertMany(docs);
+
+    await client.query('begin;');
+    try {
+      for (const doc of docs) {
+        await client.query(
+          `update "users" set "avatar_id" = $1, "updated_at" = now() where "uuid" = $2`,
+          [doc._id, doc.userId],
+        );
+      }
+      await client.query('commit;');
+    } catch (error) {
+      try {
+        await client.query('rollback;');
+      } catch {
+        // ignore
+      }
+      throw error;
+    }
+
+    return docs.length;
+  } finally {
+    await mongoClient.close();
+  }
+}
+
 export async function runDbInit() {
   const url = databaseUrl();
 
@@ -357,10 +426,12 @@ export async function runDbInit() {
     console.log(`updatedAt triggers applied: tables=${triggerTables}`);
 
     await seed(client);
+    const avatarSeeded = await seedMongoAvatars(client);
 
     const summary = await client.query(`
       select
         (select count(*) from "users")::int as users,
+        (select count(*) from "users" where "avatar_id" is not null)::int as users_with_avatar_id,
         (select count(*) from "orders")::int as orders,
         (select count(*) from "payment_intents")::int as payments,
         (select count(*) from "shipments")::int as shipments,
@@ -370,6 +441,7 @@ export async function runDbInit() {
 
     const row = summary.rows[0] as {
       users: number;
+      users_with_avatar_id: number;
       orders: number;
       payments: number;
       shipments: number;
@@ -378,7 +450,8 @@ export async function runDbInit() {
     };
 
     console.log(
-      `init complete: users=${row.users}, orders=${row.orders}, payments=${row.payments}, shipments=${row.shipments}, ` +
+      `init complete: users=${row.users}, users_with_avatar_id=${row.users_with_avatar_id}, avatar_seeded=${avatarSeeded}, ` +
+        `orders=${row.orders}, payments=${row.payments}, shipments=${row.shipments}, ` +
         `inventory_available_total=${row.inventory_available_total}, inventory_reserved_total=${row.inventory_reserved_total}`,
     );
   } finally {
