@@ -1,32 +1,43 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useState } from "react";
+import { useEffect, useState } from "react";
 import { apiListUsers, type UserProfile } from "@/lib/api";
 import { Pagination } from "@/app/_components/pagination";
-import { usePaginatedList } from "@/lib/use-paginated-list";
 
 const DEFAULT_PAGE_SIZE = 10;
 
 export default function UsersPage() {
+	const [page, setPage] = useState(1);
 	const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
-	const fetchUsers = useCallback(
-		({ page, limit }: { page: number; limit: number }) => {
-			return apiListUsers({ limit, page });
-		},
-		[],
-	);
-	const {
-		page,
-		setPage,
-		items: users,
-		hasNext,
-		totalPages,
-		error,
-	} = usePaginatedList<UserProfile>({
-		pageSize,
-		fetchPage: fetchUsers,
-	});
+	const [users, setUsers] = useState<UserProfile[]>([]);
+	const [hasNext, setHasNext] = useState(false);
+	const [totalPages, setTotalPages] = useState(1);
+	const [error, setError] = useState<string | null>(null);
+
+	useEffect(() => {
+		let active = true;
+		void (async () => {
+			try {
+				const res = await apiListUsers({ limit: pageSize, page });
+				if (!active) return;
+				setTotalPages(res.totalPages);
+				if (page > res.totalPages) {
+					setPage(res.totalPages);
+					return;
+				}
+				setUsers(res.items);
+				setHasNext(res.hasNext);
+			} catch (e: unknown) {
+				if (!active) return;
+				const message = e instanceof Error ? e.message : String(e);
+				setError(message);
+			}
+		})();
+		return () => {
+			active = false;
+		};
+	}, [page, pageSize]);
 
 	return (
 		<div className="page-shell">
@@ -34,8 +45,8 @@ export default function UsersPage() {
 
 			{error && <div className="mt-4 text-sm text-danger">{error}</div>}
 
-			<div className="table-shell table-shell-readable mt-6">
-				<table className="data-table data-table-mobile-cards">
+			<div className="table-shell mt-6">
+				<table className="data-table">
 					<thead>
 						<tr>
 							<th>Display Name</th>
@@ -45,7 +56,7 @@ export default function UsersPage() {
 					<tbody>
 						{users.map((u) => (
 							<tr key={u.userId}>
-								<td data-label="Display Name">
+								<td>
 									<Link
 										className="table-link"
 										href={`/?rootType=USER&rootId=${encodeURIComponent(u.userId)}`}
@@ -53,7 +64,7 @@ export default function UsersPage() {
 										{u.displayName}
 									</Link>
 								</td>
-								<td data-label="Email">
+								<td>
 									<Link
 										className="table-link"
 										href={`/?rootType=USER&rootId=${encodeURIComponent(u.userId)}`}
@@ -75,7 +86,6 @@ export default function UsersPage() {
 			</div>
 
 			<Pagination
-				className="table-shell-readable"
 				page={page}
 				pageSize={pageSize}
 				totalPages={totalPages}

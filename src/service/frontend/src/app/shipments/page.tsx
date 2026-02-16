@@ -1,33 +1,45 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useState } from "react";
+import { useEffect, useState } from "react";
 import { apiListShipments, type ShipmentSummary } from "@/lib/api";
 import { Pagination } from "@/app/_components/pagination";
 import { StatusPill } from "@/app/_components/status-pill";
-import { usePaginatedList } from "@/lib/use-paginated-list";
 
 const DEFAULT_PAGE_SIZE = 10;
 
 export default function ShipmentsPage() {
+	const [page, setPage] = useState(1);
 	const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
-	const fetchShipments = useCallback(
-		({ page, limit }: { page: number; limit: number }) => {
-			return apiListShipments({ limit, page });
-		},
-		[],
-	);
-	const {
-		page,
-		setPage,
-		items: shipments,
-		hasNext,
-		totalPages,
-		error,
-	} = usePaginatedList<ShipmentSummary>({
-		pageSize,
-		fetchPage: fetchShipments,
-	});
+	const [shipments, setShipments] = useState<ShipmentSummary[]>([]);
+	const [hasNextState, setHasNextState] = useState(false);
+	const [totalPages, setTotalPages] = useState(1);
+	const [error, setError] = useState<string | null>(null);
+	const hasNext = hasNextState;
+
+	useEffect(() => {
+		let active = true;
+		void (async () => {
+			try {
+				const res = await apiListShipments({ limit: pageSize, page });
+				if (!active) return;
+				setTotalPages(res.totalPages);
+				if (page > res.totalPages) {
+					setPage(res.totalPages);
+					return;
+				}
+				setShipments(res.items);
+				setHasNextState(res.hasNext);
+			} catch (e: unknown) {
+				if (!active) return;
+				const message = e instanceof Error ? e.message : String(e);
+				setError(message);
+			}
+		})();
+		return () => {
+			active = false;
+		};
+	}, [page, pageSize]);
 
 	return (
 		<div className="page-shell">
@@ -35,8 +47,8 @@ export default function ShipmentsPage() {
 
 			{error && <div className="mt-4 text-sm text-danger">{error}</div>}
 
-			<div className="table-shell table-shell-readable mt-6">
-				<table className="data-table data-table-mobile-cards">
+			<div className="table-shell mt-6">
+				<table className="data-table">
 					<thead>
 						<tr>
 							<th>Shipment ID</th>
@@ -48,10 +60,7 @@ export default function ShipmentsPage() {
 					<tbody>
 						{shipments.map((s) => (
 							<tr key={s.shipmentId}>
-								<td
-									data-label="Shipment ID"
-									className="mono-cell"
-								>
+								<td className="mono-cell">
 									<Link
 										className="table-link"
 										href={`/?rootType=SHIPMENT&rootId=${encodeURIComponent(s.shipmentId)}`}
@@ -59,7 +68,7 @@ export default function ShipmentsPage() {
 										{s.shipmentId}
 									</Link>
 								</td>
-								<td data-label="Order ID" className="mono-cell">
+								<td className="mono-cell">
 									<Link
 										className="table-link"
 										href={`/?rootType=ORDER&rootId=${encodeURIComponent(s.orderId)}`}
@@ -67,10 +76,10 @@ export default function ShipmentsPage() {
 										{s.orderId}
 									</Link>
 								</td>
-								<td data-label="Status">
+								<td>
 									<StatusPill status={s.status} />
 								</td>
-								<td data-label="Created">
+								<td>
 									{new Date(s.createdAt).toLocaleString()}
 								</td>
 							</tr>
@@ -87,7 +96,6 @@ export default function ShipmentsPage() {
 			</div>
 
 			<Pagination
-				className="table-shell-readable"
 				page={page}
 				pageSize={pageSize}
 				totalPages={totalPages}

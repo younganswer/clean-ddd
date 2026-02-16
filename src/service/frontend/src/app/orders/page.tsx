@@ -1,32 +1,44 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useState } from "react";
+import { useEffect, useState } from "react";
 import { apiListOrders, type OrderSummary } from "@/lib/api";
 import { Pagination } from "@/app/_components/pagination";
-import { usePaginatedList } from "@/lib/use-paginated-list";
 
 const DEFAULT_PAGE_SIZE = 10;
 
 export default function OrdersPage() {
+	const [page, setPage] = useState(1);
 	const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
-	const fetchOrders = useCallback(
-		({ page, limit }: { page: number; limit: number }) => {
-			return apiListOrders({ limit, page });
-		},
-		[],
-	);
-	const {
-		page,
-		setPage,
-		items: orders,
-		hasNext,
-		totalPages,
-		error,
-	} = usePaginatedList<OrderSummary>({
-		pageSize,
-		fetchPage: fetchOrders,
-	});
+	const [orders, setOrders] = useState<OrderSummary[]>([]);
+	const [hasNextState, setHasNextState] = useState(false);
+	const [totalPages, setTotalPages] = useState(1);
+	const [error, setError] = useState<string | null>(null);
+	const hasNext = hasNextState;
+
+	useEffect(() => {
+		let active = true;
+		void (async () => {
+			try {
+				const res = await apiListOrders({ limit: pageSize, page });
+				if (!active) return;
+				setTotalPages(res.totalPages);
+				if (page > res.totalPages) {
+					setPage(res.totalPages);
+					return;
+				}
+				setOrders(res.items);
+				setHasNextState(res.hasNext);
+			} catch (e: unknown) {
+				if (!active) return;
+				const message = e instanceof Error ? e.message : String(e);
+				setError(message);
+			}
+		})();
+		return () => {
+			active = false;
+		};
+	}, [page, pageSize]);
 
 	return (
 		<div className="page-shell">
@@ -34,8 +46,8 @@ export default function OrdersPage() {
 
 			{error && <div className="mt-4 text-sm text-danger">{error}</div>}
 
-			<div className="table-shell table-shell-readable mt-6">
-				<table className="data-table data-table-mobile-cards">
+			<div className="table-shell mt-6">
+				<table className="data-table">
 					<thead>
 						<tr>
 							<th>Order ID</th>
@@ -47,7 +59,7 @@ export default function OrdersPage() {
 					<tbody>
 						{orders.map((o) => (
 							<tr key={o.orderId}>
-								<td data-label="Order ID" className="mono-cell">
+								<td className="mono-cell">
 									<Link
 										className="table-link"
 										href={`/?rootType=ORDER&rootId=${encodeURIComponent(o.orderId)}`}
@@ -55,7 +67,7 @@ export default function OrdersPage() {
 										{o.orderId}
 									</Link>
 								</td>
-								<td data-label="User ID" className="mono-cell">
+								<td className="mono-cell">
 									{o.userId ? (
 										<Link
 											className="table-link"
@@ -67,10 +79,7 @@ export default function OrdersPage() {
 										"-"
 									)}
 								</td>
-								<td
-									data-label="Payment ID"
-									className="mono-cell"
-								>
+								<td className="mono-cell">
 									{o.paymentId ? (
 										<Link
 											className="table-link"
@@ -82,7 +91,7 @@ export default function OrdersPage() {
 										"-"
 									)}
 								</td>
-								<td data-label="Created">
+								<td>
 									{new Date(o.createdAt).toLocaleString()}
 								</td>
 							</tr>
@@ -99,7 +108,6 @@ export default function OrdersPage() {
 			</div>
 
 			<Pagination
-				className="table-shell-readable"
 				page={page}
 				pageSize={pageSize}
 				totalPages={totalPages}

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Suspense, useCallback, useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import {
 	apiCreatePaymentIntent,
@@ -41,49 +41,42 @@ function OrderDetailInner() {
 	const [error, setError] = useState<string | null>(null);
 	const [outcome, setOutcome] = useState<"SUCCEEDED" | "FAILED">("SUCCEEDED");
 
-	const loadOrderDetail = useCallback(async () => {
-		if (!orderId) return;
-		const [data, ship, reservations] = await Promise.all([
-			apiGetOrder(orderId),
-			apiGetShipmentByOrderId(orderId),
-			apiListInventoryReservations(orderId),
-		]);
-		return {
-			order: data,
-			shipment: ship,
-			reservationCount: Array.isArray(reservations)
-				? reservations.length
-				: null,
-		};
-	}, [orderId]);
-
-	const refresh = useCallback(async () => {
+	async function refresh() {
 		if (!orderId) return;
 		setError(null);
 		try {
-			const loaded = await loadOrderDetail();
-			if (!loaded) return;
-			setOrder(loaded.order);
-			setShipment(loaded.shipment);
-			setReservationCount(loaded.reservationCount);
+			const [data, ship, reservations] = await Promise.all([
+				apiGetOrder(orderId),
+				apiGetShipmentByOrderId(orderId),
+				apiListInventoryReservations(orderId),
+			]);
+			setOrder(data);
+			setShipment(ship);
+			setReservationCount(
+				Array.isArray(reservations) ? reservations.length : null,
+			);
 		} catch (e: unknown) {
 			const message = e instanceof Error ? e.message : String(e);
 			setError(message);
 		}
-	}, [loadOrderDetail, orderId]);
+	}
 
 	useEffect(() => {
 		if (!orderId) return;
 		let active = true;
 		void (async () => {
-			setError(null);
 			try {
-				const loaded = await loadOrderDetail();
+				const [data, ship, reservations] = await Promise.all([
+					apiGetOrder(orderId),
+					apiGetShipmentByOrderId(orderId),
+					apiListInventoryReservations(orderId),
+				]);
 				if (!active) return;
-				if (!loaded) return;
-				setOrder(loaded.order);
-				setShipment(loaded.shipment);
-				setReservationCount(loaded.reservationCount);
+				setOrder(data);
+				setShipment(ship);
+				setReservationCount(
+					Array.isArray(reservations) ? reservations.length : null,
+				);
 			} catch (e: unknown) {
 				if (!active) return;
 				const message = e instanceof Error ? e.message : String(e);
@@ -93,11 +86,11 @@ function OrderDetailInner() {
 		return () => {
 			active = false;
 		};
-	}, [loadOrderDetail, orderId]);
+	}, [orderId]);
 
 	return (
 		<div className="page-shell">
-			<div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
+			<div className="flex items-center justify-between">
 				<div className="grid gap-1">
 					{orderId ? (
 						<h1 className="text-2xl font-semibold">
@@ -113,9 +106,9 @@ function OrderDetailInner() {
 					)}
 				</div>
 
-				<div className="flex w-full items-center gap-2 sm:w-auto">
+				<div className="flex items-center gap-2">
 					<button
-						className="btn h-9 w-full sm:w-auto"
+						className="btn h-9"
 						disabled={!orderId}
 						onClick={() => void refresh()}
 					>
@@ -141,11 +134,11 @@ function OrderDetailInner() {
 					<section className="surface p-6">
 						<h2 className="text-lg font-semibold">주문 정보</h2>
 						<dl className="mt-4 grid gap-2 text-sm">
-							<div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+							<div className="flex justify-between">
 								<dt className="text-muted-foreground">
 									UserId
 								</dt>
-								<dd className="break-all sm:text-right">
+								<dd>
 									{order.userId ? (
 										<Link
 											className="font-mono text-xs underline"
@@ -158,25 +151,25 @@ function OrderDetailInner() {
 									)}
 								</dd>
 							</div>
-							<div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+							<div className="flex justify-between">
 								<dt className="text-muted-foreground">
 									Status
 								</dt>
-								<dd className="sm:text-right">
+								<dd>
 									<StatusPill status={order.status} />
 								</dd>
 							</div>
-							<div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+							<div className="flex justify-between">
 								<dt className="text-muted-foreground">
 									Amount
 								</dt>
-								<dd className="sm:text-right">
+								<dd>
 									{order.amount} {order.currency}
 								</dd>
 							</div>
-							<div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
+							<div className="flex justify-between">
 								<dt className="text-muted-foreground">Items</dt>
-								<dd className="text-left sm:text-right">
+								<dd className="text-right">
 									{(order.items ?? []).map((it, idx) => (
 										<div key={idx}>
 											{it.sku} × {it.quantity}
@@ -185,11 +178,11 @@ function OrderDetailInner() {
 									{(order.items ?? []).length === 0 && "-"}
 								</dd>
 							</div>
-							<div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+							<div className="flex justify-between">
 								<dt className="text-muted-foreground">
 									PaymentId
 								</dt>
-								<dd className="break-all sm:text-right">
+								<dd>
 									{order.paymentId ? (
 										<Link
 											className="font-mono text-xs underline"
@@ -208,11 +201,11 @@ function OrderDetailInner() {
 					<section className="surface p-6">
 						<h2 className="text-lg font-semibold">컨텍스트 상태</h2>
 						<dl className="mt-4 grid gap-2 text-sm">
-							<div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+							<div className="flex justify-between">
 								<dt className="text-muted-foreground">
 									배송(Shipment)
 								</dt>
-								<dd className="sm:text-right">
+								<dd>
 									{shipment ? (
 										<span className="flex flex-wrap items-center justify-end gap-2">
 											<StatusPill
@@ -230,11 +223,11 @@ function OrderDetailInner() {
 									)}
 								</dd>
 							</div>
-							<div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+							<div className="flex justify-between">
 								<dt className="text-muted-foreground">
 									재고 예약
 								</dt>
-								<dd className="sm:text-right">
+								<dd>
 									{reservationCount === null
 										? "-"
 										: `${reservationCount}건`}
@@ -271,7 +264,7 @@ function OrderDetailInner() {
 							</label>
 
 							<button
-								className="btn btn-primary h-10 w-full sm:w-auto"
+								className="btn btn-primary h-10"
 								onClick={async () => {
 									setError(null);
 									try {

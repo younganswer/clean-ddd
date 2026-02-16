@@ -1,25 +1,46 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useEffect, useState } from "react";
 import { apiListInventoryItems, type InventoryItem } from "@/lib/api";
 import { Pagination } from "@/app/_components/pagination";
-import { usePaginatedList } from "@/lib/use-paginated-list";
 
 const DEFAULT_PAGE_SIZE = 10;
 
 export default function InventoryPage() {
+	const [page, setPage] = useState(1);
 	const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
-	const fetchInventoryItems = useCallback(
-		({ page, limit }: { page: number; limit: number }) => {
-			return apiListInventoryItems({ limit, page });
-		},
-		[],
-	);
-	const { page, setPage, items, hasNext, totalPages, error } =
-		usePaginatedList<InventoryItem>({
-			pageSize,
-			fetchPage: fetchInventoryItems,
-		});
+	const [items, setItems] = useState<InventoryItem[]>([]);
+	const [hasNextState, setHasNextState] = useState(false);
+	const [totalPages, setTotalPages] = useState(1);
+	const [error, setError] = useState<string | null>(null);
+	const hasNext = hasNextState;
+
+	useEffect(() => {
+		let active = true;
+		void (async () => {
+			try {
+				const res = await apiListInventoryItems({
+					limit: pageSize,
+					page,
+				});
+				if (!active) return;
+				setTotalPages(res.totalPages);
+				if (page > res.totalPages) {
+					setPage(res.totalPages);
+					return;
+				}
+				setItems(res.items);
+				setHasNextState(res.hasNext);
+			} catch (e: unknown) {
+				if (!active) return;
+				const message = e instanceof Error ? e.message : String(e);
+				setError(message);
+			}
+		})();
+		return () => {
+			active = false;
+		};
+	}, [page, pageSize]);
 
 	return (
 		<div className="page-shell">
@@ -27,8 +48,8 @@ export default function InventoryPage() {
 
 			{error && <div className="mt-4 text-sm text-danger">{error}</div>}
 
-			<div className="table-shell table-shell-readable mt-6">
-				<table className="data-table data-table-mobile-cards">
+			<div className="table-shell mt-6">
+				<table className="data-table">
 					<thead>
 						<tr>
 							<th>Item ID</th>
@@ -42,22 +63,14 @@ export default function InventoryPage() {
 					<tbody>
 						{items.map((i) => (
 							<tr key={i.itemId}>
-								<td data-label="Item ID" className="mono-cell">
-									{i.itemId}
-								</td>
-								<td data-label="SKU" className="mono-cell">
-									{i.sku}
-								</td>
-								<td data-label="Price" className="mono-cell">
+								<td className="mono-cell">{i.itemId}</td>
+								<td className="mono-cell">{i.sku}</td>
+								<td className="mono-cell">
 									{i.price.currency} {i.price.amountMinor}
 								</td>
-								<td data-label="Available">
-									{i.availableQuantity}
-								</td>
-								<td data-label="Reserved">
-									{i.reservedQuantity}
-								</td>
-								<td data-label="Updated">
+								<td>{i.availableQuantity}</td>
+								<td>{i.reservedQuantity}</td>
+								<td>
 									{new Date(i.updatedAt).toLocaleString()}
 								</td>
 							</tr>
@@ -74,7 +87,6 @@ export default function InventoryPage() {
 			</div>
 
 			<Pagination
-				className="table-shell-readable"
 				page={page}
 				pageSize={pageSize}
 				totalPages={totalPages}
