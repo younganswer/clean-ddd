@@ -1,22 +1,22 @@
 SHELL := /bin/bash
 
-# Load environment variables from .env (optional)
+# Load environment variables from stack/compose/.env (optional)
 # - Supports lines like: KEY=VALUE
 # - Ignores blank lines and comments
-ENV_FILE ?= .env
+ENV_FILE ?= stack/compose/.env
 ifneq (,$(wildcard $(ENV_FILE)))
 	include $(ENV_FILE)
 	export $(shell sed -E -n 's/^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=.*$$/\1/p' $(ENV_FILE))
 endif
 
 # Ensure `make` and Docker Compose share the same project.
-# Override via `.env`: COMPOSE_PROJECT=...
+# Override via `$(ENV_FILE)`: COMPOSE_PROJECT=...
 COMPOSE_PROJECT ?= clean-ddd
 
 COMPOSE := stack/compose/docker-compose.yml
 DEV_COMPOSE := stack/compose/docker-compose.dev.yml
 
-COMPOSE_BASE := docker compose -p $(COMPOSE_PROJECT) -f $(COMPOSE)
+COMPOSE_BASE := docker compose --env-file $(ENV_FILE) -p $(COMPOSE_PROJECT) -f $(COMPOSE)
 COMPOSE_DEV := $(COMPOSE_BASE) -f $(DEV_COMPOSE)
 
 ifeq ($(NGINX_HTTP_PORT),80)
