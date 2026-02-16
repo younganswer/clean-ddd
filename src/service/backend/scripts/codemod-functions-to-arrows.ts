@@ -1,6 +1,6 @@
-import fs from "node:fs";
-import path from "node:path";
-import ts from "typescript";
+import fs from 'node:fs';
+import path from 'node:path';
+import ts from 'typescript';
 
 type Edit = {
   start: number;
@@ -17,13 +17,13 @@ type Stats = {
   filesChanged: number;
 };
 
-const exts = new Set([".ts", ".tsx"]);
+const exts = new Set(['.ts', '.tsx']);
 const defaultTargets = [
-  "../scripts",
-  "../test-utils",
-  "../../frontend/src/lib",
-  "../../frontend/src/app",
-  "../../frontend/next.config.ts",
+  '../scripts',
+  '../test-utils',
+  '../../frontend/src/lib',
+  '../../frontend/src/app',
+  '../../frontend/next.config.ts',
 ];
 
 const stats: Stats = {
@@ -36,13 +36,14 @@ const stats: Stats = {
 };
 
 const isExcludedPath = (filePath: string): boolean => {
-  const normalized = filePath.split(path.sep).join("/");
-  if (normalized.includes("/node_modules/")) return true;
-  if (normalized.includes("/.next/")) return true;
-  if (normalized.includes("/out/")) return true;
-  if (normalized.endsWith(".d.ts")) return true;
-  if (normalized.endsWith(".generated.ts")) return true;
-  if (normalized.endsWith("/packages/contracts/types.generated.ts")) return true;
+  const normalized = filePath.split(path.sep).join('/');
+  if (normalized.includes('/node_modules/')) return true;
+  if (normalized.includes('/.next/')) return true;
+  if (normalized.includes('/out/')) return true;
+  if (normalized.endsWith('.d.ts')) return true;
+  if (normalized.endsWith('.generated.ts')) return true;
+  if (normalized.endsWith('/packages/contracts/types.generated.ts'))
+    return true;
   return false;
 };
 
@@ -61,10 +62,10 @@ const collectFiles = (targetPath: string): string[] => {
     const fullPath = path.join(targetPath, entry.name);
     if (entry.isDirectory()) {
       if (
-        entry.name === "node_modules" ||
-        entry.name === ".next" ||
-        entry.name === "out" ||
-        entry.name === "dist"
+        entry.name === 'node_modules' ||
+        entry.name === '.next' ||
+        entry.name === 'out' ||
+        entry.name === 'dist'
       ) {
         continue;
       }
@@ -83,7 +84,8 @@ const collectFiles = (targetPath: string): string[] => {
 const hasOverloadInSameScope = (node: ts.FunctionDeclaration): boolean => {
   if (!node.name || !node.parent) return false;
   const parent = node.parent;
-  if (!("statements" in parent) || !Array.isArray(parent.statements)) return false;
+  if (!('statements' in parent) || !Array.isArray(parent.statements))
+    return false;
 
   for (const statement of parent.statements) {
     if (statement === node) break;
@@ -94,11 +96,14 @@ const hasOverloadInSameScope = (node: ts.FunctionDeclaration): boolean => {
   return false;
 };
 
-const buildTypeParameters = (node: ts.FunctionDeclaration, isTsxFile: boolean): string => {
-  if (!node.typeParameters || node.typeParameters.length === 0) return "";
+const buildTypeParameters = (
+  node: ts.FunctionDeclaration,
+  isTsxFile: boolean,
+): string => {
+  if (!node.typeParameters || node.typeParameters.length === 0) return '';
   const typeParamText = node.typeParameters
     .map((parameter) => parameter.getText())
-    .join(", ");
+    .join(', ');
   if (isTsxFile && node.typeParameters.length === 1) {
     return `<${typeParamText},>`;
   }
@@ -106,8 +111,8 @@ const buildTypeParameters = (node: ts.FunctionDeclaration, isTsxFile: boolean): 
 };
 
 const transformFile = (filePath: string): void => {
-  const source = fs.readFileSync(filePath, "utf8");
-  const scriptKind = filePath.endsWith(".tsx")
+  const source = fs.readFileSync(filePath, 'utf8');
+  const scriptKind = filePath.endsWith('.tsx')
     ? ts.ScriptKind.TSX
     : ts.ScriptKind.TS;
   const sourceFile = ts.createSourceFile(
@@ -119,7 +124,7 @@ const transformFile = (filePath: string): void => {
   );
 
   const edits: Edit[] = [];
-  const isTsxFile = filePath.endsWith(".tsx");
+  const isTsxFile = filePath.endsWith('.tsx');
 
   const visit = (node: ts.Node): void => {
     if (ts.isFunctionDeclaration(node)) {
@@ -145,16 +150,18 @@ const transformFile = (filePath: string): void => {
           const asyncKeyword = node.modifiers?.some(
             (modifier) => modifier.kind === ts.SyntaxKind.AsyncKeyword,
           )
-            ? "async "
-            : "";
+            ? 'async '
+            : '';
 
           const typeParams = buildTypeParameters(node, isTsxFile);
-          const params = node.parameters.map((param) => param.getText()).join(", ");
-          const returnType = node.type ? `: ${node.type.getText()}` : "";
+          const params = node.parameters
+            .map((param) => param.getText())
+            .join(', ');
+          const returnType = node.type ? `: ${node.type.getText()}` : '';
           const bodyText = node.body.getText();
           const base = `${asyncKeyword}${typeParams}(${params})${returnType} => ${bodyText}`;
 
-          let replacement = "";
+          let replacement = '';
           if (isDefault) {
             replacement = `const ${node.name.text} = ${base};\nexport default ${node.name.text};`;
           } else if (isExport) {
@@ -186,7 +193,7 @@ const transformFile = (filePath: string): void => {
   }
 
   if (next !== source) {
-    fs.writeFileSync(filePath, next, "utf8");
+    fs.writeFileSync(filePath, next, 'utf8');
     stats.filesChanged += 1;
   }
 };
@@ -217,7 +224,7 @@ const main = (): void => {
       `skippedOverloadImpl=${stats.skippedOverloadImpl}`,
       `skippedGenerator=${stats.skippedGenerator}`,
       `skippedAnonymousDefault=${stats.skippedAnonymousDefault}`,
-    ].join(" "),
+    ].join(' '),
   );
 };
 
