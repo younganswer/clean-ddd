@@ -210,7 +210,7 @@ jobs:
 
             - name: Sync URL variables to GitHub Environment
               env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN || github.token }}
+                  GITHUB_TOKEN: ${{ secrets.GH_TOKEN || github.token }}
               run: |
                   set +e
 
