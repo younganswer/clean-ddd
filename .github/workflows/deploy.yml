@@ -165,15 +165,17 @@ jobs:
             - name: Resolve deployment URLs
               id: resolve_urls
               run: |
-                  API_URL=$(aws cloudformation describe-stacks \
+                  API_STAGE_URL=$(aws cloudformation describe-stacks \
                     --stack-name "${{ vars.SAM_STACK_NAME }}" \
                     --query "Stacks[0].Outputs[?OutputKey=='ApiUrl'].OutputValue" \
                     --output text)
 
-                  if [[ -z "$API_URL" || "$API_URL" == "None" ]]; then
+                  if [[ -z "$API_STAGE_URL" || "$API_STAGE_URL" == "None" ]]; then
                     echo "Failed to resolve ApiUrl from CloudFormation outputs"
                     exit 1
                   fi
+
+                  API_URL="${API_STAGE_URL%/}/api/v1"
 
                   CF_DOMAIN=$(aws cloudfront get-distribution \
                     --id "${{ vars.CLOUDFRONT_DISTRIBUTION_ID }}" \
