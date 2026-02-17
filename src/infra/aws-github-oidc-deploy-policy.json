@@ -106,7 +106,7 @@
 				"lambda:UpdateEventSourceMapping",
 				"lambda:ListEventSourceMappings"
 			],
-			"Resource": "arn:aws:lambda:*:*:event-source-mapping:*"
+			"Resource": "*"
 		},
 		{
 			"Sid": "IamRoleProvisionForSamGeneratedRoles",
@@ -133,6 +133,8 @@
 				"apigateway:POST",
 				"apigateway:PATCH",
 				"apigateway:DELETE",
+				"apigateway:TagResource",
+				"apigateway:UntagResource",
 				"events:PutRule",
 				"events:DeleteRule",
 				"events:DescribeRule",
