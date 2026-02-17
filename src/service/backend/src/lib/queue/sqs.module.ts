@@ -28,15 +28,6 @@ const normalizeOutboxQueueUrl = (raw: string): string => {
   return url;
 };
 
-const inferSqsEndpointFromQueueUrl = (queueUrl: string): string | undefined => {
-  try {
-    const parsed = new URL(queueUrl);
-    return `${parsed.protocol}//${parsed.host}`;
-  } catch {
-    return undefined;
-  }
-};
-
 const isLocalSqsEndpoint = (endpoint: string): boolean => {
   try {
     const parsed = new URL(endpoint);
