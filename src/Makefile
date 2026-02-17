@@ -84,7 +84,15 @@ e2e: init serve health
 prune:
 	@docker system prune -af --volumes 2>/dev/null || true
 
-TARGETS := up serve dev down ps logs build init health e2e prune restart
+infra-bootstrap-dev:
+	@chmod +x infra/scripts/bootstrap-aws-resources.sh
+	@infra/scripts/bootstrap-aws-resources.sh --env dev --profile clean-ddd --write-vars-file ../.github/env/dev.vars
+
+infra-bootstrap-prod:
+	@chmod +x infra/scripts/bootstrap-aws-resources.sh
+	@infra/scripts/bootstrap-aws-resources.sh --env prod --profile clean-ddd --write-vars-file ../.github/env/prod.vars
+
+TARGETS := up serve dev down ps logs build init health e2e prune restart infra-bootstrap-dev infra-bootstrap-prod
 
 .PHONY: $(TARGETS)
 .NOTPARALLEL: $(TARGETS)

@@ -1,0 +1,54 @@
+{
+	"Version": "2012-10-17",
+	"Statement": [
+		{
+			"Sid": "CloudFormationDeploy",
+			"Effect": "Allow",
+			"Action": [
+				"cloudformation:CreateStack",
+				"cloudformation:UpdateStack",
+				"cloudformation:DeleteStack",
+				"cloudformation:DescribeStacks",
+				"cloudformation:DescribeStackEvents",
+				"cloudformation:GetTemplateSummary",
+				"cloudformation:CreateChangeSet",
+				"cloudformation:ExecuteChangeSet",
+				"cloudformation:DescribeChangeSet",
+				"cloudformation:DeleteChangeSet"
+			],
+			"Resource": "*"
+		},
+		{
+			"Sid": "S3ArtifactsAndFrontend",
+			"Effect": "Allow",
+			"Action": [
+				"s3:ListBucket",
+				"s3:GetBucketLocation",
+				"s3:GetObject",
+				"s3:PutObject",
+				"s3:DeleteObject"
+			],
+			"Resource": [
+				"arn:aws:s3:::clean-ddd-*-artifacts",
+				"arn:aws:s3:::clean-ddd-*-artifacts/*",
+				"arn:aws:s3:::clean-ddd-*-web",
+				"arn:aws:s3:::clean-ddd-*-web/*"
+			]
+		},
+		{
+			"Sid": "CloudFrontInvalidateAndRead",
+			"Effect": "Allow",
+			"Action": [
+				"cloudfront:GetDistribution",
+				"cloudfront:CreateInvalidation"
+			],
+			"Resource": "*"
+		},
+		{
+			"Sid": "IamPassRoleForSam",
+			"Effect": "Allow",
+			"Action": ["iam:PassRole"],
+			"Resource": "*"
+		}
+	]
+}
