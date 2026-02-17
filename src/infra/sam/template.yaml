@@ -18,8 +18,39 @@ Parameters:
         Type: String
         NoEcho: true
         Description: Neon pooled connection string
+    DatabaseUrlDirect:
+        Type: String
+        NoEcho: true
+        Description: Neon direct connection string
+    AvatarRepositoryBackend:
+        Type: String
+        Default: dynamodb
+        AllowedValues:
+            - mongo
+            - dynamodb
+        Description: Avatar repository backend selector
+    DynamoDbAvatarTable:
+        Type: String
+        Default: clean-ddd-avatar
+        Description: DynamoDB table name for avatar documents
+    OutboxDispatchScheduleExpression:
+        Type: String
+        Default: rate(1 minute)
+        Description: EventBridge schedule expression for outbox dispatch lambda
 
 Resources:
+    AvatarTable:
+        Type: AWS::DynamoDB::Table
+        Properties:
+            TableName: !Ref DynamoDbAvatarTable
+            BillingMode: PAY_PER_REQUEST
+            AttributeDefinitions:
+                - AttributeName: avatarId
+                  AttributeType: S
+            KeySchema:
+                - AttributeName: avatarId
+                  KeyType: HASH
+
     OutboxDispatchDlq:
         Type: AWS::SQS::Queue
         Properties:
@@ -50,10 +81,16 @@ Resources:
             Environment:
                 Variables:
                     DATABASE_URL_POOLED: !Ref DatabaseUrlPooled
+                    DATABASE_URL_DIRECT: !Ref DatabaseUrlDirect
                     SQS_OUTBOX_QUEUE_URL: !Ref OutboxDispatchQueue
+                    AVATAR_REPOSITORY_BACKEND: !Ref AvatarRepositoryBackend
+                    DYNAMODB_AVATAR_TABLE: !Ref DynamoDbAvatarTable
+                    OUTBOX_CRON_ENABLED: false
             Policies:
                 - SQSSendMessagePolicy:
                       QueueName: !GetAtt OutboxDispatchQueue.QueueName
+                - DynamoDBCrudPolicy:
+                      TableName: !Ref DynamoDbAvatarTable
             Events:
                 Api:
                     Type: HttpApi
@@ -71,10 +108,16 @@ Resources:
             Environment:
                 Variables:
                     DATABASE_URL_POOLED: !Ref DatabaseUrlPooled
+                    DATABASE_URL_DIRECT: !Ref DatabaseUrlDirect
                     SQS_OUTBOX_QUEUE_URL: !Ref OutboxDispatchQueue
+                    AVATAR_REPOSITORY_BACKEND: !Ref AvatarRepositoryBackend
+                    DYNAMODB_AVATAR_TABLE: !Ref DynamoDbAvatarTable
+                    OUTBOX_CRON_ENABLED: false
             Policies:
                 - SQSPollerPolicy:
                       QueueName: !GetAtt OutboxDispatchQueue.QueueName
+                - DynamoDBReadPolicy:
+                      TableName: !Ref DynamoDbAvatarTable
             Events:
                 OutboxQueue:
                     Type: SQS
@@ -82,8 +125,38 @@ Resources:
                         Queue: !GetAtt OutboxDispatchQueue.Arn
                         BatchSize: 1
 
+    OutboxDispatchSchedulerFunction:
+        Type: AWS::Serverless::Function
+        Properties:
+            CodeUri: ../../service/backend
+            Handler: dist/lib/lambda/schedule/outbox-dispatch.handler.handler
+            Timeout: 30
+            Environment:
+                Variables:
+                    DATABASE_URL_POOLED: !Ref DatabaseUrlPooled
+                    DATABASE_URL_DIRECT: !Ref DatabaseUrlDirect
+                    SQS_OUTBOX_QUEUE_URL: !Ref OutboxDispatchQueue
+                    AVATAR_REPOSITORY_BACKEND: !Ref AvatarRepositoryBackend
+                    DYNAMODB_AVATAR_TABLE: !Ref DynamoDbAvatarTable
+                    OUTBOX_CRON_ENABLED: false
+                    OUTBOX_DISPATCH_BATCH_SIZE: 10
+            Policies:
+                - SQSSendMessagePolicy:
+                      QueueName: !GetAtt OutboxDispatchQueue.QueueName
+                - DynamoDBReadPolicy:
+                      TableName: !Ref DynamoDbAvatarTable
+            Events:
+                OutboxDispatchSchedule:
+                    Type: Schedule
+                    Properties:
+                        Schedule: !Ref OutboxDispatchScheduleExpression
+                        Name: !Sub "${AWS::StackName}-OutboxDispatchSchedule"
+                        Enabled: true
+
 Outputs:
     ApiUrl:
         Value: !Sub "https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com/v1"
     OutboxQueueUrl:
         Value: !Ref OutboxDispatchQueue
+    AvatarTableName:
+        Value: !Ref DynamoDbAvatarTable
