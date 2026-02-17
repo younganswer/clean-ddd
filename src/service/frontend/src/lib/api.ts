@@ -140,14 +140,19 @@ export const apiGetOrder = async (orderId: string): Promise<OrderDetail> => {
 	return http(`/orders/${encodeURIComponent(orderId)}`);
 };
 
-export const apiCreatePaymentIntent = async (orderId: string, input: { simulateOutcome?: "SUCCEEDED" | "FAILED" }): Promise<CreatePaymentIntentResponse> => {
+export const apiCreatePaymentIntent = async (
+	orderId: string,
+	input: { simulateOutcome?: "SUCCEEDED" | "FAILED" },
+): Promise<CreatePaymentIntentResponse> => {
 	return http(`/orders/${encodeURIComponent(orderId)}/payments/intents`, {
 		method: "POST",
 		body: JSON.stringify(input satisfies CreatePaymentIntentRequest),
 	});
 };
 
-export const apiGetPaymentIntent = async (paymentId: string): Promise<PaymentIntent> => {
+export const apiGetPaymentIntent = async (
+	paymentId: string,
+): Promise<PaymentIntent> => {
 	return http(`/payments/intents/${encodeURIComponent(paymentId)}`);
 };
 
@@ -161,7 +166,9 @@ export const apiListShipments = async (input: {
 	);
 };
 
-export const apiGetShipmentByOrderId = async (orderId: string): Promise<ShipmentSummary | null> => {
+export const apiGetShipmentByOrderId = async (
+	orderId: string,
+): Promise<ShipmentSummary | null> => {
 	return http(`/shipments/by-order/${encodeURIComponent(orderId)}`);
 };
 
@@ -175,11 +182,15 @@ export const apiListInventoryItems = async (input: {
 	);
 };
 
-export const apiGetInventoryItem = async (sku: string): Promise<InventoryItem | null> => {
+export const apiGetInventoryItem = async (
+	sku: string,
+): Promise<InventoryItem | null> => {
 	return http(`/inventory/items/${encodeURIComponent(sku)}`);
 };
 
-export const apiListInventoryReservations = async (orderId: string): Promise<InventoryReservation[]> => {
+export const apiListInventoryReservations = async (
+	orderId: string,
+): Promise<InventoryReservation[]> => {
 	return http(
 		`/inventory/reservations?orderId=${encodeURIComponent(orderId)}`,
 	);
