@@ -43,10 +43,18 @@ const requireBaseUrl = (): string => {
 
 const http = async <T>(path: string, init?: RequestInit): Promise<T> => {
 	const url = `${requireBaseUrl()}${path.startsWith("/") ? path : `/${path}`}`;
+	const method = (init?.method ?? "GET").toUpperCase();
+	const hasBody = init?.body !== undefined && init?.body !== null;
+	const defaultHeaders: Record<string, string> = {};
+
+	if (hasBody && method !== "GET" && method !== "HEAD") {
+		defaultHeaders["content-type"] = "application/json";
+	}
+
 	const res = await fetch(url, {
 		...init,
 		headers: {
-			"content-type": "application/json",
+			...defaultHeaders,
 			...(init?.headers ?? {}),
 		},
 		cache: "no-store",
