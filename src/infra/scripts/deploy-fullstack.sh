@@ -4,7 +4,9 @@ set -euo pipefail
 
 TARGET_ENV="$1"
 REPO_SLUG="$2"
-ENV_VARS_FILE=".github/env/${TARGET_ENV}.vars"
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd -- "${SCRIPT_DIR}/../../.." && pwd)"
+ENV_VARS_FILE="${REPO_ROOT}/.github/env/${TARGET_ENV}.vars"
 
 API_URL=""
 DEPLOY_URL=""
@@ -26,6 +28,34 @@ required_secrets=(
 
 print_usage() {
   echo "Usage: $0 <target_env> <repo_slug>"
+}
+
+check_github_environment_registration() {
+  if ! command -v gh >/dev/null 2>&1; then
+    return 0
+  fi
+
+  local gh_token
+  gh_token="${GH_TOKEN:-${GITHUB_TOKEN:-}}"
+  if [[ -z "$gh_token" ]]; then
+    return 0
+  fi
+
+  export GH_TOKEN="$gh_token"
+
+  local configured_keys
+  configured_keys="$(gh variable list --repo "$REPO_SLUG" --env "$TARGET_ENV" --json name --jq '.[].name' 2>/dev/null || true)"
+
+  if [[ -z "$configured_keys" ]]; then
+    echo "warning: unable to read GitHub environment variables for '$TARGET_ENV' (repo: $REPO_SLUG)."
+    return 0
+  fi
+
+  for key in "${required_vars[@]}"; do
+    if ! grep -qx "$key" <<< "$configured_keys"; then
+      echo "warning: GitHub environment variable '$key' is not registered for '$TARGET_ENV'."
+    fi
+  done
 }
 
 load_env_file_fallback() {
@@ -56,6 +86,7 @@ validate_required_inputs() {
     value="${!key-}"
     if [[ -z "$value" ]]; then
       echo "missing required github environment variable: $key"
+      echo "hint: check GitHub Environment '$TARGET_ENV' variables or ${ENV_VARS_FILE}"
       exit 1
     fi
   done
@@ -261,6 +292,7 @@ main() {
     exit 1
   fi
 
+  check_github_environment_registration
   load_env_file_fallback
   validate_required_inputs
   build_workspace
