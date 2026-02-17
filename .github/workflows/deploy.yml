@@ -37,5 +37,24 @@ jobs:
             run_script: |
                 TARGET_ENV="${{ github.event_name == 'workflow_dispatch' && github.event.inputs.target_env || 'prod' }}"
                 chmod +x infra/scripts/deploy-fullstack.sh
-                infra/scripts/deploy-fullstack.sh "$TARGET_ENV" "${{ github.repository }}"
+                chmod +x infra/scripts/sync-github-metadata.sh
+                infra/scripts/deploy-fullstack.sh "$TARGET_ENV"
+
+                API_STAGE_URL=$(aws cloudformation describe-stacks \
+                    --stack-name "$SAM_STACK_NAME" \
+                    --query "Stacks[0].Outputs[?OutputKey=='ApiUrl'].OutputValue" \
+                    --output text)
+                API_URL="${API_STAGE_URL%/}/api/v1"
+
+                CF_DOMAIN=$(aws cloudfront get-distribution \
+                    --id "$CLOUDFRONT_DISTRIBUTION_ID" \
+                    --query "Distribution.DomainName" \
+                    --output text)
+                DEPLOY_URL="https://${CF_DOMAIN}"
+
+                infra/scripts/sync-github-metadata.sh \
+                    "$TARGET_ENV" \
+                    "${{ github.repository }}" \
+                    "$API_URL" \
+                    "$DEPLOY_URL"
         secrets: inherit
