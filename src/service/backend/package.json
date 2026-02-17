@@ -23,6 +23,7 @@
     "test:e2e": "jest --config ./tests/jest-e2e.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "db:init": "node --env-file=.env -r ts-node/register/transpile-only -r tsconfig-paths/register scripts/db-init.ts",
+    "db:init:ci": "node -r ts-node/register/transpile-only -r tsconfig-paths/register scripts/db-init.ts",
     "db:reset": "node --env-file=.env -r ts-node/register/transpile-only -r tsconfig-paths/register scripts/db-reset.ts",
     "db:diff": "node --env-file=.env -r ts-node/register/transpile-only -r tsconfig-paths/register scripts/db-diff.ts"
   },

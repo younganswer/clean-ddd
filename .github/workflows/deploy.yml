@@ -120,6 +120,15 @@ jobs:
                   sam build \
                     --template-file infra/sam/template.yaml
 
+            - name: Initialize database
+              working-directory: src/service/backend
+              env:
+                  DATABASE_URL_POOLED: ${{ secrets.DATABASE_URL_POOLED }}
+                  DATABASE_URL_DIRECT: ${{ secrets.DATABASE_URL_DIRECT }}
+                  PGSSLMODE: require
+                  DB_FORCE_SSL: true
+              run: pnpm db:init:ci
+
             - name: Recover non-updatable stack states
               run: |
                   STACK_NAME="${{ vars.SAM_STACK_NAME }}"
