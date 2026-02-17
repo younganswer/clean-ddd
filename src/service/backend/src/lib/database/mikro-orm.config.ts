@@ -87,6 +87,11 @@ export function mikroOrmConfigForRuntime(): Options {
     throw new Error('DATABASE_URL_POOLED (or DATABASE_URL) is required');
   }
 
+  const isLambdaRuntime = Boolean(process.env.AWS_LAMBDA_FUNCTION_NAME);
+  const forceSsl =
+    process.env.DB_FORCE_SSL === 'true' ||
+    (process.env.DB_FORCE_SSL !== 'false' && isLambdaRuntime);
+
   const backendRoot = findBackendRoot();
 
   return defineConfig({
@@ -106,6 +111,15 @@ export function mikroOrmConfigForRuntime(): Options {
       min: 0,
       max: 2,
     },
+    driverOptions: forceSsl
+      ? {
+          connection: {
+            ssl: {
+              rejectUnauthorized: false,
+            },
+          },
+        }
+      : undefined,
     allowGlobalContext: false,
   });
 }
