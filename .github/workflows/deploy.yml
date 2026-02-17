@@ -28,283 +28,196 @@ concurrency:
 jobs:
     deploy:
         if: github.event_name == 'workflow_dispatch' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
-        runs-on: ubuntu-latest
-        environment: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.target_env || 'prod' }}
-        defaults:
-            run:
-                working-directory: src
-        env:
-            TARGET_ENV: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.target_env || 'prod' }}
-        steps:
-            - name: Checkout
-              uses: actions/checkout@v4
-              with:
-                  ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
+        uses: ./.github/workflows/reusable-node-workspace-task.yml
+        with:
+            environment_name: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.target_env || 'prod' }}
+            checkout_ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
+            configure_aws: true
+            aws_role_to_assume: ${{ vars.AWS_ROLE_TO_ASSUME }}
+            aws_region: ${{ vars.AWS_REGION }}
+            setup_sam: true
+            run_script: |
+                TARGET_ENV="${{ github.event_name == 'workflow_dispatch' && github.event.inputs.target_env || 'prod' }}"
 
-            - name: Setup Node.js
-              uses: actions/setup-node@v4
-              with:
-                  node-version: 22
+                required_vars=(
+                  AWS_ROLE_TO_ASSUME
+                  AWS_REGION
+                  SAM_STACK_NAME
+                  SAM_S3_BUCKET
+                  FRONTEND_S3_BUCKET
+                  CLOUDFRONT_DISTRIBUTION_ID
+                  AVATAR_REPOSITORY_BACKEND
+                  DYNAMODB_AVATAR_TABLE
+                )
 
-            - name: Enable Corepack
-              run: corepack enable
+                required_secrets=(
+                  DATABASE_URL_POOLED
+                  DATABASE_URL_DIRECT
+                )
 
-            - name: Activate pnpm
-              run: corepack prepare pnpm@9.15.5 --activate
-
-            - name: Install dependencies
-              run: pnpm install --frozen-lockfile
-
-            - name: Build workspace
-              run: pnpm build
-
-            - name: Preflight required deploy config
-              env:
-                  AWS_ROLE_TO_ASSUME: ${{ vars.AWS_ROLE_TO_ASSUME }}
-                  AWS_REGION: ${{ vars.AWS_REGION }}
-                  SAM_STACK_NAME: ${{ vars.SAM_STACK_NAME }}
-                  SAM_S3_BUCKET: ${{ vars.SAM_S3_BUCKET }}
-                  FRONTEND_S3_BUCKET: ${{ vars.FRONTEND_S3_BUCKET }}
-                  CLOUDFRONT_DISTRIBUTION_ID: ${{ vars.CLOUDFRONT_DISTRIBUTION_ID }}
-                  AVATAR_REPOSITORY_BACKEND: ${{ vars.AVATAR_REPOSITORY_BACKEND }}
-                  DYNAMODB_AVATAR_TABLE: ${{ vars.DYNAMODB_AVATAR_TABLE }}
-                  DATABASE_URL_POOLED: ${{ secrets.DATABASE_URL_POOLED }}
-                  DATABASE_URL_DIRECT: ${{ secrets.DATABASE_URL_DIRECT }}
-              run: |
-                  required_vars=(
-                    AWS_ROLE_TO_ASSUME
-                    AWS_REGION
-                    SAM_STACK_NAME
-                    SAM_S3_BUCKET
-                    FRONTEND_S3_BUCKET
-                    CLOUDFRONT_DISTRIBUTION_ID
-                    AVATAR_REPOSITORY_BACKEND
-                    DYNAMODB_AVATAR_TABLE
-                  )
-
-                  required_secrets=(
-                    DATABASE_URL_POOLED
-                    DATABASE_URL_DIRECT
-                  )
-
-                  for key in "${required_vars[@]}"; do
-                    value="${!key}"
-                    if [[ -z "$value" ]]; then
-                      echo "missing required github environment variable: $key"
-                      exit 1
-                    fi
-                  done
-
-                  for key in "${required_secrets[@]}"; do
-                    value="${!key}"
-                    if [[ -z "$value" ]]; then
-                      echo "missing required github environment secret: $key"
-                      exit 1
-                    fi
-                  done
-
-            - name: Configure AWS credentials
-              uses: aws-actions/configure-aws-credentials@v4
-              with:
-                  role-to-assume: ${{ vars.AWS_ROLE_TO_ASSUME }}
-                  aws-region: ${{ vars.AWS_REGION }}
-
-            - name: Setup SAM CLI
-              uses: aws-actions/setup-sam@v2
-
-            - name: SAM validate
-              run: sam validate --template-file infra/sam/template.yaml
-
-            - name: SAM build
-              run: |
-                  sam build \
-                    --template-file infra/sam/template.yaml
-
-            - name: Reset database
-              working-directory: src/service/backend
-              env:
-                  DATABASE_URL_POOLED: ${{ secrets.DATABASE_URL_POOLED }}
-                  DATABASE_URL_DIRECT: ${{ secrets.DATABASE_URL_DIRECT }}
-                  PGSSLMODE: require
-                  DB_FORCE_SSL: true
-              run: pnpm db:reset:ci
-
-            - name: Recover non-updatable stack states
-              run: |
-                  STACK_NAME="${{ vars.SAM_STACK_NAME }}"
-
-                  STACK_STATUS=$(aws cloudformation describe-stacks \
-                    --stack-name "$STACK_NAME" \
-                    --query "Stacks[0].StackStatus" \
-                    --output text 2>/dev/null || true)
-
-                  if [[ -z "$STACK_STATUS" || "$STACK_STATUS" == "None" ]]; then
-                    echo "stack does not exist: $STACK_NAME"
-                    exit 0
+                for key in "${required_vars[@]}"; do
+                  value="${!key}"
+                  if [[ -z "$value" ]]; then
+                    echo "missing required github environment variable: $key"
+                    exit 1
                   fi
+                done
 
-                  echo "current stack status: $STACK_STATUS"
+                for key in "${required_secrets[@]}"; do
+                  value="${!key}"
+                  if [[ -z "$value" ]]; then
+                    echo "missing required github environment secret: $key"
+                    exit 1
+                  fi
+                done
 
+                pnpm build
+
+                sam validate --template-file infra/sam/template.yaml
+                sam build --template-file infra/sam/template.yaml
+
+                if [[ "$TARGET_ENV" == "dev" ]]; then
+                  pushd service/backend >/dev/null
+                  PGSSLMODE=require DB_FORCE_SSL=true pnpm db:reset:ci
+                  popd >/dev/null
+                fi
+
+                STACK_STATUS=$(aws cloudformation describe-stacks \
+                  --stack-name "$SAM_STACK_NAME" \
+                  --query "Stacks[0].StackStatus" \
+                  --output text 2>/dev/null || true)
+
+                if [[ -n "$STACK_STATUS" && "$STACK_STATUS" != "None" ]]; then
                   case "$STACK_STATUS" in
                     DELETE_IN_PROGRESS)
-                      echo "stack is deleting, waiting for completion: $STACK_NAME"
-                      aws cloudformation wait stack-delete-complete --stack-name "$STACK_NAME"
-                      echo "delete completed: $STACK_NAME"
+                      aws cloudformation wait stack-delete-complete --stack-name "$SAM_STACK_NAME"
                       ;;
                     ROLLBACK_COMPLETE|ROLLBACK_FAILED|UPDATE_ROLLBACK_COMPLETE|UPDATE_ROLLBACK_FAILED)
-                      echo "stack is non-updatable ($STACK_STATUS), deleting: $STACK_NAME"
-                      aws cloudformation delete-stack --stack-name "$STACK_NAME"
-                      aws cloudformation wait stack-delete-complete --stack-name "$STACK_NAME"
-                      echo "stack deleted: $STACK_NAME"
-                      ;;
-                    *)
-                      echo "stack is updatable or will be handled by sam deploy: $STACK_STATUS"
+                      aws cloudformation delete-stack --stack-name "$SAM_STACK_NAME"
+                      aws cloudformation wait stack-delete-complete --stack-name "$SAM_STACK_NAME"
                       ;;
                   esac
+                fi
 
-            - name: Deploy backend (SAM)
-              run: |
-                  sam deploy \
-                    --template-file .aws-sam/build/template.yaml \
-                    --stack-name "${{ vars.SAM_STACK_NAME }}" \
-                    --s3-bucket "${{ vars.SAM_S3_BUCKET }}" \
-                    --capabilities CAPABILITY_IAM \
-                    --no-fail-on-empty-changeset \
-                    --parameter-overrides \
-                      DatabaseUrlPooled="${{ secrets.DATABASE_URL_POOLED }}" \
-                      DatabaseUrlDirect="${{ secrets.DATABASE_URL_DIRECT }}" \
-                      AvatarRepositoryBackend="${{ vars.AVATAR_REPOSITORY_BACKEND }}" \
-                      DynamoDbAvatarTable="${{ vars.DYNAMODB_AVATAR_TABLE }}"
+                sam deploy \
+                  --template-file .aws-sam/build/template.yaml \
+                  --stack-name "$SAM_STACK_NAME" \
+                  --s3-bucket "$SAM_S3_BUCKET" \
+                  --capabilities CAPABILITY_IAM \
+                  --no-fail-on-empty-changeset \
+                  --parameter-overrides \
+                    DatabaseUrlPooled="$DATABASE_URL_POOLED" \
+                    DatabaseUrlDirect="$DATABASE_URL_DIRECT" \
+                    AvatarRepositoryBackend="$AVATAR_REPOSITORY_BACKEND" \
+                    DynamoDbAvatarTable="$DYNAMODB_AVATAR_TABLE"
 
-            - name: Resolve deployment URLs
-              id: resolve_urls
-              run: |
-                  API_STAGE_URL=$(aws cloudformation describe-stacks \
-                    --stack-name "${{ vars.SAM_STACK_NAME }}" \
-                    --query "Stacks[0].Outputs[?OutputKey=='ApiUrl'].OutputValue" \
-                    --output text)
+                API_STAGE_URL=$(aws cloudformation describe-stacks \
+                  --stack-name "$SAM_STACK_NAME" \
+                  --query "Stacks[0].Outputs[?OutputKey=='ApiUrl'].OutputValue" \
+                  --output text)
 
-                  if [[ -z "$API_STAGE_URL" || "$API_STAGE_URL" == "None" ]]; then
-                    echo "Failed to resolve ApiUrl from CloudFormation outputs"
-                    exit 1
+                if [[ -z "$API_STAGE_URL" || "$API_STAGE_URL" == "None" ]]; then
+                  echo "Failed to resolve ApiUrl from CloudFormation outputs"
+                  exit 1
+                fi
+
+                API_URL="${API_STAGE_URL%/}/api/v1"
+
+                CF_DOMAIN=$(aws cloudfront get-distribution \
+                  --id "$CLOUDFRONT_DISTRIBUTION_ID" \
+                  --query "Distribution.DomainName" \
+                  --output text)
+
+                if [[ -z "$CF_DOMAIN" || "$CF_DOMAIN" == "None" ]]; then
+                  echo "Failed to resolve CloudFront domain"
+                  exit 1
+                fi
+
+                DEPLOY_URL="https://${CF_DOMAIN}"
+
+                pushd service/frontend >/dev/null
+                NEXT_PUBLIC_API_BASE_URL="$API_URL" pnpm build
+
+                aws s3 sync out "s3://${FRONTEND_S3_BUCKET}" --delete
+
+                while IFS= read -r index_file; do
+                  relative_path="${index_file#out/}"
+                  route_path="${relative_path%/index.html}"
+
+                  if [[ -z "$route_path" || "$route_path" == "index.html" ]]; then
+                    continue
                   fi
 
-                  API_URL="${API_STAGE_URL%/}/api/v1"
+                  aws s3 cp "$index_file" "s3://${FRONTEND_S3_BUCKET}/${route_path}" \
+                    --content-type text/html \
+                    --cache-control "public, max-age=60"
 
-                  CF_DOMAIN=$(aws cloudfront get-distribution \
-                    --id "${{ vars.CLOUDFRONT_DISTRIBUTION_ID }}" \
-                    --query "Distribution.DomainName" \
-                    --output text)
+                  aws s3api put-object \
+                    --bucket "$FRONTEND_S3_BUCKET" \
+                    --key "${route_path}/" \
+                    --body "$index_file" \
+                    --content-type text/html \
+                    --cache-control "public, max-age=60"
+                done < <(find out -type f -name index.html)
+                popd >/dev/null
 
-                  if [[ -z "$CF_DOMAIN" || "$CF_DOMAIN" == "None" ]]; then
-                    echo "Failed to resolve CloudFront domain"
-                    exit 1
-                  fi
+                aws cloudfront create-invalidation \
+                  --distribution-id "$CLOUDFRONT_DISTRIBUTION_ID" \
+                  --paths "/*"
 
-                  DEPLOY_URL="https://${CF_DOMAIN}"
-
-                  echo "NEXT_PUBLIC_API_BASE_URL=$API_URL" >> "$GITHUB_ENV"
-                  echo "DEPLOY_URL=$DEPLOY_URL" >> "$GITHUB_ENV"
-                  echo "api_url=$API_URL" >> "$GITHUB_OUTPUT"
-                  echo "deploy_url=$DEPLOY_URL" >> "$GITHUB_OUTPUT"
-
-            - name: Build frontend static export
-              working-directory: src/service/frontend
-              env:
-                  NEXT_PUBLIC_API_BASE_URL: ${{ env.NEXT_PUBLIC_API_BASE_URL }}
-              run: pnpm build
-
-            - name: Upload frontend to S3
-              working-directory: src/service/frontend
-              run: |
-                  aws s3 sync out "s3://${{ vars.FRONTEND_S3_BUCKET }}" --delete
-
-                  while IFS= read -r index_file; do
-                    relative_path="${index_file#out/}"
-                    route_path="${relative_path%/index.html}"
-
-                    if [[ -z "$route_path" || "$route_path" == "index.html" ]]; then
-                      continue
-                    fi
-
-                    aws s3 cp "$index_file" "s3://${{ vars.FRONTEND_S3_BUCKET }}/${route_path}" \
-                      --content-type text/html \
-                      --cache-control "public, max-age=60"
-
-                    aws s3api put-object \
-                      --bucket "${{ vars.FRONTEND_S3_BUCKET }}" \
-                      --key "${route_path}/" \
-                      --body "$index_file" \
-                      --content-type text/html \
-                      --cache-control "public, max-age=60"
-                  done < <(find out -type f -name index.html)
-
-            - name: CloudFront invalidation
-              run: |
-                  aws cloudfront create-invalidation \
-                    --distribution-id "${{ vars.CLOUDFRONT_DISTRIBUTION_ID }}" \
-                    --paths "/*"
-
-            - name: Sync URL variables to GitHub Environment
-              env:
-                  GH_TOKEN: ${{ secrets.GH_TOKEN || github.token }}
-              run: |
+                export GH_TOKEN="${GH_TOKEN:-${GITHUB_TOKEN:-}}"
+                if [[ -n "$GH_TOKEN" ]]; then
                   set +e
-
                   gh variable set NEXT_PUBLIC_API_BASE_URL \
                     --repo "${{ github.repository }}" \
-                    --env "${{ env.TARGET_ENV }}" \
-                    --body "${{ steps.resolve_urls.outputs.api_url }}"
+                    --env "$TARGET_ENV" \
+                    --body "$API_URL"
                   api_var_status=$?
 
                   gh variable set DEPLOY_URL \
                     --repo "${{ github.repository }}" \
-                    --env "${{ env.TARGET_ENV }}" \
-                    --body "${{ steps.resolve_urls.outputs.deploy_url }}"
+                    --env "$TARGET_ENV" \
+                    --body "$DEPLOY_URL"
                   deploy_var_status=$?
-
                   set -e
 
                   if [[ $api_var_status -ne 0 || $deploy_var_status -ne 0 ]]; then
                     echo "warning: failed to sync one or more GitHub environment variables."
-                    echo "warning: set repository secret GH_TOKEN (repo admin scope) to enable this step with gh CLI."
                   fi
 
-            - name: Sync repository homepage URL
-              env:
-                  GH_TOKEN: ${{ secrets.GH_TOKEN || github.token }}
-              run: |
                   gh repo edit "${{ github.repository }}" \
-                    --homepage "${{ steps.resolve_urls.outputs.deploy_url }}"
+                    --homepage "$DEPLOY_URL"
 
-            - name: Update deployment URL in README
-              working-directory: .
-              env:
-                  DEPLOY_URL: ${{ steps.resolve_urls.outputs.deploy_url }}
-              run: |
+                  pushd .. >/dev/null
                   python3 - <<'PY'
                   from pathlib import Path
+                  import os
 
                   readme = Path('README.md')
                   content = readme.read_text(encoding='utf-8')
                   marker = '- Production URL:'
-                  replacement = f'- Production URL: {__import__("os").environ["DEPLOY_URL"]}'
+                  replacement = f'- Production URL: {os.environ["DEPLOY_URL"]}'
 
                   if marker in content:
-                    lines = []
-                    for line in content.splitlines():
-                      if line.startswith(marker):
-                        lines.append(replacement)
-                      else:
-                        lines.append(line)
-                    readme.write_text('\n'.join(lines) + '\n', encoding='utf-8')
+                      lines = []
+                      for line in content.splitlines():
+                          if line.startswith(marker):
+                              lines.append(replacement)
+                          else:
+                              lines.append(line)
+                      readme.write_text('\n'.join(lines) + '\n', encoding='utf-8')
                   PY
 
-            - name: Commit README update
-              working-directory: .
-              run: |
                   git config user.name "github-actions[bot]"
                   git config user.email "github-actions[bot]@users.noreply.github.com"
                   git add README.md
-                  git diff --cached --quiet || git commit -m "docs: update deployment URL"
-                  git push origin HEAD:main
+                  if ! git diff --cached --quiet; then
+                    git commit -m "docs: update deployment URL"
+                    git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git"
+                    git push origin HEAD:main
+                  fi
+                  popd >/dev/null
+                else
+                  echo "warning: GH_TOKEN/GITHUB_TOKEN not found, skipping GitHub variable sync."
+                fi
+        secrets: inherit

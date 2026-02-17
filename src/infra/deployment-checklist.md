@@ -1,144 +1,33 @@
 # Deployment Checklist
 
-서버리스 온디맨드 배포를 위한 준비/생성 항목 체크리스트입니다.
+서버리스 인프라의 설계 품질을 점검하기 위한 개념 체크리스트입니다.
 
-## 0) 공통 원칙
+## 1) 경계와 분리
 
-- [ ] 모든 리소스는 `dev`, `prod` 환경 분리
-- [ ] 가능하면 온디맨드 과금 옵션 사용 (`PAY_PER_REQUEST`, Lambda, SQS 등)
-- [ ] 리소스 네이밍 규칙 통일 (`clean-ddd-<env>-...`)
+- [ ] 환경 간 리소스 경계가 명확한가
+- [ ] 데이터 저장소와 메시징 경로의 책임이 분리되어 있는가
+- [ ] 네이밍 규칙이 환경/역할을 식별 가능하게 유지하는가
 
-## 0-1) 원클릭 CLI 부트스트랩
+## 2) 보안 모델
 
-아래 스크립트로 AWS 계정 확인 + S3 + CloudFront(CDN) + DynamoDB를 일괄 생성할 수 있습니다.
+- [ ] OIDC Trust 조건이 브랜치/환경 단위로 제한되는가
+- [ ] 배포 주체 IAM 권한이 최소 권한 원칙을 충족하는가
+- [ ] 데이터베이스 및 메시지 경로의 암호화/전송 보안 설정이 강제되는가
+- [ ] 파괴적 작업이 운영 경로에서 기본 동작으로 포함되지 않는가
 
-```bash
-chmod +x src/infra/scripts/bootstrap-aws-resources.sh
-src/infra/scripts/bootstrap-aws-resources.sh --env dev --write-vars-file .github/env/dev.vars
-src/infra/scripts/bootstrap-aws-resources.sh --env prod --write-vars-file .github/env/prod.vars
-```
+## 3) 비용 모델
 
-참고:
+- [ ] 온디맨드 리소스와 상시 과금 가능 리소스가 구분되어 있는가
+- [ ] 주기 실행(EventBridge/Lambda)의 필요성이 명확한가
+- [ ] 스토리지/캐시 계층(S3/CloudFront)의 누적 비용을 추적 가능한가
 
-- 스크립트는 존재 리소스 재사용(idempotent) 방식
-- 기본 AWS profile은 `clean-ddd` (필요 시 `--profile <name>`)
-- `AWS_ROLE_TO_ASSUME`는 수동 입력 필요
+## 4) 운영 안정성
 
-## 1) AWS 계정/권한
+- [ ] 배포 파이프라인이 CI 성공 결과에만 연동되는가
+- [ ] 실패 복구(롤백/재배포) 경로가 정의되어 있는가
+- [ ] 관측성(로그/지표/알람) 기준이 존재하는가
 
-- [ ] GitHub OIDC Provider 연결 (`token.actions.githubusercontent.com`)
-- [ ] GitHub Actions 배포용 IAM Role 생성
-- [ ] 배포 Role에 정책 적용 ([aws-github-oidc-deploy-policy.json](aws-github-oidc-deploy-policy.json))
-- [ ] 배포 Role Trust Policy 적용 ([aws-github-oidc-trust-policy.json](aws-github-oidc-trust-policy.json))
-- [ ] Role ARN을 GitHub Environment Variable `AWS_ROLE_TO_ASSUME`에 등록
+## 5) 문서 품질
 
-## 2) S3 버킷 생성
-
-### 2-1. SAM 아티팩트 버킷
-
-- [ ] `clean-ddd-dev-artifacts` 생성
-- [ ] `clean-ddd-prod-artifacts` 생성
-- [ ] 버전 관리(Versioning) 활성화 (권장)
-- [ ] 퍼블릭 차단(Public Access Block) 활성화
-- [ ] GitHub 변수 등록: `SAM_S3_BUCKET`
-
-### 2-2. 프론트 정적 호스팅 버킷
-
-- [ ] `clean-ddd-dev-web` 생성
-- [ ] `clean-ddd-prod-web` 생성
-- [ ] 퍼블릭 차단 유지 (CloudFront OAC/OAI 통해 접근)
-- [ ] 정적 파일 업로드 권한을 배포 Role에 허용
-- [ ] GitHub 변수 등록: `FRONTEND_S3_BUCKET`
-
-## 3) CDN(CloudFront) 생성
-
-- [ ] dev CloudFront Distribution 생성
-- [ ] prod CloudFront Distribution 생성
-- [ ] Origin을 각 환경 S3 웹 버킷으로 연결
-- [ ] 기본 루트 객체 설정 (`index.html`)
-- [ ] SPA 라우팅 대응(필요 시 403/404 -> `/index.html`)
-- [ ] GitHub 변수 등록: `CLOUDFRONT_DISTRIBUTION_ID`
-
-## 4) DynamoDB 생성
-
-- [ ] dev Avatar 테이블 생성 (`clean-ddd-avatar-dev`)
-- [ ] prod Avatar 테이블 생성 (`clean-ddd-avatar-prod`)
-- [ ] Billing mode: `PAY_PER_REQUEST`
-- [ ] Partition key: `avatarId` (String)
-- [ ] GitHub 변수 등록: `DYNAMODB_AVATAR_TABLE`
-- [ ] GitHub 변수 등록: `AVATAR_REPOSITORY_BACKEND=dynamodb`
-
-## 5) Neon(PostgreSQL) 준비
-
-- [ ] dev DB 생성
-- [ ] prod DB 생성
-- [ ] pooled/direct connection string 발급
-- [ ] GitHub Secrets 등록: `DATABASE_URL_POOLED`, `DATABASE_URL_DIRECT`
-
-## 6) GitHub Environment 설정
-
-환경별(`dev`, `prod`)로 아래 값을 등록합니다.
-
-### Variables
-
-- [ ] `AWS_REGION`
-- [ ] `AWS_ROLE_TO_ASSUME`
-- [ ] `SAM_STACK_NAME`
-- [ ] `SAM_S3_BUCKET`
-- [ ] `FRONTEND_S3_BUCKET`
-- [ ] `CLOUDFRONT_DISTRIBUTION_ID`
-- [ ] `DYNAMODB_AVATAR_TABLE`
-- [ ] `AVATAR_REPOSITORY_BACKEND`
-
-### Secrets
-
-- [ ] `DATABASE_URL_POOLED`
-- [ ] `DATABASE_URL_DIRECT`
-
-## 7) DNS/도메인 (선택)
-
-- [ ] Route53 또는 외부 DNS에 CloudFront CNAME 연결
-- [ ] ACM 인증서(CloudFront용, us-east-1) 연결
-- [ ] HTTPS 강제 리디렉션 설정
-
-## 8) 보안/WAF (권장)
-
-- [ ] AWS WAF WebACL 생성 후 CloudFront에 연결
-- [ ] AWS Managed Rules 적용
-- [ ] Rate-based rule 적용
-- [ ] 로그 저장 대상(S3/CloudWatch) 구성
-
-## 9) 배포 실행
-
-- [ ] `.github/env/dev.vars`, `.github/env/dev.secrets` 작성
-- [ ] `.github/env/prod.vars`, `.github/env/prod.secrets` 작성
-- [ ] CLI 등록 실행:
-    - [ ] `.github/scripts/register-env.sh <owner/repo> dev .github/env/dev.vars .github/env/dev.secrets`
-    - [ ] `.github/scripts/register-env.sh <owner/repo> prod .github/env/prod.vars .github/env/prod.secrets`
-- [ ] GitHub Actions `clean-ddd-deploy` 실행 (`dev` -> `prod`)
-
-## 9-1) CI/CD 게이트 확인
-
-- [ ] `clean-ddd-ci`에서 backend/frontend lint/typecheck/build/test 통과
-- [ ] `clean-ddd-ci`가 main 성공일 때만 `clean-ddd-deploy` 자동 시작
-
-## 9-2) 로컬 Actions 디버깅
-
-- [ ] `act` 설치
-- [ ] `act workflow_dispatch -W .github/workflows/ci.yml` 실행
-- [ ] `act workflow_dispatch -W .github/workflows/deploy.yml` 실행(더미 secrets 전달)
-
-## 10) 배포 후 검증
-
-- [ ] CloudFormation stack 상태 `CREATE_COMPLETE`/`UPDATE_COMPLETE`
-- [ ] API 응답 확인 (`ApiUrl`)
-- [ ] Frontend CloudFront URL 접속 확인
-- [ ] Avatar API 호출 시 DynamoDB 저장 확인
-- [ ] README의 `Production URL` 자동 갱신 확인
-- [ ] Repository homepage URL 자동 갱신 확인
-
-## 11) 운영 체크
-
-- [ ] CloudWatch 알람(에러율, Lambda 실패, DLQ 적재) 설정
-- [ ] 비용 알람(Budgets) 설정
-- [ ] 장애 대응 문서(롤백 절차) 업데이트
+- [ ] 실행 절차 중심 설명보다 설계 의도와 경계 설명이 우선되는가
+- [ ] 보안/비용/운영 리스크가 문서에 명시적으로 드러나는가

@@ -1,0 +1,165 @@
+name: reusable-node-workspace-task
+
+on:
+    workflow_call:
+        inputs:
+            working_directory:
+                description: Working directory for shell commands
+                required: false
+                type: string
+                default: src
+            checkout_ref:
+                description: Optional git ref to checkout
+                required: false
+                type: string
+                default: ""
+            node_version:
+                description: Node.js version
+                required: false
+                type: string
+                default: "22"
+            pnpm_version:
+                description: pnpm version
+                required: false
+                type: string
+                default: "9.15.5"
+            run_script:
+                description: Script to run after dependency setup
+                required: true
+                type: string
+            timeout_minutes:
+                description: Job timeout minutes
+                required: false
+                type: number
+                default: 60
+            environment_name:
+                description: Optional GitHub Environment name
+                required: false
+                type: string
+                default: ""
+            configure_aws:
+                description: Configure AWS credentials before run_script
+                required: false
+                type: boolean
+                default: false
+            aws_role_to_assume:
+                description: AWS IAM role ARN for OIDC assume-role
+                required: false
+                type: string
+                default: ""
+            aws_region:
+                description: AWS region for credential/session setup
+                required: false
+                type: string
+                default: ""
+            setup_sam:
+                description: Setup SAM CLI before run_script
+                required: false
+                type: boolean
+                default: false
+
+permissions:
+    contents: read
+    id-token: write
+
+jobs:
+    run:
+        if: inputs.environment_name == ''
+        runs-on: ubuntu-latest
+        timeout-minutes: ${{ inputs.timeout_minutes }}
+        defaults:
+            run:
+                working-directory: ${{ inputs.working_directory }}
+        steps:
+            - name: Checkout (default ref)
+              if: inputs.checkout_ref == ''
+              uses: actions/checkout@v4
+              with:
+                  persist-credentials: false
+
+            - name: Checkout (custom ref)
+              if: inputs.checkout_ref != ''
+              uses: actions/checkout@v4
+              with:
+                  ref: ${{ inputs.checkout_ref }}
+                  persist-credentials: false
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ inputs.node_version }}
+
+            - name: Enable Corepack
+              run: corepack enable
+
+            - name: Activate pnpm
+              run: corepack prepare pnpm@${{ inputs.pnpm_version }} --activate
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: Configure AWS credentials
+              if: inputs.configure_aws && inputs.aws_role_to_assume != '' && inputs.aws_region != ''
+              uses: aws-actions/configure-aws-credentials@v4
+              with:
+                  role-to-assume: ${{ inputs.aws_role_to_assume }}
+                  aws-region: ${{ inputs.aws_region }}
+
+            - name: Setup SAM CLI
+              if: inputs.setup_sam
+              uses: aws-actions/setup-sam@v2
+
+            - name: Run script
+              shell: bash
+              run: ${{ inputs.run_script }}
+
+    run_with_environment:
+        if: inputs.environment_name != ''
+        runs-on: ubuntu-latest
+        timeout-minutes: ${{ inputs.timeout_minutes }}
+        environment: ${{ inputs.environment_name }}
+        defaults:
+            run:
+                working-directory: ${{ inputs.working_directory }}
+        steps:
+            - name: Checkout (default ref)
+              if: inputs.checkout_ref == ''
+              uses: actions/checkout@v4
+              with:
+                  persist-credentials: false
+
+            - name: Checkout (custom ref)
+              if: inputs.checkout_ref != ''
+              uses: actions/checkout@v4
+              with:
+                  ref: ${{ inputs.checkout_ref }}
+                  persist-credentials: false
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ inputs.node_version }}
+
+            - name: Enable Corepack
+              run: corepack enable
+
+            - name: Activate pnpm
+              run: corepack prepare pnpm@${{ inputs.pnpm_version }} --activate
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: Configure AWS credentials
+              if: inputs.configure_aws && inputs.aws_role_to_assume != '' && inputs.aws_region != ''
+              uses: aws-actions/configure-aws-credentials@v4
+              with:
+                  role-to-assume: ${{ inputs.aws_role_to_assume }}
+                  aws-region: ${{ inputs.aws_region }}
+
+            - name: Setup SAM CLI
+              if: inputs.setup_sam
+              uses: aws-actions/setup-sam@v2
+
+            - name: Run script
+              shell: bash
+              run: ${{ inputs.run_script }}

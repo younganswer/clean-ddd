@@ -1,95 +1,31 @@
 # infra
 
-`src/infra/`는 서버리스 인프라 정의(SAM 템플릿) 위치입니다.
+`src/infra/`는 clean-ddd의 서버리스 인프라 모델을 정의합니다.
 
-## SAM 템플릿
+## 구성 요소 개요
 
-- 템플릿: [src/infra/sam/template.yaml](sam/template.yaml)
-- 배포 체크리스트: [src/infra/deployment-checklist.md](deployment-checklist.md)
+- SAM 템플릿: `sam/template.yaml`
+    - API Gateway HTTP API, Lambda, SQS(FIFO), EventBridge Schedule 등 런타임 토폴로지를 선언합니다.
+- IAM 정책 예시: `aws-github-oidc-deploy-policy.json`
+    - GitHub OIDC를 통해 배포 시 필요한 권한 경계를 표현합니다.
+- IAM Trust 정책 예시: `aws-github-oidc-trust-policy.json`
+    - 어떤 GitHub 주체가 AWS Role을 가정할 수 있는지 신뢰 조건을 정의합니다.
+- 리소스 부트스트랩 스크립트: `scripts/bootstrap-aws-resources.sh`
+    - 인프라 리소스 naming 및 기본 보안 설정의 기준을 코드로 유지합니다.
 
-## AWS 리소스 부트스트랩 CLI
+## 아키텍처 원칙
 
-- 스크립트: `src/infra/scripts/bootstrap-aws-resources.sh`
-- 생성 대상: AWS 계정 확인, S3(artifacts/web), CloudFront(CDN), DynamoDB
-- 기본 AWS profile: `clean-ddd` (옵션 `--profile`로 변경 가능)
+- 환경 분리: 환경별 리소스 분리를 전제로 오작동 전파를 줄입니다.
+- 최소 권한: 배포 주체에는 목적 기반 권한만 부여합니다.
+- 서버리스 우선: 요청 기반 과금 모델을 우선 적용합니다.
+- 데이터 경계 명시: 도메인 데이터 저장소와 이벤트 전달 경로를 템플릿에 명시적으로 드러냅니다.
 
-```bash
-chmod +x src/infra/scripts/bootstrap-aws-resources.sh
-src/infra/scripts/bootstrap-aws-resources.sh --env dev --write-vars-file .github/env/dev.vars
-src/infra/scripts/bootstrap-aws-resources.sh --env prod --profile clean-ddd --write-vars-file .github/env/prod.vars
-```
+## 비용 관점 메모
 
-리소스-애플리케이션 연결 설명은 아래 기준 문서를 우선 확인합니다.
+- Lambda, API Gateway, SQS, DynamoDB(PAY_PER_REQUEST)는 온디맨드 성격이 강합니다.
+- CloudFront, S3 저장소는 트래픽 외에도 저장/요청 기반 비용이 누적될 수 있어 별도 모니터링이 필요합니다.
+- EventBridge 스케줄 기반 호출은 트래픽이 없어도 주기 실행 비용이 발생할 수 있습니다.
 
-## 배포 워크플로우
+## 참고 문서
 
-- GitHub Actions: `.github/workflows/deploy.yml`
-- CD 트리거: `clean-ddd-ci`가 `main`에서 성공(`workflow_run`)한 뒤 자동 실행
-- IaC: `src/infra/sam/template.yaml`
-- frontend: `src/service/frontend` build 결과(`out/`)를 S3에 업로드 후 CloudFront invalidation
-- URL 자동화: 배포 시 `ApiUrl`(CloudFormation Output) + CloudFront Domain을 조회해
-    - frontend build용 `NEXT_PUBLIC_API_BASE_URL`에 즉시 주입
-    - GitHub Environment Variables의 `NEXT_PUBLIC_API_BASE_URL`, `DEPLOY_URL` 자동 갱신
-    - Repository homepage 및 루트 README의 Production URL 자동 동기화
-- 사전검증: 배포 시작 전에 필수 Variables/Secrets 누락 시 즉시 실패
-
-## Outbox 스케줄러
-
-- EventBridge Schedule이 `OutboxDispatchSchedulerFunction`을 주기 실행
-- 스케줄식 파라미터: `OutboxDispatchScheduleExpression` (기본 `rate(1 minute)`)
-- 배치 크기 env: `OUTBOX_DISPATCH_BATCH_SIZE` (기본 `10`)
-
-## Avatar 저장소 구성
-
-- local: `AVATAR_REPOSITORY_BACKEND=mongo`
-- deploy: `AVATAR_REPOSITORY_BACKEND=dynamodb`
-- DynamoDB 테이블: `DYNAMODB_AVATAR_TABLE` (PAY_PER_REQUEST)
-- 테이블은 부트스트랩 CLI에서 사전 생성하고, SAM은 해당 테이블 이름을 참조만 합니다.
-
-## GitHub CLI 변수/시크릿 등록
-
-예시 파일:
-
-- `.github/env/dev.vars.example`
-- `.github/env/dev.secrets.example`
-- `.github/env/prod.vars.example`
-- `.github/env/prod.secrets.example`
-
-등록 스크립트:
-
-```bash
-.github/scripts/register-env.sh <owner/repo> <environment> <vars.env> [secrets.env] [homepage_url]
-```
-
-## GitHub OIDC 배포 역할 정책
-
-- 최소 권한 예시: `src/infra/aws-github-oidc-deploy-policy.json`
-- Trust Policy 예시: `src/infra/aws-github-oidc-trust-policy.json`
-- `AWS_ROLE_TO_ASSUME`에 연결된 IAM Role에 정책을 적용합니다.
-
-권한 오류 대응 (`AccessDenied` for `sqs:CreateQueue`, `dynamodb:DescribeTable`, `apigateway:PUT`, `lambda:CreateEventSourceMapping`):
-
-- 배포 Role에 `aws-github-oidc-deploy-policy.json`을 다시 attach/update 합니다.
-- 해당 정책은 SAM 배포 시 필요한 SQS/DynamoDB/Lambda/IAM/API Gateway/EventBridge 권한을 포함합니다.
-- 특히 EventSourceMapping은 리소스 ARN이 `function`이 아닌 `event-source-mapping`이므로 별도 권한 블록이 필요합니다.
-
-OIDC 오류 대응 (`Not authorized to perform sts:AssumeRoleWithWebIdentity`):
-
-- Role의 Trust Policy에 `token.actions.githubusercontent.com` Federated principal 허용
-- `aud=sts.amazonaws.com` 조건 포함
-- `sub` 조건에 `repo:younganswer/clean-ddd:*` 또는 main/environment 패턴 포함
-
-## 로컬 Actions 디버깅
-
-`act`로 workflow를 로컬 실행할 수 있습니다.
-
-```bash
-brew install act
-act workflow_dispatch -W .github/workflows/ci.yml
-act workflow_dispatch -W .github/workflows/deploy.yml -s DATABASE_URL_POOLED=xxx -s DATABASE_URL_DIRECT=xxx
-```
-
-주의:
-
-- OIDC AssumeRole은 로컬 `act`에서 완전 재현이 어렵습니다.
-- 로컬 디버깅은 워크플로우 문법/스크립트 단계 검증 중심으로 사용합니다.
+- 배포/운영 개념 체크 항목: `deployment-checklist.md`
