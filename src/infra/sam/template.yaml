@@ -39,18 +39,6 @@ Parameters:
         Description: EventBridge schedule expression for outbox dispatch lambda
 
 Resources:
-    AvatarTable:
-        Type: AWS::DynamoDB::Table
-        Properties:
-            TableName: !Ref DynamoDbAvatarTable
-            BillingMode: PAY_PER_REQUEST
-            AttributeDefinitions:
-                - AttributeName: avatarId
-                  AttributeType: S
-            KeySchema:
-                - AttributeName: avatarId
-                  KeyType: HASH
-
     OutboxDispatchDlq:
         Type: AWS::SQS::Queue
         Properties:

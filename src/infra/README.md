@@ -44,6 +44,7 @@ src/infra/scripts/bootstrap-aws-resources.sh --env prod --profile clean-ddd --wr
 - local: `AVATAR_REPOSITORY_BACKEND=mongo`
 - deploy: `AVATAR_REPOSITORY_BACKEND=dynamodb`
 - DynamoDB 테이블: `DYNAMODB_AVATAR_TABLE` (PAY_PER_REQUEST)
+- 테이블은 부트스트랩 CLI에서 사전 생성하고, SAM은 해당 테이블 이름을 참조만 합니다.
 
 ## GitHub CLI 변수/시크릿 등록
 
