@@ -133,8 +133,6 @@
 				"apigateway:POST",
 				"apigateway:PATCH",
 				"apigateway:DELETE",
-				"apigateway:TagResource",
-				"apigateway:UntagResource",
 				"events:PutRule",
 				"events:DeleteRule",
 				"events:DescribeRule",
