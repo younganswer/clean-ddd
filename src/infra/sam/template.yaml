@@ -67,6 +67,8 @@ Resources:
                 Variables:
                     DATABASE_URL_POOLED: !Ref DatabaseUrlPooled
                     DATABASE_URL_DIRECT: !Ref DatabaseUrlDirect
+                    PGSSLMODE: require
+                    DB_FORCE_SSL: true
                     SQS_OUTBOX_QUEUE_URL: !Ref OutboxDispatchQueue
                     AVATAR_REPOSITORY_BACKEND: !Ref AvatarRepositoryBackend
                     DYNAMODB_AVATAR_TABLE: !Ref DynamoDbAvatarTable
@@ -94,6 +96,8 @@ Resources:
                 Variables:
                     DATABASE_URL_POOLED: !Ref DatabaseUrlPooled
                     DATABASE_URL_DIRECT: !Ref DatabaseUrlDirect
+                    PGSSLMODE: require
+                    DB_FORCE_SSL: true
                     SQS_OUTBOX_QUEUE_URL: !Ref OutboxDispatchQueue
                     AVATAR_REPOSITORY_BACKEND: !Ref AvatarRepositoryBackend
                     DYNAMODB_AVATAR_TABLE: !Ref DynamoDbAvatarTable
@@ -120,6 +124,8 @@ Resources:
                 Variables:
                     DATABASE_URL_POOLED: !Ref DatabaseUrlPooled
                     DATABASE_URL_DIRECT: !Ref DatabaseUrlDirect
+                    PGSSLMODE: require
+                    DB_FORCE_SSL: true
                     SQS_OUTBOX_QUEUE_URL: !Ref OutboxDispatchQueue
                     AVATAR_REPOSITORY_BACKEND: !Ref AvatarRepositoryBackend
                     DYNAMODB_AVATAR_TABLE: !Ref DynamoDbAvatarTable
