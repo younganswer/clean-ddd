@@ -11,8 +11,10 @@ on:
                 options:
                     - dev
                     - prod
-    push:
-        branches: [main]
+    workflow_run:
+        workflows: [clean-ddd-ci]
+        types:
+            - completed
 
 permissions:
     actions: write
@@ -25,14 +27,19 @@ concurrency:
 
 jobs:
     deploy:
+        if: github.event_name == 'workflow_dispatch' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
         runs-on: ubuntu-latest
-        environment: ${{ github.event.inputs.target_env || 'prod' }}
+        environment: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.target_env || 'prod' }}
         defaults:
             run:
                 working-directory: src
+        env:
+            TARGET_ENV: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.target_env || 'prod' }}
         steps:
             - name: Checkout
               uses: actions/checkout@v4
+              with:
+                  ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
 
             - name: Setup Node.js
               uses: actions/setup-node@v4
@@ -171,16 +178,15 @@ jobs:
             - name: Sync URL variables to GitHub Environment
               env:
                   GH_TOKEN: ${{ github.token }}
-                  TARGET_ENV: ${{ github.event.inputs.target_env || 'prod' }}
               run: |
                   gh variable set NEXT_PUBLIC_API_BASE_URL \
                     --repo "${{ github.repository }}" \
-                    --env "$TARGET_ENV" \
+                    --env "${{ env.TARGET_ENV }}" \
                     --body "${{ steps.resolve_urls.outputs.api_url }}"
 
                   gh variable set DEPLOY_URL \
                     --repo "${{ github.repository }}" \
-                    --env "$TARGET_ENV" \
+                    --env "${{ env.TARGET_ENV }}" \
                     --body "${{ steps.resolve_urls.outputs.deploy_url }}"
 
             - name: Sync repository homepage URL
