@@ -57,6 +57,11 @@ on:
                 required: false
                 type: boolean
                 default: false
+        secrets:
+            DATABASE_URL_POOLED:
+                required: false
+            DATABASE_URL_DIRECT:
+                required: false
 
 permissions:
     contents: read
