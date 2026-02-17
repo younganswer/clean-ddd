@@ -64,7 +64,7 @@ on:
                 required: false
 
 permissions:
-    actions: read
+    actions: write
     contents: read
     id-token: write
 

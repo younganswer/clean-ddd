@@ -31,34 +31,6 @@ print_usage() {
   echo "Usage: $0 <target_env> <repo_slug>"
 }
 
-check_github_environment_registration() {
-  if ! command -v gh >/dev/null 2>&1; then
-    return 0
-  fi
-
-  local gh_token
-  gh_token="${GH_TOKEN:-${GITHUB_TOKEN:-}}"
-  if [[ -z "$gh_token" ]]; then
-    return 0
-  fi
-
-  export GH_TOKEN="$gh_token"
-
-  local configured_keys
-  configured_keys="$(gh variable list --repo "$REPO_SLUG" --env "$TARGET_ENV" --json name --jq '.[].name' 2>/dev/null || true)"
-
-  if [[ -z "$configured_keys" ]]; then
-    echo "warning: unable to read GitHub environment variables for '$TARGET_ENV' (repo: $REPO_SLUG)."
-    return 0
-  fi
-
-  for key in "${required_vars[@]}"; do
-    if ! grep -qx "$key" <<< "$configured_keys"; then
-      echo "warning: GitHub environment variable '$key' is not registered for '$TARGET_ENV'."
-    fi
-  done
-}
-
 load_env_file_fallback() {
   if [[ ! -f "$ENV_VARS_FILE" ]]; then
     return 0
@@ -238,8 +210,16 @@ sync_github_metadata() {
     echo "warning: failed to sync one or more GitHub environment variables."
   fi
 
+  set +e
   gh repo edit "$REPO_SLUG" \
     --homepage "$DEPLOY_URL"
+  repo_edit_status=$?
+  set -e
+
+  if [[ $repo_edit_status -ne 0 ]]; then
+    echo "warning: failed to update repository homepage URL."
+    return 0
+  fi
 
   pushd .. >/dev/null
   python3 - <<'PY'
@@ -267,7 +247,13 @@ PY
   if ! git diff --cached --quiet; then
     git commit -m "docs: update deployment URL"
     git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${REPO_SLUG}.git"
+    set +e
     git push origin HEAD:main
+    push_status=$?
+    set -e
+    if [[ $push_status -ne 0 ]]; then
+      echo "warning: failed to push README deployment URL update."
+    fi
   fi
   popd >/dev/null
 }
@@ -293,7 +279,6 @@ main() {
     exit 1
   fi
 
-  check_github_environment_registration
   load_env_file_fallback
   validate_required_inputs
   build_workspace
