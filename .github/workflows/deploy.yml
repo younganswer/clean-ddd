@@ -216,7 +216,25 @@ jobs:
 
             - name: Upload frontend to S3
               working-directory: src/service/frontend
-              run: aws s3 sync out "s3://${{ vars.FRONTEND_S3_BUCKET }}" --delete
+              run: |
+                  aws s3 sync out "s3://${{ vars.FRONTEND_S3_BUCKET }}" --delete
+
+                  while IFS= read -r index_file; do
+                    relative_path="${index_file#out/}"
+                    route_path="${relative_path%/index.html}"
+
+                    if [[ -z "$route_path" || "$route_path" == "index.html" ]]; then
+                      continue
+                    fi
+
+                    aws s3 cp "$index_file" "s3://${{ vars.FRONTEND_S3_BUCKET }}/${route_path}" \
+                      --content-type text/html \
+                      --cache-control "public, max-age=60"
+
+                    aws s3 cp "$index_file" "s3://${{ vars.FRONTEND_S3_BUCKET }}/${route_path}/" \
+                      --content-type text/html \
+                      --cache-control "public, max-age=60"
+                  done < <(find out -type f -name index.html)
 
             - name: CloudFront invalidation
               run: |
