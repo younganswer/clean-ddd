@@ -55,7 +55,7 @@
 
 ## 배포
 
-- Production URL: TBD
+- Production URL: https://d1qhe6m43bntsj.cloudfront.net
 
 서버리스 온디맨드 배포 기준:
 
