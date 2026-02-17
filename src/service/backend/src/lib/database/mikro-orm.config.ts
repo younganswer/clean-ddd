@@ -56,16 +56,27 @@ function databaseUrlForRuntime(): string {
     const parsed = new URL(rawUrl);
     const protocol = parsed.protocol.toLowerCase();
 
-    if (
-      (protocol === 'postgres:' || protocol === 'postgresql:') &&
-      !parsed.searchParams.has('sslmode')
-    ) {
-      parsed.searchParams.set('sslmode', 'require');
+    if (protocol === 'postgres:' || protocol === 'postgresql:') {
+      const sslmode = parsed.searchParams.get('sslmode')?.toLowerCase();
+      const secureModes = new Set(['require', 'verify-ca', 'verify-full']);
+
+      if (!sslmode || !secureModes.has(sslmode)) {
+        parsed.searchParams.set('sslmode', 'require');
+      }
+
       return parsed.toString();
     }
 
     return rawUrl;
   } catch {
+    if (/^postgres(ql)?:\/\//i.test(rawUrl)) {
+      if (/([?&])sslmode=/i.test(rawUrl)) {
+        return rawUrl.replace(/([?&])sslmode=[^&]*/i, '$1sslmode=require');
+      }
+
+      return `${rawUrl}${rawUrl.includes('?') ? '&' : '?'}sslmode=require`;
+    }
+
     return rawUrl;
   }
 }
