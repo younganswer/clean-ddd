@@ -73,6 +73,7 @@ Resources:
                     AVATAR_REPOSITORY_BACKEND: !Ref AvatarRepositoryBackend
                     DYNAMODB_AVATAR_TABLE: !Ref DynamoDbAvatarTable
                     OUTBOX_CRON_ENABLED: false
+                    OUTBOX_ENQUEUE_STRICT: true
             Policies:
                 - SQSSendMessagePolicy:
                       QueueName: !GetAtt OutboxDispatchQueue.QueueName
@@ -102,6 +103,7 @@ Resources:
                     AVATAR_REPOSITORY_BACKEND: !Ref AvatarRepositoryBackend
                     DYNAMODB_AVATAR_TABLE: !Ref DynamoDbAvatarTable
                     OUTBOX_CRON_ENABLED: false
+                    OUTBOX_ENQUEUE_STRICT: true
             Policies:
                 - SQSPollerPolicy:
                       QueueName: !GetAtt OutboxDispatchQueue.QueueName
@@ -131,6 +133,7 @@ Resources:
                     DYNAMODB_AVATAR_TABLE: !Ref DynamoDbAvatarTable
                     OUTBOX_CRON_ENABLED: false
                     OUTBOX_DISPATCH_BATCH_SIZE: 10
+                    OUTBOX_ENQUEUE_STRICT: true
             Policies:
                 - SQSSendMessagePolicy:
                       QueueName: !GetAtt OutboxDispatchQueue.QueueName

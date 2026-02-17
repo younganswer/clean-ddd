@@ -14,6 +14,11 @@ export class OutboxQueue {
     @Inject(SQS_OUTBOX_QUEUE_URL) private readonly queueUrl: string,
   ) {}
 
+  private isFifoQueue(): boolean {
+    const lowerQueueUrl = this.queueUrl.toLowerCase();
+    return lowerQueueUrl.includes('.fifo');
+  }
+
   async enqueue(
     outboxId: string,
     options?: { delaySeconds?: number; messageGroupId?: string },
@@ -23,14 +28,22 @@ export class OutboxQueue {
       outboxId,
     };
 
-    await this.sqs.send(
-      new SendMessageCommand({
-        QueueUrl: this.queueUrl,
-        MessageBody: JSON.stringify(body),
-        DelaySeconds: options?.delaySeconds,
-        MessageGroupId: options?.messageGroupId ?? 'outbox',
-        MessageDeduplicationId: outboxId,
-      }),
-    );
+    const isFifoQueue = this.isFifoQueue();
+    const messageAttributes = {
+      QueueUrl: this.queueUrl,
+      MessageBody: JSON.stringify(body),
+      ...(isFifoQueue
+        ? {
+            MessageGroupId: options?.messageGroupId ?? 'outbox',
+            MessageDeduplicationId: outboxId,
+          }
+        : {
+            ...(typeof options?.delaySeconds === 'number'
+              ? { DelaySeconds: options.delaySeconds }
+              : {}),
+          }),
+    };
+
+    await this.sqs.send(new SendMessageCommand(messageAttributes));
   }
 }

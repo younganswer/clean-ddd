@@ -64,9 +64,7 @@ export class OutboxProducer {
         ? payload.orderId
         : 'outbox');
 
-    const strictEnqueue =
-      process.env.OUTBOX_ENQUEUE_STRICT === 'true' ||
-      process.env.NODE_ENV === 'production';
+    const strictEnqueue = process.env.OUTBOX_ENQUEUE_STRICT !== 'false';
 
     const safeEnqueue = async (enqueueDelaySeconds?: number) => {
       try {
