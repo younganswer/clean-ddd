@@ -115,6 +115,29 @@ jobs:
             - name: SAM validate
               run: sam validate --template-file infra/sam/template.yaml
 
+            - name: Recover rollback-complete stack
+              run: |
+                  STACK_NAME="${{ vars.SAM_STACK_NAME }}"
+
+                  STACK_STATUS=$(aws cloudformation describe-stacks \
+                    --stack-name "$STACK_NAME" \
+                    --query "Stacks[0].StackStatus" \
+                    --output text 2>/dev/null || true)
+
+                  if [[ -z "$STACK_STATUS" || "$STACK_STATUS" == "None" ]]; then
+                    echo "stack does not exist: $STACK_NAME"
+                    exit 0
+                  fi
+
+                  echo "current stack status: $STACK_STATUS"
+
+                  if [[ "$STACK_STATUS" == "ROLLBACK_COMPLETE" ]]; then
+                    echo "deleting rollback-complete stack: $STACK_NAME"
+                    aws cloudformation delete-stack --stack-name "$STACK_NAME"
+                    aws cloudformation wait stack-delete-complete --stack-name "$STACK_NAME"
+                    echo "stack deleted: $STACK_NAME"
+                  fi
+
             - name: Deploy backend (SAM)
               run: |
                   sam deploy \
