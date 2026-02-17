@@ -44,18 +44,18 @@ jobs:
             run:
                 working-directory: ${{ inputs.working_directory }}
         steps:
-                        - name: Checkout (default ref)
-                            if: inputs.checkout_ref == ''
-                            uses: actions/checkout@v4
-                            with:
-                                    persist-credentials: false
+            - name: Checkout (default ref)
+              if: inputs.checkout_ref == ''
+              uses: actions/checkout@v4
+              with:
+                  persist-credentials: false
 
-                        - name: Checkout (custom ref)
-                            if: inputs.checkout_ref != ''
-                            uses: actions/checkout@v4
-                            with:
-                                    ref: ${{ inputs.checkout_ref }}
-                                    persist-credentials: false
+            - name: Checkout (custom ref)
+              if: inputs.checkout_ref != ''
+              uses: actions/checkout@v4
+              with:
+                  ref: ${{ inputs.checkout_ref }}
+                  persist-credentials: false
 
             - name: Setup Node + pnpm
               uses: ./.github/actions/setup-node-pnpm
