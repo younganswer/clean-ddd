@@ -85,6 +85,11 @@
 			"Action": [
 				"lambda:CreateFunction",
 				"lambda:DeleteFunction",
+				"lambda:CreateEventSourceMapping",
+				"lambda:DeleteEventSourceMapping",
+				"lambda:GetEventSourceMapping",
+				"lambda:UpdateEventSourceMapping",
+				"lambda:ListEventSourceMappings",
 				"lambda:GetFunction",
 				"lambda:GetFunctionConfiguration",
 				"lambda:UpdateFunctionCode",
@@ -117,6 +122,7 @@
 			"Effect": "Allow",
 			"Action": [
 				"apigateway:GET",
+				"apigateway:PUT",
 				"apigateway:POST",
 				"apigateway:PATCH",
 				"apigateway:DELETE",
