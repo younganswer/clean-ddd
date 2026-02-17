@@ -74,6 +74,7 @@ Resources:
                     DYNAMODB_AVATAR_TABLE: !Ref DynamoDbAvatarTable
                     OUTBOX_CRON_ENABLED: false
                     OUTBOX_ENQUEUE_STRICT: true
+                    OUTBOX_DIRECT_CONSUME_FALLBACK: true
             Policies:
                 - SQSSendMessagePolicy:
                       QueueName: !GetAtt OutboxDispatchQueue.QueueName
