@@ -4,7 +4,7 @@
 		{
 			"Effect": "Allow",
 			"Principal": {
-				"Federated": "arn:aws:iam::YOUR_AWS_ACCOUNT_ID:oidc-provider/token.actions.githubusercontent.com"
+				"Federated": "arn:aws:iam::891377136566:oidc-provider/token.actions.githubusercontent.com"
 			},
 			"Action": "sts:AssumeRoleWithWebIdentity",
 			"Condition": {
@@ -13,6 +13,7 @@
 				},
 				"StringLike": {
 					"token.actions.githubusercontent.com:sub": [
+						"repo:younganswer/clean-ddd:*",
 						"repo:younganswer/clean-ddd:ref:refs/heads/main",
 						"repo:younganswer/clean-ddd:environment:prod",
 						"repo:younganswer/clean-ddd:environment:dev"
