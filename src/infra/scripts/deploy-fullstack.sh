@@ -12,6 +12,7 @@ API_URL=""
 DEPLOY_URL=""
 
 required_vars=(
+  AWS_ROLE_TO_ASSUME
   AWS_REGION
   SAM_STACK_NAME
   SAM_S3_BUCKET
@@ -56,6 +57,36 @@ check_github_environment_registration() {
       echo "warning: GitHub environment variable '$key' is not registered for '$TARGET_ENV'."
     fi
   done
+}
+
+load_env_from_github_environment() {
+  if ! command -v gh >/dev/null 2>&1; then
+    return 0
+  fi
+
+  local gh_token
+  gh_token="${GH_TOKEN:-${GITHUB_TOKEN:-}}"
+  if [[ -z "$gh_token" ]]; then
+    return 0
+  fi
+
+  export GH_TOKEN="$gh_token"
+
+  local rows
+  rows="$(gh variable list --repo "$REPO_SLUG" --env "$TARGET_ENV" --json name,value --jq '.[] | [.name, .value] | @tsv' 2>/dev/null || true)"
+  if [[ -z "$rows" ]]; then
+    return 0
+  fi
+
+  while IFS=$'\t' read -r key value; do
+    if [[ -z "$key" ]]; then
+      continue
+    fi
+
+    if [[ -z "${!key-}" ]]; then
+      export "$key=$value"
+    fi
+  done <<< "$rows"
 }
 
 load_env_file_fallback() {
@@ -293,6 +324,7 @@ main() {
   fi
 
   check_github_environment_registration
+  load_env_from_github_environment
   load_env_file_fallback
   validate_required_inputs
   build_workspace

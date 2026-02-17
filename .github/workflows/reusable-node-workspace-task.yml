@@ -105,6 +105,7 @@ jobs:
             - name: Run script
               shell: bash
               env:
+                                    GITHUB_TOKEN: ${{ github.token }}
                   DATABASE_URL_POOLED: ${{ secrets.DATABASE_URL_POOLED }}
                   DATABASE_URL_DIRECT: ${{ secrets.DATABASE_URL_DIRECT }}
               run: ${{ inputs.run_script }}
@@ -152,6 +153,7 @@ jobs:
             - name: Run script
               shell: bash
               env:
+                                    GITHUB_TOKEN: ${{ github.token }}
                   DATABASE_URL_POOLED: ${{ secrets.DATABASE_URL_POOLED }}
                   DATABASE_URL_DIRECT: ${{ secrets.DATABASE_URL_DIRECT }}
               run: ${{ inputs.run_script }}
