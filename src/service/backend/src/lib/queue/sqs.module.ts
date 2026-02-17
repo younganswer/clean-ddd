@@ -63,13 +63,22 @@ const isLocalSqsEndpoint = (endpoint: string): boolean => {
 
         if (endpoint) {
           const region = process.env.AWS_REGION ?? 'ap-northeast-2';
+          const useLocalStaticCreds = isLocalSqsEndpoint(endpoint);
           const client = new SQSClient({
             region,
             endpoint,
-            credentials: {
-              accessKeyId: process.env.AWS_ACCESS_KEY_ID ?? 'test',
-              secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY ?? 'test',
-            },
+            ...(useLocalStaticCreds
+              ? {
+                  credentials: {
+                    accessKeyId: process.env.AWS_ACCESS_KEY_ID ?? 'test',
+                    secretAccessKey:
+                      process.env.AWS_SECRET_ACCESS_KEY ?? 'test',
+                    ...(process.env.AWS_SESSION_TOKEN
+                      ? { sessionToken: process.env.AWS_SESSION_TOKEN }
+                      : {}),
+                  },
+                }
+              : {}),
           });
 
           try {
@@ -125,20 +134,20 @@ const isLocalSqsEndpoint = (endpoint: string): boolean => {
       provide: SQS_CLIENT,
       useFactory: () => {
         const region = process.env.AWS_REGION;
-        const queueUrl = normalizeOutboxQueueUrl(
-          process.env.SQS_OUTBOX_QUEUE_URL ?? '',
-        );
-        const endpoint =
-          process.env.SQS_ENDPOINT ??
-          (queueUrl ? inferSqsEndpointFromQueueUrl(queueUrl) : undefined);
+        const endpoint = process.env.SQS_ENDPOINT;
+        const useLocalStaticCreds =
+          endpoint !== undefined && isLocalSqsEndpoint(endpoint);
         return new SQSClient({
           region,
-          endpoint,
-          ...(endpoint
+          ...(endpoint ? { endpoint } : {}),
+          ...(useLocalStaticCreds
             ? {
                 credentials: {
                   accessKeyId: process.env.AWS_ACCESS_KEY_ID ?? 'test',
                   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY ?? 'test',
+                  ...(process.env.AWS_SESSION_TOKEN
+                    ? { sessionToken: process.env.AWS_SESSION_TOKEN }
+                    : {}),
                 },
               }
             : {}),
