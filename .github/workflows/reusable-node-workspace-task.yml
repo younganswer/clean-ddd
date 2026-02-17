@@ -64,6 +64,7 @@ on:
                 required: false
 
 permissions:
+    actions: read
     contents: read
     id-token: write
 
@@ -111,6 +112,14 @@ jobs:
               shell: bash
               env:
                   GITHUB_TOKEN: ${{ github.token }}
+                  AWS_ROLE_TO_ASSUME: ${{ vars.AWS_ROLE_TO_ASSUME }}
+                  AWS_REGION: ${{ vars.AWS_REGION }}
+                  SAM_STACK_NAME: ${{ vars.SAM_STACK_NAME }}
+                  SAM_S3_BUCKET: ${{ vars.SAM_S3_BUCKET }}
+                  FRONTEND_S3_BUCKET: ${{ vars.FRONTEND_S3_BUCKET }}
+                  CLOUDFRONT_DISTRIBUTION_ID: ${{ vars.CLOUDFRONT_DISTRIBUTION_ID }}
+                  AVATAR_REPOSITORY_BACKEND: ${{ vars.AVATAR_REPOSITORY_BACKEND }}
+                  DYNAMODB_AVATAR_TABLE: ${{ vars.DYNAMODB_AVATAR_TABLE }}
                   DATABASE_URL_POOLED: ${{ secrets.DATABASE_URL_POOLED }}
                   DATABASE_URL_DIRECT: ${{ secrets.DATABASE_URL_DIRECT }}
               run: ${{ inputs.run_script }}
@@ -159,6 +168,14 @@ jobs:
               shell: bash
               env:
                   GITHUB_TOKEN: ${{ github.token }}
+                  AWS_ROLE_TO_ASSUME: ${{ vars.AWS_ROLE_TO_ASSUME }}
+                  AWS_REGION: ${{ vars.AWS_REGION }}
+                  SAM_STACK_NAME: ${{ vars.SAM_STACK_NAME }}
+                  SAM_S3_BUCKET: ${{ vars.SAM_S3_BUCKET }}
+                  FRONTEND_S3_BUCKET: ${{ vars.FRONTEND_S3_BUCKET }}
+                  CLOUDFRONT_DISTRIBUTION_ID: ${{ vars.CLOUDFRONT_DISTRIBUTION_ID }}
+                  AVATAR_REPOSITORY_BACKEND: ${{ vars.AVATAR_REPOSITORY_BACKEND }}
+                  DYNAMODB_AVATAR_TABLE: ${{ vars.DYNAMODB_AVATAR_TABLE }}
                   DATABASE_URL_POOLED: ${{ secrets.DATABASE_URL_POOLED }}
                   DATABASE_URL_DIRECT: ${{ secrets.DATABASE_URL_DIRECT }}
               run: ${{ inputs.run_script }}
