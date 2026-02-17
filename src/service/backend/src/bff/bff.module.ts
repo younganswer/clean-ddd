@@ -6,6 +6,7 @@ import { OrderDetailBffModule } from '@/bff/order-detail/order-detail-bff.module
 import { CheckoutBffModule } from '@/bff/checkout/checkout-bff.module';
 import { DashboardBffModule } from '@/bff/dashboard/dashboard-bff.module';
 import { GraphBffModule } from '@/bff/graph/graph-bff.module';
+import { SystemConceptsBffModule } from '@/bff/system-concepts/system-concepts-bff.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { GraphBffModule } from '@/bff/graph/graph-bff.module';
     CheckoutBffModule,
     DashboardBffModule,
     GraphBffModule,
+    SystemConceptsBffModule,
   ],
 })
 export class BffModule {}

@@ -5,6 +5,7 @@ import {
 	apiGetOrder,
 	apiGetPaymentIntent,
 	apiGetShipmentByOrderId,
+	apiGetSystemConceptsBootstrap,
 	apiListInventoryItems,
 	apiListUsers,
 	type InventoryItem,
@@ -200,10 +201,21 @@ export const useSystemConceptsLab = () => {
 			setInputLoading(true);
 			setError(null);
 			try {
-				const [userPage, itemPage] = await Promise.all([
-					apiListUsers({ limit: 50, page: 1 }),
-					apiListInventoryItems({ limit: 50, page: 1 }),
-				]);
+				let userPage;
+				let itemPage;
+				try {
+					const bootstrap = await apiGetSystemConceptsBootstrap({
+						limit: 50,
+						page: 1,
+					});
+					userPage = bootstrap.users;
+					itemPage = bootstrap.inventoryItems;
+				} catch {
+					[userPage, itemPage] = await Promise.all([
+						apiListUsers({ limit: 50, page: 1 }),
+						apiListInventoryItems({ limit: 50, page: 1 }),
+					]);
+				}
 				if (!active) return;
 				const nextUsers = userPage.items ?? [];
 				const nextItems = itemPage.items ?? [];

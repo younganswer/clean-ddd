@@ -205,6 +205,18 @@ export const apiListUsers = async (input: {
 	);
 };
 
+export const apiGetSystemConceptsBootstrap = async (input: {
+	limit: number;
+	page: number;
+}): Promise<{
+	users: PaginatedUsers;
+	inventoryItems: PaginatedInventoryItems;
+}> => {
+	return http(
+		`/bff/system-concepts/bootstrap?limit=${encodeURIComponent(String(input.limit))}&page=${encodeURIComponent(String(input.page))}`,
+	);
+};
+
 export const apiGetGraph = async (input: {
 	rootType: "USER" | "ORDER" | "SHIPMENT" | "PAYMENT";
 	rootId: string;
