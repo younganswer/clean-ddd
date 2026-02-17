@@ -47,7 +47,27 @@ function shouldPreferTs(): boolean {
 }
 
 function databaseUrlForRuntime(): string {
-  return process.env.DATABASE_URL_POOLED ?? process.env.DATABASE_URL ?? '';
+  const rawUrl =
+    process.env.DATABASE_URL_POOLED ?? process.env.DATABASE_URL ?? '';
+
+  if (!rawUrl) return '';
+
+  try {
+    const parsed = new URL(rawUrl);
+    const protocol = parsed.protocol.toLowerCase();
+
+    if (
+      (protocol === 'postgres:' || protocol === 'postgresql:') &&
+      !parsed.searchParams.has('sslmode')
+    ) {
+      parsed.searchParams.set('sslmode', 'require');
+      return parsed.toString();
+    }
+
+    return rawUrl;
+  } catch {
+    return rawUrl;
+  }
 }
 
 export function mikroOrmConfigForRuntime(): Options {
