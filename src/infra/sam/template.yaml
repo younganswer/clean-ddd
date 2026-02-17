@@ -9,9 +9,6 @@ Globals:
         Timeout: 10
         Architectures:
             - arm64
-        Environment:
-            Variables:
-                AWS_REGION: !Ref AWS::Region
 
 Parameters:
     DatabaseUrlPooled:
