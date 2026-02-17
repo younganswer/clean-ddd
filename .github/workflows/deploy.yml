@@ -210,7 +210,7 @@ jobs:
 
             - name: Sync URL variables to GitHub Environment
               env:
-                  GH_TOKEN: ${{ secrets.GH_ADMIN_TOKEN || github.token }}
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN || github.token }}
               run: |
                   set +e
 
@@ -230,12 +230,12 @@ jobs:
 
                   if [[ $api_var_status -ne 0 || $deploy_var_status -ne 0 ]]; then
                     echo "warning: failed to sync one or more GitHub environment variables."
-                    echo "warning: set repository secret GH_ADMIN_TOKEN (repo admin scope) to enable this step with gh CLI."
+                    echo "warning: set repository secret GITHUB_TOKEN (repo admin scope) to enable this step with gh CLI."
                   fi
 
             - name: Sync repository homepage URL
               env:
-                  GH_TOKEN: ${{ github.token }}
+                  GITHUB_TOKEN: ${{ github.token }}
               run: |
                   gh repo edit "${{ github.repository }}" \
                     --homepage "${{ steps.resolve_urls.outputs.deploy_url }}"
