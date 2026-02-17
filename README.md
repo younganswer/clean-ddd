@@ -49,3 +49,24 @@
 - `src/packages/`: 공용 패키지(contracts)
 - `src/infra/`: SAM 템플릿 및 인프라 정의
 - `src/stack/`: 로컬 실행용 compose, localstack, nginx 구성
+
+<br/>
+<br/>
+
+## 배포
+
+- Production URL: TBD
+
+서버리스 온디맨드 배포 기준:
+
+- backend: AWS Lambda + API Gateway + SQS + DynamoDB(PAY_PER_REQUEST)
+- postgres: Neon (serverless)
+- frontend: Next static export → S3 + CloudFront
+
+GitHub repository 환경변수 등록(민감값/일반값 분리):
+
+```bash
+.github/scripts/register-env.sh younganswer/clean-ddd dev .github/env/dev.vars .github/env/dev.secrets https://example.com
+```
+
+상세 배포 흐름은 [src/infra/README.md](src/infra/README.md)를 참고합니다.

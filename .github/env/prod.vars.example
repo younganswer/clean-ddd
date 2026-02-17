@@ -1,0 +1,8 @@
+AWS_REGION=ap-northeast-2
+AWS_ROLE_TO_ASSUME=arn:aws:iam::123456789012:role/github-actions-deploy-role
+SAM_STACK_NAME=clean-ddd-prod
+SAM_S3_BUCKET=clean-ddd-prod-artifacts
+FRONTEND_S3_BUCKET=clean-ddd-prod-web
+CLOUDFRONT_DISTRIBUTION_ID=E123PRODEXAMPLE
+DYNAMODB_AVATAR_TABLE=clean-ddd-avatar-prod
+AVATAR_REPOSITORY_BACKEND=dynamodb

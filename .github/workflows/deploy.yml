@@ -1,0 +1,223 @@
+name: clean-ddd-deploy
+
+on:
+    workflow_dispatch:
+        inputs:
+            target_env:
+                description: GitHub Environment name
+                type: choice
+                required: true
+                default: dev
+                options:
+                    - dev
+                    - prod
+    push:
+        branches: [main]
+
+permissions:
+    actions: write
+    contents: write
+    id-token: write
+
+concurrency:
+    group: deploy-${{ github.ref }}-${{ github.event.inputs.target_env || 'prod' }}
+    cancel-in-progress: false
+
+jobs:
+    deploy:
+        runs-on: ubuntu-latest
+        environment: ${{ github.event.inputs.target_env || 'prod' }}
+        defaults:
+            run:
+                working-directory: src
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+
+            - name: Enable Corepack
+              run: corepack enable
+
+            - name: Activate pnpm
+              run: corepack prepare pnpm@9.15.5 --activate
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: Build workspace
+              run: pnpm build
+
+            - name: Preflight required deploy config
+              env:
+                  AWS_ROLE_TO_ASSUME: ${{ vars.AWS_ROLE_TO_ASSUME }}
+                  AWS_REGION: ${{ vars.AWS_REGION }}
+                  SAM_STACK_NAME: ${{ vars.SAM_STACK_NAME }}
+                  SAM_S3_BUCKET: ${{ vars.SAM_S3_BUCKET }}
+                  FRONTEND_S3_BUCKET: ${{ vars.FRONTEND_S3_BUCKET }}
+                  CLOUDFRONT_DISTRIBUTION_ID: ${{ vars.CLOUDFRONT_DISTRIBUTION_ID }}
+                  AVATAR_REPOSITORY_BACKEND: ${{ vars.AVATAR_REPOSITORY_BACKEND }}
+                  DYNAMODB_AVATAR_TABLE: ${{ vars.DYNAMODB_AVATAR_TABLE }}
+                  DATABASE_URL_POOLED: ${{ secrets.DATABASE_URL_POOLED }}
+                  DATABASE_URL_DIRECT: ${{ secrets.DATABASE_URL_DIRECT }}
+              run: |
+                  required_vars=(
+                    AWS_ROLE_TO_ASSUME
+                    AWS_REGION
+                    SAM_STACK_NAME
+                    SAM_S3_BUCKET
+                    FRONTEND_S3_BUCKET
+                    CLOUDFRONT_DISTRIBUTION_ID
+                    AVATAR_REPOSITORY_BACKEND
+                    DYNAMODB_AVATAR_TABLE
+                  )
+
+                  required_secrets=(
+                    DATABASE_URL_POOLED
+                    DATABASE_URL_DIRECT
+                  )
+
+                  for key in "${required_vars[@]}"; do
+                    value="${!key}"
+                    if [[ -z "$value" ]]; then
+                      echo "missing required github environment variable: $key"
+                      exit 1
+                    fi
+                  done
+
+                  for key in "${required_secrets[@]}"; do
+                    value="${!key}"
+                    if [[ -z "$value" ]]; then
+                      echo "missing required github environment secret: $key"
+                      exit 1
+                    fi
+                  done
+
+            - name: Configure AWS credentials
+              uses: aws-actions/configure-aws-credentials@v4
+              with:
+                  role-to-assume: ${{ vars.AWS_ROLE_TO_ASSUME }}
+                  aws-region: ${{ vars.AWS_REGION }}
+
+            - name: Setup SAM CLI
+              uses: aws-actions/setup-sam@v2
+
+            - name: SAM validate
+              run: sam validate --template-file infra/sam/template.yaml
+
+            - name: Deploy backend (SAM)
+              run: |
+                  sam deploy \
+                    --template-file infra/sam/template.yaml \
+                    --stack-name "${{ vars.SAM_STACK_NAME }}" \
+                    --s3-bucket "${{ vars.SAM_S3_BUCKET }}" \
+                    --capabilities CAPABILITY_IAM \
+                    --no-fail-on-empty-changeset \
+                    --parameter-overrides \
+                      DatabaseUrlPooled="${{ secrets.DATABASE_URL_POOLED }}" \
+                      DatabaseUrlDirect="${{ secrets.DATABASE_URL_DIRECT }}" \
+                      AvatarRepositoryBackend="${{ vars.AVATAR_REPOSITORY_BACKEND }}" \
+                      DynamoDbAvatarTable="${{ vars.DYNAMODB_AVATAR_TABLE }}"
+
+            - name: Resolve deployment URLs
+              id: resolve_urls
+              run: |
+                  API_URL=$(aws cloudformation describe-stacks \
+                    --stack-name "${{ vars.SAM_STACK_NAME }}" \
+                    --query "Stacks[0].Outputs[?OutputKey=='ApiUrl'].OutputValue" \
+                    --output text)
+
+                  if [[ -z "$API_URL" || "$API_URL" == "None" ]]; then
+                    echo "Failed to resolve ApiUrl from CloudFormation outputs"
+                    exit 1
+                  fi
+
+                  CF_DOMAIN=$(aws cloudfront get-distribution \
+                    --id "${{ vars.CLOUDFRONT_DISTRIBUTION_ID }}" \
+                    --query "Distribution.DomainName" \
+                    --output text)
+
+                  if [[ -z "$CF_DOMAIN" || "$CF_DOMAIN" == "None" ]]; then
+                    echo "Failed to resolve CloudFront domain"
+                    exit 1
+                  fi
+
+                  DEPLOY_URL="https://${CF_DOMAIN}"
+
+                  echo "NEXT_PUBLIC_API_BASE_URL=$API_URL" >> "$GITHUB_ENV"
+                  echo "DEPLOY_URL=$DEPLOY_URL" >> "$GITHUB_ENV"
+                  echo "api_url=$API_URL" >> "$GITHUB_OUTPUT"
+                  echo "deploy_url=$DEPLOY_URL" >> "$GITHUB_OUTPUT"
+
+            - name: Build frontend static export
+              working-directory: src/service/frontend
+              env:
+                  NEXT_PUBLIC_API_BASE_URL: ${{ env.NEXT_PUBLIC_API_BASE_URL }}
+              run: pnpm build
+
+            - name: Upload frontend to S3
+              working-directory: src/service/frontend
+              run: aws s3 sync out "s3://${{ vars.FRONTEND_S3_BUCKET }}" --delete
+
+            - name: CloudFront invalidation
+              run: |
+                  aws cloudfront create-invalidation \
+                    --distribution-id "${{ vars.CLOUDFRONT_DISTRIBUTION_ID }}" \
+                    --paths "/*"
+
+            - name: Sync URL variables to GitHub Environment
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  TARGET_ENV: ${{ github.event.inputs.target_env || 'prod' }}
+              run: |
+                  gh variable set NEXT_PUBLIC_API_BASE_URL \
+                    --repo "${{ github.repository }}" \
+                    --env "$TARGET_ENV" \
+                    --body "${{ steps.resolve_urls.outputs.api_url }}"
+
+                  gh variable set DEPLOY_URL \
+                    --repo "${{ github.repository }}" \
+                    --env "$TARGET_ENV" \
+                    --body "${{ steps.resolve_urls.outputs.deploy_url }}"
+
+            - name: Sync repository homepage URL
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              run: |
+                  gh repo edit "${{ github.repository }}" \
+                    --homepage "${{ steps.resolve_urls.outputs.deploy_url }}"
+
+            - name: Update deployment URL in README
+              working-directory: .
+              env:
+                  DEPLOY_URL: ${{ steps.resolve_urls.outputs.deploy_url }}
+              run: |
+                  python3 - <<'PY'
+                  from pathlib import Path
+
+                  readme = Path('README.md')
+                  content = readme.read_text(encoding='utf-8')
+                  marker = '- Production URL:'
+                  replacement = f'- Production URL: {__import__("os").environ["DEPLOY_URL"]}'
+
+                  if marker in content:
+                    lines = []
+                    for line in content.splitlines():
+                      if line.startswith(marker):
+                        lines.append(replacement)
+                      else:
+                        lines.append(line)
+                    readme.write_text('\n'.join(lines) + '\n', encoding='utf-8')
+                  PY
+
+            - name: Commit README update
+              working-directory: .
+              run: |
+                  git config user.name "github-actions[bot]"
+                  git config user.email "github-actions[bot]@users.noreply.github.com"
+                  git add README.md
+                  git diff --cached --quiet || git commit -m "docs: update deployment URL"
+                  git push
