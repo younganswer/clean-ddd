@@ -44,32 +44,13 @@ jobs:
             run:
                 working-directory: ${{ inputs.working_directory }}
         steps:
-            - name: Checkout (default ref)
-              if: inputs.checkout_ref == ''
-              uses: actions/checkout@v4
+            - name: Setup Node + pnpm
+              uses: ./.github/actions/setup-node-pnpm
               with:
-                  persist-credentials: false
-
-            - name: Checkout (custom ref)
-              if: inputs.checkout_ref != ''
-              uses: actions/checkout@v4
-              with:
-                  ref: ${{ inputs.checkout_ref }}
-                  persist-credentials: false
-
-            - name: Setup Node.js
-              uses: actions/setup-node@v4
-              with:
-                  node-version: ${{ inputs.node_version }}
-
-            - name: Enable Corepack
-              run: corepack enable
-
-            - name: Activate pnpm
-              run: corepack prepare pnpm@${{ inputs.pnpm_version }} --activate
-
-            - name: Install dependencies
-              run: pnpm install --frozen-lockfile
+                  checkout_ref: ${{ inputs.checkout_ref }}
+                  node_version: ${{ inputs.node_version }}
+                  pnpm_version: ${{ inputs.pnpm_version }}
+                  working_directory: ${{ inputs.working_directory }}
 
             - name: Run script
               shell: bash

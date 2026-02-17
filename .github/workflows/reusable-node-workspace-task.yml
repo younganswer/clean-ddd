@@ -71,39 +71,20 @@ jobs:
             run:
                 working-directory: ${{ inputs.working_directory }}
         steps:
-            - name: Checkout (default ref)
-              if: inputs.checkout_ref == ''
-              uses: actions/checkout@v4
+            - name: Setup Node + pnpm
+              uses: ./.github/actions/setup-node-pnpm
               with:
-                  persist-credentials: false
-
-            - name: Checkout (custom ref)
-              if: inputs.checkout_ref != ''
-              uses: actions/checkout@v4
-              with:
-                  ref: ${{ inputs.checkout_ref }}
-                  persist-credentials: false
-
-            - name: Setup Node.js
-              uses: actions/setup-node@v4
-              with:
-                  node-version: ${{ inputs.node_version }}
-
-            - name: Enable Corepack
-              run: corepack enable
-
-            - name: Activate pnpm
-              run: corepack prepare pnpm@${{ inputs.pnpm_version }} --activate
-
-            - name: Install dependencies
-              run: pnpm install --frozen-lockfile
+                  checkout_ref: ${{ inputs.checkout_ref }}
+                  node_version: ${{ inputs.node_version }}
+                  pnpm_version: ${{ inputs.pnpm_version }}
+                  working_directory: ${{ inputs.working_directory }}
 
             - name: Configure AWS credentials
-              if: inputs.configure_aws && inputs.aws_role_to_assume != '' && inputs.aws_region != ''
+              if: inputs.configure_aws
               uses: aws-actions/configure-aws-credentials@v4
               with:
-                  role-to-assume: ${{ inputs.aws_role_to_assume }}
-                  aws-region: ${{ inputs.aws_region }}
+                  role-to-assume: ${{ inputs.aws_role_to_assume != '' && inputs.aws_role_to_assume || vars.AWS_ROLE_TO_ASSUME }}
+                  aws-region: ${{ inputs.aws_region != '' && inputs.aws_region || vars.AWS_REGION }}
 
             - name: Setup SAM CLI
               if: inputs.setup_sam
@@ -111,6 +92,9 @@ jobs:
 
             - name: Run script
               shell: bash
+              env:
+                  DATABASE_URL_POOLED: ${{ secrets.DATABASE_URL_POOLED }}
+                  DATABASE_URL_DIRECT: ${{ secrets.DATABASE_URL_DIRECT }}
               run: ${{ inputs.run_script }}
 
     run_with_environment:
@@ -122,39 +106,20 @@ jobs:
             run:
                 working-directory: ${{ inputs.working_directory }}
         steps:
-            - name: Checkout (default ref)
-              if: inputs.checkout_ref == ''
-              uses: actions/checkout@v4
+            - name: Setup Node + pnpm
+              uses: ./.github/actions/setup-node-pnpm
               with:
-                  persist-credentials: false
-
-            - name: Checkout (custom ref)
-              if: inputs.checkout_ref != ''
-              uses: actions/checkout@v4
-              with:
-                  ref: ${{ inputs.checkout_ref }}
-                  persist-credentials: false
-
-            - name: Setup Node.js
-              uses: actions/setup-node@v4
-              with:
-                  node-version: ${{ inputs.node_version }}
-
-            - name: Enable Corepack
-              run: corepack enable
-
-            - name: Activate pnpm
-              run: corepack prepare pnpm@${{ inputs.pnpm_version }} --activate
-
-            - name: Install dependencies
-              run: pnpm install --frozen-lockfile
+                  checkout_ref: ${{ inputs.checkout_ref }}
+                  node_version: ${{ inputs.node_version }}
+                  pnpm_version: ${{ inputs.pnpm_version }}
+                  working_directory: ${{ inputs.working_directory }}
 
             - name: Configure AWS credentials
-              if: inputs.configure_aws && inputs.aws_role_to_assume != '' && inputs.aws_region != ''
+              if: inputs.configure_aws
               uses: aws-actions/configure-aws-credentials@v4
               with:
-                  role-to-assume: ${{ inputs.aws_role_to_assume }}
-                  aws-region: ${{ inputs.aws_region }}
+                  role-to-assume: ${{ inputs.aws_role_to_assume != '' && inputs.aws_role_to_assume || vars.AWS_ROLE_TO_ASSUME }}
+                  aws-region: ${{ inputs.aws_region != '' && inputs.aws_region || vars.AWS_REGION }}
 
             - name: Setup SAM CLI
               if: inputs.setup_sam
@@ -162,4 +127,7 @@ jobs:
 
             - name: Run script
               shell: bash
+              env:
+                  DATABASE_URL_POOLED: ${{ secrets.DATABASE_URL_POOLED }}
+                  DATABASE_URL_DIRECT: ${{ secrets.DATABASE_URL_DIRECT }}
               run: ${{ inputs.run_script }}
