@@ -70,3 +70,17 @@ GitHub repository 환경변수 등록(민감값/일반값 분리):
 ```
 
 상세 배포 흐름은 [src/infra/README.md](src/infra/README.md)를 참고합니다.
+
+## 로컬 커밋 전 CI 훅
+
+커밋 전에 로컬 CI(backend lint + typecheck)를 자동 실행하려면 1회 설정이 필요합니다.
+
+```bash
+git config core.hooksPath .githooks
+chmod +x .githooks/pre-commit
+```
+
+이후 `git commit` 시 다음 파이프라인이 먼저 실행됩니다.
+
+- `pnpm --filter api lint`
+- `pnpm --filter api typecheck`
