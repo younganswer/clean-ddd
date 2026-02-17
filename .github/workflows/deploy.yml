@@ -231,7 +231,10 @@ jobs:
                       --content-type text/html \
                       --cache-control "public, max-age=60"
 
-                    aws s3 cp "$index_file" "s3://${{ vars.FRONTEND_S3_BUCKET }}/${route_path}/" \
+                    aws s3api put-object \
+                      --bucket "${{ vars.FRONTEND_S3_BUCKET }}" \
+                      --key "${route_path}/" \
+                      --body "$index_file" \
                       --content-type text/html \
                       --cache-control "public, max-age=60"
                   done < <(find out -type f -name index.html)
