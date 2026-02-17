@@ -66,6 +66,11 @@ src/infra/scripts/bootstrap-aws-resources.sh --env prod --profile clean-ddd --wr
 - Trust Policy 예시: `src/infra/aws-github-oidc-trust-policy.json`
 - `AWS_ROLE_TO_ASSUME`에 연결된 IAM Role에 정책을 적용합니다.
 
+권한 오류 대응 (`AccessDenied` for `sqs:CreateQueue`, `dynamodb:DescribeTable`):
+
+- 배포 Role에 `aws-github-oidc-deploy-policy.json`을 다시 attach/update 합니다.
+- 해당 정책은 SAM 배포 시 필요한 SQS/DynamoDB/Lambda/IAM/API Gateway/EventBridge 권한을 포함합니다.
+
 OIDC 오류 대응 (`Not authorized to perform sts:AssumeRoleWithWebIdentity`):
 
 - Role의 Trust Policy에 `token.actions.githubusercontent.com` Federated principal 허용
