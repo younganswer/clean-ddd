@@ -6,7 +6,7 @@ on:
         branches: [main]
 
 jobs:
-    validate:
+    backend:
         runs-on: ubuntu-latest
         defaults:
             run:
@@ -32,11 +32,49 @@ jobs:
             - name: Install dependencies
               run: pnpm install --frozen-lockfile
 
-            - name: Lint
-              run: pnpm lint
+            - name: Backend lint
+              run: pnpm --filter api lint
 
-            - name: Typecheck
-              run: pnpm typecheck
+            - name: Backend typecheck
+              run: pnpm --filter api typecheck
 
-            - name: Test
-              run: pnpm test
+            - name: Backend build
+              run: pnpm --filter api build
+
+            - name: Backend test
+              run: pnpm --filter api test
+
+    frontend:
+        runs-on: ubuntu-latest
+        defaults:
+            run:
+                working-directory: src
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+
+            - name: Enable Corepack
+              run: corepack enable
+
+            - name: Activate pnpm
+              run: corepack prepare pnpm@9.15.5 --activate
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: Frontend lint
+              run: pnpm --filter admin lint
+
+            - name: Frontend typecheck
+              run: pnpm --filter admin typecheck
+
+            - name: Frontend build
+              run: pnpm --filter admin build
+
+            - name: Frontend test
+              run: pnpm --filter admin test
