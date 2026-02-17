@@ -71,6 +71,7 @@ src/infra/scripts/bootstrap-aws-resources.sh --env prod --profile clean-ddd --wr
 
 - 배포 Role에 `aws-github-oidc-deploy-policy.json`을 다시 attach/update 합니다.
 - 해당 정책은 SAM 배포 시 필요한 SQS/DynamoDB/Lambda/IAM/API Gateway/EventBridge 권한을 포함합니다.
+- 특히 EventSourceMapping은 리소스 ARN이 `function`이 아닌 `event-source-mapping`이므로 별도 권한 블록이 필요합니다.
 
 OIDC 오류 대응 (`Not authorized to perform sts:AssumeRoleWithWebIdentity`):
 

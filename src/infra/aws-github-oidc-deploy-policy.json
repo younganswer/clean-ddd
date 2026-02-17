@@ -85,11 +85,6 @@
 			"Action": [
 				"lambda:CreateFunction",
 				"lambda:DeleteFunction",
-				"lambda:CreateEventSourceMapping",
-				"lambda:DeleteEventSourceMapping",
-				"lambda:GetEventSourceMapping",
-				"lambda:UpdateEventSourceMapping",
-				"lambda:ListEventSourceMappings",
 				"lambda:GetFunction",
 				"lambda:GetFunctionConfiguration",
 				"lambda:UpdateFunctionCode",
@@ -100,6 +95,18 @@
 				"lambda:UntagResource"
 			],
 			"Resource": "arn:aws:lambda:*:*:function:clean-ddd-*"
+		},
+		{
+			"Sid": "LambdaEventSourceMappingProvision",
+			"Effect": "Allow",
+			"Action": [
+				"lambda:CreateEventSourceMapping",
+				"lambda:DeleteEventSourceMapping",
+				"lambda:GetEventSourceMapping",
+				"lambda:UpdateEventSourceMapping",
+				"lambda:ListEventSourceMappings"
+			],
+			"Resource": "arn:aws:lambda:*:*:event-source-mapping:*"
 		},
 		{
 			"Sid": "IamRoleProvisionForSamGeneratedRoles",
@@ -126,6 +133,8 @@
 				"apigateway:POST",
 				"apigateway:PATCH",
 				"apigateway:DELETE",
+				"apigateway:TagResource",
+				"apigateway:UntagResource",
 				"events:PutRule",
 				"events:DeleteRule",
 				"events:DescribeRule",
