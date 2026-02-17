@@ -62,7 +62,7 @@ Resources:
         Type: AWS::Serverless::Function
         Properties:
             CodeUri: ../../service/backend
-            Handler: dist/lib/lambda/http.handler.handler
+            Handler: dist/src/lib/lambda/http.handler.handler
             Environment:
                 Variables:
                     DATABASE_URL_POOLED: !Ref DatabaseUrlPooled
@@ -88,7 +88,7 @@ Resources:
         Type: AWS::Serverless::Function
         Properties:
             CodeUri: ../../service/backend
-            Handler: dist/lib/lambda/sqs/outbox.handler.handler
+            Handler: dist/src/lib/lambda/sqs/outbox.handler.handler
             Timeout: 30
             Environment:
                 Variables:
@@ -114,7 +114,7 @@ Resources:
         Type: AWS::Serverless::Function
         Properties:
             CodeUri: ../../service/backend
-            Handler: dist/lib/lambda/schedule/outbox-dispatch.handler.handler
+            Handler: dist/src/lib/lambda/schedule/outbox-dispatch.handler.handler
             Timeout: 30
             Environment:
                 Variables:
