@@ -115,7 +115,7 @@ jobs:
             - name: SAM validate
               run: sam validate --template-file infra/sam/template.yaml
 
-            - name: Recover rollback-complete stack
+            - name: Recover non-updatable stack states
               run: |
                   STACK_NAME="${{ vars.SAM_STACK_NAME }}"
 
@@ -131,12 +131,22 @@ jobs:
 
                   echo "current stack status: $STACK_STATUS"
 
-                  if [[ "$STACK_STATUS" == "ROLLBACK_COMPLETE" ]]; then
-                    echo "deleting rollback-complete stack: $STACK_NAME"
-                    aws cloudformation delete-stack --stack-name "$STACK_NAME"
-                    aws cloudformation wait stack-delete-complete --stack-name "$STACK_NAME"
-                    echo "stack deleted: $STACK_NAME"
-                  fi
+                  case "$STACK_STATUS" in
+                    DELETE_IN_PROGRESS)
+                      echo "stack is deleting, waiting for completion: $STACK_NAME"
+                      aws cloudformation wait stack-delete-complete --stack-name "$STACK_NAME"
+                      echo "delete completed: $STACK_NAME"
+                      ;;
+                    ROLLBACK_COMPLETE|ROLLBACK_FAILED|UPDATE_ROLLBACK_COMPLETE|UPDATE_ROLLBACK_FAILED)
+                      echo "stack is non-updatable ($STACK_STATUS), deleting: $STACK_NAME"
+                      aws cloudformation delete-stack --stack-name "$STACK_NAME"
+                      aws cloudformation wait stack-delete-complete --stack-name "$STACK_NAME"
+                      echo "stack deleted: $STACK_NAME"
+                      ;;
+                    *)
+                      echo "stack is updatable or will be handled by sam deploy: $STACK_STATUS"
+                      ;;
+                  esac
 
             - name: Deploy backend (SAM)
               run: |
