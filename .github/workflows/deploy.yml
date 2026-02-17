@@ -210,17 +210,28 @@ jobs:
 
             - name: Sync URL variables to GitHub Environment
               env:
-                  GH_TOKEN: ${{ github.token }}
+                  GH_TOKEN: ${{ secrets.GH_ADMIN_TOKEN || github.token }}
               run: |
+                  set +e
+
                   gh variable set NEXT_PUBLIC_API_BASE_URL \
                     --repo "${{ github.repository }}" \
                     --env "${{ env.TARGET_ENV }}" \
                     --body "${{ steps.resolve_urls.outputs.api_url }}"
+                  api_var_status=$?
 
                   gh variable set DEPLOY_URL \
                     --repo "${{ github.repository }}" \
                     --env "${{ env.TARGET_ENV }}" \
                     --body "${{ steps.resolve_urls.outputs.deploy_url }}"
+                  deploy_var_status=$?
+
+                  set -e
+
+                  if [[ $api_var_status -ne 0 || $deploy_var_status -ne 0 ]]; then
+                    echo "warning: failed to sync one or more GitHub environment variables."
+                    echo "warning: set repository secret GH_ADMIN_TOKEN (repo admin scope) to enable this step with gh CLI."
+                  fi
 
             - name: Sync repository homepage URL
               env:
