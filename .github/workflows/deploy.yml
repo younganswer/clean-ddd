@@ -115,6 +115,11 @@ jobs:
             - name: SAM validate
               run: sam validate --template-file infra/sam/template.yaml
 
+            - name: SAM build
+              run: |
+                  sam build \
+                    --template-file infra/sam/template.yaml
+
             - name: Recover non-updatable stack states
               run: |
                   STACK_NAME="${{ vars.SAM_STACK_NAME }}"
@@ -151,7 +156,7 @@ jobs:
             - name: Deploy backend (SAM)
               run: |
                   sam deploy \
-                    --template-file infra/sam/template.yaml \
+                    --template-file .aws-sam/build/template.yaml \
                     --stack-name "${{ vars.SAM_STACK_NAME }}" \
                     --s3-bucket "${{ vars.SAM_S3_BUCKET }}" \
                     --capabilities CAPABILITY_IAM \
