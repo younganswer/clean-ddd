@@ -8,6 +8,7 @@
 		"start": "next start",
 		"lint": "eslint",
 		"typecheck": "tsc --noEmit",
+		"test": "pnpm run typecheck && pnpm run lint",
 		"format": "prettier --write ."
 	},
 	"dependencies": {

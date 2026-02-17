@@ -24,6 +24,7 @@ src/infra/scripts/bootstrap-aws-resources.sh --env prod --profile clean-ddd --wr
 ## 배포 워크플로우
 
 - GitHub Actions: `.github/workflows/deploy.yml`
+- CD 트리거: `clean-ddd-ci`가 `main`에서 성공(`workflow_run`)한 뒤 자동 실행
 - IaC: `src/infra/sam/template.yaml`
 - frontend: `src/service/frontend` build 결과(`out/`)를 S3에 업로드 후 CloudFront invalidation
 - URL 자동화: 배포 시 `ApiUrl`(CloudFormation Output) + CloudFront Domain을 조회해
@@ -62,4 +63,26 @@ src/infra/scripts/bootstrap-aws-resources.sh --env prod --profile clean-ddd --wr
 ## GitHub OIDC 배포 역할 정책
 
 - 최소 권한 예시: `src/infra/aws-github-oidc-deploy-policy.json`
+- Trust Policy 예시: `src/infra/aws-github-oidc-trust-policy.json`
 - `AWS_ROLE_TO_ASSUME`에 연결된 IAM Role에 정책을 적용합니다.
+
+OIDC 오류 대응 (`Not authorized to perform sts:AssumeRoleWithWebIdentity`):
+
+- Role의 Trust Policy에 `token.actions.githubusercontent.com` Federated principal 허용
+- `aud=sts.amazonaws.com` 조건 포함
+- `sub` 조건에 `repo:younganswer/clean-ddd:*` 또는 main/environment 패턴 포함
+
+## 로컬 Actions 디버깅
+
+`act`로 workflow를 로컬 실행할 수 있습니다.
+
+```bash
+brew install act
+act workflow_dispatch -W .github/workflows/ci.yml
+act workflow_dispatch -W .github/workflows/deploy.yml -s DATABASE_URL_POOLED=xxx -s DATABASE_URL_DIRECT=xxx
+```
+
+주의:
+
+- OIDC AssumeRole은 로컬 `act`에서 완전 재현이 어렵습니다.
+- 로컬 디버깅은 워크플로우 문법/스크립트 단계 검증 중심으로 사용합니다.

@@ -29,6 +29,7 @@ src/infra/scripts/bootstrap-aws-resources.sh --env prod --write-vars-file .githu
 - [ ] GitHub OIDC Provider 연결 (`token.actions.githubusercontent.com`)
 - [ ] GitHub Actions 배포용 IAM Role 생성
 - [ ] 배포 Role에 정책 적용 ([aws-github-oidc-deploy-policy.json](aws-github-oidc-deploy-policy.json))
+- [ ] 배포 Role Trust Policy 적용 ([aws-github-oidc-trust-policy.json](aws-github-oidc-trust-policy.json))
 - [ ] Role ARN을 GitHub Environment Variable `AWS_ROLE_TO_ASSUME`에 등록
 
 ## 2) S3 버킷 생성
@@ -115,6 +116,17 @@ src/infra/scripts/bootstrap-aws-resources.sh --env prod --write-vars-file .githu
     - [ ] `.github/scripts/register-env.sh <owner/repo> dev .github/env/dev.vars .github/env/dev.secrets`
     - [ ] `.github/scripts/register-env.sh <owner/repo> prod .github/env/prod.vars .github/env/prod.secrets`
 - [ ] GitHub Actions `clean-ddd-deploy` 실행 (`dev` -> `prod`)
+
+## 9-1) CI/CD 게이트 확인
+
+- [ ] `clean-ddd-ci`에서 backend/frontend lint/typecheck/build/test 통과
+- [ ] `clean-ddd-ci`가 main 성공일 때만 `clean-ddd-deploy` 자동 시작
+
+## 9-2) 로컬 Actions 디버깅
+
+- [ ] `act` 설치
+- [ ] `act workflow_dispatch -W .github/workflows/ci.yml` 실행
+- [ ] `act workflow_dispatch -W .github/workflows/deploy.yml` 실행(더미 secrets 전달)
 
 ## 10) 배포 후 검증
 
