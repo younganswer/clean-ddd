@@ -2,6 +2,7 @@ import { RequestContext } from '@mikro-orm/core';
 import { EntityManager } from '@mikro-orm/postgresql';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { EventBus } from '@nestjs/cqrs';
+import { ModuleRef } from '@nestjs/core';
 import type { SQSRecord } from 'aws-lambda';
 import { IdempotencyService } from '@/shared/idempotency/idempotency.service';
 import {
@@ -11,6 +12,18 @@ import {
 import { OutboxEventSchema } from '@/modules/outbox/infrastructure/persistence/outbox.schema';
 import { OutboxEventStatus } from '@/shared/outbox';
 import { hydrateEvent } from '@/lib/outbox/event-registry';
+import {
+  PaymentWebhookFailedEvent,
+  PaymentWebhookSucceededEvent,
+} from '@/shared/payments';
+import { ReserveInventoryForOrderRequestedEvent } from '@/shared/inventory';
+import { CreateShipmentForOrderRequestedEvent } from '@/shared/shipping';
+import {
+  PaymentWebhookFailedHandler,
+  PaymentWebhookSucceededHandler,
+} from '@/saga-orchestrator/webhooks/payment-webhook.event-handlers';
+import { ReserveInventoryForOrderRequestedHandler } from '@/modules/inventory/application/events/handlers/reserve-inventory-for-order-requested.handler';
+import { CreateShipmentForOrderRequestedHandler } from '@/modules/shipping/application/events/handlers/create-shipment-for-order-requested.handler';
 
 @Injectable()
 export class OutboxConsumer {
@@ -19,11 +32,73 @@ export class OutboxConsumer {
 
   constructor(
     private readonly em: EntityManager,
+    private readonly moduleRef: ModuleRef,
     @Inject(IOutboxRepositorySymbol)
     private readonly outboxRepo: IOutboxRepository,
     private readonly idempotency: IdempotencyService,
     private readonly eventBus: EventBus,
   ) {}
+
+  private async dispatchKnownEvent(
+    event: object,
+    eventType: string,
+  ): Promise<boolean> {
+    if (eventType === PaymentWebhookSucceededEvent.eventType) {
+      const handler = this.moduleRef.get(PaymentWebhookSucceededHandler, {
+        strict: false,
+      });
+      if (!handler) {
+        throw new Error('PaymentWebhookSucceededHandler provider not found');
+      }
+      await handler.handle(event as PaymentWebhookSucceededEvent);
+      return true;
+    }
+
+    if (eventType === PaymentWebhookFailedEvent.eventType) {
+      const handler = this.moduleRef.get(PaymentWebhookFailedHandler, {
+        strict: false,
+      });
+      if (!handler) {
+        throw new Error('PaymentWebhookFailedHandler provider not found');
+      }
+      await handler.handle(event as PaymentWebhookFailedEvent);
+      return true;
+    }
+
+    if (eventType === ReserveInventoryForOrderRequestedEvent.eventType) {
+      const handler = this.moduleRef.get(
+        ReserveInventoryForOrderRequestedHandler,
+        {
+          strict: false,
+        },
+      );
+      if (!handler) {
+        throw new Error(
+          'ReserveInventoryForOrderRequestedHandler provider not found',
+        );
+      }
+      await handler.handle(event as ReserveInventoryForOrderRequestedEvent);
+      return true;
+    }
+
+    if (eventType === CreateShipmentForOrderRequestedEvent.eventType) {
+      const handler = this.moduleRef.get(
+        CreateShipmentForOrderRequestedHandler,
+        {
+          strict: false,
+        },
+      );
+      if (!handler) {
+        throw new Error(
+          'CreateShipmentForOrderRequestedHandler provider not found',
+        );
+      }
+      await handler.handle(event as CreateShipmentForOrderRequestedEvent);
+      return true;
+    }
+
+    return false;
+  }
 
   private emForContext(): EntityManager {
     return (
@@ -83,7 +158,10 @@ export class OutboxConsumer {
           return;
         }
 
-        this.eventBus.publish(event);
+        const dispatched = await this.dispatchKnownEvent(event, row.eventType);
+        if (!dispatched) {
+          this.eventBus.publish(event);
+        }
         await this.outboxRepo.markAsPublished(outboxId);
       } catch (error: unknown) {
         const maybeError =
