@@ -124,3 +124,16 @@
 - queue worker(SQS poller)
 
 이 구조는 “진입점은 다르지만, 애플리케이션/도메인 코어는 공통으로 재사용”하는 패턴을 실제 운영 관점에서 정리합니다.
+
+<br/>
+<br/>
+
+## Avatar 저장소 백엔드 선택
+
+- local 개발: `AVATAR_REPOSITORY_BACKEND=mongo`
+- 배포 환경: `AVATAR_REPOSITORY_BACKEND=dynamodb`
+
+필수 env:
+
+- `DYNAMODB_AVATAR_TABLE` (배포 시)
+- `MONGODB_URL`, `MONGODB_DB_NAME`, `MONGODB_AVATAR_COLLECTION` (로컬 Mongo 사용 시)
