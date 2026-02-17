@@ -174,6 +174,11 @@ export class OutboxConsumer {
           message,
           new Date(Date.now() + 60_000),
         );
+        try {
+          await this.idempotency.release(this.consumerName, outboxId);
+        } catch {
+          // ignore release failure and keep original error flow
+        }
         throw error;
       }
     } catch (error) {

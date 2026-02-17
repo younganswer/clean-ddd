@@ -46,4 +46,12 @@ export class IdempotencyService {
       throw error;
     }
   }
+
+  async release(consumerName: string, eventId: string): Promise<void> {
+    const em = this.emForContext();
+    await em.nativeDelete(ProcessedEventSchema, {
+      consumerName,
+      eventId,
+    });
+  }
 }
