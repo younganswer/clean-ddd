@@ -5,9 +5,12 @@ on:
     push:
         branches: [main]
 
+permissions:
+    contents: read
+
 jobs:
     backend:
-        uses: ./.github/workflows/reusable-node-workspace-task.yml
+        uses: ./.github/workflows/reusable-node-ci-task.yml
         with:
             run_script: |
                 pnpm --version
@@ -17,7 +20,7 @@ jobs:
                 pnpm --filter api test
 
     frontend:
-        uses: ./.github/workflows/reusable-node-workspace-task.yml
+        uses: ./.github/workflows/reusable-node-ci-task.yml
         with:
             run_script: |
                 pnpm --filter admin lint
