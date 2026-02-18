@@ -41,8 +41,27 @@ const requireBaseUrl = (): string => {
 	return baseUrl.replace(/\/$/, "");
 };
 
+const toApiPath = (path: string): string =>
+	path.startsWith("/") ? path : `/${path}`;
+
+const toQueryString = (
+	params: Record<string, string | number | boolean | undefined>,
+): string => {
+	const query = new URLSearchParams();
+
+	for (const [key, value] of Object.entries(params)) {
+		if (typeof value === "undefined") {
+			continue;
+		}
+
+		query.set(key, String(value));
+	}
+
+	return query.toString();
+};
+
 const http = async <T>(path: string, init?: RequestInit): Promise<T> => {
-	const url = `${requireBaseUrl()}${path.startsWith("/") ? path : `/${path}`}`;
+	const url = `${requireBaseUrl()}${toApiPath(path)}`;
 	const method = (init?.method ?? "GET").toUpperCase();
 	const hasBody = init?.body !== undefined && init?.body !== null;
 	const defaultHeaders: Record<string, string> = {};
@@ -131,9 +150,11 @@ export const apiListOrders = async (input: {
 	page?: number;
 }): Promise<PaginatedOrders> => {
 	const page = input.page ?? 1;
-	return http(
-		`/orders?limit=${encodeURIComponent(String(input.limit))}&page=${encodeURIComponent(String(page))}`,
-	);
+	const query = toQueryString({
+		limit: input.limit,
+		page,
+	});
+	return http(`/orders?${query}`);
 };
 
 export const apiGetOrder = async (orderId: string): Promise<OrderDetail> => {
@@ -161,9 +182,11 @@ export const apiListShipments = async (input: {
 	page?: number;
 }): Promise<PaginatedShipments> => {
 	const page = input.page ?? 1;
-	return http(
-		`/shipments?limit=${encodeURIComponent(String(input.limit))}&page=${encodeURIComponent(String(page))}`,
-	);
+	const query = toQueryString({
+		limit: input.limit,
+		page,
+	});
+	return http(`/shipments?${query}`);
 };
 
 export const apiGetShipmentByOrderId = async (
@@ -177,9 +200,11 @@ export const apiListInventoryItems = async (input: {
 	page?: number;
 }): Promise<PaginatedInventoryItems> => {
 	const page = input.page ?? 1;
-	return http(
-		`/inventory/items?limit=${encodeURIComponent(String(input.limit))}&page=${encodeURIComponent(String(page))}`,
-	);
+	const query = toQueryString({
+		limit: input.limit,
+		page,
+	});
+	return http(`/inventory/items?${query}`);
 };
 
 export const apiGetInventoryItem = async (
@@ -191,18 +216,21 @@ export const apiGetInventoryItem = async (
 export const apiListInventoryReservations = async (
 	orderId: string,
 ): Promise<InventoryReservation[]> => {
-	return http(
-		`/inventory/reservations?orderId=${encodeURIComponent(orderId)}`,
-	);
+	const query = toQueryString({
+		orderId,
+	});
+	return http(`/inventory/reservations?${query}`);
 };
 
 export const apiListUsers = async (input: {
 	limit: number;
 	page: number;
 }): Promise<PaginatedUsers> => {
-	return http(
-		`/users?limit=${encodeURIComponent(String(input.limit))}&page=${encodeURIComponent(String(input.page))}`,
-	);
+	const query = toQueryString({
+		limit: input.limit,
+		page: input.page,
+	});
+	return http(`/users?${query}`);
 };
 
 export const apiGetSystemConceptsBootstrap = async (input: {
@@ -212,9 +240,11 @@ export const apiGetSystemConceptsBootstrap = async (input: {
 	users: PaginatedUsers;
 	inventoryItems: PaginatedInventoryItems;
 }> => {
-	return http(
-		`/bff/system-concepts/bootstrap?limit=${encodeURIComponent(String(input.limit))}&page=${encodeURIComponent(String(input.page))}`,
-	);
+	const query = toQueryString({
+		limit: input.limit,
+		page: input.page,
+	});
+	return http(`/bff/system-concepts/bootstrap?${query}`);
 };
 
 export const apiGetGraph = async (input: {
