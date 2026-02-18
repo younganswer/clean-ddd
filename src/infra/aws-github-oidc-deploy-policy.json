@@ -48,7 +48,7 @@
 			"Sid": "IamPassRoleForSam",
 			"Effect": "Allow",
 			"Action": ["iam:PassRole"],
-			"Resource": "arn:aws:iam::*:role/clean-ddd-*"
+			"Resource": "*"
 		},
 		{
 			"Sid": "SqsProvisionForStack",
