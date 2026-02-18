@@ -63,7 +63,22 @@ reset_dev_database_if_needed() {
   fi
 
   pushd service/backend >/dev/null
-  PGSSLMODE=require DB_FORCE_SSL=true pnpm db:reset:ci
+  PGSSLMODE=require DB_FORCE_SSL=true pnpm db:reset:cd
+  popd >/dev/null
+}
+
+seed_dynamodb_avatars_for_prod_if_needed() {
+  if [[ "$TARGET_ENV" != "prod" ]]; then
+    return 0
+  fi
+
+  if [[ "$AVATAR_REPOSITORY_BACKEND" != "dynamodb" ]]; then
+    echo "skip dynamodb avatar seed: AVATAR_REPOSITORY_BACKEND=${AVATAR_REPOSITORY_BACKEND}"
+    return 0
+  fi
+
+  pushd service/backend >/dev/null
+  PGSSLMODE=require DB_FORCE_SSL=true pnpm db:seed:dynamodb:avatars:cd
   popd >/dev/null
 }
 
@@ -189,6 +204,7 @@ main() {
   reset_dev_database_if_needed
   recover_stack_if_needed
   deploy_backend
+  seed_dynamodb_avatars_for_prod_if_needed
   resolve_urls
   deploy_frontend
   write_summary
