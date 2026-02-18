@@ -112,6 +112,7 @@ jobs:
               shell: bash
               env:
                   GITHUB_TOKEN: ${{ github.token }}
+                  GH_TOKEN: ${{ github.token }}
                   AWS_ROLE_TO_ASSUME: ${{ vars.AWS_ROLE_TO_ASSUME }}
                   AWS_REGION: ${{ vars.AWS_REGION }}
                   SAM_STACK_NAME: ${{ vars.SAM_STACK_NAME }}
@@ -168,6 +169,7 @@ jobs:
               shell: bash
               env:
                   GITHUB_TOKEN: ${{ github.token }}
+                  GH_TOKEN: ${{ github.token }}
                   AWS_ROLE_TO_ASSUME: ${{ vars.AWS_ROLE_TO_ASSUME }}
                   AWS_REGION: ${{ vars.AWS_REGION }}
                   SAM_STACK_NAME: ${{ vars.SAM_STACK_NAME }}
