@@ -36,21 +36,19 @@ jobs:
             setup_sam: true
             run_script: |
                 TARGET_ENV="${{ github.event_name == 'workflow_dispatch' && github.event.inputs.target_env || 'prod' }}"
+                DEPLOY_OUTPUT_ENV_FILE="/tmp/clean-ddd-deploy.env"
                 chmod +x infra/scripts/deploy-fullstack.sh
                 chmod +x infra/scripts/sync-github-metadata.sh
-                infra/scripts/deploy-fullstack.sh "$TARGET_ENV"
+                infra/scripts/deploy-fullstack.sh "$TARGET_ENV" "$DEPLOY_OUTPUT_ENV_FILE"
 
-                API_STAGE_URL=$(aws cloudformation describe-stacks \
-                    --stack-name "$SAM_STACK_NAME" \
-                    --query "Stacks[0].Outputs[?OutputKey=='ApiUrl'].OutputValue" \
-                    --output text)
-                API_URL="${API_STAGE_URL%/}/api/v1"
+                if [[ ! -f "$DEPLOY_OUTPUT_ENV_FILE" ]]; then
+                    echo "missing deploy output file: $DEPLOY_OUTPUT_ENV_FILE"
+                    exit 1
+                fi
 
-                CF_DOMAIN=$(aws cloudfront get-distribution \
-                    --id "$CLOUDFRONT_DISTRIBUTION_ID" \
-                    --query "Distribution.DomainName" \
-                    --output text)
-                DEPLOY_URL="https://${CF_DOMAIN}"
+                set -a
+                source "$DEPLOY_OUTPUT_ENV_FILE"
+                set +a
 
                 infra/scripts/sync-github-metadata.sh \
                     "$TARGET_ENV" \
