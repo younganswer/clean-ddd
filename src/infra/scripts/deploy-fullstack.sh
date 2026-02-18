@@ -3,15 +3,12 @@
 set -euo pipefail
 
 TARGET_ENV="$1"
-OUTPUT_ENV_FILE="${2:-}"
-SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd -- "${SCRIPT_DIR}/../../.." && pwd)"
-ENV_VARS_FILE="${REPO_ROOT}/.github/env/${TARGET_ENV}.vars"
 
 API_URL=""
 DEPLOY_URL=""
 
 required_vars=(
+  AWS_ROLE_TO_ASSUME
   AWS_REGION
   SAM_STACK_NAME
   SAM_S3_BUCKET
@@ -27,26 +24,7 @@ required_secrets=(
 )
 
 print_usage() {
-  echo "Usage: $0 <target_env> [output_env_file]"
-}
-
-load_env_file_fallback() {
-  if [[ ! -f "$ENV_VARS_FILE" ]]; then
-    return 0
-  fi
-
-  while IFS='=' read -r raw_key raw_value; do
-    key="${raw_key%%[[:space:]]*}"
-    value="${raw_value:-}"
-
-    if [[ -z "$key" || "$key" == \#* ]]; then
-      continue
-    fi
-
-    if [[ -z "${!key-}" ]]; then
-      export "$key=$value"
-    fi
-  done < "$ENV_VARS_FILE"
+  echo "Usage: $0 <target_env>"
 }
 
 validate_required_inputs() {
@@ -58,7 +36,7 @@ validate_required_inputs() {
     value="${!key-}"
     if [[ -z "$value" ]]; then
       echo "missing required github environment variable: $key"
-      echo "hint: check GitHub Environment '$TARGET_ENV' variables or ${ENV_VARS_FILE}"
+      echo "hint: check Repository Settings > Environments > '$TARGET_ENV' > Variables"
       exit 1
     fi
   done
@@ -67,6 +45,7 @@ validate_required_inputs() {
     value="${!key-}"
     if [[ -z "$value" ]]; then
       echo "missing required github environment secret: $key"
+      echo "hint: check Repository Settings > Environments > '$TARGET_ENV' > Secrets"
       exit 1
     fi
   done
@@ -199,32 +178,18 @@ write_summary() {
   } >> "$GITHUB_STEP_SUMMARY"
 }
 
-write_runtime_env_output() {
-  if [[ -z "$OUTPUT_ENV_FILE" ]]; then
-    return 0
-  fi
-
-  mkdir -p "$(dirname -- "$OUTPUT_ENV_FILE")"
-  {
-    echo "API_URL=${API_URL}"
-    echo "DEPLOY_URL=${DEPLOY_URL}"
-  } > "$OUTPUT_ENV_FILE"
-}
-
 main() {
   if [[ $# -lt 1 ]]; then
     print_usage
     exit 1
   fi
 
-  load_env_file_fallback
   validate_required_inputs
   build_workspace
   reset_dev_database_if_needed
   recover_stack_if_needed
   deploy_backend
   resolve_urls
-  write_runtime_env_output
   deploy_frontend
   write_summary
 }
