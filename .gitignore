@@ -13,3 +13,5 @@ logs/
 
 .github/env/*
 !.github/env/*.example
+
+tmp/
