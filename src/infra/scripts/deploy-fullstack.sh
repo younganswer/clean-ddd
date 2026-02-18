@@ -3,6 +3,7 @@
 set -euo pipefail
 
 TARGET_ENV="$1"
+DEPLOY_TIMEOUT_SECONDS="${DEPLOY_TIMEOUT_SECONDS-2400}"
 
 API_URL=""
 DEPLOY_URL=""
@@ -57,6 +58,27 @@ build_workspace() {
   sam build --template-file infra/sam/template.yaml
 }
 
+run_with_timeout() {
+  local seconds="$1"
+  shift
+
+  if [[ -n "${seconds}" ]] && [[ "${seconds}" =~ ^[0-9]+$ ]] && [[ "${seconds}" -gt 0 ]]; then
+    if command -v timeout >/dev/null 2>&1; then
+      timeout "${seconds}" "$@"
+      return
+    fi
+
+    if command -v gtimeout >/dev/null 2>&1; then
+      gtimeout "${seconds}" "$@"
+      return
+    fi
+
+    echo "warning: timeout command not found; running without timeout" >&2
+  fi
+
+  "$@"
+}
+
 reset_dev_database_if_needed() {
   if [[ "$TARGET_ENV" != "dev" ]]; then
     return 0
@@ -105,7 +127,7 @@ recover_stack_if_needed() {
 }
 
 deploy_backend() {
-  sam deploy \
+  run_with_timeout "$DEPLOY_TIMEOUT_SECONDS" sam deploy \
     --template-file .aws-sam/build/template.yaml \
     --stack-name "$SAM_STACK_NAME" \
     --s3-bucket "$SAM_S3_BUCKET" \
