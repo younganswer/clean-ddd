@@ -34,16 +34,7 @@ function findBackendRoot(): string {
 function shouldPreferTs(): boolean {
   // `nest start --watch` compiles to `dist/` and runs Node on JS output;
   // in that mode, loading TS entity files will crash with a SyntaxError.
-  if (__dirname.split(path.sep).includes('dist')) {
-    return false;
-  }
-
-  // When running directly from TS (jest/tsx/ts-node), prefer TS entities.
-  if (process.env.TS_NODE || process.env.TS_NODE_DEV || process.env.TSX) {
-    return true;
-  }
-
-  return true;
+  return !__dirname.split(path.sep).includes('dist');
 }
 
 function databaseUrlForRuntime(): string {
