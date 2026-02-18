@@ -6,6 +6,10 @@ import {
 } from '@/shared/outbox';
 import { OutboxQueue } from '@/modules/outbox/infrastructure/queue/outbox.queue';
 import { OutboxConsumer } from '@/modules/outbox/application/outbox.consumer';
+import {
+  createRetryAt,
+  resolveErrorMessage,
+} from '@/modules/outbox/application/outbox-error.util';
 
 @Injectable()
 export class OutboxSweeper {
@@ -51,18 +55,14 @@ export class OutboxSweeper {
           enqueued += 1;
           continue;
         } catch (error: unknown) {
-          const maybeError =
-            typeof error === 'object' && error !== null
-              ? (error as Record<string, unknown>)
-              : undefined;
-          const message = String(maybeError?.message ?? error);
+          const message = resolveErrorMessage(error);
           this.logger.warn(
             `direct consume failed: outboxId=${event.uuid} err=${message}`,
           );
           await this.outboxRepo.recordFailure(
             event.uuid,
             message,
-            new Date(Date.now() + 30_000),
+            createRetryAt(30_000),
           );
           continue;
         }
@@ -80,18 +80,14 @@ export class OutboxSweeper {
         await this.outboxQueue.enqueue(event.uuid, { messageGroupId });
         enqueued += 1;
       } catch (error: unknown) {
-        const maybeError =
-          typeof error === 'object' && error !== null
-            ? (error as Record<string, unknown>)
-            : undefined;
-        const message = String(maybeError?.message ?? error);
+        const message = resolveErrorMessage(error);
         this.logger.warn(
           `enqueue failed: outboxId=${event.uuid} err=${message}`,
         );
         await this.outboxRepo.recordFailure(
           event.uuid,
           message,
-          new Date(Date.now() + 30_000),
+          createRetryAt(30_000),
         );
       }
     }

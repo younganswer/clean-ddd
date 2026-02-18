@@ -13,6 +13,10 @@ import { OutboxEventSchema } from '@/modules/outbox/infrastructure/persistence/o
 import { OutboxEventStatus } from '@/shared/outbox';
 import { hydrateEvent } from '@/lib/outbox/event-registry';
 import {
+  createRetryAt,
+  resolveErrorMessage,
+} from '@/modules/outbox/application/outbox-error.util';
+import {
   PaymentWebhookFailedEvent,
   PaymentWebhookSucceededEvent,
 } from '@/shared/payments';
@@ -153,7 +157,7 @@ export class OutboxConsumer {
           await this.outboxRepo.recordFailure(
             outboxId,
             `unknown eventType=${row.eventType}`,
-            new Date(Date.now() + 60_000),
+            createRetryAt(60_000),
           );
           return;
         }
@@ -164,15 +168,11 @@ export class OutboxConsumer {
         }
         await this.outboxRepo.markAsPublished(outboxId);
       } catch (error: unknown) {
-        const maybeError =
-          typeof error === 'object' && error !== null
-            ? (error as Record<string, unknown>)
-            : undefined;
-        const message = String(maybeError?.message ?? error);
+        const message = resolveErrorMessage(error);
         await this.outboxRepo.recordFailure(
           outboxId,
           message,
-          new Date(Date.now() + 60_000),
+          createRetryAt(60_000),
         );
         try {
           await this.idempotency.release(this.consumerName, outboxId);

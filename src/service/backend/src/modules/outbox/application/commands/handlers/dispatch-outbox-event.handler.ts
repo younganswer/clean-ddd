@@ -6,6 +6,10 @@ import {
   type IOutboxRepository,
 } from '@/shared/outbox';
 import { OutboxQueue } from '@/modules/outbox/infrastructure/queue/outbox.queue';
+import {
+  createRetryAt,
+  resolveErrorMessage,
+} from '@/modules/outbox/application/outbox-error.util';
 
 @CommandHandler(DispatchOutboxEventCommand)
 export class DispatchOutboxEventHandler implements ICommandHandler<DispatchOutboxEventCommand> {
@@ -25,15 +29,11 @@ export class DispatchOutboxEventHandler implements ICommandHandler<DispatchOutbo
     try {
       await this.outboxQueue.enqueue(outboxId, { messageGroupId });
     } catch (error: unknown) {
-      const maybeError =
-        typeof error === 'object' && error !== null
-          ? (error as Record<string, unknown>)
-          : undefined;
-      const message = String(maybeError?.message ?? error);
+      const message = resolveErrorMessage(error);
       await this.outboxRepo.recordFailure(
         outboxId,
         message,
-        new Date(Date.now() + 30_000),
+        createRetryAt(30_000),
       );
     }
   }
