@@ -15,11 +15,14 @@ print_usage() {
 }
 
 run_allow_failure() {
+  local status_var="$1"
+  shift
   set +e
   "$@"
   local status=$?
   set -e
-  return $status
+  printf -v "$status_var" '%s' "$status"
+  return 0
 }
 
 sync_github_metadata() {
@@ -29,25 +32,25 @@ sync_github_metadata() {
     return 0
   fi
 
-  run_allow_failure gh variable set NEXT_PUBLIC_API_BASE_URL \
+  local api_var_status
+  run_allow_failure api_var_status gh variable set NEXT_PUBLIC_API_BASE_URL \
     --repo "$REPO_SLUG" \
     --env "$TARGET_ENV" \
     --body "$API_URL"
-  api_var_status=$?
 
-  run_allow_failure gh variable set DEPLOY_URL \
+  local deploy_var_status
+  run_allow_failure deploy_var_status gh variable set DEPLOY_URL \
     --repo "$REPO_SLUG" \
     --env "$TARGET_ENV" \
     --body "$DEPLOY_URL"
-  deploy_var_status=$?
 
   if [[ $api_var_status -ne 0 || $deploy_var_status -ne 0 ]]; then
     echo "warning: failed to sync one or more GitHub environment variables."
   fi
 
-  run_allow_failure gh repo edit "$REPO_SLUG" \
+  local repo_edit_status
+  run_allow_failure repo_edit_status gh repo edit "$REPO_SLUG" \
     --homepage "$DEPLOY_URL"
-  repo_edit_status=$?
 
   if [[ $repo_edit_status -ne 0 ]]; then
     echo "warning: failed to update repository homepage URL."
@@ -86,8 +89,8 @@ PY
   git add README.md
   if ! git diff --cached --quiet; then
     git commit -m "docs: update deployment URL"
-    run_allow_failure git push "https://x-access-token:${GH_TOKEN}@github.com/${REPO_SLUG}.git" HEAD:main
-    push_status=$?
+    local push_status
+    run_allow_failure push_status git push "https://x-access-token:${GH_TOKEN}@github.com/${REPO_SLUG}.git" HEAD:main
     if [[ $push_status -ne 0 ]]; then
       echo "warning: failed to push README deployment URL update."
     fi
