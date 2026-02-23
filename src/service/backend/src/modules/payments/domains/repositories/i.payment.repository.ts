@@ -1,18 +1,18 @@
 import { PaymentIntent } from '@/modules/payments/domains/entities/aggregates/payment-intent/payment-intent.aggregate';
 
 export interface IPaymentRepository {
-  createIntent(input: {
-    orderId: string;
-    amount: number;
-    currency: string;
-  }): Promise<PaymentIntent>;
+	createIntent(input: {
+		orderId: string;
+		amount: number;
+		currency: string;
+	}): PaymentIntent;
 
-  markSucceeded(paymentId: string): Promise<void>;
-  markFailed(paymentId: string): Promise<void>;
+	markSucceeded(paymentId: string): Promise<void>;
+	markFailed(paymentId: string): Promise<void>;
 
-  findById(paymentId: string): Promise<PaymentIntent | null>;
+	findById(paymentId: string): Promise<PaymentIntent | null>;
 
-  findRecent(limit: number): Promise<PaymentIntent[]>;
+	findRecent(limit: number): Promise<PaymentIntent[]>;
 }
 
 export const IPaymentRepositorySymbol = Symbol('I_PAYMENT_REPOSITORY');

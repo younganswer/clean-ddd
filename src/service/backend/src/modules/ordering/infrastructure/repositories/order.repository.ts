@@ -9,102 +9,104 @@ import { OrderSchema } from '@/modules/ordering/infrastructure/schemas/order.sch
 
 @Injectable()
 export class OrderRepository implements IOrderRepository {
-  constructor(
-    private readonly em: EntityManager,
-    private readonly mapper: OrderMapper,
-  ) {}
+	constructor(
+		private readonly em: EntityManager,
+		private readonly mapper: OrderMapper,
+	) {}
 
-  private emForContext(): EntityManager {
-    return (
-      (RequestContext.getEntityManager() as EntityManager | undefined) ??
-      this.em
-    );
-  }
+	private emForContext(): EntityManager {
+		return (
+			(RequestContext.getEntityManager() as EntityManager | undefined) ??
+			this.em
+		);
+	}
 
-  create(input: {
-    amount: number;
-    currency: string;
-    items?: Array<{ sku: string; quantity: number }>;
-    userId: string;
-  }): Promise<Order> {
-    const em = this.emForContext();
-    const order = em.create(OrderSchema, {
-      amount: input.amount,
-      currency: input.currency,
-      items: input.items?.length
-        ? input.items
-        : [{ sku: 'SKU-001', quantity: 1 }],
-      userId: input.userId,
-      status: OrderStatus.PENDING_PAYMENT,
-      paymentId: null,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
-    em.persist(order);
-    return Promise.resolve(this.mapper.toDomain(order));
-  }
+	create(input: {
+		amount: number;
+		currency: string;
+		items?: Array<{ sku: string; quantity: number }>;
+		userId: string;
+	}): Order {
+		const em = this.emForContext();
+		const order = em.create(OrderSchema, {
+			amount: input.amount,
+			currency: input.currency,
+			items: input.items?.length
+				? input.items
+				: [{ sku: 'SKU-001', quantity: 1 }],
+			userId: input.userId,
+			status: OrderStatus.PENDING_PAYMENT,
+			paymentId: null,
+			createdAt: new Date(),
+			updatedAt: new Date(),
+		});
 
-  async findById(orderId: string): Promise<Order | null> {
-    const em = this.emForContext();
-    const found = await em.findOne(OrderSchema, { uuid: orderId });
-    return found ? this.mapper.toDomain(found) : null;
-  }
+		em.persist(order);
 
-  async findRecent(limit: number, offset: number = 0): Promise<Order[]> {
-    const em = this.emForContext();
-    const found = await em.find(
-      OrderSchema,
-      {},
-      {
-        limit,
-        offset: Math.max(0, Number(offset ?? 0) || 0),
-        orderBy: { id: 'asc' },
-      },
-    );
-    return found.map((o) => this.mapper.toDomain(o));
-  }
+		return this.mapper.toDomain(order);
+	}
 
-  async findByUserId(
-    userId: string,
-    limit: number,
-    offset: number = 0,
-  ): Promise<Order[]> {
-    const normalized = String(userId ?? '').trim();
-    if (!normalized) return [];
+	async findById(orderId: string): Promise<Order | null> {
+		const em = this.emForContext();
+		const found = await em.findOne(OrderSchema, { uuid: orderId });
+		return found ? this.mapper.toDomain(found) : null;
+	}
 
-    const em = this.emForContext();
-    const safeLimit = Math.min(200, Math.max(1, Number(limit ?? 50) || 50));
-    const safeOffset = Math.max(0, Number(offset ?? 0) || 0);
-    const found = await em.find(
-      OrderSchema,
-      { userId: normalized },
-      {
-        limit: safeLimit,
-        offset: safeOffset,
-        orderBy: { id: 'asc' },
-      },
-    );
-    return found.map((o) => this.mapper.toDomain(o));
-  }
+	async findRecent(limit: number, offset: number = 0): Promise<Order[]> {
+		const em = this.emForContext();
+		const found = await em.find(
+			OrderSchema,
+			{},
+			{
+				limit,
+				offset: Math.max(0, Number(offset ?? 0) || 0),
+				orderBy: { id: 'asc' },
+			},
+		);
+		return found.map((o) => this.mapper.toDomain(o));
+	}
 
-  async countAll(): Promise<number> {
-    const em = this.emForContext();
-    return await em.count(OrderSchema, {});
-  }
+	async findByUserId(
+		userId: string,
+		limit: number,
+		offset: number = 0,
+	): Promise<Order[]> {
+		const normalized = String(userId ?? '').trim();
+		if (!normalized) return [];
 
-  async attachPayment(orderId: string, paymentId: string): Promise<void> {
-    const em = this.emForContext();
-    const order = await em.findOneOrFail(OrderSchema, { uuid: orderId });
-    order.paymentId = paymentId;
-    order.updatedAt = new Date();
-    em.persist(order);
-  }
+		const em = this.emForContext();
+		const safeLimit = Math.min(200, Math.max(1, Number(limit ?? 50) || 50));
+		const safeOffset = Math.max(0, Number(offset ?? 0) || 0);
+		const found = await em.find(
+			OrderSchema,
+			{ userId: normalized },
+			{
+				limit: safeLimit,
+				offset: safeOffset,
+				orderBy: { id: 'asc' },
+			},
+		);
+		return found.map((o) => this.mapper.toDomain(o));
+	}
 
-  async markPaid(orderId: string): Promise<void> {
-    const em = this.emForContext();
-    const order = await em.findOneOrFail(OrderSchema, { uuid: orderId });
-    order.status = OrderStatus.PAID;
-    order.updatedAt = new Date();
-    em.persist(order);
-  }
+	async countAll(): Promise<number> {
+		const em = this.emForContext();
+		return await em.count(OrderSchema, {});
+	}
+
+	async attachPayment(orderId: string, paymentId: string): Promise<void> {
+		const em = this.emForContext();
+		const order = await em.findOneOrFail(OrderSchema, { uuid: orderId });
+		order.paymentId = paymentId;
+		order.updatedAt = new Date();
+		em.persist(order);
+	}
+
+	async markPaid(orderId: string): Promise<void> {
+		const em = this.emForContext();
+		const order = await em.findOneOrFail(OrderSchema, { uuid: orderId });
+		order.status = OrderStatus.PAID;
+		order.updatedAt = new Date();
+		em.persist(order);
+	}
 }

@@ -48,7 +48,7 @@ export class CreatePaymentIntentHandler implements ICommandHandler<CreatePayment
 				);
 				assertOrderView(order);
 
-				const payment = await this.payments.createIntent({
+				const payment = this.payments.createIntent({
 					orderId,
 					amount: order.amount,
 					currency: order.currency,

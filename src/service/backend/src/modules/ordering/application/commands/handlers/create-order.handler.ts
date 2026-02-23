@@ -17,7 +17,7 @@ export class CreateOrderHandler implements ICommandHandler<CreateOrderCommand> {
 	async execute(command: CreateOrderCommand): Promise<{ orderId: string }> {
 		return this.em.transactional(async (tx) =>
 			RequestContext.create(tx, async () => {
-				const order = await this.orders.create({
+				const order = this.orders.create({
 					...command.input,
 				});
 				await tx.flush();

@@ -44,8 +44,8 @@ describeDb('OrderRepository (DB)', () => {
 		when('create를 호출하면', () => {
 			let orderId: string;
 
-			beforeEach(async () => {
-				const created = await repo.create({
+			beforeEach(() => {
+				const created = repo.create({
 					userId,
 					amount: 100,
 					currency: 'KRW',
@@ -77,7 +77,7 @@ describeDb('OrderRepository (DB)', () => {
 			let orderId: string;
 
 			beforeEach(async () => {
-				const created = await repo.create({
+				const created = repo.create({
 					userId,
 					amount: 100,
 					currency: 'KRW',
@@ -110,7 +110,7 @@ describeDb('OrderRepository (DB)', () => {
 			let orderId: string;
 
 			beforeEach(async () => {
-				const created = await repo.create({
+				const created = repo.create({
 					userId,
 					amount: 100,
 					currency: 'KRW',
