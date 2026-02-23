@@ -21,7 +21,7 @@ export class OrderRepository implements IOrderRepository {
     );
   }
 
-  async create(input: {
+  create(input: {
     amount: number;
     currency: string;
     items?: Array<{ sku: string; quantity: number }>;
@@ -40,8 +40,8 @@ export class OrderRepository implements IOrderRepository {
       createdAt: new Date(),
       updatedAt: new Date(),
     });
-    await em.persistAndFlush(order);
-    return this.mapper.toDomain(order);
+    em.persist(order);
+    return Promise.resolve(this.mapper.toDomain(order));
   }
 
   async findById(orderId: string): Promise<Order | null> {
@@ -97,7 +97,7 @@ export class OrderRepository implements IOrderRepository {
     const order = await em.findOneOrFail(OrderSchema, { uuid: orderId });
     order.paymentId = paymentId;
     order.updatedAt = new Date();
-    await em.persistAndFlush(order);
+    em.persist(order);
   }
 
   async markPaid(orderId: string): Promise<void> {
@@ -105,6 +105,6 @@ export class OrderRepository implements IOrderRepository {
     const order = await em.findOneOrFail(OrderSchema, { uuid: orderId });
     order.status = OrderStatus.PAID;
     order.updatedAt = new Date();
-    await em.persistAndFlush(order);
+    em.persist(order);
   }
 }

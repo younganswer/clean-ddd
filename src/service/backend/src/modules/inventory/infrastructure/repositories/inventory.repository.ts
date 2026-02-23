@@ -47,7 +47,7 @@ export class InventoryRepository implements IInventoryRepository {
       );
     }
 
-    await em.persistAndFlush(items);
+    em.persist(items);
   }
 
   async findAll(limit: number, offset: number = 0): Promise<InventoryItem[]> {
@@ -124,7 +124,7 @@ export class InventoryRepository implements IInventoryRepository {
         createdAt: new Date(),
       });
 
-      await em.persistAndFlush([stock, reservation]);
+      em.persist([stock, reservation]);
     }
   }
 

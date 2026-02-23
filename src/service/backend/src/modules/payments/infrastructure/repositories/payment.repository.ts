@@ -21,7 +21,7 @@ export class PaymentRepository implements IPaymentRepository {
     );
   }
 
-  async createIntent(input: {
+  createIntent(input: {
     orderId: string;
     amount: number;
     currency: string;
@@ -35,8 +35,8 @@ export class PaymentRepository implements IPaymentRepository {
       createdAt: new Date(),
       updatedAt: new Date(),
     });
-    await em.persistAndFlush(payment);
-    return this.mapper.toDomain(payment);
+    em.persist(payment);
+    return Promise.resolve(this.mapper.toDomain(payment));
   }
 
   async findById(paymentId: string): Promise<PaymentIntent | null> {
@@ -66,7 +66,7 @@ export class PaymentRepository implements IPaymentRepository {
     });
     payment.status = PaymentStatus.SUCCEEDED;
     payment.updatedAt = new Date();
-    await em.persistAndFlush(payment);
+    em.persist(payment);
   }
 
   async markFailed(paymentId: string): Promise<void> {
@@ -76,6 +76,6 @@ export class PaymentRepository implements IPaymentRepository {
     });
     payment.status = PaymentStatus.FAILED;
     payment.updatedAt = new Date();
-    await em.persistAndFlush(payment);
+    em.persist(payment);
   }
 }
