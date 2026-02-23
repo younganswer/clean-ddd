@@ -78,6 +78,7 @@ export class OutboxSweeper {
           typeof orderId === 'string' && orderId ? orderId : 'outbox';
 
         await this.outboxQueue.enqueue(event.uuid, { messageGroupId });
+        await this.outboxRepo.markAsPublished(event.uuid);
         enqueued += 1;
       } catch (error: unknown) {
         const message = resolveErrorMessage(error);

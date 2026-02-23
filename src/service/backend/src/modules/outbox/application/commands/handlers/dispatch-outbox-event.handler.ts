@@ -28,6 +28,7 @@ export class DispatchOutboxEventHandler implements ICommandHandler<DispatchOutbo
 
     try {
       await this.outboxQueue.enqueue(outboxId, { messageGroupId });
+      await this.outboxRepo.markAsPublished(outboxId);
     } catch (error: unknown) {
       const message = resolveErrorMessage(error);
       await this.outboxRepo.recordFailure(

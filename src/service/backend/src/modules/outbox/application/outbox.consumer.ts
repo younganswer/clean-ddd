@@ -139,14 +139,18 @@ export class OutboxConsumer {
         await this.outboxRepo.unlock(outboxId);
         return;
       }
-      if (row.status !== OutboxEventStatus.PENDING) {
+      if (
+        row.status !== OutboxEventStatus.PUBLISHED &&
+        row.status !== OutboxEventStatus.FAILED &&
+        row.status !== OutboxEventStatus.PENDING
+      ) {
         await this.outboxRepo.unlock(outboxId);
         return;
       }
 
       const claimed = await this.idempotency.claim(this.consumerName, outboxId);
       if (!claimed) {
-        await this.outboxRepo.markAsPublished(outboxId);
+        await this.outboxRepo.markAsConsumed(outboxId);
         return;
       }
 
@@ -166,7 +170,7 @@ export class OutboxConsumer {
         if (!dispatched) {
           this.eventBus.publish(event);
         }
-        await this.outboxRepo.markAsPublished(outboxId);
+        await this.outboxRepo.markAsConsumed(outboxId);
       } catch (error: unknown) {
         const message = resolveErrorMessage(error);
         await this.outboxRepo.recordFailure(

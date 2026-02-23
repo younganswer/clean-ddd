@@ -72,6 +72,7 @@ export class OutboxProducer {
           delaySeconds: enqueueDelaySeconds,
           messageGroupId: inferredMessageGroupId,
         });
+        await this.outboxRepo.markAsPublished(outboxId);
       } catch (error) {
         console.error(
           `[OutboxProducer.${source}] enqueue failed`,

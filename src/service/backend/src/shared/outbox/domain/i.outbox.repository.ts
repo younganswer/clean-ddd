@@ -8,6 +8,7 @@ export interface IOutboxRepository {
   unlock(uuid: string): Promise<void>;
 
   markAsPublished(uuid: string): Promise<void>;
+  markAsConsumed(uuid: string): Promise<void>;
   recordFailure(
     uuid: string,
     error: string,

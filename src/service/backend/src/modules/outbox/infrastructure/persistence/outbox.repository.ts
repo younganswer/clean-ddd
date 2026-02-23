@@ -39,7 +39,7 @@ export class OutboxRepository implements IOutboxRepository {
     const rows = await em.find(
       OutboxEventSchema,
       {
-        status: OutboxEventStatus.PENDING,
+        status: { $in: [OutboxEventStatus.PENDING, OutboxEventStatus.FAILED] },
         nextAttemptAt: { $lte: now },
         $or: [{ lockedUntil: null }, { lockedUntil: { $lt: now } }],
       },
@@ -89,6 +89,15 @@ export class OutboxRepository implements IOutboxRepository {
     const row = await em.findOneOrFail(OutboxEventSchema, { uuid });
     row.status = OutboxEventStatus.PUBLISHED;
     row.publishedAt = new Date();
+    row.lastError = null;
+    row.lockedUntil = null;
+    await em.persistAndFlush(row);
+  }
+
+  async markAsConsumed(uuid: string): Promise<void> {
+    const em = this.emForContext();
+    const row = await em.findOneOrFail(OutboxEventSchema, { uuid });
+    row.status = OutboxEventStatus.CONSUMED;
     row.lockedUntil = null;
     await em.persistAndFlush(row);
   }
@@ -100,6 +109,7 @@ export class OutboxRepository implements IOutboxRepository {
   ): Promise<void> {
     const em = this.emForContext();
     const row = await em.findOneOrFail(OutboxEventSchema, { uuid });
+    row.status = OutboxEventStatus.FAILED;
     row.attempt += 1;
     row.lastError = error;
     row.nextAttemptAt = nextAttemptAt;
