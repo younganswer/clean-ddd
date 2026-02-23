@@ -56,7 +56,7 @@ Parameters:
         Default: vpce-00000000000000000
     EdgeOriginVerifyHeaderName:
         Type: String
-        Default: x-edge-origin-verify
+        Default: x-origin-verify
     EdgeOriginVerifyHeaderValue:
         Type: String
         NoEcho: true
