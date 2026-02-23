@@ -12,6 +12,6 @@
 		"typecheck": "corepack pnpm -r --if-present run typecheck",
 		"format": "corepack pnpm -r --if-present run format",
 		"test": "corepack pnpm -r --if-present run test",
-		"ci:precommit": "pnpm --filter api lint && pnpm --filter api typecheck"
+		"ci:precommit": "corepack pnpm --filter api lint && pnpm --filter api typecheck"
 	}
 }
