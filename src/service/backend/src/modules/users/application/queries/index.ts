@@ -2,6 +2,6 @@ import { GetUserProfileQueryHandler } from '@/modules/users/application/queries/
 import { ListUserProfilesQueryHandler } from '@/modules/users/application/queries/list-user-profiles.query-handler';
 
 export const QueryHandlers = [
-  GetUserProfileQueryHandler,
-  ListUserProfilesQueryHandler,
+	GetUserProfileQueryHandler,
+	ListUserProfilesQueryHandler,
 ];

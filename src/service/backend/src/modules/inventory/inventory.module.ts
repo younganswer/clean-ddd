@@ -13,22 +13,22 @@ import { InventoryController } from '@/modules/inventory/presentation/inventory.
 import { InventoryReaderProvider } from '@/modules/inventory/infrastructure/readers/inventory.reader';
 
 @Module({
-  imports: [CqrsModule],
-  controllers: [InventoryController],
-  providers: [
-    InventoryItemMapper,
-    InventoryReservationMapper,
-    InventoryRepository,
-    {
-      provide: IInventoryRepositorySymbol,
-      useExisting: InventoryRepository,
-    },
-    InventoryReaderProvider,
-    ReserveInventoryForOrderHandler,
-    ListInventoryItemsHandler,
-    GetInventoryItemHandler,
-    ListInventoryReservationsHandler,
-    ReserveInventoryForOrderRequestedHandler,
-  ],
+	imports: [CqrsModule],
+	controllers: [InventoryController],
+	providers: [
+		InventoryItemMapper,
+		InventoryReservationMapper,
+		InventoryRepository,
+		{
+			provide: IInventoryRepositorySymbol,
+			useExisting: InventoryRepository,
+		},
+		InventoryReaderProvider,
+		ReserveInventoryForOrderHandler,
+		ListInventoryItemsHandler,
+		GetInventoryItemHandler,
+		ListInventoryReservationsHandler,
+		ReserveInventoryForOrderRequestedHandler,
+	],
 })
 export class InventoryModule {}

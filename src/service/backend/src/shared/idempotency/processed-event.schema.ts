@@ -3,14 +3,14 @@ import { BaseSchema } from '@/shared/persistence/mikro-orm/base.schema';
 
 @Entity({ tableName: 'processed_events' })
 @Unique({
-  properties: ['consumerName', 'eventId'],
-  name: 'uq_processed_consumer_event',
+	properties: ['consumerName', 'eventId'],
+	name: 'uq_processed_consumer_event',
 })
 @Index({ properties: ['createdAt'] })
 export class ProcessedEventSchema extends BaseSchema {
-  @Property()
-  consumerName!: string;
+	@Property()
+	consumerName!: string;
 
-  @Property({ type: 'uuid' })
-  eventId!: string;
+	@Property({ type: 'uuid' })
+	eventId!: string;
 }

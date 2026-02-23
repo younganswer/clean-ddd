@@ -1,6 +1,6 @@
 export class DispatchOutboxEventCommand {
-  constructor(
-    readonly outboxId: string,
-    readonly messageGroupId: string = 'outbox',
-  ) {}
+	constructor(
+		readonly outboxId: string,
+		readonly messageGroupId: string = 'outbox',
+	) {}
 }

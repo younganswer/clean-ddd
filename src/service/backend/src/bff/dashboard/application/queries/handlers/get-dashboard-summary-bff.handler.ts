@@ -13,63 +13,70 @@ import { ListInventoryItemsQuery } from '@/shared/inventory/queries/list-invento
 import type { InventoryItemView } from '@/shared/readers/inventory/dto/inventory-item.view';
 
 import {
-  GetDashboardSummaryBffQuery,
-  type DashboardSummaryBffView,
+	GetDashboardSummaryBffQuery,
+	type DashboardSummaryBffView,
 } from '@/bff/dashboard/application/queries/get-dashboard-summary-bff.query';
 
 @QueryHandler(GetDashboardSummaryBffQuery)
 export class GetDashboardSummaryBffHandler implements IQueryHandler<GetDashboardSummaryBffQuery> {
-  constructor(private readonly queryBus: QueryBus) {}
+	constructor(private readonly queryBus: QueryBus) {}
 
-  async execute(
-    query: GetDashboardSummaryBffQuery,
-  ): Promise<DashboardSummaryBffView> {
-    const limit = Math.min(50, Math.max(1, Number(query.input.limit ?? 10)));
+	async execute(
+		query: GetDashboardSummaryBffQuery,
+	): Promise<DashboardSummaryBffView> {
+		const limit = Math.min(
+			50,
+			Math.max(1, Number(query.input.limit ?? 10)),
+		);
 
-    const partialErrors: string[] = [];
+		const partialErrors: string[] = [];
 
-    const [ordersSettled, paymentsSettled, shipmentsSettled, inventorySettled] =
-      await Promise.allSettled([
-        this.queryBus.execute<ListOrdersQuery, OrderView[]>(
-          new ListOrdersQuery(limit),
-        ),
-        this.queryBus.execute<ListPaymentIntentsQuery, PaymentIntentView[]>(
-          new ListPaymentIntentsQuery(limit),
-        ),
-        this.queryBus.execute<ListShipmentsQuery, ShipmentView[]>(
-          new ListShipmentsQuery(limit),
-        ),
-        this.queryBus.execute<ListInventoryItemsQuery, InventoryItemView[]>(
-          new ListInventoryItemsQuery(limit),
-        ),
-      ]);
+		const [
+			ordersSettled,
+			paymentsSettled,
+			shipmentsSettled,
+			inventorySettled,
+		] = await Promise.allSettled([
+			this.queryBus.execute<ListOrdersQuery, OrderView[]>(
+				new ListOrdersQuery(limit),
+			),
+			this.queryBus.execute<ListPaymentIntentsQuery, PaymentIntentView[]>(
+				new ListPaymentIntentsQuery(limit),
+			),
+			this.queryBus.execute<ListShipmentsQuery, ShipmentView[]>(
+				new ListShipmentsQuery(limit),
+			),
+			this.queryBus.execute<ListInventoryItemsQuery, InventoryItemView[]>(
+				new ListInventoryItemsQuery(limit),
+			),
+		]);
 
-    const orders =
-      ordersSettled.status === 'fulfilled'
-        ? ordersSettled.value
-        : (partialErrors.push('orders'), []);
+		const orders =
+			ordersSettled.status === 'fulfilled'
+				? ordersSettled.value
+				: (partialErrors.push('orders'), []);
 
-    const paymentIntents =
-      paymentsSettled.status === 'fulfilled'
-        ? paymentsSettled.value
-        : (partialErrors.push('paymentIntents'), []);
+		const paymentIntents =
+			paymentsSettled.status === 'fulfilled'
+				? paymentsSettled.value
+				: (partialErrors.push('paymentIntents'), []);
 
-    const shipments =
-      shipmentsSettled.status === 'fulfilled'
-        ? shipmentsSettled.value
-        : (partialErrors.push('shipments'), []);
+		const shipments =
+			shipmentsSettled.status === 'fulfilled'
+				? shipmentsSettled.value
+				: (partialErrors.push('shipments'), []);
 
-    const inventoryItems =
-      inventorySettled.status === 'fulfilled'
-        ? inventorySettled.value
-        : (partialErrors.push('inventoryItems'), []);
+		const inventoryItems =
+			inventorySettled.status === 'fulfilled'
+				? inventorySettled.value
+				: (partialErrors.push('inventoryItems'), []);
 
-    return {
-      orders,
-      paymentIntents,
-      shipments,
-      inventoryItems,
-      partialErrors: partialErrors.length ? partialErrors : undefined,
-    };
-  }
+		return {
+			orders,
+			paymentIntents,
+			shipments,
+			inventoryItems,
+			partialErrors: partialErrors.length ? partialErrors : undefined,
+		};
+	}
 }

@@ -8,25 +8,25 @@ import { ReserveInventoryForOrderCommand } from '@/shared/inventory';
 
 @CommandHandler(ReserveInventoryForOrderCommand)
 export class ReserveInventoryForOrderHandler implements ICommandHandler<ReserveInventoryForOrderCommand> {
-  constructor(
-    @Inject(IInventoryRepositorySymbol)
-    private readonly inventory: IInventoryRepository,
-    private readonly em: EntityManager,
-  ) {}
+	constructor(
+		@Inject(IInventoryRepositorySymbol)
+		private readonly inventory: IInventoryRepository,
+		private readonly em: EntityManager,
+	) {}
 
-  async execute(command: ReserveInventoryForOrderCommand): Promise<void> {
-    const orderId = String(command.input.orderId ?? '').trim();
-    if (!orderId) throw new Error('orderId is required');
+	async execute(command: ReserveInventoryForOrderCommand): Promise<void> {
+		const orderId = String(command.input.orderId ?? '').trim();
+		if (!orderId) throw new Error('orderId is required');
 
-    await this.em.transactional(async (tx) =>
-      RequestContext.create(tx, async () => {
-        await this.inventory.seedIfEmpty();
-        await this.inventory.reserveForOrder(
-          orderId,
-          command.input.items ?? [],
-        );
-        await tx.flush();
-      }),
-    );
-  }
+		await this.em.transactional(async (tx) =>
+			RequestContext.create(tx, async () => {
+				await this.inventory.seedIfEmpty();
+				await this.inventory.reserveForOrder(
+					orderId,
+					command.input.items ?? [],
+				);
+				await tx.flush();
+			}),
+		);
+	}
 }

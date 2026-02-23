@@ -4,15 +4,15 @@ import { PaymentIntentSchema } from '@/modules/payments/infrastructure/schemas/p
 
 @Injectable()
 export class PaymentIntentMapper {
-  toDomain(schema: PaymentIntentSchema): PaymentIntent {
-    return PaymentIntent.rehydrate({
-      id: schema.uuid,
-      orderId: schema.orderId,
-      amount: schema.amount,
-      currency: schema.currency,
-      status: schema.status,
-      createdAt: schema.createdAt,
-      updatedAt: schema.updatedAt,
-    });
-  }
+	toDomain(schema: PaymentIntentSchema): PaymentIntent {
+		return PaymentIntent.rehydrate({
+			id: schema.uuid,
+			orderId: schema.orderId,
+			amount: schema.amount,
+			currency: schema.currency,
+			status: schema.status,
+			createdAt: schema.createdAt,
+			updatedAt: schema.updatedAt,
+		});
+	}
 }

@@ -1,3 +1,3 @@
 export class ListOrdersBffQuery {
-  constructor(public readonly input: { limit: number }) {}
+	constructor(public readonly input: { limit: number }) {}
 }

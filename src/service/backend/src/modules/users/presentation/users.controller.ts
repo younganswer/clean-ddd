@@ -7,18 +7,18 @@ import type { PaginatedView } from '@/shared/readers/paginated.view';
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly queryBus: QueryBus) {}
+	constructor(private readonly queryBus: QueryBus) {}
 
-  @Get()
-  async list(
-    @Query('limit') limitRaw?: string,
-    @Query('page') pageRaw?: string,
-  ): Promise<PaginatedView<UserProfileView>> {
-    const limit = Math.min(200, Math.max(1, Number(limitRaw ?? 20) || 20));
-    const page = Math.max(1, Number(pageRaw ?? 1) || 1);
-    return await executeQuery(
-      this.queryBus,
-      new ListUserProfilesQuery({ limit, page }),
-    );
-  }
+	@Get()
+	async list(
+		@Query('limit') limitRaw?: string,
+		@Query('page') pageRaw?: string,
+	): Promise<PaginatedView<UserProfileView>> {
+		const limit = Math.min(200, Math.max(1, Number(limitRaw ?? 20) || 20));
+		const page = Math.max(1, Number(pageRaw ?? 1) || 1);
+		return await executeQuery(
+			this.queryBus,
+			new ListUserProfilesQuery({ limit, page }),
+		);
+	}
 }

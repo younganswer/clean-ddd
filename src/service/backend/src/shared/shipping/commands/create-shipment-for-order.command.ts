@@ -1,7 +1,7 @@
 export type CreateShipmentForOrderResult = {
-  shipmentId: string;
+	shipmentId: string;
 };
 
 export class CreateShipmentForOrderCommand {
-  constructor(public readonly orderId: string) {}
+	constructor(public readonly orderId: string) {}
 }

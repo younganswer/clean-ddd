@@ -13,20 +13,20 @@ import { PaymentsController } from '@/modules/payments/presentation/payments.con
 import { PaymentIntentsController } from '@/modules/payments/presentation/payment-intents.controller';
 
 @Module({
-  imports: [CqrsModule, OrderingModule, forwardRef(() => OutboxModule)],
-  controllers: [PaymentsController, PaymentIntentsController],
-  providers: [
-    PaymentIntentMapper,
-    PaymentRepository,
-    {
-      provide: IPaymentRepositorySymbol,
-      useExisting: PaymentRepository,
-    },
-    PaymentIntentReaderProvider,
-    CreatePaymentIntentHandler,
-    GetPaymentIntentHandler,
-    ListPaymentIntentsHandler,
-  ],
-  exports: [IPaymentRepositorySymbol],
+	imports: [CqrsModule, OrderingModule, forwardRef(() => OutboxModule)],
+	controllers: [PaymentsController, PaymentIntentsController],
+	providers: [
+		PaymentIntentMapper,
+		PaymentRepository,
+		{
+			provide: IPaymentRepositorySymbol,
+			useExisting: PaymentRepository,
+		},
+		PaymentIntentReaderProvider,
+		CreatePaymentIntentHandler,
+		GetPaymentIntentHandler,
+		ListPaymentIntentsHandler,
+	],
+	exports: [IPaymentRepositorySymbol],
 })
 export class PaymentsModule {}

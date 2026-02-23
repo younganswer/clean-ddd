@@ -5,15 +5,15 @@ import { BaseSchema } from '@/shared/persistence/mikro-orm/base.schema';
 @Entity({ tableName: 'payment_intents' })
 @Index({ properties: ['orderId', 'createdAt'] })
 export class PaymentIntentSchema extends BaseSchema {
-  @Property({ type: 'uuid' })
-  orderId!: string;
+	@Property({ type: 'uuid' })
+	orderId!: string;
 
-  @Property({ type: 'int' })
-  amount!: number;
+	@Property({ type: 'int' })
+	amount!: number;
 
-  @Property()
-  currency!: string;
+	@Property()
+	currency!: string;
 
-  @Property({ type: 'string' })
-  status: PaymentStatus = PaymentStatus.PENDING;
+	@Property({ type: 'string' })
+	status: PaymentStatus = PaymentStatus.PENDING;
 }

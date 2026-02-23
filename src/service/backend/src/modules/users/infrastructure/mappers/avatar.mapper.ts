@@ -5,25 +5,25 @@ import type { AvatarDocumentSchema } from '@/modules/users/infrastructure/schema
 
 @Injectable()
 export class AvatarMapper {
-  toDomain(schema: AvatarDocumentSchema): Avatar {
-    return Avatar.rehydrate({
-      id: 0,
-      uuid: schema._id,
-      userId: schema.userId,
-      imageUrl: schema.imageUrl,
-      createdAt: schema.createdAt,
-      updatedAt: schema.updatedAt,
-    });
-  }
+	toDomain(schema: AvatarDocumentSchema): Avatar {
+		return Avatar.rehydrate({
+			id: 0,
+			uuid: schema._id,
+			userId: schema.userId,
+			imageUrl: schema.imageUrl,
+			createdAt: schema.createdAt,
+			updatedAt: schema.updatedAt,
+		});
+	}
 
-  toDocument(schema: AvatarDocumentSchema): UserAvatarDocument {
-    const avatar = this.toDomain(schema);
-    return {
-      avatarId: avatar.uuid,
-      userId: avatar.userId,
-      imageUrl: avatar.imageUrl,
-      createdAt: avatar.createdAt,
-      updatedAt: avatar.updatedAt,
-    };
-  }
+	toDocument(schema: AvatarDocumentSchema): UserAvatarDocument {
+		const avatar = this.toDomain(schema);
+		return {
+			avatarId: avatar.uuid,
+			userId: avatar.userId,
+			imageUrl: avatar.imageUrl,
+			createdAt: avatar.createdAt,
+			updatedAt: avatar.updatedAt,
+		};
+	}
 }

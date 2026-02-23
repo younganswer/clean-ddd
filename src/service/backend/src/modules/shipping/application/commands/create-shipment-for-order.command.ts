@@ -1,4 +1,4 @@
 export {
-  CreateShipmentForOrderCommand,
-  type CreateShipmentForOrderResult,
+	CreateShipmentForOrderCommand,
+	type CreateShipmentForOrderResult,
 } from '@/shared/shipping';

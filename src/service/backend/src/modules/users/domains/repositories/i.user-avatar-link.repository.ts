@@ -1,7 +1,7 @@
 export const IUserAvatarLinkRepositorySymbol = Symbol(
-  'IUserAvatarLinkRepository',
+	'IUserAvatarLinkRepository',
 );
 
 export interface IUserAvatarLinkRepository {
-  assignAvatarId(input: { userId: string; avatarId: string }): Promise<void>;
+	assignAvatarId(input: { userId: string; avatarId: string }): Promise<void>;
 }

@@ -4,7 +4,7 @@ import { OutboxDispatchJob } from '@/cron-jobs/jobs/outbox-dispatch.job';
 import { OutboxModule } from '@/modules/outbox/outbox.module';
 
 @Module({
-  imports: [CqrsModule, OutboxModule],
-  providers: [OutboxDispatchJob],
+	imports: [CqrsModule, OutboxModule],
+	providers: [OutboxDispatchJob],
 })
 export class CronJobsModule {}

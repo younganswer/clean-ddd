@@ -1,4 +1,4 @@
 export type InventoryOrderItemDto = {
-  sku: string;
-  quantity: number;
+	sku: string;
+	quantity: number;
 };

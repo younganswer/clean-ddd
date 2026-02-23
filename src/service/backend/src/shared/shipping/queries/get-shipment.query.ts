@@ -1,3 +1,3 @@
 export class GetShipmentQuery {
-  constructor(public readonly shipmentId: string) {}
+	constructor(public readonly shipmentId: string) {}
 }

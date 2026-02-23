@@ -9,26 +9,29 @@ import { UpdateMyAvatarRequest } from '@/modules/users/presentation/dto/update-m
 
 @Controller('me')
 export class MeController {
-  constructor(
-    private readonly commandBus: CommandBus,
-    private readonly queryBus: QueryBus,
-    private readonly authContextAccessor: AuthContextAccessor,
-  ) {}
+	constructor(
+		private readonly commandBus: CommandBus,
+		private readonly queryBus: QueryBus,
+		private readonly authContextAccessor: AuthContextAccessor,
+	) {}
 
-  @Get()
-  async getMyProfile(): Promise<UserProfileView> {
-    const userId = this.authContextAccessor.getOrAnonymous().actor.userId;
-    return await executeQuery(this.queryBus, new GetUserProfileQuery(userId));
-  }
+	@Get()
+	async getMyProfile(): Promise<UserProfileView> {
+		const userId = this.authContextAccessor.getOrAnonymous().actor.userId;
+		return await executeQuery(
+			this.queryBus,
+			new GetUserProfileQuery(userId),
+		);
+	}
 
-  @Patch('avatar')
-  async updateMyAvatar(
-    @Body() body: UpdateMyAvatarRequest,
-  ): Promise<{ avatarId: string; avatarUrl: string }> {
-    const userId = this.authContextAccessor.getOrAnonymous().actor.userId;
-    return await executeCommand(
-      this.commandBus,
-      new UpdateMyAvatarCommand(userId, { avatarUrl: body.avatarUrl }),
-    );
-  }
+	@Patch('avatar')
+	async updateMyAvatar(
+		@Body() body: UpdateMyAvatarRequest,
+	): Promise<{ avatarId: string; avatarUrl: string }> {
+		const userId = this.authContextAccessor.getOrAnonymous().actor.userId;
+		return await executeCommand(
+			this.commandBus,
+			new UpdateMyAvatarCommand(userId, { avatarUrl: body.avatarUrl }),
+		);
+	}
 }

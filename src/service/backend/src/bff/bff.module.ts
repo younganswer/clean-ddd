@@ -9,14 +9,14 @@ import { GraphBffModule } from '@/bff/graph/graph-bff.module';
 import { SystemConceptsBffModule } from '@/bff/system-concepts/system-concepts-bff.module';
 
 @Module({
-  imports: [
-    CqrsModule,
-    OrdersBffModule,
-    OrderDetailBffModule,
-    CheckoutBffModule,
-    DashboardBffModule,
-    GraphBffModule,
-    SystemConceptsBffModule,
-  ],
+	imports: [
+		CqrsModule,
+		OrdersBffModule,
+		OrderDetailBffModule,
+		CheckoutBffModule,
+		DashboardBffModule,
+		GraphBffModule,
+		SystemConceptsBffModule,
+	],
 })
 export class BffModule {}

@@ -1,4 +1,4 @@
 export {
-  IOrderReaderSymbol,
-  type IOrderReader,
+	IOrderReaderSymbol,
+	type IOrderReader,
 } from '@/shared/ordering/readers/i.order.reader';

@@ -5,8 +5,8 @@ import { DashboardBffController } from '@/bff/dashboard/presentation/dashboard-b
 import { QueryHandlers } from '@/bff/dashboard/application/queries';
 
 @Module({
-  imports: [CqrsModule],
-  controllers: [DashboardBffController],
-  providers: [...QueryHandlers],
+	imports: [CqrsModule],
+	controllers: [DashboardBffController],
+	providers: [...QueryHandlers],
 })
 export class DashboardBffModule {}

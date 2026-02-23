@@ -15,21 +15,21 @@ import { SagaOrchestratorModule } from '@/saga-orchestrator/saga-orchestrator.mo
 import { BffModule } from '@/bff/bff.module';
 
 export const appDefaultImportList = [
-  ConfigModule.forRoot({
-    isGlobal: true,
-  }),
-  CqrsModule,
-  ScheduleModule.forRoot(),
-  AuthContextModule,
-  DatabaseModule,
-  OutboxModule,
-  OutboxConsumerModule,
-  BffModule,
-  CronJobsModule,
-  SagaOrchestratorModule,
-  OrderingModule,
-  PaymentsModule,
-  ShippingModule,
-  InventoryModule,
-  UsersModule,
+	ConfigModule.forRoot({
+		isGlobal: true,
+	}),
+	CqrsModule,
+	ScheduleModule.forRoot(),
+	AuthContextModule,
+	DatabaseModule,
+	OutboxModule,
+	OutboxConsumerModule,
+	BffModule,
+	CronJobsModule,
+	SagaOrchestratorModule,
+	OrderingModule,
+	PaymentsModule,
+	ShippingModule,
+	InventoryModule,
+	UsersModule,
 ];

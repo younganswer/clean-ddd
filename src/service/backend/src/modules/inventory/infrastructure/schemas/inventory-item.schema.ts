@@ -5,18 +5,18 @@ import { BaseSchema } from '@/shared/persistence/mikro-orm/base.schema';
 @Index({ properties: ['updatedAt'] })
 @Unique({ properties: ['sku'] })
 export class InventoryItemSchema extends BaseSchema {
-  @Property()
-  sku!: string;
+	@Property()
+	sku!: string;
 
-  @Property({ length: 3 })
-  priceCurrency: string = 'USD';
+	@Property({ length: 3 })
+	priceCurrency: string = 'USD';
 
-  @Property({ type: 'int' })
-  priceAmountMinor: number = 100;
+	@Property({ type: 'int' })
+	priceAmountMinor: number = 100;
 
-  @Property({ type: 'int' })
-  availableQuantity: number = 0;
+	@Property({ type: 'int' })
+	availableQuantity: number = 0;
 
-  @Property({ type: 'int' })
-  reservedQuantity: number = 0;
+	@Property({ type: 'int' })
+	reservedQuantity: number = 0;
 }

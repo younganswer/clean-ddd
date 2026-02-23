@@ -1,37 +1,37 @@
 import {
-  IsArray,
-  IsIn,
-  IsInt,
-  IsOptional,
-  IsString,
-  Min,
-  ValidateNested,
+	IsArray,
+	IsIn,
+	IsInt,
+	IsOptional,
+	IsString,
+	Min,
+	ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
 class CreateOrderItemRequest {
-  @IsString()
-  sku!: string;
+	@IsString()
+	sku!: string;
 
-  @IsInt()
-  @Min(1)
-  quantity!: number;
+	@IsInt()
+	@Min(1)
+	quantity!: number;
 }
 
 export class CreateOrderRequest {
-  @IsString()
-  userId!: string;
+	@IsString()
+	userId!: string;
 
-  @IsInt()
-  @Min(1)
-  amount!: number;
+	@IsInt()
+	@Min(1)
+	amount!: number;
 
-  @IsIn(['KRW', 'USD'])
-  currency!: string;
+	@IsIn(['KRW', 'USD'])
+	currency!: string;
 
-  @IsOptional()
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => CreateOrderItemRequest)
-  items?: CreateOrderItemRequest[];
+	@IsOptional()
+	@IsArray()
+	@ValidateNested({ each: true })
+	@Type(() => CreateOrderItemRequest)
+	items?: CreateOrderItemRequest[];
 }

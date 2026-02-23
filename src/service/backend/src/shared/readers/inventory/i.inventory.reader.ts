@@ -4,9 +4,9 @@ import type { InventoryReservationView } from '@/shared/readers/inventory/dto/in
 export const IInventoryReaderSymbol = Symbol('IInventoryReader');
 
 export interface IInventoryReader {
-  findItemBySku(sku: string): Promise<InventoryItemView | null>;
-  findRecentItems(limit: number): Promise<InventoryItemView[]>;
-  findReservationsByOrderId(
-    orderId: string,
-  ): Promise<InventoryReservationView[]>;
+	findItemBySku(sku: string): Promise<InventoryItemView | null>;
+	findRecentItems(limit: number): Promise<InventoryItemView[]>;
+	findReservationsByOrderId(
+		orderId: string,
+	): Promise<InventoryReservationView[]>;
 }

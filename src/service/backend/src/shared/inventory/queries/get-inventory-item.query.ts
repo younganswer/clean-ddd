@@ -1,3 +1,3 @@
 export class GetInventoryItemQuery {
-  constructor(public readonly sku: string) {}
+	constructor(public readonly sku: string) {}
 }

@@ -1,3 +1,3 @@
 export class GetPaymentIntentQuery {
-  constructor(public readonly paymentId: string) {}
+	constructor(public readonly paymentId: string) {}
 }

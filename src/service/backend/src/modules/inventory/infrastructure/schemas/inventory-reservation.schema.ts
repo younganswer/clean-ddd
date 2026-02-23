@@ -5,12 +5,12 @@ import { BaseSchema } from '@/shared/persistence/mikro-orm/base.schema';
 @Unique({ properties: ['orderId', 'sku'] })
 @Index({ properties: ['createdAt'] })
 export class InventoryReservationSchema extends BaseSchema {
-  @Property({ type: 'uuid' })
-  orderId!: string;
+	@Property({ type: 'uuid' })
+	orderId!: string;
 
-  @Property()
-  sku!: string;
+	@Property()
+	sku!: string;
 
-  @Property({ type: 'int' })
-  quantity!: number;
+	@Property({ type: 'int' })
+	quantity!: number;
 }

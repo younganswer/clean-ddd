@@ -1,4 +1,4 @@
 export type MoneyView = {
-  currency: string;
-  amountMinor: number;
+	currency: string;
+	amountMinor: number;
 };

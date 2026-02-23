@@ -1,11 +1,11 @@
 import {
-  Body,
-  Controller,
-  Get,
-  NotFoundException,
-  Param,
-  Post,
-  Query,
+	Body,
+	Controller,
+	Get,
+	NotFoundException,
+	Param,
+	Post,
+	Query,
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { executeCommand, executeQuery } from '@/common/utils/cqrs-executor';
@@ -19,30 +19,38 @@ import { CreateOrderRequest } from '@/modules/ordering/presentation/dto/create-o
 
 @Controller('orders')
 export class OrdersController {
-  constructor(
-    private readonly commandBus: CommandBus,
-    private readonly queryBus: QueryBus,
-  ) {}
+	constructor(
+		private readonly commandBus: CommandBus,
+		private readonly queryBus: QueryBus,
+	) {}
 
-  @Post()
-  async create(@Body() body: CreateOrderRequest): Promise<{ orderId: string }> {
-    return await executeCommand(this.commandBus, new CreateOrderCommand(body));
-  }
+	@Post()
+	async create(
+		@Body() body: CreateOrderRequest,
+	): Promise<{ orderId: string }> {
+		return await executeCommand(
+			this.commandBus,
+			new CreateOrderCommand(body),
+		);
+	}
 
-  @Get()
-  async list(
-    @Query('limit') limitRaw?: string,
-    @Query('page') pageRaw?: string,
-  ): Promise<PaginatedView<OrderView>> {
-    const limit = Math.min(50, Math.max(1, Number(limitRaw ?? '20') || 20));
-    const page = Math.max(1, Number(pageRaw ?? '1') || 1);
-    return await executeQuery(this.queryBus, new ListOrdersQuery(limit, page));
-  }
+	@Get()
+	async list(
+		@Query('limit') limitRaw?: string,
+		@Query('page') pageRaw?: string,
+	): Promise<PaginatedView<OrderView>> {
+		const limit = Math.min(50, Math.max(1, Number(limitRaw ?? '20') || 20));
+		const page = Math.max(1, Number(pageRaw ?? '1') || 1);
+		return await executeQuery(
+			this.queryBus,
+			new ListOrdersQuery(limit, page),
+		);
+	}
 
-  @Get(':id')
-  async get(@Param('id') id: string): Promise<OrderView> {
-    const order = await executeQuery(this.queryBus, new GetOrderQuery(id));
-    if (!isOrderView(order)) throw new NotFoundException('order not found');
-    return order;
-  }
+	@Get(':id')
+	async get(@Param('id') id: string): Promise<OrderView> {
+		const order = await executeQuery(this.queryBus, new GetOrderQuery(id));
+		if (!isOrderView(order)) throw new NotFoundException('order not found');
+		return order;
+	}
 }

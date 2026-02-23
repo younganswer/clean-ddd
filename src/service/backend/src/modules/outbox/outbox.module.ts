@@ -12,28 +12,28 @@ import { OutboxRepository } from '@/modules/outbox/infrastructure/persistence/ou
 import { OutboxQueue } from '@/modules/outbox/infrastructure/queue/outbox.queue';
 
 @Module({
-  imports: [CqrsModule, SqsModule],
-  providers: [
-    IdempotencyService,
-    OutboxQueue,
-    OutboxProducer,
-    OutboxDispatcher,
-    OutboxSweeper,
-    OutboxRepository,
-    ...OutboxCommandHandlers,
-    ...OutboxQueryHandlers,
-    {
-      provide: IOutboxRepositorySymbol,
-      useExisting: OutboxRepository,
-    },
-  ],
-  exports: [
-    OutboxQueue,
-    OutboxProducer,
-    OutboxDispatcher,
-    OutboxSweeper,
-    IdempotencyService,
-    IOutboxRepositorySymbol,
-  ],
+	imports: [CqrsModule, SqsModule],
+	providers: [
+		IdempotencyService,
+		OutboxQueue,
+		OutboxProducer,
+		OutboxDispatcher,
+		OutboxSweeper,
+		OutboxRepository,
+		...OutboxCommandHandlers,
+		...OutboxQueryHandlers,
+		{
+			provide: IOutboxRepositorySymbol,
+			useExisting: OutboxRepository,
+		},
+	],
+	exports: [
+		OutboxQueue,
+		OutboxProducer,
+		OutboxDispatcher,
+		OutboxSweeper,
+		IdempotencyService,
+		IOutboxRepositorySymbol,
+	],
 })
 export class OutboxModule {}

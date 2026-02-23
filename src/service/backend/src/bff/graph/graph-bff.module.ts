@@ -5,8 +5,8 @@ import { GraphBffController } from '@/bff/graph/presentation/graph-bff.controlle
 import { QueryHandlers } from '@/bff/graph/application/queries';
 
 @Module({
-  imports: [CqrsModule],
-  controllers: [GraphBffController],
-  providers: [...QueryHandlers],
+	imports: [CqrsModule],
+	controllers: [GraphBffController],
+	providers: [...QueryHandlers],
 })
 export class GraphBffModule {}

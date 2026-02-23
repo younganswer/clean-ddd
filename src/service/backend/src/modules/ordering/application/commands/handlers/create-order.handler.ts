@@ -8,21 +8,21 @@ import type { IOrderRepository } from '@/modules/ordering/domains/repositories/i
 
 @CommandHandler(CreateOrderCommand)
 export class CreateOrderHandler implements ICommandHandler<CreateOrderCommand> {
-  constructor(
-    @Inject(IOrderRepositorySymbol)
-    private readonly orders: IOrderRepository,
-    private readonly em: EntityManager,
-  ) {}
+	constructor(
+		@Inject(IOrderRepositorySymbol)
+		private readonly orders: IOrderRepository,
+		private readonly em: EntityManager,
+	) {}
 
-  async execute(command: CreateOrderCommand): Promise<{ orderId: string }> {
-    return this.em.transactional(async (tx) =>
-      RequestContext.create(tx, async () => {
-        const order = await this.orders.create({
-          ...command.input,
-        });
-        await tx.flush();
-        return { orderId: order.uuid };
-      }),
-    );
-  }
+	async execute(command: CreateOrderCommand): Promise<{ orderId: string }> {
+		return this.em.transactional(async (tx) =>
+			RequestContext.create(tx, async () => {
+				const order = await this.orders.create({
+					...command.input,
+				});
+				await tx.flush();
+				return { orderId: order.uuid };
+			}),
+		);
+	}
 }

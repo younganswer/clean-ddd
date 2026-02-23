@@ -1,4 +1,4 @@
 export type {
-  OrderItemView,
-  OrderView,
+	OrderItemView,
+	OrderView,
 } from '@/shared/ordering/readers/order.view';

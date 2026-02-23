@@ -4,7 +4,7 @@ import { AuthContextAccessor } from '@/common/context/auth-context';
 
 @Global()
 @Module({
-  providers: [AuthContextAccessor, AuthGuard],
-  exports: [AuthContextAccessor, AuthGuard],
+	providers: [AuthContextAccessor, AuthGuard],
+	exports: [AuthContextAccessor, AuthGuard],
 })
 export class AuthContextModule {}

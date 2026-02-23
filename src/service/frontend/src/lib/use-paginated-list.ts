@@ -11,7 +11,9 @@ type PaginatedListOptions<TItem> = {
 	}) => Promise<Paginated<TItem>>;
 };
 
-export const usePaginatedList = <TItem>(options: PaginatedListOptions<TItem>) => {
+export const usePaginatedList = <TItem>(
+	options: PaginatedListOptions<TItem>,
+) => {
 	const { pageSize, fetchPage } = options;
 	const [page, setPage] = useState(1);
 	const [items, setItems] = useState<TItem[]>([]);

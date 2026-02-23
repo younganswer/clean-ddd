@@ -5,8 +5,8 @@ import { CheckoutBffController } from '@/bff/checkout/presentation/checkout-bff.
 import { CommandHandlers } from '@/bff/checkout/application/commands';
 
 @Module({
-  imports: [CqrsModule],
-  controllers: [CheckoutBffController],
-  providers: [...CommandHandlers],
+	imports: [CqrsModule],
+	controllers: [CheckoutBffController],
+	providers: [...CommandHandlers],
 })
 export class CheckoutBffModule {}

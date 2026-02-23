@@ -5,8 +5,8 @@ import { OrderDetailBffController } from '@/bff/order-detail/presentation/order-
 import { QueryHandlers } from '@/bff/order-detail/application/queries';
 
 @Module({
-  imports: [CqrsModule],
-  controllers: [OrderDetailBffController],
-  providers: [...QueryHandlers],
+	imports: [CqrsModule],
+	controllers: [OrderDetailBffController],
+	providers: [...QueryHandlers],
 })
 export class OrderDetailBffModule {}

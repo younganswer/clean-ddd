@@ -3,15 +3,18 @@ import { InventoryItem } from '@/modules/inventory/domains/entities/inventory-it
 import { InventoryReservation } from '@/modules/inventory/domains/entities/inventory-reservation.entity';
 
 export interface IInventoryRepository {
-  seedIfEmpty(): Promise<void>;
+	seedIfEmpty(): Promise<void>;
 
-  findAll(limit: number, offset?: number): Promise<InventoryItem[]>;
-  countItems(): Promise<number>;
-  findBySku(sku: string): Promise<InventoryItem | null>;
+	findAll(limit: number, offset?: number): Promise<InventoryItem[]>;
+	countItems(): Promise<number>;
+	findBySku(sku: string): Promise<InventoryItem | null>;
 
-  reserveForOrder(orderId: string, items: InventoryOrderItem[]): Promise<void>;
+	reserveForOrder(
+		orderId: string,
+		items: InventoryOrderItem[],
+	): Promise<void>;
 
-  findReservationsByOrderId(orderId: string): Promise<InventoryReservation[]>;
+	findReservationsByOrderId(orderId: string): Promise<InventoryReservation[]>;
 }
 
 export const IInventoryRepositorySymbol = Symbol('I_INVENTORY_REPOSITORY');

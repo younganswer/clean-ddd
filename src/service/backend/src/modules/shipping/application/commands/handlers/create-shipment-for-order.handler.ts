@@ -6,18 +6,18 @@ import { CreateShipmentForOrderCommand } from '@/shared/shipping';
 
 @CommandHandler(CreateShipmentForOrderCommand)
 export class CreateShipmentForOrderHandler implements ICommandHandler<CreateShipmentForOrderCommand> {
-  constructor(
-    @Inject(IShipmentRepositorySymbol)
-    private readonly shipments: IShipmentRepository,
-  ) {}
+	constructor(
+		@Inject(IShipmentRepositorySymbol)
+		private readonly shipments: IShipmentRepository,
+	) {}
 
-  async execute(
-    command: CreateShipmentForOrderCommand,
-  ): Promise<{ shipmentId: string }> {
-    const orderId = String(command.orderId ?? '').trim();
-    if (!orderId) throw new Error('orderId is required');
+	async execute(
+		command: CreateShipmentForOrderCommand,
+	): Promise<{ shipmentId: string }> {
+		const orderId = String(command.orderId ?? '').trim();
+		if (!orderId) throw new Error('orderId is required');
 
-    const shipment = await this.shipments.createForOrder(orderId);
-    return { shipmentId: shipment.uuid };
-  }
+		const shipment = await this.shipments.createForOrder(orderId);
+		return { shipmentId: shipment.uuid };
+	}
 }

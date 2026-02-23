@@ -1,3 +1,3 @@
 export class GetOrderBffQuery {
-  constructor(public readonly input: { orderId: string }) {}
+	constructor(public readonly input: { orderId: string }) {}
 }

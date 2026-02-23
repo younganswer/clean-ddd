@@ -9,19 +9,19 @@ import { OrdersController } from '@/modules/ordering/presentation/orders.control
 import { OrderReaderProvider } from '@/modules/ordering/infrastructure/readers/order.reader';
 
 @Module({
-  imports: [CqrsModule],
-  controllers: [OrdersController],
-  providers: [
-    OrderMapper,
-    OrderRepository,
-    {
-      provide: IOrderRepositorySymbol,
-      useExisting: OrderRepository,
-    },
-    OrderReaderProvider,
-    ...CommandHandlers,
-    ...QueryHandlers,
-  ],
-  exports: [IOrderRepositorySymbol],
+	imports: [CqrsModule],
+	controllers: [OrdersController],
+	providers: [
+		OrderMapper,
+		OrderRepository,
+		{
+			provide: IOrderRepositorySymbol,
+			useExisting: OrderRepository,
+		},
+		OrderReaderProvider,
+		...CommandHandlers,
+		...QueryHandlers,
+	],
+	exports: [IOrderRepositorySymbol],
 })
 export class OrderingModule {}

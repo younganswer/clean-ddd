@@ -6,8 +6,8 @@ import { OutboxModule } from '@/modules/outbox/outbox.module';
 import { OutboxSqsPoller } from '@/modules/outbox/infrastructure/sqs/outbox.sqs-poller';
 
 @Module({
-  imports: [CqrsModule, OutboxModule, SqsModule],
-  providers: [OutboxConsumer, OutboxSqsPoller],
-  exports: [OutboxConsumer],
+	imports: [CqrsModule, OutboxModule, SqsModule],
+	providers: [OutboxConsumer, OutboxSqsPoller],
+	exports: [OutboxConsumer],
 })
 export class OutboxConsumerModule {}

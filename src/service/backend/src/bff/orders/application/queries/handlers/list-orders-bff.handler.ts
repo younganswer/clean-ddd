@@ -6,12 +6,12 @@ import type { OrderView } from '@/shared/ordering/readers/order.view';
 
 @QueryHandler(ListOrdersBffQuery)
 export class ListOrdersBffHandler implements IQueryHandler<ListOrdersBffQuery> {
-  constructor(private readonly queryBus: QueryBus) {}
+	constructor(private readonly queryBus: QueryBus) {}
 
-  async execute(query: ListOrdersBffQuery) {
-    const domainQuery = new ListOrdersQuery(query.input.limit);
-    return await this.queryBus.execute<ListOrdersQuery, OrderView[]>(
-      domainQuery,
-    );
-  }
+	async execute(query: ListOrdersBffQuery) {
+		const domainQuery = new ListOrdersQuery(query.input.limit);
+		return await this.queryBus.execute<ListOrdersQuery, OrderView[]>(
+			domainQuery,
+		);
+	}
 }

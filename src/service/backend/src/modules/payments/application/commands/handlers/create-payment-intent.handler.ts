@@ -2,10 +2,10 @@ import { RequestContext } from '@mikro-orm/core';
 import { EntityManager } from '@mikro-orm/postgresql';
 import { Inject } from '@nestjs/common';
 import {
-  CommandBus,
-  CommandHandler,
-  ICommandHandler,
-  QueryBus,
+	CommandBus,
+	CommandHandler,
+	ICommandHandler,
+	QueryBus,
 } from '@nestjs/cqrs';
 import { executeCommand, executeQuery } from '@/common/utils/cqrs-executor';
 import { OutboxProducer } from '@/modules/outbox/application/outbox.producer';
@@ -14,87 +14,87 @@ import type { IPaymentRepository } from '@/modules/payments/domains/repositories
 import { AttachPaymentToOrderCommand } from '@/shared/ordering/commands/attach-payment-to-order.command';
 import { GetOrderQuery } from '@/shared/ordering/queries/get-order.query';
 import {
-  PaymentWebhookFailedEvent,
-  PaymentWebhookSucceededEvent,
+	PaymentWebhookFailedEvent,
+	PaymentWebhookSucceededEvent,
 } from '@/shared/payments';
 import { assertOrderView } from '@/shared/ordering/readers/order-view.guard';
 import {
-  CreatePaymentIntentCommand,
-  type CreatePaymentIntentResult,
+	CreatePaymentIntentCommand,
+	type CreatePaymentIntentResult,
 } from '@/shared/payments';
 
 @CommandHandler(CreatePaymentIntentCommand)
 export class CreatePaymentIntentHandler implements ICommandHandler<CreatePaymentIntentCommand> {
-  constructor(
-    @Inject(IPaymentRepositorySymbol)
-    private readonly payments: IPaymentRepository,
-    private readonly em: EntityManager,
-    private readonly outbox: OutboxProducer,
-    private readonly queryBus: QueryBus,
-    private readonly commandBus: CommandBus,
-  ) {}
+	constructor(
+		@Inject(IPaymentRepositorySymbol)
+		private readonly payments: IPaymentRepository,
+		private readonly em: EntityManager,
+		private readonly outbox: OutboxProducer,
+		private readonly queryBus: QueryBus,
+		private readonly commandBus: CommandBus,
+	) {}
 
-  async execute(
-    command: CreatePaymentIntentCommand,
-  ): Promise<CreatePaymentIntentResult> {
-    return this.em.transactional(async (tx) =>
-      RequestContext.create(tx, async () => {
-        const orderId = String(command.input.orderId ?? '').trim();
-        if (!orderId) throw new Error('orderId is required');
+	async execute(
+		command: CreatePaymentIntentCommand,
+	): Promise<CreatePaymentIntentResult> {
+		return this.em.transactional(async (tx) =>
+			RequestContext.create(tx, async () => {
+				const orderId = String(command.input.orderId ?? '').trim();
+				if (!orderId) throw new Error('orderId is required');
 
-        const order = await executeQuery(
-          this.queryBus,
-          new GetOrderQuery(orderId),
-        );
-        assertOrderView(order);
+				const order = await executeQuery(
+					this.queryBus,
+					new GetOrderQuery(orderId),
+				);
+				assertOrderView(order);
 
-        const payment = await this.payments.createIntent({
-          orderId,
-          amount: order.amount,
-          currency: order.currency,
-        });
+				const payment = await this.payments.createIntent({
+					orderId,
+					amount: order.amount,
+					currency: order.currency,
+				});
 
-        await executeCommand(
-          this.commandBus,
-          new AttachPaymentToOrderCommand({
-            orderId,
-            paymentId: payment.id,
-          }),
-        );
+				await executeCommand(
+					this.commandBus,
+					new AttachPaymentToOrderCommand({
+						orderId,
+						paymentId: payment.id,
+					}),
+				);
 
-        const outcome = command.input.simulateOutcome ?? 'SUCCEEDED';
-        const delaySeconds = Math.max(
-          0,
-          Number(command.input.simulateDelaySeconds ?? 10),
-        );
+				const outcome = command.input.simulateOutcome ?? 'SUCCEEDED';
+				const delaySeconds = Math.max(
+					0,
+					Number(command.input.simulateDelaySeconds ?? 10),
+				);
 
-        const event =
-          outcome === 'SUCCEEDED'
-            ? new PaymentWebhookSucceededEvent(orderId, payment.id)
-            : new PaymentWebhookFailedEvent(orderId, payment.id);
+				const event =
+					outcome === 'SUCCEEDED'
+						? new PaymentWebhookSucceededEvent(orderId, payment.id)
+						: new PaymentWebhookFailedEvent(orderId, payment.id);
 
-        const outboxId = await this.outbox.publish(event, {
-          delaySeconds,
-          messageGroupId: orderId,
-        });
+				const outboxId = await this.outbox.publish(event, {
+					delaySeconds,
+					messageGroupId: orderId,
+				});
 
-        await tx.flush();
+				await tx.flush();
 
-        const eventType =
-          outcome === 'SUCCEEDED'
-            ? PaymentWebhookSucceededEvent.eventType
-            : PaymentWebhookFailedEvent.eventType;
+				const eventType =
+					outcome === 'SUCCEEDED'
+						? PaymentWebhookSucceededEvent.eventType
+						: PaymentWebhookFailedEvent.eventType;
 
-        return {
-          paymentId: payment.id,
-          status: payment.status,
-          scheduled: {
-            eventType,
-            delaySeconds,
-            outboxId,
-          },
-        };
-      }),
-    );
-  }
+				return {
+					paymentId: payment.id,
+					status: payment.status,
+					scheduled: {
+						eventType,
+						delaySeconds,
+						outboxId,
+					},
+				};
+			}),
+		);
+	}
 }

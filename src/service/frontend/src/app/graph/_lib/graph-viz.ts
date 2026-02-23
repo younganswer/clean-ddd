@@ -40,7 +40,9 @@ type GraphColors = {
 	edgeText: string;
 };
 
-export const buildGraphElements = (graph: GraphView | null): ElementDefinition[] => {
+export const buildGraphElements = (
+	graph: GraphView | null,
+): ElementDefinition[] => {
 	if (!graph) return [];
 	const elements: ElementDefinition[] = [];
 

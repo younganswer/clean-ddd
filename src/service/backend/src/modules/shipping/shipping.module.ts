@@ -12,21 +12,21 @@ import { ShipmentsController } from '@/modules/shipping/presentation/shipments.c
 import { ShipmentReaderProvider } from '@/modules/shipping/infrastructure/readers/shipment.reader';
 
 @Module({
-  imports: [CqrsModule],
-  controllers: [ShipmentsController],
-  providers: [
-    ShipmentMapper,
-    ShipmentRepository,
-    {
-      provide: IShipmentRepositorySymbol,
-      useExisting: ShipmentRepository,
-    },
-    ShipmentReaderProvider,
-    CreateShipmentForOrderHandler,
-    ListShipmentsHandler,
-    GetShipmentHandler,
-    GetShipmentByOrderHandler,
-    CreateShipmentForOrderRequestedHandler,
-  ],
+	imports: [CqrsModule],
+	controllers: [ShipmentsController],
+	providers: [
+		ShipmentMapper,
+		ShipmentRepository,
+		{
+			provide: IShipmentRepositorySymbol,
+			useExisting: ShipmentRepository,
+		},
+		ShipmentReaderProvider,
+		CreateShipmentForOrderHandler,
+		ListShipmentsHandler,
+		GetShipmentHandler,
+		GetShipmentByOrderHandler,
+		CreateShipmentForOrderRequestedHandler,
+	],
 })
 export class ShippingModule {}

@@ -15,42 +15,43 @@ import { AvatarMapper } from '@/modules/users/infrastructure/mappers/avatar.mapp
 import { optionalEnv } from '@/env';
 
 @Module({
-  imports: [CqrsModule],
-  controllers: [MeController, UsersController],
-  providers: [
-    AvatarMapper,
-    SqlUserProfileRepository,
-    MongoUserAvatarRepository,
-    DynamoDbUserAvatarRepository,
-    SqlUserAvatarLinkRepository,
-    {
-      provide: IUserProfileRepositorySymbol,
-      useExisting: SqlUserProfileRepository,
-    },
-    {
-      provide: IUserAvatarRepositorySymbol,
-      useFactory: (
-        mongoUserAvatarRepository: MongoUserAvatarRepository,
-        dynamoDbUserAvatarRepository: DynamoDbUserAvatarRepository,
-      ) => {
-        const backend = optionalEnv('AVATAR_REPOSITORY_BACKEND') ?? 'mongo';
-        return backend === 'dynamodb'
-          ? dynamoDbUserAvatarRepository
-          : mongoUserAvatarRepository;
-      },
-      inject: [MongoUserAvatarRepository, DynamoDbUserAvatarRepository],
-    },
-    {
-      provide: IUserAvatarLinkRepositorySymbol,
-      useExisting: SqlUserAvatarLinkRepository,
-    },
-    ...CommandHandlers,
-    ...QueryHandlers,
-  ],
-  exports: [
-    IUserProfileRepositorySymbol,
-    IUserAvatarRepositorySymbol,
-    IUserAvatarLinkRepositorySymbol,
-  ],
+	imports: [CqrsModule],
+	controllers: [MeController, UsersController],
+	providers: [
+		AvatarMapper,
+		SqlUserProfileRepository,
+		MongoUserAvatarRepository,
+		DynamoDbUserAvatarRepository,
+		SqlUserAvatarLinkRepository,
+		{
+			provide: IUserProfileRepositorySymbol,
+			useExisting: SqlUserProfileRepository,
+		},
+		{
+			provide: IUserAvatarRepositorySymbol,
+			useFactory: (
+				mongoUserAvatarRepository: MongoUserAvatarRepository,
+				dynamoDbUserAvatarRepository: DynamoDbUserAvatarRepository,
+			) => {
+				const backend =
+					optionalEnv('AVATAR_REPOSITORY_BACKEND') ?? 'mongo';
+				return backend === 'dynamodb'
+					? dynamoDbUserAvatarRepository
+					: mongoUserAvatarRepository;
+			},
+			inject: [MongoUserAvatarRepository, DynamoDbUserAvatarRepository],
+		},
+		{
+			provide: IUserAvatarLinkRepositorySymbol,
+			useExisting: SqlUserAvatarLinkRepository,
+		},
+		...CommandHandlers,
+		...QueryHandlers,
+	],
+	exports: [
+		IUserProfileRepositorySymbol,
+		IUserAvatarRepositorySymbol,
+		IUserAvatarLinkRepositorySymbol,
+	],
 })
 export class UsersModule {}

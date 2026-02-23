@@ -4,21 +4,21 @@ import { InventoryItemSchema } from '@/modules/inventory/infrastructure/schemas/
 
 @Injectable()
 export class InventoryItemMapper {
-  toDomain(schema: InventoryItemSchema): InventoryItem {
-    if (schema.id == null) {
-      throw new Error('InventoryItemSchema.id is required');
-    }
+	toDomain(schema: InventoryItemSchema): InventoryItem {
+		if (schema.id == null) {
+			throw new Error('InventoryItemSchema.id is required');
+		}
 
-    return InventoryItem.rehydrate({
-      id: schema.id,
-      uuid: schema.uuid,
-      sku: schema.sku,
-      priceCurrency: schema.priceCurrency,
-      priceAmountMinor: schema.priceAmountMinor,
-      availableQuantity: schema.availableQuantity,
-      reservedQuantity: schema.reservedQuantity,
-      createdAt: schema.createdAt,
-      updatedAt: schema.updatedAt,
-    });
-  }
+		return InventoryItem.rehydrate({
+			id: schema.id,
+			uuid: schema.uuid,
+			sku: schema.sku,
+			priceCurrency: schema.priceCurrency,
+			priceAmountMinor: schema.priceAmountMinor,
+			availableQuantity: schema.availableQuantity,
+			reservedQuantity: schema.reservedQuantity,
+			createdAt: schema.createdAt,
+			updatedAt: schema.updatedAt,
+		});
+	}
 }

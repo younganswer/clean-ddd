@@ -3,7 +3,7 @@ import { CreateOrderHandler } from '@/modules/ordering/application/commands/hand
 import { MarkOrderPaidHandler } from '@/modules/ordering/application/commands/handlers/mark-order-paid.handler';
 
 export const CommandHandlers = [
-  CreateOrderHandler,
-  AttachPaymentToOrderHandler,
-  MarkOrderPaidHandler,
+	CreateOrderHandler,
+	AttachPaymentToOrderHandler,
+	MarkOrderPaidHandler,
 ];

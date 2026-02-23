@@ -4,13 +4,13 @@ import type { ShipmentView } from '@/shared/readers/shipping/dto/shipment.view';
 import type { InventoryItemView } from '@/shared/readers/inventory/dto/inventory-item.view';
 
 export type DashboardSummaryBffView = {
-  orders: OrderView[];
-  paymentIntents: PaymentIntentView[];
-  shipments: ShipmentView[];
-  inventoryItems: InventoryItemView[];
-  partialErrors?: string[];
+	orders: OrderView[];
+	paymentIntents: PaymentIntentView[];
+	shipments: ShipmentView[];
+	inventoryItems: InventoryItemView[];
+	partialErrors?: string[];
 };
 
 export class GetDashboardSummaryBffQuery {
-  constructor(public readonly input: { limit: number }) {}
+	constructor(public readonly input: { limit: number }) {}
 }

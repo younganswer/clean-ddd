@@ -1,3 +1,3 @@
 export class ListPaymentIntentsQuery {
-  constructor(public readonly limit: number) {}
+	constructor(public readonly limit: number) {}
 }

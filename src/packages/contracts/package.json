@@ -10,7 +10,7 @@
 		"generate:types": "openapi-typescript openapi.yaml -o types.generated.ts",
 		"typecheck": "tsc -p tsconfig.json --noEmit",
 		"lint": "echo \"(skip)\"",
-		"format": "prettier --write ."
+		"format": "prettier --write \"*.ts\""
 	},
 	"devDependencies": {
 		"openapi-typescript": "^7.5.2",

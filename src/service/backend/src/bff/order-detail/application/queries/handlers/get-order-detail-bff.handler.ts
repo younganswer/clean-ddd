@@ -13,80 +13,82 @@ import { ListInventoryReservationsQuery } from '@/shared/inventory/queries/list-
 import type { InventoryReservationView } from '@/shared/readers/inventory/dto/inventory-reservation.view';
 
 import {
-  GetOrderDetailBffQuery,
-  type OrderDetailBffView,
+	GetOrderDetailBffQuery,
+	type OrderDetailBffView,
 } from '@/bff/order-detail/application/queries/get-order-detail-bff.query';
 
 @QueryHandler(GetOrderDetailBffQuery)
 export class GetOrderDetailBffHandler implements IQueryHandler<GetOrderDetailBffQuery> {
-  constructor(private readonly queryBus: QueryBus) {}
+	constructor(private readonly queryBus: QueryBus) {}
 
-  async execute(
-    query: GetOrderDetailBffQuery,
-  ): Promise<OrderDetailBffView | null> {
-    const orderId = String(query.input.orderId ?? '').trim();
-    if (!orderId) return null;
+	async execute(
+		query: GetOrderDetailBffQuery,
+	): Promise<OrderDetailBffView | null> {
+		const orderId = String(query.input.orderId ?? '').trim();
+		if (!orderId) return null;
 
-    const includePayment = query.input.includePayment ?? true;
-    const includeShipment = query.input.includeShipment ?? true;
-    const includeReservations = query.input.includeReservations ?? true;
+		const includePayment = query.input.includePayment ?? true;
+		const includeShipment = query.input.includeShipment ?? true;
+		const includeReservations = query.input.includeReservations ?? true;
 
-    const order = await this.queryBus.execute<GetOrderQuery, OrderView | null>(
-      new GetOrderQuery(orderId),
-    );
-    if (!order) return null;
+		const order = await this.queryBus.execute<
+			GetOrderQuery,
+			OrderView | null
+		>(new GetOrderQuery(orderId));
+		if (!order) return null;
 
-    const partialErrors: string[] = [];
+		const partialErrors: string[] = [];
 
-    const paymentPromise =
-      includePayment && order.paymentId
-        ? this.queryBus.execute<
-            GetPaymentIntentQuery,
-            PaymentIntentView | null
-          >(new GetPaymentIntentQuery(order.paymentId))
-        : Promise.resolve(null);
+		const paymentPromise =
+			includePayment && order.paymentId
+				? this.queryBus.execute<
+						GetPaymentIntentQuery,
+						PaymentIntentView | null
+					>(new GetPaymentIntentQuery(order.paymentId))
+				: Promise.resolve(null);
 
-    const shipmentPromise = includeShipment
-      ? this.queryBus.execute<GetShipmentByOrderQuery, ShipmentView | null>(
-          new GetShipmentByOrderQuery(orderId),
-        )
-      : Promise.resolve(null);
+		const shipmentPromise = includeShipment
+			? this.queryBus.execute<
+					GetShipmentByOrderQuery,
+					ShipmentView | null
+				>(new GetShipmentByOrderQuery(orderId))
+			: Promise.resolve(null);
 
-    const reservationsPromise = includeReservations
-      ? this.queryBus.execute<
-          ListInventoryReservationsQuery,
-          InventoryReservationView[]
-        >(new ListInventoryReservationsQuery(orderId))
-      : Promise.resolve([]);
+		const reservationsPromise = includeReservations
+			? this.queryBus.execute<
+					ListInventoryReservationsQuery,
+					InventoryReservationView[]
+				>(new ListInventoryReservationsQuery(orderId))
+			: Promise.resolve([]);
 
-    const [paymentSettled, shipmentSettled, reservationsSettled] =
-      await Promise.allSettled([
-        paymentPromise,
-        shipmentPromise,
-        reservationsPromise,
-      ]);
+		const [paymentSettled, shipmentSettled, reservationsSettled] =
+			await Promise.allSettled([
+				paymentPromise,
+				shipmentPromise,
+				reservationsPromise,
+			]);
 
-    const paymentIntent =
-      paymentSettled.status === 'fulfilled'
-        ? paymentSettled.value
-        : (partialErrors.push('paymentIntent'), null);
+		const paymentIntent =
+			paymentSettled.status === 'fulfilled'
+				? paymentSettled.value
+				: (partialErrors.push('paymentIntent'), null);
 
-    const shipment =
-      shipmentSettled.status === 'fulfilled'
-        ? shipmentSettled.value
-        : (partialErrors.push('shipment'), null);
+		const shipment =
+			shipmentSettled.status === 'fulfilled'
+				? shipmentSettled.value
+				: (partialErrors.push('shipment'), null);
 
-    const reservations =
-      reservationsSettled.status === 'fulfilled'
-        ? reservationsSettled.value
-        : (partialErrors.push('reservations'), []);
+		const reservations =
+			reservationsSettled.status === 'fulfilled'
+				? reservationsSettled.value
+				: (partialErrors.push('reservations'), []);
 
-    return {
-      order,
-      paymentIntent,
-      shipment,
-      reservations,
-      partialErrors: partialErrors.length ? partialErrors : undefined,
-    };
-  }
+		return {
+			order,
+			paymentIntent,
+			shipment,
+			reservations,
+			partialErrors: partialErrors.length ? partialErrors : undefined,
+		};
+	}
 }

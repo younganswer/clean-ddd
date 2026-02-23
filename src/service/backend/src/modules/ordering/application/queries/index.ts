@@ -3,7 +3,7 @@ import { ListOrdersHandler } from '@/modules/ordering/application/queries/handle
 import { ListOrdersByUserSubjectIdHandler } from '@/modules/ordering/application/queries/handlers/list-orders-by-user-subject-id.handler';
 
 export const QueryHandlers = [
-  GetOrderHandler,
-  ListOrdersHandler,
-  ListOrdersByUserSubjectIdHandler,
+	GetOrderHandler,
+	ListOrdersHandler,
+	ListOrdersByUserSubjectIdHandler,
 ];

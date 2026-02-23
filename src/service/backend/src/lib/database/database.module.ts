@@ -4,11 +4,11 @@ import { mikroOrmConfigForRuntime } from '@/lib/database/mikro-orm.config';
 
 @Global()
 @Module({
-  imports: [
-    MikroOrmModule.forRoot({
-      ...mikroOrmConfigForRuntime(),
-      registerRequestContext: true,
-    }),
-  ],
+	imports: [
+		MikroOrmModule.forRoot({
+			...mikroOrmConfigForRuntime(),
+			registerRequestContext: true,
+		}),
+	],
 })
 export class DatabaseModule {}
