@@ -1,0 +1,45 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: Queue resources for clean-ddd
+
+Parameters:
+    ProjectName:
+        Type: String
+    EnvironmentName:
+        Type: String
+
+Resources:
+    OutboxDispatchDlq:
+        Type: AWS::SQS::Queue
+        Properties:
+            QueueName: !Sub "${ProjectName}-${EnvironmentName}-OutboxDispatchDlq.fifo"
+            FifoQueue: true
+            ContentBasedDeduplication: false
+            Tags:
+                - Key: Project
+                  Value: !Ref ProjectName
+                - Key: Environment
+                  Value: !Ref EnvironmentName
+
+    OutboxDispatchQueue:
+        Type: AWS::SQS::Queue
+        Properties:
+            QueueName: !Sub "${ProjectName}-${EnvironmentName}-OutboxDispatchQueue.fifo"
+            FifoQueue: true
+            ContentBasedDeduplication: false
+            RedrivePolicy:
+                deadLetterTargetArn: !GetAtt OutboxDispatchDlq.Arn
+                maxReceiveCount: 5
+            Tags:
+                - Key: Project
+                  Value: !Ref ProjectName
+                - Key: Environment
+                  Value: !Ref EnvironmentName
+
+Outputs:
+    OutboxQueueArn:
+        Value: !GetAtt OutboxDispatchQueue.Arn
+    OutboxQueueName:
+        Value: !GetAtt OutboxDispatchQueue.QueueName
+    OutboxQueueUrl:
+        Value: !Ref OutboxDispatchQueue

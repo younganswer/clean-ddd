@@ -1,0 +1,114 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: Worker lambda resources for clean-ddd
+
+Globals:
+    Function:
+        Runtime: nodejs22.x
+        MemorySize: 512
+        Timeout: 30
+        Tags:
+            Project: !Ref ProjectName
+            Environment: !Ref EnvironmentName
+        Architectures:
+            - arm64
+        Environment:
+            Variables:
+                DATABASE_URL_POOLED: !Ref DatabaseUrlPooled
+                DATABASE_URL_DIRECT: !Ref DatabaseUrlDirect
+                PGSSLMODE: require
+                DB_FORCE_SSL: true
+                SQS_OUTBOX_QUEUE_URL: !Ref OutboxQueueUrl
+                AVATAR_REPOSITORY_BACKEND: !Ref AvatarRepositoryBackend
+                DYNAMODB_AVATAR_TABLE: !Ref DynamoDbAvatarTable
+
+Parameters:
+    ProjectName:
+        Type: String
+    EnvironmentName:
+        Type: String
+    DatabaseUrlPooled:
+        Type: String
+        NoEcho: true
+    DatabaseUrlDirect:
+        Type: String
+        NoEcho: true
+    AvatarRepositoryBackend:
+        Type: String
+        AllowedValues:
+            - mongo
+            - dynamodb
+    DynamoDbAvatarTable:
+        Type: String
+    OutboxQueueArn:
+        Type: String
+    OutboxQueueName:
+        Type: String
+    OutboxQueueUrl:
+        Type: String
+    OutboxDispatchScheduleExpression:
+        Type: String
+        Default: rate(1 minute)
+    OutboxConsumerReservedConcurrency:
+        Type: Number
+        Default: 5
+    OutboxDispatchReservedConcurrency:
+        Type: Number
+        Default: 2
+
+Resources:
+    OutboxConsumerFunction:
+        Type: AWS::Serverless::Function
+        Properties:
+            CodeUri: ../../../service/backend
+            Handler: dist/src/lib/lambda/sqs/outbox.handler
+            ReservedConcurrentExecutions: !Ref OutboxConsumerReservedConcurrency
+            Environment:
+                Variables:
+                    OUTBOX_CRON_ENABLED: false
+                    OUTBOX_ENQUEUE_STRICT: true
+            Policies:
+                - SQSPollerPolicy:
+                      QueueName: !Ref OutboxQueueName
+                - DynamoDBReadPolicy:
+                      TableName: !Ref DynamoDbAvatarTable
+            Events:
+                OutboxQueue:
+                    Type: SQS
+                    Properties:
+                        Queue: !Ref OutboxQueueArn
+                        BatchSize: 1
+
+    OutboxDispatchSchedulerFunction:
+        Type: AWS::Serverless::Function
+        Properties:
+            CodeUri: ../../../service/backend
+            Handler: dist/src/lib/lambda/schedule/outbox-dispatch.handler
+            ReservedConcurrentExecutions: !Ref OutboxDispatchReservedConcurrency
+            Environment:
+                Variables:
+                    OUTBOX_CRON_ENABLED: false
+                    OUTBOX_DISPATCH_BATCH_SIZE: 10
+                    OUTBOX_ENQUEUE_STRICT: true
+            Policies:
+                - SQSSendMessagePolicy:
+                      QueueName: !Ref OutboxQueueName
+                - DynamoDBReadPolicy:
+                      TableName: !Ref DynamoDbAvatarTable
+            Events:
+                OutboxDispatchSchedule:
+                    Type: Schedule
+                    Properties:
+                        Schedule: !Ref OutboxDispatchScheduleExpression
+                        Name: !Sub "${ProjectName}-${EnvironmentName}-OutboxDispatchSchedule"
+                        Enabled: true
+
+Outputs:
+    OutboxConsumerFunctionName:
+        Value: !Ref OutboxConsumerFunction
+    OutboxConsumerFunctionArn:
+        Value: !GetAtt OutboxConsumerFunction.Arn
+    OutboxDispatchSchedulerFunctionName:
+        Value: !Ref OutboxDispatchSchedulerFunction
+    OutboxDispatchSchedulerFunctionArn:
+        Value: !GetAtt OutboxDispatchSchedulerFunction.Arn

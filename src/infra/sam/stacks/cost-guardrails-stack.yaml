@@ -1,0 +1,216 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: Daily per-service budget guardrails for clean-ddd
+
+Parameters:
+    ProjectName:
+        Type: String
+    EnvironmentName:
+        Type: String
+    AlertTopicArn:
+        Type: String
+    S3DailyBudgetUsd:
+        Type: Number
+        Default: 0.1
+    OtherServiceDailyBudgetUsd:
+        Type: Number
+        Default: 0.01
+
+Resources:
+    S3DailyBudget:
+        Type: AWS::Budgets::Budget
+        Properties:
+            Budget:
+                BudgetName: !Sub "${ProjectName}-${EnvironmentName}-s3-daily"
+                BudgetType: COST
+                TimeUnit: DAILY
+                BudgetLimit:
+                    Amount: !Ref S3DailyBudgetUsd
+                    Unit: USD
+                CostFilters:
+                    Service:
+                        - Amazon Simple Storage Service
+            NotificationsWithSubscribers:
+                - Notification:
+                      NotificationType: ACTUAL
+                      ComparisonOperator: GREATER_THAN
+                      Threshold: 100
+                  Subscribers:
+                      - SubscriptionType: SNS
+                        Address: !Ref AlertTopicArn
+
+    ApiGatewayDailyBudget:
+        Type: AWS::Budgets::Budget
+        Properties:
+            Budget:
+                BudgetName: !Sub "${ProjectName}-${EnvironmentName}-apigateway-daily"
+                BudgetType: COST
+                TimeUnit: DAILY
+                BudgetLimit:
+                    Amount: !Ref OtherServiceDailyBudgetUsd
+                    Unit: USD
+                CostFilters:
+                    Service:
+                        - Amazon API Gateway
+            NotificationsWithSubscribers:
+                - Notification:
+                      NotificationType: ACTUAL
+                      ComparisonOperator: GREATER_THAN
+                      Threshold: 100
+                  Subscribers:
+                      - SubscriptionType: SNS
+                        Address: !Ref AlertTopicArn
+
+    LambdaDailyBudget:
+        Type: AWS::Budgets::Budget
+        Properties:
+            Budget:
+                BudgetName: !Sub "${ProjectName}-${EnvironmentName}-lambda-daily"
+                BudgetType: COST
+                TimeUnit: DAILY
+                BudgetLimit:
+                    Amount: !Ref OtherServiceDailyBudgetUsd
+                    Unit: USD
+                CostFilters:
+                    Service:
+                        - AWS Lambda
+            NotificationsWithSubscribers:
+                - Notification:
+                      NotificationType: ACTUAL
+                      ComparisonOperator: GREATER_THAN
+                      Threshold: 100
+                  Subscribers:
+                      - SubscriptionType: SNS
+                        Address: !Ref AlertTopicArn
+
+    CloudFrontDailyBudget:
+        Type: AWS::Budgets::Budget
+        Properties:
+            Budget:
+                BudgetName: !Sub "${ProjectName}-${EnvironmentName}-cloudfront-daily"
+                BudgetType: COST
+                TimeUnit: DAILY
+                BudgetLimit:
+                    Amount: !Ref OtherServiceDailyBudgetUsd
+                    Unit: USD
+                CostFilters:
+                    Service:
+                        - Amazon CloudFront
+            NotificationsWithSubscribers:
+                - Notification:
+                      NotificationType: ACTUAL
+                      ComparisonOperator: GREATER_THAN
+                      Threshold: 100
+                  Subscribers:
+                      - SubscriptionType: SNS
+                        Address: !Ref AlertTopicArn
+
+    DynamoDbDailyBudget:
+        Type: AWS::Budgets::Budget
+        Properties:
+            Budget:
+                BudgetName: !Sub "${ProjectName}-${EnvironmentName}-dynamodb-daily"
+                BudgetType: COST
+                TimeUnit: DAILY
+                BudgetLimit:
+                    Amount: !Ref OtherServiceDailyBudgetUsd
+                    Unit: USD
+                CostFilters:
+                    Service:
+                        - Amazon DynamoDB
+            NotificationsWithSubscribers:
+                - Notification:
+                      NotificationType: ACTUAL
+                      ComparisonOperator: GREATER_THAN
+                      Threshold: 100
+                  Subscribers:
+                      - SubscriptionType: SNS
+                        Address: !Ref AlertTopicArn
+
+    SqsDailyBudget:
+        Type: AWS::Budgets::Budget
+        Properties:
+            Budget:
+                BudgetName: !Sub "${ProjectName}-${EnvironmentName}-sqs-daily"
+                BudgetType: COST
+                TimeUnit: DAILY
+                BudgetLimit:
+                    Amount: !Ref OtherServiceDailyBudgetUsd
+                    Unit: USD
+                CostFilters:
+                    Service:
+                        - Amazon Simple Queue Service
+            NotificationsWithSubscribers:
+                - Notification:
+                      NotificationType: ACTUAL
+                      ComparisonOperator: GREATER_THAN
+                      Threshold: 100
+                  Subscribers:
+                      - SubscriptionType: SNS
+                        Address: !Ref AlertTopicArn
+
+    EventBridgeDailyBudget:
+        Type: AWS::Budgets::Budget
+        Properties:
+            Budget:
+                BudgetName: !Sub "${ProjectName}-${EnvironmentName}-eventbridge-daily"
+                BudgetType: COST
+                TimeUnit: DAILY
+                BudgetLimit:
+                    Amount: !Ref OtherServiceDailyBudgetUsd
+                    Unit: USD
+                CostFilters:
+                    Service:
+                        - Amazon EventBridge
+            NotificationsWithSubscribers:
+                - Notification:
+                      NotificationType: ACTUAL
+                      ComparisonOperator: GREATER_THAN
+                      Threshold: 100
+                  Subscribers:
+                      - SubscriptionType: SNS
+                        Address: !Ref AlertTopicArn
+
+    CloudWatchDailyBudget:
+        Type: AWS::Budgets::Budget
+        Properties:
+            Budget:
+                BudgetName: !Sub "${ProjectName}-${EnvironmentName}-cloudwatch-daily"
+                BudgetType: COST
+                TimeUnit: DAILY
+                BudgetLimit:
+                    Amount: !Ref OtherServiceDailyBudgetUsd
+                    Unit: USD
+                CostFilters:
+                    Service:
+                        - AmazonCloudWatch
+            NotificationsWithSubscribers:
+                - Notification:
+                      NotificationType: ACTUAL
+                      ComparisonOperator: GREATER_THAN
+                      Threshold: 100
+                  Subscribers:
+                      - SubscriptionType: SNS
+                        Address: !Ref AlertTopicArn
+
+    SnsDailyBudget:
+        Type: AWS::Budgets::Budget
+        Properties:
+            Budget:
+                BudgetName: !Sub "${ProjectName}-${EnvironmentName}-sns-daily"
+                BudgetType: COST
+                TimeUnit: DAILY
+                BudgetLimit:
+                    Amount: !Ref OtherServiceDailyBudgetUsd
+                    Unit: USD
+                CostFilters:
+                    Service:
+                        - Amazon Simple Notification Service
+            NotificationsWithSubscribers:
+                - Notification:
+                      NotificationType: ACTUAL
+                      ComparisonOperator: GREATER_THAN
+                      Threshold: 100
+                  Subscribers:
+                      - SubscriptionType: SNS
+                        Address: !Ref AlertTopicArn

@@ -1,287 +1,178 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
-Description: clean-ddd (API Gateway + Lambda + SQS FIFO) minimal stack
-
-Globals:
-    Function:
-        Runtime: nodejs22.x
-        MemorySize: 512
-        Timeout: 10
-        Tags:
-            Project: !Ref ProjectName
-            Environment: !Ref EnvironmentName
-        Architectures:
-            - arm64
-        Environment:
-            Variables:
-                DATABASE_URL_POOLED: !Ref DatabaseUrlPooled
-                DATABASE_URL_DIRECT: !Ref DatabaseUrlDirect
-                PGSSLMODE: require
-                DB_FORCE_SSL: true
-                SQS_OUTBOX_QUEUE_URL: !Ref OutboxDispatchQueue
-                AVATAR_REPOSITORY_BACKEND: !Ref AvatarRepositoryBackend
-                DYNAMODB_AVATAR_TABLE: !Ref DynamoDbAvatarTable
+Description: clean-ddd nested serverless stack
 
 Parameters:
     ProjectName:
         Type: String
         Default: clean-ddd
-        Description: Project tag value
     EnvironmentName:
         Type: String
         Default: dev
-        Description: Environment tag value
     DatabaseUrlPooled:
         Type: String
         NoEcho: true
-        Description: Neon pooled connection string
     DatabaseUrlDirect:
         Type: String
         NoEcho: true
-        Description: Neon direct connection string
     AvatarRepositoryBackend:
         Type: String
         Default: dynamodb
         AllowedValues:
             - mongo
             - dynamodb
-        Description: Avatar repository backend selector
     DynamoDbAvatarTable:
         Type: String
         Default: clean-ddd-avatar
-        Description: DynamoDB table name for avatar documents
     OutboxDispatchScheduleExpression:
         Type: String
         Default: rate(1 minute)
-        Description: EventBridge schedule expression for outbox dispatch lambda
+    PublicApiThrottleBurst:
+        Type: Number
+        Default: 50
+    PublicApiThrottleRate:
+        Type: Number
+        Default: 25
+    PrivateApiThrottleBurst:
+        Type: Number
+        Default: 20
+    PrivateApiThrottleRate:
+        Type: Number
+        Default: 10
+    ApiFunctionReservedConcurrency:
+        Type: Number
+        Default: 10
+    OutboxConsumerReservedConcurrency:
+        Type: Number
+        Default: 5
+    OutboxDispatchReservedConcurrency:
+        Type: Number
+        Default: 2
+    CloudFrontAllowedCidrs:
+        Type: CommaDelimitedList
+        Default: 1.1.1.1/32
+    PrivateApiVpceIds:
+        Type: CommaDelimitedList
+        Default: vpce-00000000000000000
+    EdgeOriginVerifyHeaderName:
+        Type: String
+        Default: x-edge-origin-verify
+    EdgeOriginVerifyHeaderValue:
+        Type: String
+        NoEcho: true
+        Default: change-me
+    MitigationThrottleRate:
+        Type: Number
+        Default: 5
+    MitigationThrottleBurst:
+        Type: Number
+        Default: 10
+    MitigationApiReservedConcurrency:
+        Type: Number
+        Default: 3
+    MitigationConsumerReservedConcurrency:
+        Type: Number
+        Default: 1
+    MitigationDispatchReservedConcurrency:
+        Type: Number
+        Default: 1
+    MitigationBlockedPaths:
+        Type: CommaDelimitedList
+        Default: /api/v1/users/search:GET,/api/v1/users/list:GET
+    S3DailyBudgetUsd:
+        Type: Number
+        Default: 0.1
+    OtherServiceDailyBudgetUsd:
+        Type: Number
+        Default: 0.01
 
 Resources:
-    SecurityAlertsTopic:
-        Type: AWS::SNS::Topic
+    QueueStack:
+        Type: AWS::Serverless::Application
         Properties:
-            TopicName: !Sub "${ProjectName}-${EnvironmentName}-security-alerts"
-            Tags:
-                - Key: Project
-                  Value: !Ref ProjectName
-                - Key: Environment
-                  Value: !Ref EnvironmentName
+            Location: stacks/queue-stack.yaml
+            Parameters:
+                ProjectName: !Ref ProjectName
+                EnvironmentName: !Ref EnvironmentName
 
-    OutboxDispatchDlq:
-        Type: AWS::SQS::Queue
+    ApiStack:
+        Type: AWS::Serverless::Application
         Properties:
-            QueueName: OutboxDispatchDlq.fifo
-            FifoQueue: true
-            ContentBasedDeduplication: false
-            Tags:
-                - Key: Project
-                  Value: !Ref ProjectName
-                - Key: Environment
-                  Value: !Ref EnvironmentName
+            Location: stacks/api-stack.yaml
+            Parameters:
+                ProjectName: !Ref ProjectName
+                EnvironmentName: !Ref EnvironmentName
+                DatabaseUrlPooled: !Ref DatabaseUrlPooled
+                DatabaseUrlDirect: !Ref DatabaseUrlDirect
+                AvatarRepositoryBackend: !Ref AvatarRepositoryBackend
+                DynamoDbAvatarTable: !Ref DynamoDbAvatarTable
+                OutboxQueueName: !GetAtt QueueStack.Outputs.OutboxQueueName
+                OutboxQueueUrl: !GetAtt QueueStack.Outputs.OutboxQueueUrl
+                PublicApiThrottleBurst: !Ref PublicApiThrottleBurst
+                PublicApiThrottleRate: !Ref PublicApiThrottleRate
+                PrivateApiThrottleBurst: !Ref PrivateApiThrottleBurst
+                PrivateApiThrottleRate: !Ref PrivateApiThrottleRate
+                ApiFunctionReservedConcurrency: !Ref ApiFunctionReservedConcurrency
+                CloudFrontAllowedCidrs: !Join [",", !Ref CloudFrontAllowedCidrs]
+                PrivateApiVpceIds: !Join [",", !Ref PrivateApiVpceIds]
+                EdgeOriginVerifyHeaderName: !Ref EdgeOriginVerifyHeaderName
+                EdgeOriginVerifyHeaderValue: !Ref EdgeOriginVerifyHeaderValue
 
-    OutboxDispatchQueue:
-        Type: AWS::SQS::Queue
+    WorkerStack:
+        Type: AWS::Serverless::Application
         Properties:
-            QueueName: OutboxDispatchQueue.fifo
-            FifoQueue: true
-            ContentBasedDeduplication: false
-            RedrivePolicy:
-                deadLetterTargetArn: !GetAtt OutboxDispatchDlq.Arn
-                maxReceiveCount: 5
-            Tags:
-                - Key: Project
-                  Value: !Ref ProjectName
-                - Key: Environment
-                  Value: !Ref EnvironmentName
+            Location: stacks/worker-stack.yaml
+            Parameters:
+                ProjectName: !Ref ProjectName
+                EnvironmentName: !Ref EnvironmentName
+                DatabaseUrlPooled: !Ref DatabaseUrlPooled
+                DatabaseUrlDirect: !Ref DatabaseUrlDirect
+                AvatarRepositoryBackend: !Ref AvatarRepositoryBackend
+                DynamoDbAvatarTable: !Ref DynamoDbAvatarTable
+                OutboxQueueArn: !GetAtt QueueStack.Outputs.OutboxQueueArn
+                OutboxQueueName: !GetAtt QueueStack.Outputs.OutboxQueueName
+                OutboxQueueUrl: !GetAtt QueueStack.Outputs.OutboxQueueUrl
+                OutboxDispatchScheduleExpression: !Ref OutboxDispatchScheduleExpression
+                OutboxConsumerReservedConcurrency: !Ref OutboxConsumerReservedConcurrency
+                OutboxDispatchReservedConcurrency: !Ref OutboxDispatchReservedConcurrency
 
-    HttpApi:
-        Type: AWS::Serverless::HttpApi
+    MonitoringStack:
+        Type: AWS::Serverless::Application
         Properties:
-            StageName: $default
-            Tags:
-                Project: !Ref ProjectName
-                Environment: !Ref EnvironmentName
+            Location: stacks/monitoring-stack.yaml
+            Parameters:
+                ProjectName: !Ref ProjectName
+                EnvironmentName: !Ref EnvironmentName
+                PublicApiId: !GetAtt ApiStack.Outputs.PublicApiId
+                PublicApiStageName: !GetAtt ApiStack.Outputs.PublicApiStageName
+                ApiFunctionName: !GetAtt ApiStack.Outputs.ApiFunctionName
+                OutboxConsumerFunctionName: !GetAtt WorkerStack.Outputs.OutboxConsumerFunctionName
+                OutboxDispatchSchedulerFunctionName: !GetAtt WorkerStack.Outputs.OutboxDispatchSchedulerFunctionName
+                OutboxQueueName: !GetAtt QueueStack.Outputs.OutboxQueueName
+                MitigationThrottleRate: !Ref MitigationThrottleRate
+                MitigationThrottleBurst: !Ref MitigationThrottleBurst
+                MitigationApiReservedConcurrency: !Ref MitigationApiReservedConcurrency
+                MitigationConsumerReservedConcurrency: !Ref MitigationConsumerReservedConcurrency
+                MitigationDispatchReservedConcurrency: !Ref MitigationDispatchReservedConcurrency
+                MitigationBlockedPaths: !Join [",", !Ref MitigationBlockedPaths]
 
-    ApiFunction:
-        Type: AWS::Serverless::Function
+    CostGuardrailsStack:
+        Type: AWS::Serverless::Application
         Properties:
-            CodeUri: ../../service/backend
-            Handler: dist/src/lib/lambda/http.handler
-            Environment:
-                Variables:
-                    OUTBOX_CRON_ENABLED: false
-                    OUTBOX_ENQUEUE_STRICT: true
-                    OUTBOX_DIRECT_CONSUME_FALLBACK: true
-            Policies:
-                - SQSSendMessagePolicy:
-                      QueueName: !GetAtt OutboxDispatchQueue.QueueName
-                - DynamoDBCrudPolicy:
-                      TableName: !Ref DynamoDbAvatarTable
-            Events:
-                Api:
-                    Type: HttpApi
-                    Properties:
-                        ApiId: !Ref HttpApi
-                        Path: /{proxy+}
-                        Method: ANY
-
-    OutboxConsumerFunction:
-        Type: AWS::Serverless::Function
-        Properties:
-            CodeUri: ../../service/backend
-            Handler: dist/src/lib/lambda/sqs/outbox.handler
-            Timeout: 30
-            Environment:
-                Variables:
-                    OUTBOX_CRON_ENABLED: false
-                    OUTBOX_ENQUEUE_STRICT: true
-            Policies:
-                - SQSPollerPolicy:
-                      QueueName: !GetAtt OutboxDispatchQueue.QueueName
-                - DynamoDBReadPolicy:
-                      TableName: !Ref DynamoDbAvatarTable
-            Events:
-                OutboxQueue:
-                    Type: SQS
-                    Properties:
-                        Queue: !GetAtt OutboxDispatchQueue.Arn
-                        BatchSize: 1
-
-    OutboxDispatchSchedulerFunction:
-        Type: AWS::Serverless::Function
-        Properties:
-            CodeUri: ../../service/backend
-            Handler: dist/src/lib/lambda/schedule/outbox-dispatch.handler
-            Timeout: 30
-            Environment:
-                Variables:
-                    OUTBOX_CRON_ENABLED: false
-                    OUTBOX_DISPATCH_BATCH_SIZE: 10
-                    OUTBOX_ENQUEUE_STRICT: true
-            Policies:
-                - SQSSendMessagePolicy:
-                      QueueName: !GetAtt OutboxDispatchQueue.QueueName
-                - DynamoDBReadPolicy:
-                      TableName: !Ref DynamoDbAvatarTable
-            Events:
-                OutboxDispatchSchedule:
-                    Type: Schedule
-                    Properties:
-                        Schedule: !Ref OutboxDispatchScheduleExpression
-                        Name: !Sub "${AWS::StackName}-OutboxDispatchSchedule"
-                        Enabled: true
-
-    ApiGateway5xxAlarm:
-        Type: AWS::CloudWatch::Alarm
-        Properties:
-            AlarmName: !Sub "${ProjectName}-${EnvironmentName}-apigw-5xx"
-            AlarmDescription: HTTP API 5xx error count is elevated.
-            Namespace: AWS/ApiGateway
-            MetricName: 5xx
-            Dimensions:
-                - Name: ApiId
-                  Value: !Ref HttpApi
-                - Name: Stage
-                  Value: $default
-            Statistic: Sum
-            Period: 60
-            EvaluationPeriods: 3
-            DatapointsToAlarm: 2
-            Threshold: 10
-            ComparisonOperator: GreaterThanOrEqualToThreshold
-            TreatMissingData: notBreaching
-            AlarmActions:
-                - !Ref SecurityAlertsTopic
-
-    ApiGateway4xxAlarm:
-        Type: AWS::CloudWatch::Alarm
-        Properties:
-            AlarmName: !Sub "${ProjectName}-${EnvironmentName}-apigw-4xx"
-            AlarmDescription: HTTP API 4xx error count is elevated.
-            Namespace: AWS/ApiGateway
-            MetricName: 4xx
-            Dimensions:
-                - Name: ApiId
-                  Value: !Ref HttpApi
-                - Name: Stage
-                  Value: $default
-            Statistic: Sum
-            Period: 60
-            EvaluationPeriods: 5
-            DatapointsToAlarm: 3
-            Threshold: 100
-            ComparisonOperator: GreaterThanOrEqualToThreshold
-            TreatMissingData: notBreaching
-            AlarmActions:
-                - !Ref SecurityAlertsTopic
-
-    ApiGatewayLatencyAlarm:
-        Type: AWS::CloudWatch::Alarm
-        Properties:
-            AlarmName: !Sub "${ProjectName}-${EnvironmentName}-apigw-latency-p95"
-            AlarmDescription: HTTP API p95 latency is elevated.
-            Namespace: AWS/ApiGateway
-            MetricName: Latency
-            Dimensions:
-                - Name: ApiId
-                  Value: !Ref HttpApi
-                - Name: Stage
-                  Value: $default
-            ExtendedStatistic: p95
-            Period: 60
-            EvaluationPeriods: 5
-            DatapointsToAlarm: 3
-            Threshold: 1500
-            ComparisonOperator: GreaterThanOrEqualToThreshold
-            TreatMissingData: notBreaching
-            AlarmActions:
-                - !Ref SecurityAlertsTopic
-
-    ApiLambdaThrottleAlarm:
-        Type: AWS::CloudWatch::Alarm
-        Properties:
-            AlarmName: !Sub "${ProjectName}-${EnvironmentName}-api-lambda-throttles"
-            AlarmDescription: API Lambda throttles are elevated.
-            Namespace: AWS/Lambda
-            MetricName: Throttles
-            Dimensions:
-                - Name: FunctionName
-                  Value: !Ref ApiFunction
-            Statistic: Sum
-            Period: 60
-            EvaluationPeriods: 3
-            DatapointsToAlarm: 2
-            Threshold: 5
-            ComparisonOperator: GreaterThanOrEqualToThreshold
-            TreatMissingData: notBreaching
-            AlarmActions:
-                - !Ref SecurityAlertsTopic
-
-    OutboxQueueBacklogAgeAlarm:
-        Type: AWS::CloudWatch::Alarm
-        Properties:
-            AlarmName: !Sub "${ProjectName}-${EnvironmentName}-outbox-queue-age"
-            AlarmDescription: Outbox queue backlog age is elevated.
-            Namespace: AWS/SQS
-            MetricName: ApproximateAgeOfOldestMessage
-            Dimensions:
-                - Name: QueueName
-                  Value: !GetAtt OutboxDispatchQueue.QueueName
-            Statistic: Maximum
-            Period: 60
-            EvaluationPeriods: 5
-            DatapointsToAlarm: 3
-            Threshold: 300
-            ComparisonOperator: GreaterThanOrEqualToThreshold
-            TreatMissingData: notBreaching
-            AlarmActions:
-                - !Ref SecurityAlertsTopic
+            Location: stacks/cost-guardrails-stack.yaml
+            Parameters:
+                ProjectName: !Ref ProjectName
+                EnvironmentName: !Ref EnvironmentName
+                AlertTopicArn: !GetAtt MonitoringStack.Outputs.SecurityAlertsTopicArn
+                S3DailyBudgetUsd: !Ref S3DailyBudgetUsd
+                OtherServiceDailyBudgetUsd: !Ref OtherServiceDailyBudgetUsd
 
 Outputs:
     ApiUrl:
-        Value: !Sub "https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com"
+        Value: !GetAtt ApiStack.Outputs.ApiUrl
     SecurityAlertsTopicArn:
-        Value: !Ref SecurityAlertsTopic
+        Value: !GetAtt MonitoringStack.Outputs.SecurityAlertsTopicArn
     OutboxQueueUrl:
-        Value: !Ref OutboxDispatchQueue
+        Value: !GetAtt QueueStack.Outputs.OutboxQueueUrl
     AvatarTableName:
         Value: !Ref DynamoDbAvatarTable

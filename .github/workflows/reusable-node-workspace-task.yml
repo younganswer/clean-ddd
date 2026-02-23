@@ -120,6 +120,9 @@ jobs:
                   CLOUDFRONT_DISTRIBUTION_ID: ${{ vars.CLOUDFRONT_DISTRIBUTION_ID }}
                   AVATAR_REPOSITORY_BACKEND: ${{ vars.AVATAR_REPOSITORY_BACKEND }}
                   DYNAMODB_AVATAR_TABLE: ${{ vars.DYNAMODB_AVATAR_TABLE }}
+                  API_CLOUDFRONT_ALLOWED_CIDRS: ${{ vars.API_CLOUDFRONT_ALLOWED_CIDRS }}
+                  PRIVATE_API_VPCE_IDS: ${{ vars.PRIVATE_API_VPCE_IDS }}
+                  EDGE_ORIGIN_VERIFY_HEADER_VALUE: ${{ vars.EDGE_ORIGIN_VERIFY_HEADER_VALUE }}
                   DATABASE_URL_POOLED: ${{ secrets.DATABASE_URL_POOLED }}
                   DATABASE_URL_DIRECT: ${{ secrets.DATABASE_URL_DIRECT }}
               run: ${{ inputs.run_script }}
@@ -176,6 +179,9 @@ jobs:
                   CLOUDFRONT_DISTRIBUTION_ID: ${{ vars.CLOUDFRONT_DISTRIBUTION_ID }}
                   AVATAR_REPOSITORY_BACKEND: ${{ vars.AVATAR_REPOSITORY_BACKEND }}
                   DYNAMODB_AVATAR_TABLE: ${{ vars.DYNAMODB_AVATAR_TABLE }}
+                  API_CLOUDFRONT_ALLOWED_CIDRS: ${{ vars.API_CLOUDFRONT_ALLOWED_CIDRS }}
+                  PRIVATE_API_VPCE_IDS: ${{ vars.PRIVATE_API_VPCE_IDS }}
+                  EDGE_ORIGIN_VERIFY_HEADER_VALUE: ${{ vars.EDGE_ORIGIN_VERIFY_HEADER_VALUE }}
                   DATABASE_URL_POOLED: ${{ secrets.DATABASE_URL_POOLED }}
                   DATABASE_URL_DIRECT: ${{ secrets.DATABASE_URL_DIRECT }}
               run: ${{ inputs.run_script }}

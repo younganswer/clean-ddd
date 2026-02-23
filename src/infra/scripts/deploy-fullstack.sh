@@ -18,6 +18,9 @@ required_vars=(
   CLOUDFRONT_DISTRIBUTION_ID
   AVATAR_REPOSITORY_BACKEND
   DYNAMODB_AVATAR_TABLE
+  API_CLOUDFRONT_ALLOWED_CIDRS
+  PRIVATE_API_VPCE_IDS
+  EDGE_ORIGIN_VERIFY_HEADER_VALUE
 )
 
 required_secrets=(
@@ -51,6 +54,51 @@ validate_required_inputs() {
       exit 1
     fi
   done
+
+  validate_guardrail_inputs
+}
+
+validate_guardrail_inputs() {
+  if [[ "$API_CLOUDFRONT_ALLOWED_CIDRS" == *" "* ]]; then
+    echo "API_CLOUDFRONT_ALLOWED_CIDRS must be comma-separated without spaces"
+    exit 1
+  fi
+
+  IFS=',' read -r -a cidrs <<< "$API_CLOUDFRONT_ALLOWED_CIDRS"
+  if [[ "${#cidrs[@]}" -eq 0 ]]; then
+    echo "API_CLOUDFRONT_ALLOWED_CIDRS must contain at least one CIDR"
+    exit 1
+  fi
+
+  for cidr in "${cidrs[@]}"; do
+    if [[ ! "$cidr" =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}/[0-9]{1,2}$ ]]; then
+      echo "invalid CIDR format in API_CLOUDFRONT_ALLOWED_CIDRS: $cidr"
+      exit 1
+    fi
+  done
+
+  if [[ "$PRIVATE_API_VPCE_IDS" == *" "* ]]; then
+    echo "PRIVATE_API_VPCE_IDS must be comma-separated without spaces"
+    exit 1
+  fi
+
+  IFS=',' read -r -a vpce_ids <<< "$PRIVATE_API_VPCE_IDS"
+  if [[ "${#vpce_ids[@]}" -eq 0 ]]; then
+    echo "PRIVATE_API_VPCE_IDS must contain at least one vpce id"
+    exit 1
+  fi
+
+  for vpce_id in "${vpce_ids[@]}"; do
+    if [[ ! "$vpce_id" =~ ^vpce-[0-9a-f]+$ ]]; then
+      echo "invalid VPC endpoint id in PRIVATE_API_VPCE_IDS: $vpce_id"
+      exit 1
+    fi
+  done
+
+  if [[ ${#EDGE_ORIGIN_VERIFY_HEADER_VALUE} -lt 24 ]]; then
+    echo "EDGE_ORIGIN_VERIFY_HEADER_VALUE is too short (min: 24 chars)"
+    exit 1
+  fi
 }
 
 build_workspace() {
@@ -132,7 +180,7 @@ deploy_backend() {
     --template-file .aws-sam/build/template.yaml \
     --stack-name "$SAM_STACK_NAME" \
     --s3-bucket "$SAM_S3_BUCKET" \
-    --capabilities CAPABILITY_IAM \
+    --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND \
     --no-fail-on-empty-changeset \
     --parameter-overrides \
       ProjectName="$PROJECT_NAME" \
@@ -140,7 +188,10 @@ deploy_backend() {
       DatabaseUrlPooled="$DATABASE_URL_POOLED" \
       DatabaseUrlDirect="$DATABASE_URL_DIRECT" \
       AvatarRepositoryBackend="$AVATAR_REPOSITORY_BACKEND" \
-      DynamoDbAvatarTable="$DYNAMODB_AVATAR_TABLE"
+      DynamoDbAvatarTable="$DYNAMODB_AVATAR_TABLE" \
+      CloudFrontAllowedCidrs="$API_CLOUDFRONT_ALLOWED_CIDRS" \
+      PrivateApiVpceIds="$PRIVATE_API_VPCE_IDS" \
+      EdgeOriginVerifyHeaderValue="$EDGE_ORIGIN_VERIFY_HEADER_VALUE"
 }
 
 resolve_urls() {

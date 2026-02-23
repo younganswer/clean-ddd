@@ -1,0 +1,211 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: API resources for clean-ddd (private + edge)
+
+Globals:
+    Function:
+        Runtime: nodejs22.x
+        MemorySize: 512
+        Timeout: 10
+        Tags:
+            Project: !Ref ProjectName
+            Environment: !Ref EnvironmentName
+        Architectures:
+            - arm64
+        Environment:
+            Variables:
+                DATABASE_URL_POOLED: !Ref DatabaseUrlPooled
+                DATABASE_URL_DIRECT: !Ref DatabaseUrlDirect
+                PGSSLMODE: require
+                DB_FORCE_SSL: true
+                SQS_OUTBOX_QUEUE_URL: !Ref OutboxQueueUrl
+                AVATAR_REPOSITORY_BACKEND: !Ref AvatarRepositoryBackend
+                DYNAMODB_AVATAR_TABLE: !Ref DynamoDbAvatarTable
+
+Parameters:
+    ProjectName:
+        Type: String
+    EnvironmentName:
+        Type: String
+    DatabaseUrlPooled:
+        Type: String
+        NoEcho: true
+    DatabaseUrlDirect:
+        Type: String
+        NoEcho: true
+    AvatarRepositoryBackend:
+        Type: String
+        AllowedValues:
+            - mongo
+            - dynamodb
+    DynamoDbAvatarTable:
+        Type: String
+    OutboxQueueName:
+        Type: String
+    OutboxQueueUrl:
+        Type: String
+    PublicApiThrottleBurst:
+        Type: Number
+        Default: 50
+    PublicApiThrottleRate:
+        Type: Number
+        Default: 25
+    PrivateApiThrottleBurst:
+        Type: Number
+        Default: 20
+    PrivateApiThrottleRate:
+        Type: Number
+        Default: 10
+    ApiFunctionReservedConcurrency:
+        Type: Number
+        Default: 10
+    CloudFrontAllowedCidrs:
+        Type: CommaDelimitedList
+        Description: Allowed source CIDRs for edge API invoke (CloudFront egress CIDRs)
+    PrivateApiVpceIds:
+        Type: CommaDelimitedList
+        Description: Allowed VPC endpoint IDs for private API invoke
+    EdgeOriginVerifyHeaderName:
+        Type: String
+        Default: x-edge-origin-verify
+    EdgeOriginVerifyHeaderValue:
+        Type: String
+        NoEcho: true
+
+Resources:
+    PublicEdgeApi:
+        Type: AWS::Serverless::Api
+        Properties:
+            Name: !Sub "${ProjectName}-${EnvironmentName}-edge-api"
+            StageName: v1
+            EndpointConfiguration: REGIONAL
+            Auth:
+                ResourcePolicy:
+                    CustomStatements:
+                        - Effect: Deny
+                          Principal: "*"
+                          Action: execute-api:Invoke
+                          Resource: execute-api:/*/*/*
+                          Condition:
+                              NotIpAddress:
+                                  aws:SourceIp: !Ref CloudFrontAllowedCidrs
+            MethodSettings:
+                - HttpMethod: "*"
+                  ResourcePath: "/*"
+                  ThrottlingBurstLimit: !Ref PublicApiThrottleBurst
+                  ThrottlingRateLimit: !Ref PublicApiThrottleRate
+            Tags:
+                Project: !Ref ProjectName
+                Environment: !Ref EnvironmentName
+
+    InternalPrivateApi:
+        Type: AWS::Serverless::Api
+        Properties:
+            Name: !Sub "${ProjectName}-${EnvironmentName}-private-api"
+            StageName: internal
+            EndpointConfiguration: PRIVATE
+            Auth:
+                ResourcePolicy:
+                    CustomStatements:
+                        - Effect: Deny
+                          Principal: "*"
+                          Action: execute-api:Invoke
+                          Resource: execute-api:/*/*/*
+                          Condition:
+                              StringNotEquals:
+                                  aws:SourceVpce: !Ref PrivateApiVpceIds
+            MethodSettings:
+                - HttpMethod: "*"
+                  ResourcePath: "/*"
+                  ThrottlingBurstLimit: !Ref PrivateApiThrottleBurst
+                  ThrottlingRateLimit: !Ref PrivateApiThrottleRate
+            Tags:
+                Project: !Ref ProjectName
+                Environment: !Ref EnvironmentName
+
+    ApiFunction:
+        Type: AWS::Serverless::Function
+        Properties:
+            CodeUri: ../../../service/backend
+            Handler: dist/src/lib/lambda/http.handler
+            ReservedConcurrentExecutions: !Ref ApiFunctionReservedConcurrency
+            Environment:
+                Variables:
+                    OUTBOX_CRON_ENABLED: false
+                    OUTBOX_ENQUEUE_STRICT: true
+                    OUTBOX_DIRECT_CONSUME_FALLBACK: true
+            Policies:
+                - SQSSendMessagePolicy:
+                      QueueName: !Ref OutboxQueueName
+                - DynamoDBCrudPolicy:
+                      TableName: !Ref DynamoDbAvatarTable
+            Events:
+                PublicApi:
+                    Type: Api
+                    Properties:
+                        RestApiId: !Ref PublicEdgeApi
+                        Path: /{proxy+}
+                        Method: ANY
+                PrivateApi:
+                    Type: Api
+                    Properties:
+                        RestApiId: !Ref InternalPrivateApi
+                        Path: /{proxy+}
+                        Method: ANY
+
+    ApiEdgeDistribution:
+        Type: AWS::CloudFront::Distribution
+        Properties:
+            DistributionConfig:
+                Enabled: true
+                Comment: !Sub "${ProjectName}-${EnvironmentName}-api-edge"
+                HttpVersion: http2
+                PriceClass: PriceClass_200
+                Origins:
+                    - Id: edge-api-origin
+                      DomainName: !Sub "${PublicEdgeApi}.execute-api.${AWS::Region}.amazonaws.com"
+                      OriginPath: /v1
+                      CustomOriginConfig:
+                          HTTPSPort: 443
+                          OriginProtocolPolicy: https-only
+                          OriginSSLProtocols:
+                              - TLSv1.2
+                      OriginCustomHeaders:
+                          - HeaderName: !Ref EdgeOriginVerifyHeaderName
+                            HeaderValue: !Ref EdgeOriginVerifyHeaderValue
+                DefaultCacheBehavior:
+                    TargetOriginId: edge-api-origin
+                    ViewerProtocolPolicy: https-only
+                    AllowedMethods:
+                        - GET
+                        - HEAD
+                        - OPTIONS
+                        - PUT
+                        - PATCH
+                        - POST
+                        - DELETE
+                    CachedMethods:
+                        - GET
+                        - HEAD
+                        - OPTIONS
+                    Compress: true
+                    CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
+                    OriginRequestPolicyId: 216adef6-5c7f-47e4-b989-5492eafa07d3
+                ViewerCertificate:
+                    CloudFrontDefaultCertificate: true
+
+Outputs:
+    PublicApiId:
+        Value: !Ref PublicEdgeApi
+    PublicApiStageName:
+        Value: v1
+    PrivateApiId:
+        Value: !Ref InternalPrivateApi
+    PrivateApiStageName:
+        Value: internal
+    ApiFunctionName:
+        Value: !Ref ApiFunction
+    ApiFunctionArn:
+        Value: !GetAtt ApiFunction.Arn
+    ApiUrl:
+        Value: !Sub "https://${ApiEdgeDistribution.DomainName}"
