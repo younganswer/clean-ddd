@@ -157,6 +157,14 @@ configure_web_bucket_private() {
   echo "Configured web bucket private access: ${WEB_BUCKET}"
 }
 
+tag_s3_bucket() {
+  local bucket_name="$1"
+
+  aws s3api put-bucket-tagging \
+    --bucket "$bucket_name" \
+    --tagging "TagSet=[{Key=Project,Value=${PROJECT}},{Key=Environment,Value=${ENV_NAME}},{Key=Service,Value=infra}]" >/dev/null
+}
+
 create_dynamodb_if_missing() {
   if aws dynamodb describe-table --table-name "$DDB_TABLE" --region "$AWS_REGION" >/dev/null 2>&1; then
     echo "DynamoDB table exists: ${DDB_TABLE}"
@@ -173,6 +181,15 @@ create_dynamodb_if_missing() {
 
   aws dynamodb wait table-exists --table-name "$DDB_TABLE" --region "$AWS_REGION"
   echo "Created DynamoDB table: ${DDB_TABLE}"
+}
+
+tag_dynamodb_table() {
+  local table_arn
+  table_arn="$(aws dynamodb describe-table --table-name "$DDB_TABLE" --region "$AWS_REGION" --query 'Table.TableArn' --output text)"
+
+  aws dynamodb tag-resource \
+    --resource-arn "$table_arn" \
+    --tags Key=Project,Value="$PROJECT" Key=Environment,Value="$ENV_NAME" Key=Service,Value=avatar >/dev/null
 }
 
 ensure_oac() {
@@ -346,8 +363,11 @@ create_bucket_if_missing "$ARTIFACT_BUCKET"
 create_bucket_if_missing "$WEB_BUCKET"
 configure_artifact_bucket
 configure_web_bucket_private
+tag_s3_bucket "$ARTIFACT_BUCKET"
+tag_s3_bucket "$WEB_BUCKET"
 
 create_dynamodb_if_missing
+tag_dynamodb_table
 
 CF_DISTRIBUTION_ID="$(ensure_cloudfront_distribution)"
 CF_DOMAIN_NAME="$(aws cloudfront get-distribution --id "$CF_DISTRIBUTION_ID" --query 'Distribution.DomainName' --output text)"

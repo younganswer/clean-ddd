@@ -7,6 +7,9 @@ Globals:
         Runtime: nodejs22.x
         MemorySize: 512
         Timeout: 10
+        Tags:
+            Project: !Ref ProjectName
+            Environment: !Ref EnvironmentName
         Architectures:
             - arm64
         Environment:
@@ -20,6 +23,14 @@ Globals:
                 DYNAMODB_AVATAR_TABLE: !Ref DynamoDbAvatarTable
 
 Parameters:
+    ProjectName:
+        Type: String
+        Default: clean-ddd
+        Description: Project tag value
+    EnvironmentName:
+        Type: String
+        Default: dev
+        Description: Environment tag value
     DatabaseUrlPooled:
         Type: String
         NoEcho: true
@@ -45,12 +56,27 @@ Parameters:
         Description: EventBridge schedule expression for outbox dispatch lambda
 
 Resources:
+    SecurityAlertsTopic:
+        Type: AWS::SNS::Topic
+        Properties:
+            TopicName: !Sub "${ProjectName}-${EnvironmentName}-security-alerts"
+            Tags:
+                - Key: Project
+                  Value: !Ref ProjectName
+                - Key: Environment
+                  Value: !Ref EnvironmentName
+
     OutboxDispatchDlq:
         Type: AWS::SQS::Queue
         Properties:
             QueueName: OutboxDispatchDlq.fifo
             FifoQueue: true
             ContentBasedDeduplication: false
+            Tags:
+                - Key: Project
+                  Value: !Ref ProjectName
+                - Key: Environment
+                  Value: !Ref EnvironmentName
 
     OutboxDispatchQueue:
         Type: AWS::SQS::Queue
@@ -61,11 +87,19 @@ Resources:
             RedrivePolicy:
                 deadLetterTargetArn: !GetAtt OutboxDispatchDlq.Arn
                 maxReceiveCount: 5
+            Tags:
+                - Key: Project
+                  Value: !Ref ProjectName
+                - Key: Environment
+                  Value: !Ref EnvironmentName
 
     HttpApi:
         Type: AWS::Serverless::HttpApi
         Properties:
             StageName: $default
+            Tags:
+                Project: !Ref ProjectName
+                Environment: !Ref EnvironmentName
 
     ApiFunction:
         Type: AWS::Serverless::Function
@@ -136,9 +170,117 @@ Resources:
                         Name: !Sub "${AWS::StackName}-OutboxDispatchSchedule"
                         Enabled: true
 
+    ApiGateway5xxAlarm:
+        Type: AWS::CloudWatch::Alarm
+        Properties:
+            AlarmName: !Sub "${ProjectName}-${EnvironmentName}-apigw-5xx"
+            AlarmDescription: HTTP API 5xx error count is elevated.
+            Namespace: AWS/ApiGateway
+            MetricName: 5xx
+            Dimensions:
+                - Name: ApiId
+                  Value: !Ref HttpApi
+                - Name: Stage
+                  Value: $default
+            Statistic: Sum
+            Period: 60
+            EvaluationPeriods: 3
+            DatapointsToAlarm: 2
+            Threshold: 10
+            ComparisonOperator: GreaterThanOrEqualToThreshold
+            TreatMissingData: notBreaching
+            AlarmActions:
+                - !Ref SecurityAlertsTopic
+
+    ApiGateway4xxAlarm:
+        Type: AWS::CloudWatch::Alarm
+        Properties:
+            AlarmName: !Sub "${ProjectName}-${EnvironmentName}-apigw-4xx"
+            AlarmDescription: HTTP API 4xx error count is elevated.
+            Namespace: AWS/ApiGateway
+            MetricName: 4xx
+            Dimensions:
+                - Name: ApiId
+                  Value: !Ref HttpApi
+                - Name: Stage
+                  Value: $default
+            Statistic: Sum
+            Period: 60
+            EvaluationPeriods: 5
+            DatapointsToAlarm: 3
+            Threshold: 100
+            ComparisonOperator: GreaterThanOrEqualToThreshold
+            TreatMissingData: notBreaching
+            AlarmActions:
+                - !Ref SecurityAlertsTopic
+
+    ApiGatewayLatencyAlarm:
+        Type: AWS::CloudWatch::Alarm
+        Properties:
+            AlarmName: !Sub "${ProjectName}-${EnvironmentName}-apigw-latency-p95"
+            AlarmDescription: HTTP API p95 latency is elevated.
+            Namespace: AWS/ApiGateway
+            MetricName: Latency
+            Dimensions:
+                - Name: ApiId
+                  Value: !Ref HttpApi
+                - Name: Stage
+                  Value: $default
+            ExtendedStatistic: p95
+            Period: 60
+            EvaluationPeriods: 5
+            DatapointsToAlarm: 3
+            Threshold: 1500
+            ComparisonOperator: GreaterThanOrEqualToThreshold
+            TreatMissingData: notBreaching
+            AlarmActions:
+                - !Ref SecurityAlertsTopic
+
+    ApiLambdaThrottleAlarm:
+        Type: AWS::CloudWatch::Alarm
+        Properties:
+            AlarmName: !Sub "${ProjectName}-${EnvironmentName}-api-lambda-throttles"
+            AlarmDescription: API Lambda throttles are elevated.
+            Namespace: AWS/Lambda
+            MetricName: Throttles
+            Dimensions:
+                - Name: FunctionName
+                  Value: !Ref ApiFunction
+            Statistic: Sum
+            Period: 60
+            EvaluationPeriods: 3
+            DatapointsToAlarm: 2
+            Threshold: 5
+            ComparisonOperator: GreaterThanOrEqualToThreshold
+            TreatMissingData: notBreaching
+            AlarmActions:
+                - !Ref SecurityAlertsTopic
+
+    OutboxQueueBacklogAgeAlarm:
+        Type: AWS::CloudWatch::Alarm
+        Properties:
+            AlarmName: !Sub "${ProjectName}-${EnvironmentName}-outbox-queue-age"
+            AlarmDescription: Outbox queue backlog age is elevated.
+            Namespace: AWS/SQS
+            MetricName: ApproximateAgeOfOldestMessage
+            Dimensions:
+                - Name: QueueName
+                  Value: !GetAtt OutboxDispatchQueue.QueueName
+            Statistic: Maximum
+            Period: 60
+            EvaluationPeriods: 5
+            DatapointsToAlarm: 3
+            Threshold: 300
+            ComparisonOperator: GreaterThanOrEqualToThreshold
+            TreatMissingData: notBreaching
+            AlarmActions:
+                - !Ref SecurityAlertsTopic
+
 Outputs:
     ApiUrl:
         Value: !Sub "https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com"
+    SecurityAlertsTopicArn:
+        Value: !Ref SecurityAlertsTopic
     OutboxQueueUrl:
         Value: !Ref OutboxDispatchQueue
     AvatarTableName:

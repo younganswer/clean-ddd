@@ -4,6 +4,7 @@ set -euo pipefail
 
 TARGET_ENV="$1"
 DEPLOY_TIMEOUT_SECONDS="${DEPLOY_TIMEOUT_SECONDS-600}"
+PROJECT_NAME="${PROJECT_NAME-clean-ddd}"
 
 API_URL=""
 DEPLOY_URL=""
@@ -134,6 +135,8 @@ deploy_backend() {
     --capabilities CAPABILITY_IAM \
     --no-fail-on-empty-changeset \
     --parameter-overrides \
+      ProjectName="$PROJECT_NAME" \
+      EnvironmentName="$TARGET_ENV" \
       DatabaseUrlPooled="$DATABASE_URL_POOLED" \
       DatabaseUrlDirect="$DATABASE_URL_DIRECT" \
       AvatarRepositoryBackend="$AVATAR_REPOSITORY_BACKEND" \
