@@ -3,12 +3,12 @@
 set -euo pipefail
 
 DAYS=30
-AWS_REGION="${AWS_REGION-}"
-AWS_PROFILE_NAME="${AWS_PROFILE-}"
-STACK_NAME="${SAM_STACK_NAME-}"
+AWS_REGION="${AWS_REGION-ap-northeast-2}"
+AWS_PROFILE_NAME="${AWS_PROFILE-clean-ddd}"
+STACK_NAME="${SAM_STACK_NAME-clean-ddd-prod}"
 FRONTEND_BUCKET="${FRONTEND_S3_BUCKET-}"
 CLOUDFRONT_DISTRIBUTION_ID="${CLOUDFRONT_DISTRIBUTION_ID-}"
-DYNAMODB_TABLE="${DYNAMODB_AVATAR_TABLE-}"
+DYNAMODB_TABLE="${DYNAMODB_AVATAR_TABLE-clean-ddd-avatar-prod}"
 OUTPUT_DIR="tmp/aws-usage-report"
 
 usage() {
@@ -18,12 +18,12 @@ Usage:
 
 Options:
   --days <n>                        Lookback days (default: 30)
-  --region <aws-region>             AWS region (default: env AWS_REGION)
-  --profile <aws-profile>           AWS profile (default: env AWS_PROFILE)
-  --stack-name <name>               CloudFormation stack name (required)
+  --region <aws-region>             AWS region (default: ap-northeast-2)
+  --profile <aws-profile>           AWS profile (default: clean-ddd)
+  --stack-name <name>               CloudFormation stack name (default: clean-ddd-prod)
   --frontend-bucket <name>          Frontend S3 bucket name (optional)
   --cloudfront-distribution-id <id> CloudFront distribution ID (optional)
-  --dynamodb-table <name>           DynamoDB table name (required)
+  --dynamodb-table <name>           DynamoDB table name (default: clean-ddd-avatar-prod)
   --output-dir <path>               Output directory (default: tmp/aws-usage-report)
   -h, --help                        Show this help
 
@@ -96,25 +96,6 @@ validate_inputs() {
   require_command aws
   require_command jq
   require_command python3
-
-  if [[ -z "$STACK_NAME" ]]; then
-    echo "missing required option: --stack-name"
-    exit 1
-  fi
-
-  if [[ -z "$DYNAMODB_TABLE" ]]; then
-    echo "missing required option: --dynamodb-table"
-    exit 1
-  fi
-
-  if [[ -z "$AWS_REGION" && -n "${AWS_DEFAULT_REGION-}" ]]; then
-    AWS_REGION="$AWS_DEFAULT_REGION"
-  fi
-
-  if [[ -z "$AWS_REGION" ]]; then
-    echo "missing AWS region. set --region or AWS_REGION"
-    exit 1
-  fi
 
   if ! [[ "$DAYS" =~ ^[0-9]+$ ]] || [[ "$DAYS" -le 0 ]]; then
     echo "--days must be a positive integer"
@@ -224,6 +205,21 @@ cost_for_service() {
   jq -r --arg service_name "$service_name" '[.ResultsByTime[].Groups[] | select(.Keys[0] == $service_name) | (.Metrics.UnblendedCost.Amount | tonumber)] | add // 0' <<<"$COST_BY_SERVICE_JSON"
 }
 
+cost_for_services() {
+  local total=0
+  local service_name
+  local value
+
+  for service_name in "$@"; do
+    value="$(cost_for_service "$service_name")"
+    if is_number "$value"; then
+      total="$(sum_values "$total" "$value")"
+    fi
+  done
+
+  echo "$total"
+}
+
 is_number() {
   [[ "$1" =~ ^-?[0-9]+([.][0-9]+)?$ ]]
 }
@@ -283,6 +279,7 @@ collect_request_metrics() {
   local cf_total="NA"
   local ddb_read=0
   local ddb_write=0
+  local cloudwatch_calls="NA"
   local value
 
   local api_id
@@ -328,12 +325,15 @@ collect_request_metrics() {
     fi
   fi
 
+  cloudwatch_calls=$(safe_metric_sum "AWS/Usage" "CallCount" "Sum" "Name=Service,Value=CloudWatch Name=Type,Value=API Name=Resource,Value=GetMetricStatistics Name=Class,Value=None")
+
   REQUEST_API_GATEWAY=$(format_metric_value "$api_total")
   REQUEST_LAMBDA=$(format_metric_value "$lambda_total")
   REQUEST_SQS=$(format_metric_value "$sqs_sent_total")
   REQUEST_DDB_RCU=$(format_metric_value "$ddb_read")
   REQUEST_DDB_WCU=$(format_metric_value "$ddb_write")
   REQUEST_CLOUDFRONT=$(format_metric_value "$cf_total")
+  REQUEST_CLOUDWATCH_API=$(format_metric_value "$cloudwatch_calls")
 }
 
 collect_cost_metrics() {
@@ -350,6 +350,8 @@ collect_cost_metrics() {
   COST_DDB="$(format_usd "$(cost_for_service "Amazon DynamoDB")")"
   COST_S3="$(format_usd "$(cost_for_service "Amazon Simple Storage Service")")"
   COST_CLOUDFRONT="$(format_usd "$(cost_for_service "Amazon CloudFront")")"
+  COST_CLOUDWATCH="$(format_usd "$(cost_for_services "AmazonCloudWatch" "Amazon CloudWatch")")"
+  COST_SHIELD="$(format_usd "$(cost_for_service "AWS Shield")")"
 }
 
 write_reports() {
@@ -372,6 +374,8 @@ write_reports() {
   add_result_row "DynamoDB" "ConsumedWriteCapacityUnits (Sum)" "$REQUEST_DDB_WCU" "$COST_DDB" "요청 수 대체 지표(WCU)"
   add_result_row "S3" "N/A" "NA" "$COST_S3" "요청 수는 request metrics 활성화 시 수집 가능"
   add_result_row "CloudFront" "Requests (Sum)" "$REQUEST_CLOUDFRONT" "$COST_CLOUDFRONT" "DistributionId 기반"
+  add_result_row "CloudWatch" "AWS/Usage CallCount (Sum)" "$REQUEST_CLOUDWATCH_API" "$COST_CLOUDWATCH" "CloudWatch API 호출량 지표"
+  add_result_row "Shield" "N/A" "NA" "$COST_SHIELD" "Shield Standard는 일반적으로 추가 비용 없음"
 
   {
     echo "# AWS Service Usage Report"
@@ -379,6 +383,7 @@ write_reports() {
     echo "- Stack: ${STACK_NAME}"
     echo "- Region: ${AWS_REGION}"
     echo "- Period: ${START_DATE} ~ ${END_DATE} (last ${DAYS} days)"
+    echo "- AWS Profile: ${AWS_PROFILE_NAME}"
     echo ""
     echo "| Service | Request Metric | Request Value | Cost (USD) | Note |"
     echo "| --- | --- | ---: | ---: | --- |"
@@ -388,6 +393,10 @@ write_reports() {
     echo "- ${STACK_RESOURCE_FILE}"
     echo "- ${COST_RAW_FILE}"
     echo "- ${RESULTS_FILE}"
+    echo ""
+    echo "## Pricing Policy (On-Demand)"
+    echo "- CloudWatch: 지표/알람/로그/조회 API 사용량 기반 과금"
+    echo "- Shield Standard: 기본 DDoS 보호(추가 서비스 요금 없음)"
   } > "$REPORT_MD_FILE"
 
   cat "$REPORT_MD_FILE"
