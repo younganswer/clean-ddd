@@ -217,7 +217,9 @@
 				"budgets:DescribeNotificationsForBudget",
 				"budgets:CreateSubscriber",
 				"budgets:ModifySubscriber",
-				"budgets:DeleteSubscriber"
+				"budgets:DeleteSubscriber",
+				"budgets:TagResource",
+				"budgets:UntagResource"
 			],
 			"Resource": "*"
 		}
