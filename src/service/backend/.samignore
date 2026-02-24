@@ -1,0 +1,11 @@
+# Exclude local dependency folders from SAM build context.
+# pnpm creates symlink-based node_modules which can confuse npm in SAM builders.
+node_modules
+**/node_modules
+
+# Exclude build artifacts produced by SAM itself
+.aws-sam
+**/.aws-sam
+
+# Optional: editor/OS files
+.DS_Store

@@ -82,6 +82,13 @@ Resources:
             Auth:
                 ResourcePolicy:
                     CustomStatements:
+                        - Effect: Deny
+                          Principal: "*"
+                          Action: execute-api:Invoke
+                          Resource: execute-api:/*/*/*
+                          Condition:
+                              NotIpAddress:
+                                  aws:SourceIp: !Ref CloudFrontAllowedCidrs
                         - Effect: Allow
                           Principal: "*"
                           Action: execute-api:Invoke
@@ -146,8 +153,6 @@ Resources:
                         RestApiId: !Ref PublicEdgeApi
                         Path: /{proxy+}
                         Method: ANY
-                        Auth:
-                            ApiKeyRequired: false
                 PrivateApi:
                     Type: Api
                     Properties:
