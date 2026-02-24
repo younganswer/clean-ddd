@@ -138,6 +138,8 @@ Resources:
                         RestApiId: !Ref PublicEdgeApi
                         Path: /{proxy+}
                         Method: ANY
+                        Auth:
+                            ApiKeyRequired: false
                 PrivateApi:
                     Type: Api
                     Properties:
