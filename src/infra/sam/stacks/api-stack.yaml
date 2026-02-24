@@ -79,16 +79,6 @@ Resources:
             Name: !Sub "${ProjectName}-${EnvironmentName}-edge-api"
             StageName: v1
             EndpointConfiguration: REGIONAL
-            Auth:
-                ResourcePolicy:
-                    CustomStatements:
-                        - Effect: Deny
-                          Principal: "*"
-                          Action: execute-api:Invoke
-                          Resource: execute-api:/*/*/*
-                          Condition:
-                              NotIpAddress:
-                                  aws:SourceIp: !Ref CloudFrontAllowedCidrs
             MethodSettings:
                 - HttpMethod: "*"
                   ResourcePath: "/*"
@@ -134,6 +124,8 @@ Resources:
                     OUTBOX_CRON_ENABLED: false
                     OUTBOX_ENQUEUE_STRICT: true
                     OUTBOX_DIRECT_CONSUME_FALLBACK: true
+                    EDGE_ORIGIN_VERIFY_HEADER_NAME: !Ref EdgeOriginVerifyHeaderName
+                    EDGE_ORIGIN_VERIFY_HEADER_VALUE: !Ref EdgeOriginVerifyHeaderValue
             Policies:
                 - SQSSendMessagePolicy:
                       QueueName: !Ref OutboxQueueName

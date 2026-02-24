@@ -42,6 +42,27 @@ function configureHttpApp(app: INestApplication): void {
 		void res;
 		authContextAccessor.runWithNewContext(() => next());
 	});
+
+	const originVerifyHeaderName = process.env['EDGE_ORIGIN_VERIFY_HEADER_NAME']
+		?.trim()
+		.toLowerCase();
+	const originVerifyHeaderValue = process.env[
+		'EDGE_ORIGIN_VERIFY_HEADER_VALUE'
+	]?.trim();
+	if (
+		originVerifyHeaderName &&
+		originVerifyHeaderValue &&
+		(process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'prod')
+	) {
+		app.use((req: Request, res: Response, next: NextFunction) => {
+			const incomingHeader = req.header(originVerifyHeaderName);
+			if (incomingHeader !== originVerifyHeaderValue) {
+				res.status(403).json({ message: 'Forbidden' });
+				return;
+			}
+			next();
+		});
+	}
 	app.enableShutdownHooks();
 
 	// Global guard (docs-first placeholder: always allow)
