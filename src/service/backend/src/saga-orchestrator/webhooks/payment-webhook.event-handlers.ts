@@ -1,5 +1,3 @@
-import { RequestContext } from '@mikro-orm/core';
-import { EntityManager } from '@mikro-orm/postgresql';
 import { Inject, Injectable } from '@nestjs/common';
 import {
 	CommandBus,
@@ -23,6 +21,7 @@ import {
 	type InventoryOrderItemPayload,
 } from '@/shared/inventory';
 import { CreateShipmentForOrderRequestedEvent } from '@/shared/shipping';
+import { UnitOfWork } from '@/lib/database/unit-of-work';
 
 @Injectable()
 @EventsHandler(PaymentWebhookSucceededEvent)
@@ -30,54 +29,49 @@ export class PaymentWebhookSucceededHandler implements IEventHandler<PaymentWebh
 	constructor(
 		@Inject(IPaymentRepositorySymbol)
 		private readonly payments: IPaymentRepository,
-		private readonly em: EntityManager,
+		private readonly uow: UnitOfWork,
 		private readonly commandBus: CommandBus,
 		private readonly queryBus: QueryBus,
 		private readonly outbox: OutboxProducer,
 	) {}
 
 	async handle(event: PaymentWebhookSucceededEvent): Promise<void> {
-		await this.em.transactional(async (tx) =>
-			RequestContext.create(tx, async () => {
-				const orderId = String(event.orderId ?? '').trim();
-				const paymentId = String(event.paymentId ?? '').trim();
-				if (!orderId || !paymentId)
-					throw new Error('invalid webhook payload');
+		await this.uow.transaction(async () => {
+			const orderId = String(event.orderId ?? '').trim();
+			const paymentId = String(event.paymentId ?? '').trim();
+			if (!orderId || !paymentId) {
+				throw new Error('invalid webhook payload');
+			}
 
-				await this.payments.markSucceeded(paymentId);
-				await executeCommand(
-					this.commandBus,
-					new MarkOrderPaidCommand(orderId),
-				);
+			await this.payments.markSucceeded(paymentId);
+			await executeCommand(
+				this.commandBus,
+				new MarkOrderPaidCommand(orderId),
+			);
 
-				const order = await executeQuery(
-					this.queryBus,
-					new GetOrderQuery(orderId),
-				);
+			const order = await executeQuery(
+				this.queryBus,
+				new GetOrderQuery(orderId),
+			);
 
-				const items: InventoryOrderItemPayload[] =
-					isOrderView(order) && order.items.length
-						? order.items.map(({ sku, quantity }) => ({
-								sku,
-								quantity,
-							}))
-						: [{ sku: 'SKU-001', quantity: 1 }];
+			const items: InventoryOrderItemPayload[] =
+				isOrderView(order) && order.items.length
+					? order.items.map(({ sku, quantity }) => ({
+							sku,
+							quantity,
+						}))
+					: [{ sku: 'SKU-001', quantity: 1 }];
 
-				await this.outbox.publish(
-					new ReserveInventoryForOrderRequestedEvent(orderId, items),
-					{ messageGroupId: orderId },
-				);
+			await this.outbox.publish(
+				new ReserveInventoryForOrderRequestedEvent(orderId, items),
+				{ messageGroupId: orderId },
+			);
 
-				await this.outbox.publish(
-					new CreateShipmentForOrderRequestedEvent(orderId),
-					{
-						messageGroupId: orderId,
-					},
-				);
-
-				await tx.flush();
-			}),
-		);
+			await this.outbox.publish(
+				new CreateShipmentForOrderRequestedEvent(orderId),
+				{ messageGroupId: orderId },
+			);
+		});
 	}
 }
 
@@ -87,17 +81,14 @@ export class PaymentWebhookFailedHandler implements IEventHandler<PaymentWebhook
 	constructor(
 		@Inject(IPaymentRepositorySymbol)
 		private readonly payments: IPaymentRepository,
-		private readonly em: EntityManager,
+		private readonly uow: UnitOfWork,
 	) {}
 
 	async handle(event: PaymentWebhookFailedEvent): Promise<void> {
-		await this.em.transactional(async (tx) =>
-			RequestContext.create(tx, async () => {
-				const paymentId = String(event.paymentId ?? '').trim();
-				if (!paymentId) throw new Error('invalid webhook payload');
-				await this.payments.markFailed(paymentId);
-				await tx.flush();
-			}),
-		);
+		await this.uow.transaction(async () => {
+			const paymentId = String(event.paymentId ?? '').trim();
+			if (!paymentId) throw new Error('invalid webhook payload');
+			await this.payments.markFailed(paymentId);
+		});
 	}
 }

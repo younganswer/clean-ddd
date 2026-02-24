@@ -3,12 +3,14 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { IShipmentRepositorySymbol } from '@/modules/shipping/domains/repositories/i.shipment.repository';
 import type { IShipmentRepository } from '@/modules/shipping/domains/repositories/i.shipment.repository';
 import { CreateShipmentForOrderCommand } from '@/shared/shipping';
+import { UnitOfWork } from '@/lib/database/unit-of-work';
 
 @CommandHandler(CreateShipmentForOrderCommand)
 export class CreateShipmentForOrderHandler implements ICommandHandler<CreateShipmentForOrderCommand> {
 	constructor(
 		@Inject(IShipmentRepositorySymbol)
 		private readonly shipments: IShipmentRepository,
+		private readonly uow: UnitOfWork,
 	) {}
 
 	async execute(
@@ -17,7 +19,9 @@ export class CreateShipmentForOrderHandler implements ICommandHandler<CreateShip
 		const orderId = String(command.orderId ?? '').trim();
 		if (!orderId) throw new Error('orderId is required');
 
-		const shipment = await this.shipments.createForOrder(orderId);
-		return { shipmentId: shipment.uuid };
+		return await this.uow.transaction(async () => {
+			const shipment = await this.shipments.createForOrder(orderId);
+			return { shipmentId: shipment.uuid };
+		});
 	}
 }

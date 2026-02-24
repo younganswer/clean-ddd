@@ -1,5 +1,3 @@
-import { RequestContext } from '@mikro-orm/core';
-import { EntityManager } from '@mikro-orm/postgresql';
 import { Inject } from '@nestjs/common';
 import {
 	CommandBus,
@@ -22,13 +20,14 @@ import {
 	CreatePaymentIntentCommand,
 	type CreatePaymentIntentResult,
 } from '@/shared/payments';
+import { UnitOfWork } from '@/lib/database/unit-of-work';
 
 @CommandHandler(CreatePaymentIntentCommand)
 export class CreatePaymentIntentHandler implements ICommandHandler<CreatePaymentIntentCommand> {
 	constructor(
 		@Inject(IPaymentRepositorySymbol)
 		private readonly payments: IPaymentRepository,
-		private readonly em: EntityManager,
+		private readonly uow: UnitOfWork,
 		private readonly outbox: OutboxProducer,
 		private readonly queryBus: QueryBus,
 		private readonly commandBus: CommandBus,
@@ -37,64 +36,60 @@ export class CreatePaymentIntentHandler implements ICommandHandler<CreatePayment
 	async execute(
 		command: CreatePaymentIntentCommand,
 	): Promise<CreatePaymentIntentResult> {
-		return this.em.transactional(async (tx) =>
-			RequestContext.create(tx, async () => {
-				const orderId = String(command.input.orderId ?? '').trim();
-				if (!orderId) throw new Error('orderId is required');
+		return this.uow.transaction(async () => {
+			const orderId = String(command.input.orderId ?? '').trim();
+			if (!orderId) throw new Error('orderId is required');
 
-				const order = await executeQuery(
-					this.queryBus,
-					new GetOrderQuery(orderId),
-				);
-				assertOrderView(order);
+			const order = await executeQuery(
+				this.queryBus,
+				new GetOrderQuery(orderId),
+			);
+			assertOrderView(order);
 
-				const payment = this.payments.createIntent({
+			const payment = await this.payments.createIntent({
+				orderId,
+				amount: order.amount,
+				currency: order.currency,
+			});
+
+			await executeCommand(
+				this.commandBus,
+				new AttachPaymentToOrderCommand({
 					orderId,
-					amount: order.amount,
-					currency: order.currency,
-				});
-
-				await executeCommand(
-					this.commandBus,
-					new AttachPaymentToOrderCommand({
-						orderId,
-						paymentId: payment.id,
-					}),
-				);
-
-				const outcome = command.input.simulateOutcome ?? 'SUCCEEDED';
-				const delaySeconds = Math.max(
-					0,
-					Number(command.input.simulateDelaySeconds ?? 10),
-				);
-
-				const event =
-					outcome === 'SUCCEEDED'
-						? new PaymentWebhookSucceededEvent(orderId, payment.id)
-						: new PaymentWebhookFailedEvent(orderId, payment.id);
-
-				const outboxId = await this.outbox.publish(event, {
-					delaySeconds,
-					messageGroupId: orderId,
-				});
-
-				await tx.flush();
-
-				const eventType =
-					outcome === 'SUCCEEDED'
-						? PaymentWebhookSucceededEvent.eventType
-						: PaymentWebhookFailedEvent.eventType;
-
-				return {
 					paymentId: payment.id,
-					status: payment.status,
-					scheduled: {
-						eventType,
-						delaySeconds,
-						outboxId,
-					},
-				};
-			}),
-		);
+				}),
+			);
+
+			const outcome = command.input.simulateOutcome ?? 'SUCCEEDED';
+			const delaySeconds = Math.max(
+				0,
+				Number(command.input.simulateDelaySeconds ?? 10),
+			);
+
+			const event =
+				outcome === 'SUCCEEDED'
+					? new PaymentWebhookSucceededEvent(orderId, payment.id)
+					: new PaymentWebhookFailedEvent(orderId, payment.id);
+
+			const outboxId = await this.outbox.publish(event, {
+				delaySeconds,
+				messageGroupId: orderId,
+			});
+
+			const eventType =
+				outcome === 'SUCCEEDED'
+					? PaymentWebhookSucceededEvent.eventType
+					: PaymentWebhookFailedEvent.eventType;
+
+			return {
+				paymentId: payment.id,
+				status: payment.status,
+				scheduled: {
+					eventType,
+					delaySeconds,
+					outboxId,
+				},
+			};
+		});
 	}
 }

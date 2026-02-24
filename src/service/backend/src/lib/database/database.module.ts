@@ -1,6 +1,7 @@
 import { Global, Module } from '@nestjs/common';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { mikroOrmConfigForRuntime } from '@/lib/database/mikro-orm.config';
+import { UnitOfWork } from '@/lib/database/unit-of-work';
 
 @Global()
 @Module({
@@ -10,5 +11,7 @@ import { mikroOrmConfigForRuntime } from '@/lib/database/mikro-orm.config';
 			registerRequestContext: true,
 		}),
 	],
+	providers: [UnitOfWork],
+	exports: [UnitOfWork],
 })
 export class DatabaseModule {}
