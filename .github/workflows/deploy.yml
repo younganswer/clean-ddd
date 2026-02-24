@@ -36,7 +36,7 @@ jobs:
             setup_sam: true
             run_script: |
                 TARGET_ENV="${{ github.event_name == 'workflow_dispatch' && github.event.inputs.target_env || 'prod' }}"
-                export DEPLOY_TIMEOUT_SECONDS=600
+                export DEPLOY_TIMEOUT_SECONDS=1200
                 chmod +x infra/scripts/deploy-fullstack.sh
                 chmod +x infra/scripts/sync-github-metadata.sh
                 infra/scripts/deploy-fullstack.sh "$TARGET_ENV"

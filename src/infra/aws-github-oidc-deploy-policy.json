@@ -166,7 +166,9 @@
 				"lambda:DeleteEventSourceMapping",
 				"lambda:GetEventSourceMapping",
 				"lambda:UpdateEventSourceMapping",
-				"lambda:ListEventSourceMappings"
+				"lambda:ListEventSourceMappings",
+				"lambda:TagResource",
+				"lambda:UntagResource"
 			],
 			"Resource": "*"
 		},
