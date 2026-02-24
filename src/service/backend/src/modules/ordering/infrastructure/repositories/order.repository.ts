@@ -26,7 +26,7 @@ export class OrderRepository implements IOrderRepository {
 		currency: string;
 		items?: Array<{ sku: string; quantity: number }>;
 		userId: string;
-	}): Order {
+	}): Promise<Order> {
 		const em = this.emForContext();
 		const order = em.create(OrderSchema, {
 			amount: input.amount,
@@ -42,8 +42,7 @@ export class OrderRepository implements IOrderRepository {
 		});
 
 		em.persist(order);
-
-		return this.mapper.toDomain(order);
+		return em.flush().then(() => this.mapper.toDomain(order));
 	}
 
 	async findById(orderId: string): Promise<Order | null> {

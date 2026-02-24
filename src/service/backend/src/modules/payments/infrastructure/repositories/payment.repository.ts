@@ -25,7 +25,7 @@ export class PaymentRepository implements IPaymentRepository {
 		orderId: string;
 		amount: number;
 		currency: string;
-	}): PaymentIntent {
+	}): Promise<PaymentIntent> {
 		const em = this.emForContext();
 		const payment = em.create(PaymentIntentSchema, {
 			orderId: input.orderId,
@@ -36,7 +36,7 @@ export class PaymentRepository implements IPaymentRepository {
 			updatedAt: new Date(),
 		});
 		em.persist(payment);
-		return this.mapper.toDomain(payment);
+		return em.flush().then(() => this.mapper.toDomain(payment));
 	}
 
 	async findById(paymentId: string): Promise<PaymentIntent | null> {

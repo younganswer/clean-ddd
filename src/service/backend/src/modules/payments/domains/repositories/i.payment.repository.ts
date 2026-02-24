@@ -5,7 +5,7 @@ export interface IPaymentRepository {
 		orderId: string;
 		amount: number;
 		currency: string;
-	}): PaymentIntent;
+	}): Promise<PaymentIntent>;
 
 	markSucceeded(paymentId: string): Promise<void>;
 	markFailed(paymentId: string): Promise<void>;

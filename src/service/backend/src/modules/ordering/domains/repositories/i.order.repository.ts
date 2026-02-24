@@ -6,7 +6,7 @@ export interface IOrderRepository {
 		currency: string;
 		items?: Array<{ sku: string; quantity: number }>;
 		userId: string;
-	}): Order;
+	}): Promise<Order>;
 
 	findById(orderId: string): Promise<Order | null>;
 	findRecent(limit: number, offset?: number): Promise<Order[]>;
