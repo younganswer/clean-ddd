@@ -79,6 +79,13 @@ Resources:
             Name: !Sub "${ProjectName}-${EnvironmentName}-edge-api"
             StageName: v1
             EndpointConfiguration: REGIONAL
+            Auth:
+                ResourcePolicy:
+                    CustomStatements:
+                        - Effect: Allow
+                          Principal: "*"
+                          Action: execute-api:Invoke
+                          Resource: execute-api:/*/*/*
             MethodSettings:
                 - HttpMethod: "*"
                   ResourcePath: "/*"
@@ -121,6 +128,7 @@ Resources:
             ReservedConcurrentExecutions: !Ref ApiFunctionReservedConcurrency
             Environment:
                 Variables:
+                    NODE_ENV: !Ref EnvironmentName
                     OUTBOX_CRON_ENABLED: false
                     OUTBOX_ENQUEUE_STRICT: true
                     OUTBOX_DIRECT_CONSUME_FALLBACK: true
@@ -184,7 +192,7 @@ Resources:
                         - OPTIONS
                     Compress: true
                     CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
-                    OriginRequestPolicyId: 216adef6-5c7f-47e4-b989-5492eafa07d3
+                    OriginRequestPolicyId: b689b0a8-53d0-40ab-baf2-68738e2966ac
                 ViewerCertificate:
                     CloudFrontDefaultCertificate: true
 
