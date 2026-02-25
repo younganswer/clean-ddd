@@ -28,6 +28,8 @@ required_secrets=(
   DATABASE_URL_DIRECT
 )
 
+AUTO_RESOLVE_CLOUDFRONT_CIDRS="${AUTO_RESOLVE_CLOUDFRONT_CIDRS-1}"
+
 print_usage() {
   echo "Usage: $0 <target_env>"
 }
@@ -55,7 +57,6 @@ validate_required_inputs() {
     fi
   done
 
-  validate_guardrail_inputs
 }
 
 validate_guardrail_inputs() {
@@ -99,6 +100,34 @@ validate_guardrail_inputs() {
     echo "EDGE_ORIGIN_VERIFY_HEADER_VALUE is too short (min: 24 chars)"
     exit 1
   fi
+}
+
+resolve_cloudfront_allowed_cidrs_if_enabled() {
+  if [[ "$AUTO_RESOLVE_CLOUDFRONT_CIDRS" != "1" ]]; then
+    return 0
+  fi
+
+  local resolver_script="infra/scripts/resolve-cloudfront-origin-cidrs.sh"
+  if [[ ! -x "$resolver_script" ]]; then
+    chmod +x "$resolver_script"
+  fi
+
+  if ! command -v python3 >/dev/null 2>&1; then
+    echo "warning: python3 not found; using API_CLOUDFRONT_ALLOWED_CIDRS from environment"
+    return 0
+  fi
+
+  local resolved_cidrs
+  if resolved_cidrs=$("$resolver_script"); then
+    if [[ -n "$resolved_cidrs" ]]; then
+      API_CLOUDFRONT_ALLOWED_CIDRS="$resolved_cidrs"
+      export API_CLOUDFRONT_ALLOWED_CIDRS
+      echo "resolved CloudFront origin CIDRs dynamically (${#resolved_cidrs} chars)"
+      return 0
+    fi
+  fi
+
+  echo "warning: failed to resolve CloudFront CIDRs dynamically; using API_CLOUDFRONT_ALLOWED_CIDRS from environment"
 }
 
 build_workspace() {
@@ -277,6 +306,8 @@ main() {
   fi
 
   validate_required_inputs
+  resolve_cloudfront_allowed_cidrs_if_enabled
+  validate_guardrail_inputs
   build_workspace
   reset_dev_database_if_needed
   recover_stack_if_needed
