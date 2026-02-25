@@ -10,7 +10,7 @@ Globals:
             Project: !Ref ProjectName
             Environment: !Ref EnvironmentName
         Architectures:
-            - arm64
+            - x86_64
         Environment:
             Variables:
                 DATABASE_URL_POOLED: !Ref DatabaseUrlPooled
