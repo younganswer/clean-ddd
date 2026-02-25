@@ -180,6 +180,7 @@ deploy_backend() {
     --template-file .aws-sam/build/template.yaml \
     --stack-name "$SAM_STACK_NAME" \
     --s3-bucket "$SAM_S3_BUCKET" \
+    --resolve-image-repos \
     --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND \
     --no-fail-on-empty-changeset \
     --parameter-overrides \

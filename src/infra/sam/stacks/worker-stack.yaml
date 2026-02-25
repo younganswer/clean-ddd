@@ -4,7 +4,6 @@ Description: Worker lambda resources for clean-ddd
 
 Globals:
     Function:
-        Runtime: nodejs22.x
         MemorySize: 512
         Timeout: 30
         Tags:
@@ -59,9 +58,15 @@ Parameters:
 Resources:
     OutboxConsumerFunction:
         Type: AWS::Serverless::Function
+        Metadata:
+            DockerContext: ../../..
+            Dockerfile: service/backend/Dockerfile.lambda
+            DockerTag: outbox-consumer-function
         Properties:
-            CodeUri: ../../../service/backend
-            Handler: dist/src/lib/lambda/sqs/outbox.handler
+            PackageType: Image
+            ImageConfig:
+                Command:
+                    - dist/src/lib/lambda/sqs/outbox.handler
             ReservedConcurrentExecutions: !Ref OutboxConsumerReservedConcurrency
             Environment:
                 Variables:
@@ -81,9 +86,15 @@ Resources:
 
     OutboxDispatchSchedulerFunction:
         Type: AWS::Serverless::Function
+        Metadata:
+            DockerContext: ../../..
+            Dockerfile: service/backend/Dockerfile.lambda
+            DockerTag: outbox-dispatch-scheduler-function
         Properties:
-            CodeUri: ../../../service/backend
-            Handler: dist/src/lib/lambda/schedule/outbox-dispatch.handler
+            PackageType: Image
+            ImageConfig:
+                Command:
+                    - dist/src/lib/lambda/schedule/outbox-dispatch.handler
             ReservedConcurrentExecutions: !Ref OutboxDispatchReservedConcurrency
             Environment:
                 Variables:

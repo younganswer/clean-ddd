@@ -4,7 +4,6 @@ Description: API resources for clean-ddd (private + edge)
 
 Globals:
     Function:
-        Runtime: nodejs22.x
         MemorySize: 512
         Timeout: 10
         Tags:
@@ -129,9 +128,15 @@ Resources:
 
     ApiFunction:
         Type: AWS::Serverless::Function
+        Metadata:
+            DockerContext: ../../..
+            Dockerfile: service/backend/Dockerfile.lambda
+            DockerTag: api-function
         Properties:
-            CodeUri: ../../../service/backend
-            Handler: dist/src/lib/lambda/http.handler
+            PackageType: Image
+            ImageConfig:
+                Command:
+                    - dist/src/lib/lambda/http.handler
             ReservedConcurrentExecutions: !Ref ApiFunctionReservedConcurrency
             Environment:
                 Variables:
