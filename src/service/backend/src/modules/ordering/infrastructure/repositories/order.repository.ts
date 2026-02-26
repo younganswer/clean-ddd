@@ -42,7 +42,7 @@ export class OrderRepository implements IOrderRepository {
 		});
 
 		em.persist(order);
-		return em.flush().then(() => this.mapper.toDomain(order));
+		return Promise.resolve(this.mapper.toDomain(order));
 	}
 
 	async findById(orderId: string): Promise<Order | null> {

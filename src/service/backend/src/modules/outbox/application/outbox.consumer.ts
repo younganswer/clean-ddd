@@ -4,6 +4,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { EventBus } from '@nestjs/cqrs';
 import { ModuleRef } from '@nestjs/core';
 import type { SQSRecord } from 'aws-lambda';
+import { UnitOfWork } from '@/lib/database/unit-of-work';
 import { IdempotencyService } from '@/shared/idempotency/idempotency.service';
 import {
 	IOutboxRepositorySymbol,
@@ -41,6 +42,7 @@ export class OutboxConsumer {
 		private readonly outboxRepo: IOutboxRepository,
 		private readonly idempotency: IdempotencyService,
 		private readonly eventBus: EventBus,
+		private readonly uow: UnitOfWork,
 	) {}
 
 	private async dispatchKnownEvent(
@@ -139,69 +141,78 @@ export class OutboxConsumer {
 		if (!locked) return;
 
 		try {
-			const em = this.emForContext();
-			const row = await em.findOne(OutboxEventSchema, { uuid: outboxId });
-			if (!row) {
-				await this.outboxRepo.unlock(outboxId);
-				return;
-			}
-			if (
-				row.status !== OutboxEventStatus.PUBLISHED &&
-				row.status !== OutboxEventStatus.FAILED &&
-				row.status !== OutboxEventStatus.PENDING
-			) {
-				await this.outboxRepo.unlock(outboxId);
-				return;
-			}
-
-			const claimed = await this.idempotency.claim(
-				this.consumerName,
-				outboxId,
-			);
-			if (!claimed) {
-				await this.outboxRepo.markAsConsumed(outboxId);
-				return;
-			}
-
-			try {
-				const event = hydrateEvent(row.eventType, row.payload);
-				if (!event) {
-					this.logger.warn(
-						`unknown outbox eventType=${row.eventType}`,
-					);
-					await this.outboxRepo.recordFailure(
-						outboxId,
-						`unknown eventType=${row.eventType}`,
-						createRetryAt(60_000),
-					);
+			await this.uow.transaction(async () => {
+				const em = this.emForContext();
+				const row = await em.findOne(OutboxEventSchema, {
+					uuid: outboxId,
+				});
+				if (!row) {
+					await this.outboxRepo.unlock(outboxId);
+					return;
+				}
+				if (
+					row.status !== OutboxEventStatus.PUBLISHED &&
+					row.status !== OutboxEventStatus.FAILED &&
+					row.status !== OutboxEventStatus.PENDING
+				) {
+					await this.outboxRepo.unlock(outboxId);
 					return;
 				}
 
-				const dispatched = await this.dispatchKnownEvent(
-					event,
-					row.eventType,
-				);
-				if (!dispatched) {
-					this.eventBus.publish(event);
-				}
-				await this.outboxRepo.markAsConsumed(outboxId);
-			} catch (error: unknown) {
-				const message = resolveErrorMessage(error);
-				await this.outboxRepo.recordFailure(
+				const claimed = await this.idempotency.claim(
+					this.consumerName,
 					outboxId,
-					message,
-					createRetryAt(60_000),
 				);
-				try {
-					await this.idempotency.release(this.consumerName, outboxId);
-				} catch {
-					// ignore release failure and keep original error flow
+				if (!claimed) {
+					await this.outboxRepo.markAsConsumed(outboxId);
+					return;
 				}
-				throw error;
-			}
+
+				try {
+					const event = hydrateEvent(row.eventType, row.payload);
+					if (!event) {
+						this.logger.warn(
+							`unknown outbox eventType=${row.eventType}`,
+						);
+						await this.outboxRepo.recordFailure(
+							outboxId,
+							`unknown eventType=${row.eventType}`,
+							createRetryAt(60_000),
+						);
+						return;
+					}
+
+					const dispatched = await this.dispatchKnownEvent(
+						event,
+						row.eventType,
+					);
+					if (!dispatched) {
+						this.eventBus.publish(event);
+					}
+					await this.outboxRepo.markAsConsumed(outboxId);
+				} catch (error: unknown) {
+					const message = resolveErrorMessage(error);
+					await this.outboxRepo.recordFailure(
+						outboxId,
+						message,
+						createRetryAt(60_000),
+					);
+					try {
+						await this.idempotency.release(
+							this.consumerName,
+							outboxId,
+						);
+					} catch {
+						// ignore release failure and keep original error flow
+					}
+					throw error;
+				}
+			});
 		} catch (error) {
 			try {
-				await this.outboxRepo.unlock(outboxId);
+				await this.uow.transaction(async () => {
+					await this.outboxRepo.unlock(outboxId);
+				});
 			} catch {
 				// ignore
 			}

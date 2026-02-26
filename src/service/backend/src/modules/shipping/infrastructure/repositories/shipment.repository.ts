@@ -33,7 +33,7 @@ export class ShipmentRepository implements IShipmentRepository {
 			updatedAt: new Date(),
 		});
 
-		await em.persistAndFlush(shipment);
+		em.persist(shipment);
 		return this.mapper.toDomain(shipment);
 	}
 

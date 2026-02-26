@@ -17,7 +17,7 @@ export class OutboxRepository implements IOutboxRepository {
 		);
 	}
 
-	async save(event: OutboxEventDto): Promise<string> {
+	save(event: OutboxEventDto): Promise<string> {
 		const em = this.emForContext();
 		const row = em.create(OutboxEventSchema, {
 			eventType: event.eventType,
@@ -30,8 +30,8 @@ export class OutboxRepository implements IOutboxRepository {
 			publishedAt: event.publishedAt ?? null,
 			lastError: event.lastError ?? null,
 		});
-		await em.persistAndFlush(row);
-		return row.uuid;
+		em.persist(row);
+		return Promise.resolve(row.uuid);
 	}
 
 	async findDispatchable(
@@ -100,7 +100,7 @@ export class OutboxRepository implements IOutboxRepository {
 		row.publishedAt = new Date();
 		row.lastError = null;
 		row.lockedUntil = null;
-		await em.persistAndFlush(row);
+		em.persist(row);
 	}
 
 	async markAsConsumed(uuid: string): Promise<void> {
@@ -108,7 +108,7 @@ export class OutboxRepository implements IOutboxRepository {
 		const row = await em.findOneOrFail(OutboxEventSchema, { uuid });
 		row.status = OutboxEventStatus.CONSUMED;
 		row.lockedUntil = null;
-		await em.persistAndFlush(row);
+		em.persist(row);
 	}
 
 	async recordFailure(
@@ -123,6 +123,6 @@ export class OutboxRepository implements IOutboxRepository {
 		row.lastError = error;
 		row.nextAttemptAt = nextAttemptAt;
 		row.lockedUntil = null;
-		await em.persistAndFlush(row);
+		em.persist(row);
 	}
 }

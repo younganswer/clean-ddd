@@ -1,5 +1,6 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
+import { UnitOfWork } from '@/lib/database/unit-of-work';
 import {
 	IOutboxRepositorySymbol,
 	type IOutboxRepository,
@@ -20,6 +21,7 @@ export class OutboxSweeper {
 		@Inject(IOutboxRepositorySymbol)
 		private readonly outboxRepo: IOutboxRepository,
 		private readonly outboxQueue: OutboxQueue,
+		private readonly uow: UnitOfWork,
 	) {}
 
 	private isDirectConsumeFallbackEnabled(): boolean {
@@ -48,23 +50,26 @@ export class OutboxSweeper {
 			this.isDirectConsumeFallbackEnabled();
 
 		for (const event of candidates) {
-			if (!event.uuid) continue;
+			const eventId = event.uuid;
+			if (!eventId) continue;
 
 			if (directConsumeFallbackEnabled) {
 				try {
-					await this.consumeDirect(event.uuid);
+					await this.consumeDirect(eventId);
 					enqueued += 1;
 					continue;
 				} catch (error: unknown) {
 					const message = resolveErrorMessage(error);
 					this.logger.warn(
-						`direct consume failed: outboxId=${event.uuid} err=${message}`,
+						`direct consume failed: outboxId=${eventId} err=${message}`,
 					);
-					await this.outboxRepo.recordFailure(
-						event.uuid,
-						message,
-						createRetryAt(30_000),
-					);
+					await this.uow.transaction(async () => {
+						await this.outboxRepo.recordFailure(
+							eventId,
+							message,
+							createRetryAt(30_000),
+						);
+					});
 					continue;
 				}
 			}
@@ -78,19 +83,23 @@ export class OutboxSweeper {
 				const messageGroupId =
 					typeof orderId === 'string' && orderId ? orderId : 'outbox';
 
-				await this.outboxQueue.enqueue(event.uuid, { messageGroupId });
-				await this.outboxRepo.markAsPublished(event.uuid);
+				await this.outboxQueue.enqueue(eventId, { messageGroupId });
+				await this.uow.transaction(async () => {
+					await this.outboxRepo.markAsPublished(eventId);
+				});
 				enqueued += 1;
 			} catch (error: unknown) {
 				const message = resolveErrorMessage(error);
 				this.logger.warn(
-					`enqueue failed: outboxId=${event.uuid} err=${message}`,
+					`enqueue failed: outboxId=${eventId} err=${message}`,
 				);
-				await this.outboxRepo.recordFailure(
-					event.uuid,
-					message,
-					createRetryAt(30_000),
-				);
+				await this.uow.transaction(async () => {
+					await this.outboxRepo.recordFailure(
+						eventId,
+						message,
+						createRetryAt(30_000),
+					);
+				});
 			}
 		}
 

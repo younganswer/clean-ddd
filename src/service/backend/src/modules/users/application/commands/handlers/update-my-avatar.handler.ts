@@ -1,6 +1,7 @@
 import { Inject } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { randomUUID } from 'node:crypto';
+import { UnitOfWork } from '@/lib/database/unit-of-work';
 import { UpdateMyAvatarCommand } from '@/shared/users/commands/update-my-avatar.command';
 import {
 	IUserAvatarRepositorySymbol,
@@ -18,6 +19,7 @@ export class UpdateMyAvatarHandler implements ICommandHandler<UpdateMyAvatarComm
 		private readonly userAvatarRepository: IUserAvatarRepository,
 		@Inject(IUserAvatarLinkRepositorySymbol)
 		private readonly userAvatarLinkRepository: IUserAvatarLinkRepository,
+		private readonly uow: UnitOfWork,
 	) {}
 
 	async execute(
@@ -40,9 +42,11 @@ export class UpdateMyAvatarHandler implements ICommandHandler<UpdateMyAvatarComm
 			imageUrl: avatarUrl,
 		});
 
-		await this.userAvatarLinkRepository.assignAvatarId({
-			userId,
-			avatarId: savedAvatar.avatarId,
+		await this.uow.transaction(async () => {
+			await this.userAvatarLinkRepository.assignAvatarId({
+				userId,
+				avatarId: savedAvatar.avatarId,
+			});
 		});
 
 		return {

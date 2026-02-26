@@ -36,7 +36,7 @@ export class PaymentRepository implements IPaymentRepository {
 			updatedAt: new Date(),
 		});
 		em.persist(payment);
-		return em.flush().then(() => this.mapper.toDomain(payment));
+		return Promise.resolve(this.mapper.toDomain(payment));
 	}
 
 	async findById(paymentId: string): Promise<PaymentIntent | null> {

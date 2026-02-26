@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { UnitOfWork } from '@/lib/database/unit-of-work';
 import {
 	IOutboxRepositorySymbol,
 	type IOutboxRepository,
@@ -12,6 +13,7 @@ export class OutboxProducer {
 		@Inject(IOutboxRepositorySymbol)
 		private readonly outboxRepo: IOutboxRepository,
 		private readonly outboxQueue: OutboxQueue,
+		private readonly uow: UnitOfWork,
 	) {}
 
 	async publish(
@@ -49,9 +51,11 @@ export class OutboxProducer {
 	}): Promise<string> {
 		const { eventType, payload, options, source } = input;
 
-		const outboxId = await this.outboxRepo.save({
-			eventType,
-			payload,
+		const outboxId = await this.uow.transaction(async () => {
+			return await this.outboxRepo.save({
+				eventType,
+				payload,
+			});
 		});
 
 		const delaySeconds = options?.delaySeconds;
@@ -72,7 +76,9 @@ export class OutboxProducer {
 					delaySeconds: enqueueDelaySeconds,
 					messageGroupId: inferredMessageGroupId,
 				});
-				await this.outboxRepo.markAsPublished(outboxId);
+				await this.uow.transaction(async () => {
+					await this.outboxRepo.markAsPublished(outboxId);
+				});
 			} catch (error) {
 				console.error(
 					`[OutboxProducer.${source}] enqueue failed`,

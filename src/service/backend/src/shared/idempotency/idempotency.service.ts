@@ -17,11 +17,10 @@ export class IdempotencyService {
 	async claim(consumerName: string, eventId: string): Promise<boolean> {
 		try {
 			const em = this.emForContext();
-			const row = em.create(ProcessedEventSchema, {
+			await em.insert(ProcessedEventSchema, {
 				consumerName,
 				eventId,
 			});
-			await em.persistAndFlush(row);
 			return true;
 		} catch (error: unknown) {
 			// unique constraint violation -> already processed

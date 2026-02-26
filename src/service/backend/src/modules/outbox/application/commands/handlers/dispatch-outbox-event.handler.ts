@@ -1,5 +1,6 @@
 import { Inject } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { UnitOfWork } from '@/lib/database/unit-of-work';
 import { DispatchOutboxEventCommand } from '@/shared/outbox/commands/dispatch-outbox-event.command';
 import {
 	IOutboxRepositorySymbol,
@@ -17,6 +18,7 @@ export class DispatchOutboxEventHandler implements ICommandHandler<DispatchOutbo
 		@Inject(IOutboxRepositorySymbol)
 		private readonly outboxRepo: IOutboxRepository,
 		private readonly outboxQueue: OutboxQueue,
+		private readonly uow: UnitOfWork,
 	) {}
 
 	async execute(command: DispatchOutboxEventCommand): Promise<void> {
@@ -28,14 +30,18 @@ export class DispatchOutboxEventHandler implements ICommandHandler<DispatchOutbo
 
 		try {
 			await this.outboxQueue.enqueue(outboxId, { messageGroupId });
-			await this.outboxRepo.markAsPublished(outboxId);
+			await this.uow.transaction(async () => {
+				await this.outboxRepo.markAsPublished(outboxId);
+			});
 		} catch (error: unknown) {
 			const message = resolveErrorMessage(error);
-			await this.outboxRepo.recordFailure(
-				outboxId,
-				message,
-				createRetryAt(30_000),
-			);
+			await this.uow.transaction(async () => {
+				await this.outboxRepo.recordFailure(
+					outboxId,
+					message,
+					createRetryAt(30_000),
+				);
+			});
 		}
 	}
 }

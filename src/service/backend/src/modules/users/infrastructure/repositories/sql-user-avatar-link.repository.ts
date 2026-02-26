@@ -29,6 +29,6 @@ export class SqlUserAvatarLinkRepository implements IUserAvatarLinkRepository {
 		const user = await em.findOneOrFail(UserSchema, { uuid: userId });
 		user.avatarId = avatarId;
 		user.updatedAt = new Date();
-		await em.persistAndFlush(user);
+		em.persist(user);
 	}
 }
