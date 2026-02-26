@@ -229,7 +229,7 @@ deploy_backend() {
     --stack-name "$SAM_STACK_NAME" \
     --s3-bucket "$SAM_S3_BUCKET" \
     --resolve-image-repos \
-    --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND \
+    --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND \
     --no-fail-on-empty-changeset \
     --parameter-overrides \
       ProjectName="$PROJECT_NAME" \
