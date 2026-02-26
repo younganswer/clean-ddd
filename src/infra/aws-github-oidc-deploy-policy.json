@@ -130,6 +130,17 @@
 			"Resource": "*"
 		},
 		{
+			"Sid": "IamCreateServiceLinkedRoleForApiGateway",
+			"Effect": "Allow",
+			"Action": ["iam:CreateServiceLinkedRole"],
+			"Resource": "arn:aws:iam::*:role/aws-service-role/apigateway.amazonaws.com/AWSServiceRoleForAPIGateway",
+			"Condition": {
+				"StringEquals": {
+					"iam:AWSServiceName": "apigateway.amazonaws.com"
+				}
+			}
+		},
+		{
 			"Sid": "SqsProvisionForStack",
 			"Effect": "Allow",
 			"Action": [
