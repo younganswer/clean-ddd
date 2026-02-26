@@ -92,6 +92,21 @@
 			"Resource": "*"
 		},
 		{
+			"Sid": "CloudWatchLogsProvision",
+			"Effect": "Allow",
+			"Action": [
+				"logs:CreateLogGroup",
+				"logs:DeleteLogGroup",
+				"logs:DescribeLogGroups",
+				"logs:PutRetentionPolicy",
+				"logs:DeleteRetentionPolicy",
+				"logs:TagResource",
+				"logs:UntagResource",
+				"logs:ListTagsForResource"
+			],
+			"Resource": "*"
+		},
+		{
 			"Sid": "SnsTopicProvision",
 			"Effect": "Allow",
 			"Action": [

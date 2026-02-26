@@ -70,14 +70,60 @@ Parameters:
     EdgeOriginVerifyHeaderValue:
         Type: String
         NoEcho: true
+    ApiAccessLogRetentionDays:
+        Type: Number
+        Default: 14
+
+Mappings:
+    ApiAccessLogFormat:
+        Json:
+            Value: '{"requestId":"$context.requestId","extendedRequestId":"$context.extendedRequestId","apiId":"$context.apiId","stage":"$context.stage","requestTime":"$context.requestTime","httpMethod":"$context.httpMethod","path":"$context.path","resourcePath":"$context.resourcePath","status":"$context.status","responseLength":"$context.responseLength","sourceIp":"$context.identity.sourceIp","userAgent":"$context.identity.userAgent","errorMessage":"$context.error.message","integrationError":"$context.integration.error","integrationStatus":"$context.integration.status","integrationLatency":"$context.integration.latency","xrayTraceId":"$context.xrayTraceId"}'
 
 Resources:
+    ApiGatewayCloudWatchRole:
+        Type: AWS::IAM::Role
+        Properties:
+            RoleName: !Sub "${ProjectName}-${EnvironmentName}-apigw-cw-role"
+            AssumeRolePolicyDocument:
+                Version: "2012-10-17"
+                Statement:
+                    - Effect: Allow
+                      Principal:
+                          Service: apigateway.amazonaws.com
+                      Action: sts:AssumeRole
+            ManagedPolicyArns:
+                - arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs
+
+    ApiGatewayAccount:
+        Type: AWS::ApiGateway::Account
+        Properties:
+            CloudWatchRoleArn: !GetAtt ApiGatewayCloudWatchRole.Arn
+
+    PublicEdgeApiAccessLogGroup:
+        Type: AWS::Logs::LogGroup
+        Properties:
+            LogGroupName: !Sub "/aws/apigateway/${ProjectName}-${EnvironmentName}-edge-api-access"
+            RetentionInDays: !Ref ApiAccessLogRetentionDays
+
+    InternalPrivateApiAccessLogGroup:
+        Type: AWS::Logs::LogGroup
+        Properties:
+            LogGroupName: !Sub "/aws/apigateway/${ProjectName}-${EnvironmentName}-private-api-access"
+            RetentionInDays: !Ref ApiAccessLogRetentionDays
+
     PublicEdgeApi:
         Type: AWS::Serverless::Api
+        DependsOn:
+            - ApiGatewayAccount
+            - PublicEdgeApiAccessLogGroup
         Properties:
             Name: !Sub "${ProjectName}-${EnvironmentName}-edge-api"
             StageName: v1
             EndpointConfiguration: REGIONAL
+            TracingEnabled: true
+            AccessLogSetting:
+                DestinationArn: !GetAtt PublicEdgeApiAccessLogGroup.Arn
+                Format: !FindInMap [ApiAccessLogFormat, Json, Value]
             Auth:
                 ResourcePolicy:
                     CustomStatements:
@@ -95,6 +141,9 @@ Resources:
             MethodSettings:
                 - HttpMethod: "*"
                   ResourcePath: "/*"
+                  LoggingLevel: INFO
+                  DataTraceEnabled: false
+                  MetricsEnabled: true
                   ThrottlingBurstLimit: !Ref PublicApiThrottleBurst
                   ThrottlingRateLimit: !Ref PublicApiThrottleRate
             Tags:
@@ -103,10 +152,17 @@ Resources:
 
     InternalPrivateApi:
         Type: AWS::Serverless::Api
+        DependsOn:
+            - ApiGatewayAccount
+            - InternalPrivateApiAccessLogGroup
         Properties:
             Name: !Sub "${ProjectName}-${EnvironmentName}-private-api"
             StageName: internal
             EndpointConfiguration: PRIVATE
+            TracingEnabled: true
+            AccessLogSetting:
+                DestinationArn: !GetAtt InternalPrivateApiAccessLogGroup.Arn
+                Format: !FindInMap [ApiAccessLogFormat, Json, Value]
             Auth:
                 ResourcePolicy:
                     CustomStatements:
@@ -120,6 +176,9 @@ Resources:
             MethodSettings:
                 - HttpMethod: "*"
                   ResourcePath: "/*"
+                  LoggingLevel: INFO
+                  DataTraceEnabled: false
+                  MetricsEnabled: true
                   ThrottlingBurstLimit: !Ref PrivateApiThrottleBurst
                   ThrottlingRateLimit: !Ref PrivateApiThrottleRate
             Tags:
@@ -221,3 +280,7 @@ Outputs:
         Value: !GetAtt ApiFunction.Arn
     ApiUrl:
         Value: !Sub "https://${ApiEdgeDistribution.DomainName}"
+    PublicApiAccessLogGroupName:
+        Value: !Ref PublicEdgeApiAccessLogGroup
+    PrivateApiAccessLogGroupName:
+        Value: !Ref InternalPrivateApiAccessLogGroup
