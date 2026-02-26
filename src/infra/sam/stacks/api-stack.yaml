@@ -120,7 +120,6 @@ Resources:
             Name: !Sub "${ProjectName}-${EnvironmentName}-edge-api"
             StageName: v1
             EndpointConfiguration: REGIONAL
-            TracingEnabled: true
             AccessLogSetting:
                 DestinationArn: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:${PublicEdgeApiAccessLogGroup}"
                 Format: !FindInMap [ApiAccessLogFormat, Json, Value]
@@ -159,7 +158,6 @@ Resources:
             Name: !Sub "${ProjectName}-${EnvironmentName}-private-api"
             StageName: internal
             EndpointConfiguration: PRIVATE
-            TracingEnabled: true
             AccessLogSetting:
                 DestinationArn: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:${InternalPrivateApiAccessLogGroup}"
                 Format: !FindInMap [ApiAccessLogFormat, Json, Value]
