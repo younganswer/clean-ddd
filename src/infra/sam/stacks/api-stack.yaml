@@ -77,7 +77,7 @@ Parameters:
 Mappings:
     ApiAccessLogFormat:
         Json:
-            Value: '{"requestId":"$context.requestId","extendedRequestId":"$context.extendedRequestId","apiId":"$context.apiId","stage":"$context.stage","requestTime":"$context.requestTime","httpMethod":"$context.httpMethod","path":"$context.path","resourcePath":"$context.resourcePath","status":"$context.status","responseLength":"$context.responseLength","sourceIp":"$context.identity.sourceIp","userAgent":"$context.identity.userAgent","errorMessage":"$context.error.message","integrationError":"$context.integration.error","integrationStatus":"$context.integration.status","integrationLatency":"$context.integration.latency","xrayTraceId":"$context.xrayTraceId"}'
+            Value: '{"requestId":"$context.requestId","extendedRequestId":"$context.extendedRequestId","apiId":"$context.apiId","stage":"$context.stage","requestTime":"$context.requestTime","httpMethod":"$context.httpMethod","resourcePath":"$context.resourcePath","status":"$context.status","responseLength":"$context.responseLength","sourceIp":"$context.identity.sourceIp","userAgent":"$context.identity.userAgent","errorMessage":"$context.error.message","integrationErrorMessage":"$context.integrationErrorMessage"}'
 
 Resources:
     ApiGatewayCloudWatchRole:
@@ -122,7 +122,7 @@ Resources:
             EndpointConfiguration: REGIONAL
             TracingEnabled: true
             AccessLogSetting:
-                DestinationArn: !GetAtt PublicEdgeApiAccessLogGroup.Arn
+                DestinationArn: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:${PublicEdgeApiAccessLogGroup}"
                 Format: !FindInMap [ApiAccessLogFormat, Json, Value]
             Auth:
                 ResourcePolicy:
@@ -161,7 +161,7 @@ Resources:
             EndpointConfiguration: PRIVATE
             TracingEnabled: true
             AccessLogSetting:
-                DestinationArn: !GetAtt InternalPrivateApiAccessLogGroup.Arn
+                DestinationArn: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:${InternalPrivateApiAccessLogGroup}"
                 Format: !FindInMap [ApiAccessLogFormat, Json, Value]
             Auth:
                 ResourcePolicy:
