@@ -1,4 +1,5 @@
 import {
+	ForbiddenException,
 	ConsoleLogger,
 	INestApplication,
 	ValidationPipe,
@@ -8,6 +9,7 @@ import { NestFactory } from '@nestjs/core';
 import { NextFunction, Request, Response } from 'express';
 import { AppModule } from '@/app.module';
 import { AuthContextAccessor } from '@/common/context/auth-context';
+import { GlobalHttpExceptionFilter } from '@/common/filters/global-http-exception.filter';
 import { AuthGuard } from '@/common/guards/auth.guard';
 import { NestApp } from '@/nest-app';
 
@@ -57,7 +59,7 @@ function configureHttpApp(app: INestApplication): void {
 		app.use((req: Request, res: Response, next: NextFunction) => {
 			const incomingHeader = req.header(originVerifyHeaderName);
 			if (incomingHeader !== originVerifyHeaderValue) {
-				res.status(403).json({ message: 'Forbidden' });
+				next(new ForbiddenException('Forbidden'));
 				return;
 			}
 			next();
@@ -100,6 +102,8 @@ function configureHttpApp(app: INestApplication): void {
 			},
 		}),
 	);
+
+	app.useGlobalFilters(new GlobalHttpExceptionFilter());
 
 	NestApp.setApp(app);
 	NestApp.setName(configService.get<string>('APP.NAME', 'api'));
