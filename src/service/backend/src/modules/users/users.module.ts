@@ -33,8 +33,12 @@ import { optionalEnv } from '@/env';
 				mongoUserAvatarRepository: MongoUserAvatarRepository,
 				dynamoDbUserAvatarRepository: DynamoDbUserAvatarRepository,
 			) => {
+				const nodeEnv = (
+					optionalEnv('NODE_ENV') ?? 'development'
+				).toLowerCase();
 				const backend =
-					optionalEnv('AVATAR_REPOSITORY_BACKEND') ?? 'mongo';
+					optionalEnv('AVATAR_REPOSITORY_BACKEND') ??
+					(nodeEnv === 'production' ? 'dynamodb' : 'mongo');
 				return backend === 'dynamodb'
 					? dynamoDbUserAvatarRepository
 					: mongoUserAvatarRepository;

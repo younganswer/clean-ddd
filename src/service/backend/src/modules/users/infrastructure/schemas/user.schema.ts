@@ -4,6 +4,13 @@ import { BaseSchema } from '@/shared/persistence/mikro-orm/base.schema';
 @Entity({ tableName: 'users' })
 @Unique({ properties: ['email'] })
 export class UserSchema extends BaseSchema {
+	constructor(input: Omit<UserSchema, 'id' | 'createdAt' | 'updatedAt'>) {
+		super(input.uuid);
+		this.displayName = input.displayName;
+		this.email = input.email;
+		this.avatarId = input.avatarId;
+	}
+
 	@Property({ length: 255 })
 	displayName!: string;
 

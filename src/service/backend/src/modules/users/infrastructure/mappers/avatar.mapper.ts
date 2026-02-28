@@ -7,12 +7,9 @@ import type { AvatarDocumentSchema } from '@/modules/users/infrastructure/schema
 export class AvatarMapper {
 	toDomain(schema: AvatarDocumentSchema): Avatar {
 		return Avatar.rehydrate({
-			id: 0,
 			uuid: schema._id,
 			userId: schema.userId,
 			imageUrl: schema.imageUrl,
-			createdAt: schema.createdAt,
-			updatedAt: schema.updatedAt,
 		});
 	}
 
@@ -22,8 +19,8 @@ export class AvatarMapper {
 			avatarId: avatar.uuid,
 			userId: avatar.userId,
 			imageUrl: avatar.imageUrl,
-			createdAt: avatar.createdAt,
-			updatedAt: avatar.updatedAt,
+			createdAt: schema.createdAt,
+			updatedAt: schema.updatedAt,
 		};
 	}
 }

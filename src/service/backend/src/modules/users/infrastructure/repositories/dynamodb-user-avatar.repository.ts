@@ -10,7 +10,7 @@ import {
 	type IUserAvatarRepository,
 	type UserAvatarDocument,
 } from '@/modules/users/domains/repositories/i.user-avatar.repository';
-import { optionalEnv, requireEnv } from '@/env';
+import { optionalEnv } from '@/env';
 
 type AvatarItem = {
 	avatarId: string;
@@ -22,7 +22,7 @@ type AvatarItem = {
 
 @Injectable()
 export class DynamoDbUserAvatarRepository implements IUserAvatarRepository {
-	private readonly tableName = requireEnv('DYNAMODB_AVATAR_TABLE');
+	private readonly tableName = optionalEnv('DYNAMODB_AVATAR_TABLE');
 	private readonly documentClient: DynamoDBDocumentClient;
 
 	constructor() {
@@ -46,6 +46,7 @@ export class DynamoDbUserAvatarRepository implements IUserAvatarRepository {
 		userId: string;
 		imageUrl: string;
 	}): Promise<UserAvatarDocument> {
+		const tableName = this.getTableName();
 		const nowIso = new Date().toISOString();
 		const normalizedAvatarId = input.avatarId.trim();
 
@@ -55,7 +56,7 @@ export class DynamoDbUserAvatarRepository implements IUserAvatarRepository {
 
 		await this.documentClient.send(
 			new UpdateCommand({
-				TableName: this.tableName,
+				TableName: tableName,
 				Key: { avatarId: normalizedAvatarId },
 				UpdateExpression:
 					'SET userId = :userId, imageUrl = :imageUrl, updatedAt = :updatedAt, createdAt = if_not_exists(createdAt, :createdAt)',
@@ -82,7 +83,7 @@ export class DynamoDbUserAvatarRepository implements IUserAvatarRepository {
 
 		const result = await this.documentClient.send(
 			new GetCommand({
-				TableName: this.tableName,
+				TableName: this.getTableName(),
 				Key: { avatarId: normalized },
 			}),
 		);
@@ -102,17 +103,18 @@ export class DynamoDbUserAvatarRepository implements IUserAvatarRepository {
 		const items: AvatarItem[] = [];
 
 		for (const batch of batches) {
+			const tableName = this.getTableName();
 			const response = await this.documentClient.send(
 				new BatchGetCommand({
 					RequestItems: {
-						[this.tableName]: {
+						[tableName]: {
 							Keys: batch.map((avatarId) => ({ avatarId })),
 						},
 					},
 				}),
 			);
 
-			const found = response.Responses?.[this.tableName] as
+			const found = response.Responses?.[tableName] as
 				| AvatarItem[]
 				| undefined;
 			if (found && found.length > 0) {
@@ -139,5 +141,14 @@ export class DynamoDbUserAvatarRepository implements IUserAvatarRepository {
 			chunks.push(values.slice(index, index + size));
 		}
 		return chunks;
+	}
+
+	private getTableName(): string {
+		if (!this.tableName) {
+			throw new Error(
+				'Missing required env: DYNAMODB_AVATAR_TABLE (when using DynamoDB avatar repository)',
+			);
+		}
+		return this.tableName;
 	}
 }
