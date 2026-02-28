@@ -22,6 +22,8 @@ import {
 	type CreatePaymentIntentResult,
 } from '@/shared/payments';
 import { UnitOfWork } from '@/lib/database/unit-of-work';
+import { PAYMENTS_APPLICATION_ERRORS } from '@/shared/errors';
+import { ApplicationErrorFactory } from '@/shared/errors/base.error-factory';
 
 @CommandHandler(CreatePaymentIntentCommand)
 export class CreatePaymentIntentHandler implements ICommandHandler<CreatePaymentIntentCommand> {
@@ -39,7 +41,11 @@ export class CreatePaymentIntentHandler implements ICommandHandler<CreatePayment
 	): Promise<CreatePaymentIntentResult> {
 		return this.uow.transaction(async () => {
 			const orderId = String(command.input.orderId ?? '').trim();
-			if (!orderId) throw new Error('orderId is required');
+			if (!orderId) {
+				throw ApplicationErrorFactory.create(
+					PAYMENTS_APPLICATION_ERRORS.PAYMENT_ORDER_ID_REQUIRED,
+				);
+			}
 
 			const order = await executeQuery(
 				this.queryBus,

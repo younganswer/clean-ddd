@@ -1,5 +1,7 @@
 import { BaseEntity } from '@/shared/domain/base.entity';
 import { PaymentStatus } from '@/shared/payments';
+import { PAYMENTS_DOMAIN_ERRORS } from '@/shared/errors';
+import { DomainErrorFactory } from '@/shared/errors/base.error-factory';
 import { randomUUID } from 'node:crypto';
 
 export class PaymentIntent extends BaseEntity {
@@ -45,8 +47,12 @@ export class PaymentIntent extends BaseEntity {
 
 	markSucceeded(): void {
 		if (this._status !== PaymentStatus.PENDING) {
-			throw new Error(
-				`cannot mark payment succeeded when status is ${this._status}`,
+			throw DomainErrorFactory.create(
+				PAYMENTS_DOMAIN_ERRORS.PAYMENT_MARK_SUCCEEDED_INVALID_STATUS,
+				{
+					message: `cannot mark payment succeeded when status is ${this._status}`,
+					details: { status: this._status },
+				},
 			);
 		}
 		this._status = PaymentStatus.SUCCEEDED;
@@ -54,8 +60,12 @@ export class PaymentIntent extends BaseEntity {
 
 	markFailed(): void {
 		if (this._status !== PaymentStatus.PENDING) {
-			throw new Error(
-				`cannot mark payment failed when status is ${this._status}`,
+			throw DomainErrorFactory.create(
+				PAYMENTS_DOMAIN_ERRORS.PAYMENT_MARK_FAILED_INVALID_STATUS,
+				{
+					message: `cannot mark payment failed when status is ${this._status}`,
+					details: { status: this._status },
+				},
 			);
 		}
 		this._status = PaymentStatus.FAILED;
