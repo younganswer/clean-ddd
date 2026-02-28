@@ -61,6 +61,30 @@ export class PaymentIntent extends BaseEntity {
 		this._status = PaymentStatus.FAILED;
 	}
 
+	applySucceededWebhook(): { changed: boolean } {
+		if (this._status === PaymentStatus.FAILED) {
+			throw new Error('cannot apply succeeded webhook to failed payment');
+		}
+		if (this._status === PaymentStatus.SUCCEEDED) {
+			return { changed: false };
+		}
+
+		this.markSucceeded();
+		return { changed: true };
+	}
+
+	applyFailedWebhook(): { changed: boolean } {
+		if (this._status === PaymentStatus.SUCCEEDED) {
+			throw new Error('cannot apply failed webhook to succeeded payment');
+		}
+		if (this._status === PaymentStatus.FAILED) {
+			return { changed: false };
+		}
+
+		this.markFailed();
+		return { changed: true };
+	}
+
 	get orderId(): string {
 		return this._orderId;
 	}

@@ -9,7 +9,6 @@ import { executeCommand, executeQuery } from '@/common/utils/cqrs-executor';
 import {
 	PaymentWebhookFailedEvent,
 	PaymentWebhookSucceededEvent,
-	PaymentStatus,
 } from '@/shared/payments';
 import { IPaymentRepositorySymbol } from '@/modules/payments/domains/repositories/i.payment.repository';
 import type { IPaymentRepository } from '@/modules/payments/domains/repositories/i.payment.repository';
@@ -47,13 +46,8 @@ export class PaymentWebhookSucceededHandler implements IEventHandler<PaymentWebh
 
 			const payment = await this.paymentRepository.findById(paymentId);
 			if (!payment) throw new Error('payment not found');
-			if (payment.status === PaymentStatus.FAILED) {
-				throw new Error(
-					'cannot apply succeeded webhook to failed payment',
-				);
-			}
-			if (payment.status === PaymentStatus.PENDING) {
-				payment.markSucceeded();
+			const result = payment.applySucceededWebhook();
+			if (result.changed) {
 				await this.paymentRepository.persist(payment);
 			}
 
@@ -112,16 +106,10 @@ export class PaymentWebhookFailedHandler implements IEventHandler<PaymentWebhook
 
 			const payment = await this.paymentRepository.findById(paymentId);
 			if (!payment) throw new Error('payment not found');
-			if (payment.status === PaymentStatus.SUCCEEDED) {
-				throw new Error(
-					'cannot apply failed webhook to succeeded payment',
-				);
-			}
-			if (payment.status === PaymentStatus.FAILED) {
+			const result = payment.applyFailedWebhook();
+			if (!result.changed) {
 				return;
 			}
-
-			payment.markFailed();
 			await this.paymentRepository.persist(payment);
 		});
 	}
