@@ -4,6 +4,8 @@ import {
 	type IShipmentRepository,
 } from '@/modules/shipping/domains/repositories/i.shipment.repository';
 import { Shipment } from '@/modules/shipping/domains/entities/aggregates/shipment/shipment.aggregate';
+import { SHIPPING_DOMAIN_ERRORS } from '@/shared/errors';
+import { DomainErrorFactory } from '@/shared/errors/base.error-factory';
 
 @Injectable()
 export class ShipmentCreationDomainService {
@@ -15,7 +17,9 @@ export class ShipmentCreationDomainService {
 	async createForOrderIdempotent(orderId: string): Promise<Shipment> {
 		const normalizedOrderId = String(orderId ?? '').trim();
 		if (!normalizedOrderId) {
-			throw new Error('orderId is required');
+			throw DomainErrorFactory.create(
+				SHIPPING_DOMAIN_ERRORS.SHIPMENT_ORDER_ID_REQUIRED,
+			);
 		}
 
 		const existing =
