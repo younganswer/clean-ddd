@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 
 import { MikroORM } from '@mikro-orm/core';
-import { MongoClient } from 'mongodb';
+import { MongoClient, ObjectId } from 'mongodb';
 import { randomUUID } from 'node:crypto';
 import process from 'node:process';
 import { Client } from 'pg';
@@ -339,7 +339,8 @@ const seedMongoAvatars = async (client: Client): Promise<number> => {
 
 	const now = new Date();
 	const docs = users.rows.map((user, index) => ({
-		_id: randomUUID(),
+		_id: new ObjectId(),
+		uuid: randomUUID(),
 		userId: user.userId,
 		imageUrl: `https://example.com/avatar/${index + 1}.png`,
 		createdAt: now,
@@ -351,7 +352,8 @@ const seedMongoAvatars = async (client: Client): Promise<number> => {
 
 	try {
 		const avatars = mongoClient.db(dbName).collection<{
-			_id: string;
+			_id: ObjectId;
+			uuid: string;
 			userId: string;
 			imageUrl: string;
 			createdAt: Date;
@@ -366,7 +368,7 @@ const seedMongoAvatars = async (client: Client): Promise<number> => {
 			for (const doc of docs) {
 				await client.query(
 					`update "users" set "avatar_id" = $1, "updated_at" = now() where "uuid" = $2`,
-					[doc._id, doc.userId],
+					[doc.uuid, doc.userId],
 				);
 			}
 			await client.query('commit;');

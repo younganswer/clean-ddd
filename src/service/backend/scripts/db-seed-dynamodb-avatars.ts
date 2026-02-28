@@ -2,6 +2,7 @@ import 'reflect-metadata';
 
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, UpdateCommand } from '@aws-sdk/lib-dynamodb';
+import { ObjectId } from 'mongodb';
 import { randomUUID } from 'node:crypto';
 import process from 'node:process';
 import { Client } from 'pg';
@@ -85,6 +86,7 @@ export const runDbSeedDynamoDbAvatars = async (): Promise<void> => {
 		return {
 			userId: row.userId,
 			avatarId,
+			objectId: new ObjectId().toHexString(),
 			needsLinkUpdate: !keptAvatarId,
 			imageUrl: `https://example.com/avatar/${index + 1}.png`,
 		};
@@ -99,8 +101,10 @@ export const runDbSeedDynamoDbAvatars = async (): Promise<void> => {
 				TableName: tableName,
 				Key: { avatarId: item.avatarId },
 				UpdateExpression:
-					'SET userId = :userId, imageUrl = :imageUrl, updatedAt = :updatedAt, createdAt = if_not_exists(createdAt, :createdAt)',
+					'SET _id = if_not_exists(_id, :_id), uuid = :uuid, userId = :userId, imageUrl = :imageUrl, updatedAt = :updatedAt, createdAt = if_not_exists(createdAt, :createdAt)',
 				ExpressionAttributeValues: {
+					':_id': item.objectId,
+					':uuid': item.avatarId,
 					':userId': item.userId,
 					':imageUrl': item.imageUrl,
 					':updatedAt': nowIso,
