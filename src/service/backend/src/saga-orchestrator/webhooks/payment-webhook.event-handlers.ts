@@ -22,7 +22,6 @@ import {
 } from '@/shared/inventory';
 import { CreateShipmentForOrderRequestedEvent } from '@/shared/shipping';
 import { UnitOfWork } from '@/lib/database/unit-of-work';
-import { OrderStatus } from '@/shared/ordering/enums/order-status.enum';
 
 @Injectable()
 @EventsHandler(PaymentWebhookSucceededEvent)
@@ -46,10 +45,8 @@ export class PaymentWebhookSucceededHandler implements IEventHandler<PaymentWebh
 
 			const payment = await this.paymentRepository.findById(paymentId);
 			if (!payment) throw new Error('payment not found');
-			const result = payment.applySucceededWebhook();
-			if (result.changed) {
-				await this.paymentRepository.persist(payment);
-			}
+			payment.markSucceeded();
+			await this.paymentRepository.persist(payment);
 
 			const order = await executeQuery(
 				this.queryBus,
@@ -57,12 +54,10 @@ export class PaymentWebhookSucceededHandler implements IEventHandler<PaymentWebh
 			);
 			assertOrderView(order);
 
-			if (order.status !== OrderStatus.PAID) {
-				await executeCommand(
-					this.commandBus,
-					new MarkOrderPaidCommand(orderId),
-				);
-			}
+			await executeCommand(
+				this.commandBus,
+				new MarkOrderPaidCommand(orderId),
+			);
 
 			const items: InventoryOrderItemPayload[] = order.items.length
 				? order.items.map(({ sku, quantity }) => ({
@@ -106,10 +101,7 @@ export class PaymentWebhookFailedHandler implements IEventHandler<PaymentWebhook
 
 			const payment = await this.paymentRepository.findById(paymentId);
 			if (!payment) throw new Error('payment not found');
-			const result = payment.applyFailedWebhook();
-			if (!result.changed) {
-				return;
-			}
+			payment.markFailed();
 			await this.paymentRepository.persist(payment);
 		});
 	}
