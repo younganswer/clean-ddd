@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+cd "$REPO_ROOT/src"
+
+echo "[pre-commit] 🎨 Formatting + Lint (staged)..."
+pnpm lint-staged && echo ""
+
+echo "[pre-commit] 🔐 Secret scan (staged)..."
+pnpm secret:staged && echo ""
+
+echo "[pre-commit] ✅ Passed!"

@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+cd "$REPO_ROOT/src"
+
+BRANCH=$(git branch --show-current)
+echo "[pre-push] 🚀 Pushing branch '$BRANCH'..."
+
+#if [[ "$BRANCH" == "main" ]]; then
+#  echo "[pre-push] 🚫 Direct push to main is blocked."
+#  exit 1
+#fi
+
+echo "[pre-push] 🔍 Typecheck..."
+pnpm typecheck && echo ""
+
+echo "[pre-push] 🧪 Running tests..."
+pnpm test && echo ""
+
+echo "[pre-push] 🔐 Secret scan (commit range)..."
+pnpm secret:log-opts && echo ""
+
+echo "[pre-push] ✅ Ready to push!"
