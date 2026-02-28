@@ -26,6 +26,8 @@ import {
 } from '@/saga-orchestrator/webhooks/payment-webhook.event-handlers';
 import { ReserveInventoryForOrderRequestedHandler } from '@/modules/inventory/application/events/handlers/reserve-inventory-for-order-requested.handler';
 import { CreateShipmentForOrderRequestedHandler } from '@/modules/shipping/application/events/handlers/create-shipment-for-order-requested.handler';
+import { OUTBOX_INFRA_ERRORS } from '@/shared/errors';
+import { InfrastructureErrorFactory } from '@/shared/errors/base.error-factory';
 
 @Injectable()
 export class OutboxConsumer {
@@ -50,8 +52,16 @@ export class OutboxConsumer {
 				strict: false,
 			});
 			if (!handler) {
-				throw new Error(
-					'PaymentWebhookSucceededHandler provider not found',
+				throw InfrastructureErrorFactory.create(
+					OUTBOX_INFRA_ERRORS.OUTBOX_HANDLER_PROVIDER_NOT_FOUND,
+					{
+						message:
+							'PaymentWebhookSucceededHandler provider not found',
+						details: {
+							eventType,
+							handler: 'PaymentWebhookSucceededHandler',
+						},
+					},
 				);
 			}
 			await handler.handle(event as PaymentWebhookSucceededEvent);
@@ -63,8 +73,16 @@ export class OutboxConsumer {
 				strict: false,
 			});
 			if (!handler) {
-				throw new Error(
-					'PaymentWebhookFailedHandler provider not found',
+				throw InfrastructureErrorFactory.create(
+					OUTBOX_INFRA_ERRORS.OUTBOX_HANDLER_PROVIDER_NOT_FOUND,
+					{
+						message:
+							'PaymentWebhookFailedHandler provider not found',
+						details: {
+							eventType,
+							handler: 'PaymentWebhookFailedHandler',
+						},
+					},
 				);
 			}
 			await handler.handle(event as PaymentWebhookFailedEvent);
@@ -79,8 +97,16 @@ export class OutboxConsumer {
 				},
 			);
 			if (!handler) {
-				throw new Error(
-					'ReserveInventoryForOrderRequestedHandler provider not found',
+				throw InfrastructureErrorFactory.create(
+					OUTBOX_INFRA_ERRORS.OUTBOX_HANDLER_PROVIDER_NOT_FOUND,
+					{
+						message:
+							'ReserveInventoryForOrderRequestedHandler provider not found',
+						details: {
+							eventType,
+							handler: 'ReserveInventoryForOrderRequestedHandler',
+						},
+					},
 				);
 			}
 			await handler.handle(
@@ -97,8 +123,16 @@ export class OutboxConsumer {
 				},
 			);
 			if (!handler) {
-				throw new Error(
-					'CreateShipmentForOrderRequestedHandler provider not found',
+				throw InfrastructureErrorFactory.create(
+					OUTBOX_INFRA_ERRORS.OUTBOX_HANDLER_PROVIDER_NOT_FOUND,
+					{
+						message:
+							'CreateShipmentForOrderRequestedHandler provider not found',
+						details: {
+							eventType,
+							handler: 'CreateShipmentForOrderRequestedHandler',
+						},
+					},
 				);
 			}
 			await handler.handle(event as CreateShipmentForOrderRequestedEvent);

@@ -11,6 +11,8 @@ import {
 	createRetryAt,
 	resolveErrorMessage,
 } from '@/modules/outbox/application/outbox-error.util';
+import { OUTBOX_INFRA_ERRORS } from '@/shared/errors';
+import { InfrastructureErrorFactory } from '@/shared/errors/base.error-factory';
 
 @Injectable()
 export class OutboxSweeper {
@@ -31,7 +33,12 @@ export class OutboxSweeper {
 	private async consumeDirect(outboxId: string): Promise<void> {
 		const consumer = this.moduleRef.get(OutboxConsumer, { strict: false });
 		if (!consumer) {
-			throw new Error('OutboxConsumer provider not found');
+			throw InfrastructureErrorFactory.create(
+				OUTBOX_INFRA_ERRORS.OUTBOX_CONSUMER_PROVIDER_NOT_FOUND,
+				{
+					details: { outboxId },
+				},
+			);
 		}
 
 		await consumer.consumeRawMessage({

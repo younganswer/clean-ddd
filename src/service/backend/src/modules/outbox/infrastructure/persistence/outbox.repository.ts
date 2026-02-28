@@ -4,8 +4,8 @@ import { Injectable } from '@nestjs/common';
 import type { IOutboxRepository } from '@/shared/outbox/domain/i.outbox.repository';
 import { OutboxEvent } from '@/shared/outbox/domain/entities/outbox-event.entity';
 import { OutboxEventStatus } from '@/shared/outbox';
+import { OutboxMapper } from '@/modules/outbox/infrastructure/mappers/outbox.mapper';
 import { OutboxEventSchema } from '@/modules/outbox/infrastructure/persistence/outbox.schema';
-import { OutboxMapper } from '../mappers/outbox.mapper';
 
 @Injectable()
 export class OutboxRepository implements IOutboxRepository {

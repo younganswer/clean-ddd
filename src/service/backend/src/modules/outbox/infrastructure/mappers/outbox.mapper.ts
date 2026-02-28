@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { OutboxEventSchema } from '../persistence/outbox.schema';
+import { OutboxEventSchema } from '@/modules/outbox/infrastructure/persistence/outbox.schema';
 import { OutboxEvent } from '@/shared/outbox';
 
 @Injectable()
