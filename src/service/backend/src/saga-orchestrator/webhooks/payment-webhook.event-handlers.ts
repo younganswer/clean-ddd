@@ -9,12 +9,13 @@ import { executeCommand, executeQuery } from '@/common/utils/cqrs-executor';
 import {
 	PaymentWebhookFailedEvent,
 	PaymentWebhookSucceededEvent,
+	PaymentStatus,
 } from '@/shared/payments';
 import { IPaymentRepositorySymbol } from '@/modules/payments/domains/repositories/i.payment.repository';
 import type { IPaymentRepository } from '@/modules/payments/domains/repositories/i.payment.repository';
 import { MarkOrderPaidCommand } from '@/shared/ordering/commands/mark-order-paid.command';
 import { GetOrderQuery } from '@/shared/ordering/queries/get-order.query';
-import { isOrderView } from '@/shared/ordering/readers/order-view.guard';
+import { assertOrderView } from '@/shared/ordering/readers/order-view.guard';
 import { OutboxProducer } from '@/modules/outbox/application/outbox.producer';
 import {
 	ReserveInventoryForOrderRequestedEvent,
@@ -22,6 +23,7 @@ import {
 } from '@/shared/inventory';
 import { CreateShipmentForOrderRequestedEvent } from '@/shared/shipping';
 import { UnitOfWork } from '@/lib/database/unit-of-work';
+import { OrderStatus } from '@/shared/ordering/enums/order-status.enum';
 
 @Injectable()
 @EventsHandler(PaymentWebhookSucceededEvent)
@@ -45,26 +47,41 @@ export class PaymentWebhookSucceededHandler implements IEventHandler<PaymentWebh
 
 			const payment = await this.payments.findById(paymentId);
 			if (!payment) throw new Error('payment not found');
-			payment.markSucceeded();
-			await this.payments.persist(payment);
-
-			await executeCommand(
-				this.commandBus,
-				new MarkOrderPaidCommand(orderId),
-			);
+			if (payment.status === PaymentStatus.FAILED) {
+				throw new Error(
+					'cannot apply succeeded webhook to failed payment',
+				);
+			}
+			if (payment.status === PaymentStatus.PENDING) {
+				payment.markSucceeded();
+				await this.payments.persist(payment);
+			}
 
 			const order = await executeQuery(
 				this.queryBus,
 				new GetOrderQuery(orderId),
 			);
+			assertOrderView(order);
 
-			const items: InventoryOrderItemPayload[] =
-				isOrderView(order) && order.items.length
-					? order.items.map(({ sku, quantity }) => ({
-							sku,
-							quantity,
-						}))
-					: [{ sku: 'SKU-001', quantity: 1 }];
+			if (order.status !== OrderStatus.PAID) {
+				await executeCommand(
+					this.commandBus,
+					new MarkOrderPaidCommand(orderId),
+				);
+			}
+
+			const items: InventoryOrderItemPayload[] = order.items.length
+				? order.items.map(({ sku, quantity }) => ({
+						sku,
+						quantity,
+					}))
+				: [];
+
+			if (!items.length) {
+				throw new Error(
+					'cannot request inventory reservation without order items',
+				);
+			}
 
 			await this.outbox.publish(
 				new ReserveInventoryForOrderRequestedEvent(orderId, items),
@@ -95,6 +112,14 @@ export class PaymentWebhookFailedHandler implements IEventHandler<PaymentWebhook
 
 			const payment = await this.payments.findById(paymentId);
 			if (!payment) throw new Error('payment not found');
+			if (payment.status === PaymentStatus.SUCCEEDED) {
+				throw new Error(
+					'cannot apply failed webhook to succeeded payment',
+				);
+			}
+			if (payment.status === PaymentStatus.FAILED) {
+				return;
+			}
 
 			payment.markFailed();
 			await this.payments.persist(payment);
