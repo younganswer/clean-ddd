@@ -6,9 +6,21 @@ import { BaseSchema } from '@/shared/persistence/mikro-orm/base.schema';
 @Unique({ properties: ['orderId'] })
 @Index({ properties: ['createdAt'] })
 export class ShipmentSchema extends BaseSchema {
+	constructor(input: ShipmentSchemaConstructorInput) {
+		super(input.uuid);
+		this.orderId = input.orderId;
+		this.status = input.status ?? ShipmentStatus.PENDING;
+	}
+
 	@Property({ type: 'uuid' })
 	orderId!: string;
 
 	@Property({ type: 'string' })
 	status: ShipmentStatus = ShipmentStatus.PENDING;
 }
+
+type ShipmentSchemaConstructorInput = Omit<
+	ShipmentSchema,
+	'id' | 'createdAt' | 'updatedAt' | 'status'
+> &
+	Partial<Pick<ShipmentSchema, 'status'>>;

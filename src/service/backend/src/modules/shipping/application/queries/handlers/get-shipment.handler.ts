@@ -19,8 +19,6 @@ export class GetShipmentHandler implements IQueryHandler<GetShipmentQuery> {
 			shipmentId: s.uuid,
 			orderId: s.orderId,
 			status: s.status,
-			createdAt: s.createdAt.toISOString(),
-			updatedAt: s.updatedAt.toISOString(),
 		};
 	}
 }

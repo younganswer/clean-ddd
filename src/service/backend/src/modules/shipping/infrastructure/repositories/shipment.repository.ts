@@ -1,7 +1,6 @@
 import { RequestContext } from '@mikro-orm/core';
 import { EntityManager } from '@mikro-orm/postgresql';
 import { Injectable } from '@nestjs/common';
-import { ShipmentStatus } from '@/shared/shipping';
 import type { IShipmentRepository } from '@/modules/shipping/domains/repositories/i.shipment.repository';
 import { ShipmentSchema } from '@/modules/shipping/infrastructure/schemas/shipment.schema';
 import { Shipment } from '@/modules/shipping/domains/entities/aggregates/shipment/shipment.aggregate';
@@ -21,20 +20,21 @@ export class ShipmentRepository implements IShipmentRepository {
 		);
 	}
 
-	async createForOrder(orderId: string): Promise<Shipment> {
+	async persist(shipment: Shipment): Promise<void> {
 		const em = this.emForContext();
-		const existing = await em.findOne(ShipmentSchema, { orderId });
-		if (existing) return this.mapper.toDomain(existing);
-
-		const shipment = em.create(ShipmentSchema, {
-			orderId,
-			status: ShipmentStatus.PENDING,
-			createdAt: new Date(),
-			updatedAt: new Date(),
+		const schema = this.mapper.toSchema(shipment);
+		const exists = await em.findOne(ShipmentSchema, {
+			uuid: schema.uuid,
 		});
 
-		em.persist(shipment);
-		return this.mapper.toDomain(shipment);
+		if (exists) {
+			em.assign(exists, schema, {
+				ignoreUndefined: true,
+				onlyProperties: true,
+			});
+		} else {
+			em.create(ShipmentSchema, schema);
+		}
 	}
 
 	async findById(id: string): Promise<Shipment | null> {

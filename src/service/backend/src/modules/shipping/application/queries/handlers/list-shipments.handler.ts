@@ -30,8 +30,6 @@ export class ListShipmentsHandler implements IQueryHandler<ListShipmentsQuery> {
 			shipmentId: s.uuid,
 			orderId: s.orderId,
 			status: s.status,
-			createdAt: s.createdAt.toISOString(),
-			updatedAt: s.updatedAt.toISOString(),
 		}));
 
 		const totalPages = Math.max(1, Math.ceil(total / limit));

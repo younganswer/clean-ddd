@@ -37,15 +37,11 @@ export class ShipmentReader implements IShipmentReader {
 		uuid: string;
 		orderId: string;
 		status: ShipmentView['status'];
-		createdAt: Date;
-		updatedAt: Date;
 	}): ShipmentView {
 		return {
 			shipmentId: s.uuid,
 			orderId: s.orderId,
 			status: s.status,
-			createdAt: s.createdAt.toISOString(),
-			updatedAt: s.updatedAt.toISOString(),
 		};
 	}
 }
