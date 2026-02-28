@@ -26,6 +26,7 @@
 		"db:init:cd": "node -r ts-node/register/transpile-only -r tsconfig-paths/register scripts/db-init.ts",
 		"db:reset": "node --env-file=.env -r ts-node/register/transpile-only -r tsconfig-paths/register scripts/db-reset.ts",
 		"db:reset:cd": "node -r ts-node/register/transpile-only -r tsconfig-paths/register scripts/db-reset.ts",
+		"db:reset:dynamodb:avatars:cd": "node -r ts-node/register/transpile-only -r tsconfig-paths/register scripts/db-reset-dynamodb-avatars.ts",
 		"db:seed:dynamodb:avatars:cd": "node -r ts-node/register/transpile-only -r tsconfig-paths/register scripts/db-seed-dynamodb-avatars.ts",
 		"db:diff": "node --env-file=.env -r ts-node/register/transpile-only -r tsconfig-paths/register scripts/db-diff.ts"
 	},
