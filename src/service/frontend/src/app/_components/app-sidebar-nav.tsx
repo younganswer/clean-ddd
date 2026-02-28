@@ -24,10 +24,10 @@ const sections: NavSection[] = [
 	{
 		title: "Bounded Contexts",
 		items: [
-			{ label: "Users", href: "/users" },
-			{ label: "Orders", href: "/orders" },
-			{ label: "Shipments", href: "/shipments" },
-			{ label: "Inventory", href: "/inventory" },
+			{ label: "Users", href: "/users/" },
+			{ label: "Orders", href: "/orders/" },
+			{ label: "Shipments", href: "/shipments/" },
+			{ label: "Inventory", href: "/inventory/" },
 		],
 	},
 ];

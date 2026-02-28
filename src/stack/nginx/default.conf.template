@@ -59,6 +59,12 @@ server {
     proxy_pass http://backend_api;
   }
 
+  # static export(trailingSlash: true) 경로 정규화
+  # ex) /users -> /users/
+  location ~ ^/(graph|users|orders|shipments|inventory|system-concepts)$ {
+    return 308 $scheme://$host$uri/;
+  }
+
   location / {
     proxy_read_timeout ${NGINX_PROXY_READ_TIMEOUT};
     proxy_pass http://frontend_app;

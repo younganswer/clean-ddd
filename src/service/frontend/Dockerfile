@@ -23,4 +23,4 @@ WORKDIR /srv
 COPY --from=build /app/service/frontend/out ./out
 ENV PORT=8080
 EXPOSE 8080
-CMD ["sh", "-c", "npx --yes serve@14.2.0 -s out -l ${PORT:-8080}"]
+CMD ["sh", "-c", "npx --yes serve@14.2.0 out -l ${PORT:-8080}"]
