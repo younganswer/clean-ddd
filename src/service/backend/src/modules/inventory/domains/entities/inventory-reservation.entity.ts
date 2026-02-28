@@ -1,4 +1,6 @@
 import { BaseEntity } from '@/shared/domain/base.entity';
+import { INVENTORY_DOMAIN_ERRORS } from '@/shared/errors';
+import { DomainErrorFactory } from '@/shared/errors/base.error-factory';
 import { randomUUID } from 'node:crypto';
 
 export class InventoryReservation extends BaseEntity {
@@ -20,10 +22,23 @@ export class InventoryReservation extends BaseEntity {
 		const sku = String(input.sku ?? '').trim();
 		const quantity = Number(input.quantity ?? 0);
 
-		if (!orderId) throw new Error('orderId is required');
-		if (!sku) throw new Error('sku is required');
+		if (!orderId) {
+			throw DomainErrorFactory.create(
+				INVENTORY_DOMAIN_ERRORS.INVENTORY_RESERVATION_ORDER_ID_REQUIRED,
+			);
+		}
+		if (!sku) {
+			throw DomainErrorFactory.create(
+				INVENTORY_DOMAIN_ERRORS.INVENTORY_RESERVATION_SKU_REQUIRED,
+			);
+		}
 		if (!Number.isFinite(quantity) || quantity <= 0) {
-			throw new Error('quantity must be a positive number');
+			throw DomainErrorFactory.create(
+				INVENTORY_DOMAIN_ERRORS.INVENTORY_RESERVATION_QUANTITY_INVALID,
+				{
+					details: { quantity: input.quantity },
+				},
+			);
 		}
 
 		return new InventoryReservation(randomUUID(), orderId, sku, quantity);
@@ -40,11 +55,28 @@ export class InventoryReservation extends BaseEntity {
 		const sku = String(input.sku ?? '').trim();
 		const quantity = Number(input.quantity ?? 0);
 
-		if (!uuid) throw new Error('reservation uuid is required');
-		if (!orderId) throw new Error('orderId is required');
-		if (!sku) throw new Error('sku is required');
+		if (!uuid) {
+			throw DomainErrorFactory.create(
+				INVENTORY_DOMAIN_ERRORS.INVENTORY_RESERVATION_ID_REQUIRED,
+			);
+		}
+		if (!orderId) {
+			throw DomainErrorFactory.create(
+				INVENTORY_DOMAIN_ERRORS.INVENTORY_RESERVATION_ORDER_ID_REQUIRED,
+			);
+		}
+		if (!sku) {
+			throw DomainErrorFactory.create(
+				INVENTORY_DOMAIN_ERRORS.INVENTORY_RESERVATION_SKU_REQUIRED,
+			);
+		}
 		if (!Number.isFinite(quantity) || quantity <= 0) {
-			throw new Error('quantity must be a positive number');
+			throw DomainErrorFactory.create(
+				INVENTORY_DOMAIN_ERRORS.INVENTORY_RESERVATION_QUANTITY_INVALID,
+				{
+					details: { quantity: input.quantity },
+				},
+			);
 		}
 
 		return new InventoryReservation(uuid, orderId, sku, quantity);

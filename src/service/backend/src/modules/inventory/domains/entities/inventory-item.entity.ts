@@ -1,4 +1,6 @@
 import { BaseEntity } from '@/shared/domain/base.entity';
+import { INVENTORY_DOMAIN_ERRORS } from '@/shared/errors';
+import { DomainErrorFactory } from '@/shared/errors/base.error-factory';
 import { randomUUID } from 'node:crypto';
 
 export class InventoryItem extends BaseEntity {
@@ -51,11 +53,24 @@ export class InventoryItem extends BaseEntity {
 	reserve(quantity: number): void {
 		const normalized = Number(quantity ?? 0);
 		if (!Number.isFinite(normalized) || normalized <= 0) {
-			throw new Error('quantity must be positive');
+			throw DomainErrorFactory.create(
+				INVENTORY_DOMAIN_ERRORS.INVENTORY_QUANTITY_INVALID,
+				{
+					details: { quantity },
+				},
+			);
 		}
 		if (this._availableQuantity < normalized) {
-			throw new Error(
-				`insufficient stock: sku=${this._sku} available=${this._availableQuantity} need=${normalized}`,
+			throw DomainErrorFactory.create(
+				INVENTORY_DOMAIN_ERRORS.INVENTORY_STOCK_INSUFFICIENT,
+				{
+					message: `insufficient stock: sku=${this._sku} available=${this._availableQuantity} need=${normalized}`,
+					details: {
+						sku: this._sku,
+						availableQuantity: this._availableQuantity,
+						requestedQuantity: normalized,
+					},
+				},
 			);
 		}
 
