@@ -24,12 +24,20 @@ export class Order extends BaseEntity {
 		items: OrderItem[];
 		now?: Date;
 	}): Order {
+		const userId = String(input.userId ?? '').trim();
+		if (!userId) {
+			throw new Error('userId is required');
+		}
+		if (!Array.isArray(input.items) || input.items.length === 0) {
+			throw new Error('order must contain at least one item');
+		}
+
 		return new Order(
 			randomUUID(),
-			input.userId,
+			userId,
 			OrderStatus.PENDING_PAYMENT,
 			input.total,
-			input.items,
+			[...input.items],
 			null,
 			input.now ?? new Date(),
 			null,
@@ -74,6 +82,9 @@ export class Order extends BaseEntity {
 	}
 
 	markPaid(): void {
+		if (this._status === OrderStatus.PAID) {
+			return;
+		}
 		if (this._status !== OrderStatus.PENDING_PAYMENT) {
 			throw new Error(`cannot mark paid when order is ${this._status}`);
 		}
