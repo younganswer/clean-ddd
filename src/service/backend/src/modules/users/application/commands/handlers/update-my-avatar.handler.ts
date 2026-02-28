@@ -8,17 +8,17 @@ import {
 	type IUserAvatarRepository,
 } from '@/modules/users/domains/repositories/i.user-avatar.repository';
 import {
-	IUserAvatarLinkRepositorySymbol,
-	type IUserAvatarLinkRepository,
-} from '@/modules/users/domains/repositories/i.user-avatar-link.repository';
+	IUserRepositorySymbol,
+	type IUserRepository,
+} from '@/modules/users/domains/repositories/i.user.repository';
 
 @CommandHandler(UpdateMyAvatarCommand)
 export class UpdateMyAvatarHandler implements ICommandHandler<UpdateMyAvatarCommand> {
 	constructor(
 		@Inject(IUserAvatarRepositorySymbol)
 		private readonly userAvatarRepository: IUserAvatarRepository,
-		@Inject(IUserAvatarLinkRepositorySymbol)
-		private readonly userAvatarLinkRepository: IUserAvatarLinkRepository,
+		@Inject(IUserRepositorySymbol)
+		private readonly userRepository: IUserRepository,
 		private readonly uow: UnitOfWork,
 	) {}
 
@@ -43,14 +43,17 @@ export class UpdateMyAvatarHandler implements ICommandHandler<UpdateMyAvatarComm
 		});
 
 		await this.uow.transaction(async () => {
-			await this.userAvatarLinkRepository.assignAvatarId({
-				userId,
-				avatarId: savedAvatar.avatarId,
-			});
+			const user = await this.userRepository.findById(userId);
+			if (!user) {
+				throw new Error('user not found');
+			}
+
+			user.assignAvatarId(savedAvatar.id);
+			await this.userRepository.persist(user);
 		});
 
 		return {
-			avatarId: savedAvatar.avatarId,
+			avatarId: savedAvatar.id,
 			avatarUrl: savedAvatar.imageUrl,
 		};
 	}

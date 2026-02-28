@@ -6,26 +6,18 @@ import {
 	GetCommand,
 	UpdateCommand,
 } from '@aws-sdk/lib-dynamodb';
-import {
-	type IUserAvatarRepository,
-	type UserAvatarDocument,
-} from '@/modules/users/domains/repositories/i.user-avatar.repository';
+import { type IUserAvatarRepository } from '@/modules/users/domains/repositories/i.user-avatar.repository';
 import { optionalEnv } from '@/env';
-
-type AvatarItem = {
-	avatarId: string;
-	userId: string;
-	imageUrl: string;
-	createdAt: string;
-	updatedAt: string;
-};
+import { Avatar } from '../../domains/entities/avatar.entity';
+import { AvatarMapper } from '../mappers/avatar.mapper';
+import { AvatarDocument } from '../documents/avatar.document';
 
 @Injectable()
 export class DynamoDbUserAvatarRepository implements IUserAvatarRepository {
 	private readonly tableName = optionalEnv('DYNAMODB_AVATAR_TABLE');
 	private readonly documentClient: DynamoDBDocumentClient;
 
-	constructor() {
+	constructor(private readonly avatarMapper: AvatarMapper) {
 		const endpoint = optionalEnv('DYNAMODB_ENDPOINT');
 		const region = optionalEnv('AWS_REGION') ?? 'ap-northeast-2';
 
@@ -45,7 +37,7 @@ export class DynamoDbUserAvatarRepository implements IUserAvatarRepository {
 		avatarId: string;
 		userId: string;
 		imageUrl: string;
-	}): Promise<UserAvatarDocument> {
+	}): Promise<Avatar> {
 		const tableName = this.getTableName();
 		const nowIso = new Date().toISOString();
 		const normalizedAvatarId = input.avatarId.trim();
@@ -59,8 +51,9 @@ export class DynamoDbUserAvatarRepository implements IUserAvatarRepository {
 				TableName: tableName,
 				Key: { avatarId: normalizedAvatarId },
 				UpdateExpression:
-					'SET userId = :userId, imageUrl = :imageUrl, updatedAt = :updatedAt, createdAt = if_not_exists(createdAt, :createdAt)',
+					'SET uuid = :uuid, userId = :userId, imageUrl = :imageUrl, updatedAt = :updatedAt, createdAt = if_not_exists(createdAt, :createdAt)',
 				ExpressionAttributeValues: {
+					':uuid': normalizedAvatarId,
 					':userId': input.userId,
 					':imageUrl': input.imageUrl,
 					':updatedAt': nowIso,
@@ -77,7 +70,7 @@ export class DynamoDbUserAvatarRepository implements IUserAvatarRepository {
 		return saved;
 	}
 
-	async findByAvatarId(avatarId: string): Promise<UserAvatarDocument | null> {
+	async findByAvatarId(avatarId: string): Promise<Avatar | null> {
 		const normalized = avatarId.trim();
 		if (!normalized) return null;
 
@@ -89,10 +82,11 @@ export class DynamoDbUserAvatarRepository implements IUserAvatarRepository {
 		);
 
 		if (!result.Item) return null;
-		return this.toDocument(result.Item as AvatarItem);
+
+		return this.avatarMapper.toDomain(result.Item as AvatarDocument);
 	}
 
-	async findByAvatarIds(avatarIds: string[]): Promise<UserAvatarDocument[]> {
+	async findByAvatarIds(avatarIds: string[]): Promise<Avatar[]> {
 		const normalizedIds = [
 			...new Set(avatarIds.map((id) => id.trim())),
 		].filter((id) => id.length > 0);
@@ -100,7 +94,7 @@ export class DynamoDbUserAvatarRepository implements IUserAvatarRepository {
 		if (normalizedIds.length === 0) return [];
 
 		const batches = this.chunk(normalizedIds, 100);
-		const items: AvatarItem[] = [];
+		const documents: AvatarDocument[] = [];
 
 		for (const batch of batches) {
 			const tableName = this.getTableName();
@@ -114,25 +108,15 @@ export class DynamoDbUserAvatarRepository implements IUserAvatarRepository {
 				}),
 			);
 
-			const found = response.Responses?.[tableName] as
-				| AvatarItem[]
-				| undefined;
-			if (found && found.length > 0) {
-				items.push(...found);
+			const items = response.Responses?.[tableName] as AvatarDocument[];
+			if (items && items.length > 0) {
+				documents.push(...items);
 			}
 		}
 
-		return items.map((item) => this.toDocument(item));
-	}
-
-	private toDocument(item: AvatarItem): UserAvatarDocument {
-		return {
-			avatarId: item.avatarId,
-			userId: item.userId,
-			imageUrl: item.imageUrl,
-			createdAt: new Date(item.createdAt),
-			updatedAt: new Date(item.updatedAt),
-		};
+		return documents.map((document) =>
+			this.avatarMapper.toDomain(document),
+		);
 	}
 
 	private chunk<T>(values: T[], size: number): T[][] {

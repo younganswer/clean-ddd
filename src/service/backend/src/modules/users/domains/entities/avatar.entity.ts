@@ -3,11 +3,11 @@ import { randomUUID } from 'node:crypto';
 
 export class Avatar extends BaseEntity {
 	private constructor(
-		uuid: string,
+		id: string,
 		private readonly _userId: string,
 		private readonly _imageUrl: string,
 	) {
-		super(uuid);
+		super(id);
 	}
 
 	static create(input: { userId: string; imageUrl: string }): Avatar {
@@ -38,5 +38,13 @@ export class Avatar extends BaseEntity {
 
 	get imageUrl(): string {
 		return this._imageUrl;
+	}
+
+	toPrimitives(): { avatarId: string; userId: string; imageUrl: string } {
+		return {
+			avatarId: this.id,
+			userId: this._userId,
+			imageUrl: this._imageUrl,
+		};
 	}
 }

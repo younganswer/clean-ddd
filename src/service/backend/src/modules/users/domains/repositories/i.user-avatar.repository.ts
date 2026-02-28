@@ -1,21 +1,15 @@
-export const IUserAvatarRepositorySymbol = Symbol('IUserAvatarRepository');
+import { Avatar } from '../entities/avatar.entity';
 
-export interface UserAvatarDocument {
-	avatarId: string;
-	userId: string;
-	imageUrl: string;
-	createdAt: Date;
-	updatedAt: Date;
-}
+export const IUserAvatarRepositorySymbol = Symbol('IUserAvatarRepository');
 
 export interface IUserAvatarRepository {
 	upsert(input: {
 		avatarId: string;
 		userId: string;
 		imageUrl: string;
-	}): Promise<UserAvatarDocument>;
+	}): Promise<Avatar>;
 
-	findByAvatarId(avatarId: string): Promise<UserAvatarDocument | null>;
+	findByAvatarId(avatarId: string): Promise<Avatar | null>;
 
-	findByAvatarIds(avatarIds: string[]): Promise<UserAvatarDocument[]>;
+	findByAvatarIds(avatarIds: string[]): Promise<Avatar[]>;
 }

@@ -3,9 +3,9 @@ import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { GetUserProfileQuery } from '@/shared/users/queries/get-user-profile.query';
 import type { UserProfileView } from '@/shared/users/readers/user-profile.view';
 import {
-	IUserProfileRepositorySymbol,
-	type IUserProfileRepository,
-} from '@/modules/users/domains/repositories/i.user-profile.repository';
+	IUserRepositorySymbol,
+	type IUserRepository,
+} from '@/modules/users/domains/repositories/i.user.repository';
 import {
 	IUserAvatarRepositorySymbol,
 	type IUserAvatarRepository,
@@ -14,16 +14,24 @@ import {
 @QueryHandler(GetUserProfileQuery)
 export class GetUserProfileQueryHandler implements IQueryHandler<GetUserProfileQuery> {
 	constructor(
-		@Inject(IUserProfileRepositorySymbol)
-		private readonly userProfileRepository: IUserProfileRepository,
+		@Inject(IUserRepositorySymbol)
+		private readonly userRepository: IUserRepository,
 		@Inject(IUserAvatarRepositorySymbol)
 		private readonly userAvatarRepository: IUserAvatarRepository,
 	) {}
 
 	async execute(query: GetUserProfileQuery): Promise<UserProfileView> {
-		const profile = await this.userProfileRepository.getProfileByUserId(
-			query.userId,
-		);
+		const user = await this.userRepository.findById(query.userId);
+		if (!user) {
+			throw new Error('user not found');
+		}
+
+		const profile: UserProfileView = {
+			userId: user.id,
+			displayName: user.displayName,
+			email: user.email,
+			avatarId: user.avatarId ?? undefined,
+		};
 
 		if (!profile.avatarId) {
 			return { ...profile, avatarUrl: undefined };

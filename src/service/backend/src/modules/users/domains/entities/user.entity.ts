@@ -2,12 +2,12 @@ import { BaseEntity } from '@/shared/domain/base.entity';
 
 export class User extends BaseEntity {
 	private constructor(
-		uuid: string,
+		id: string,
 		private readonly _displayName: string,
 		private readonly _email: string,
-		private readonly _avatarId: string | null,
+		private _avatarId: string | null,
 	) {
-		super(uuid);
+		super(id);
 	}
 
 	static rehydrate(input: {
@@ -24,6 +24,15 @@ export class User extends BaseEntity {
 		);
 	}
 
+	assignAvatarId(avatarId: string): void {
+		const normalized = String(avatarId ?? '').trim();
+		if (!normalized) {
+			throw new Error('avatarId is required');
+		}
+
+		this._avatarId = normalized;
+	}
+
 	get displayName(): string {
 		return this._displayName;
 	}
@@ -34,5 +43,19 @@ export class User extends BaseEntity {
 
 	get avatarId(): string | null {
 		return this._avatarId;
+	}
+
+	toPrimitives(): {
+		userId: string;
+		displayName: string;
+		email: string;
+		avatarId: string | null;
+	} {
+		return {
+			userId: this.id,
+			displayName: this._displayName,
+			email: this._email,
+			avatarId: this._avatarId,
+		};
 	}
 }

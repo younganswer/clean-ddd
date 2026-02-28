@@ -4,9 +4,9 @@ import { ListUserProfilesQuery } from '@/shared/users/queries/list-user-profiles
 import type { UserProfileView } from '@/shared/users/readers/user-profile.view';
 import type { PaginatedView } from '@/shared/readers/paginated.view';
 import {
-	IUserProfileRepositorySymbol,
-	type IUserProfileRepository,
-} from '@/modules/users/domains/repositories/i.user-profile.repository';
+	IUserRepositorySymbol,
+	type IUserRepository,
+} from '@/modules/users/domains/repositories/i.user.repository';
 import {
 	IUserAvatarRepositorySymbol,
 	type IUserAvatarRepository,
@@ -15,8 +15,8 @@ import {
 @QueryHandler(ListUserProfilesQuery)
 export class ListUserProfilesQueryHandler implements IQueryHandler<ListUserProfilesQuery> {
 	constructor(
-		@Inject(IUserProfileRepositorySymbol)
-		private readonly userProfileRepository: IUserProfileRepository,
+		@Inject(IUserRepositorySymbol)
+		private readonly userRepository: IUserRepository,
 		@Inject(IUserAvatarRepositorySymbol)
 		private readonly userAvatarRepository: IUserAvatarRepository,
 	) {}
@@ -32,21 +32,30 @@ export class ListUserProfilesQueryHandler implements IQueryHandler<ListUserProfi
 		const offset = (page - 1) * limit;
 
 		const [items, total] = await Promise.all([
-			this.userProfileRepository.listProfiles({ limit, page }),
-			this.userProfileRepository.countProfiles(),
+			this.userRepository.findAll({ limit, page }),
+			this.userRepository.countAll(),
 		]);
 
-		const avatarIds = [...new Set(items.map((item) => item.avatarId ?? ''))]
+		const profiles: UserProfileView[] = items.map((user) => ({
+			userId: user.id,
+			displayName: user.displayName,
+			email: user.email,
+			avatarId: user.avatarId ?? undefined,
+		}));
+
+		const avatarIds = [
+			...new Set(profiles.map((item) => item.avatarId ?? '')),
+		]
 			.map((id) => id.trim())
 			.filter((id) => id.length > 0);
 
 		const avatars =
 			await this.userAvatarRepository.findByAvatarIds(avatarIds);
 		const avatarById = new Map(
-			avatars.map((avatar) => [avatar.avatarId, avatar]),
+			avatars.map((avatar) => [avatar.id, avatar]),
 		);
 
-		const enrichedItems = items.map((item) => ({
+		const enrichedItems = profiles.map((item) => ({
 			...item,
 			avatarUrl: item.avatarId
 				? avatarById.get(item.avatarId)?.imageUrl

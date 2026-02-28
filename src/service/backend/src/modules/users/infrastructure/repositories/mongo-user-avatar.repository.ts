@@ -1,12 +1,10 @@
 import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import { Collection, MongoClient } from 'mongodb';
-import {
-	type IUserAvatarRepository,
-	type UserAvatarDocument,
-} from '@/modules/users/domains/repositories/i.user-avatar.repository';
+import { type IUserAvatarRepository } from '@/modules/users/domains/repositories/i.user-avatar.repository';
 import { optionalEnv } from '@/env';
-import { type AvatarDocumentSchema } from '@/modules/users/infrastructure/schemas/avatar.document';
 import { AvatarMapper } from '@/modules/users/infrastructure/mappers/avatar.mapper';
+import { AvatarDocument } from '@/modules/users/infrastructure/documents/avatar.document';
+import { Avatar } from '../../domains/entities/avatar.entity';
 
 @Injectable()
 export class MongoUserAvatarRepository
@@ -15,9 +13,9 @@ export class MongoUserAvatarRepository
 	constructor(private readonly avatarMapper: AvatarMapper) {}
 
 	private client: MongoClient | null = null;
-	private avatarsCollection: Collection<AvatarDocumentSchema> | null = null;
+	private avatarsCollection: Collection<AvatarDocument> | null = null;
 
-	private async collection(): Promise<Collection<AvatarDocumentSchema> | null> {
+	private async collection(): Promise<Collection<AvatarDocument> | null> {
 		if (this.avatarsCollection) return this.avatarsCollection;
 
 		const mongoUrl = optionalEnv('MONGODB_URL');
@@ -32,7 +30,8 @@ export class MongoUserAvatarRepository
 
 		const collection = client
 			.db(dbName)
-			.collection<AvatarDocumentSchema>(collectionName);
+			.collection<AvatarDocument>(collectionName);
+		await collection.createIndex({ uuid: 1 }, { unique: true });
 		await collection.createIndex({ userId: 1, updatedAt: -1 });
 
 		this.client = client;
@@ -44,61 +43,67 @@ export class MongoUserAvatarRepository
 		avatarId: string;
 		userId: string;
 		imageUrl: string;
-	}): Promise<UserAvatarDocument> {
+	}): Promise<Avatar> {
 		const collection = await this.collection();
 		if (!collection) {
 			throw new Error('MONGODB_URL is required to upsert avatar');
 		}
-		const now = new Date();
+		const avatarId = String(input.avatarId ?? '').trim();
+		if (!avatarId) {
+			throw new Error('avatarId is required to upsert avatar');
+		}
 
 		await collection.updateOne(
-			{ _id: input.avatarId },
+			{ uuid: avatarId },
 			{
 				$set: {
+					uuid: avatarId,
 					userId: input.userId,
 					imageUrl: input.imageUrl,
-					updatedAt: now,
+					updatedAt: new Date(),
 				},
 				$setOnInsert: {
-					createdAt: now,
+					createdAt: new Date(),
 				},
 			},
 			{ upsert: true },
 		);
 
-		const found = await collection.findOne({ _id: input.avatarId });
+		const found = await collection.findOne({ uuid: avatarId });
 		if (!found) {
 			throw new Error('Failed to upsert avatar document');
 		}
 
-		return this.avatarMapper.toDocument(found);
+		return this.avatarMapper.toDomain(found);
 	}
 
-	async findByAvatarId(avatarId: string): Promise<UserAvatarDocument | null> {
+	async findByAvatarId(avatarId: string): Promise<Avatar | null> {
 		const normalized = avatarId.trim();
 		if (!normalized) return null;
 
 		const collection = await this.collection();
 		if (!collection) return null;
-		const found = await collection.findOne({ _id: normalized });
+		const found = await collection.findOne({ uuid: normalized });
 		if (!found) return null;
 
-		return this.avatarMapper.toDocument(found);
+		return this.avatarMapper.toDomain(found);
 	}
 
-	async findByAvatarIds(avatarIds: string[]): Promise<UserAvatarDocument[]> {
+	async findByAvatarIds(avatarIds: string[]): Promise<Avatar[]> {
 		const normalizedIds = [
 			...new Set(avatarIds.map((id) => id.trim())),
-		].filter((id) => id.length > 0);
+		].filter(
+			(id) => id.length > 0,
+		);
 		if (normalizedIds.length === 0) return [];
 
 		const collection = await this.collection();
 		if (!collection) return [];
 		const docs = await collection
-			.find({ _id: { $in: normalizedIds } })
+			.find({ uuid: { $in: normalizedIds } })
 			.toArray();
 
-		return docs.map((doc) => this.avatarMapper.toDocument(doc));
+		return docs.map((doc) => this.avatarMapper.toDomain(doc));
 	}
 
 	async onModuleDestroy(): Promise<void> {
