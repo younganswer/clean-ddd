@@ -31,16 +31,20 @@ export class DispatchOutboxEventHandler implements ICommandHandler<DispatchOutbo
 		try {
 			await this.outboxQueue.enqueue(outboxId, { messageGroupId });
 			await this.uow.transaction(async () => {
-				await this.outboxRepo.markAsPublished(outboxId);
+				const outboxEvent = await this.outboxRepo.findById(outboxId);
+				if (!outboxEvent) return;
+
+				outboxEvent.markPublished();
+				await this.outboxRepo.persist(outboxEvent);
 			});
 		} catch (error: unknown) {
 			const message = resolveErrorMessage(error);
 			await this.uow.transaction(async () => {
-				await this.outboxRepo.recordFailure(
-					outboxId,
-					message,
-					createRetryAt(30_000),
-				);
+				const outboxEvent = await this.outboxRepo.findById(outboxId);
+				if (!outboxEvent) return;
+
+				outboxEvent.recordFailure(message, createRetryAt(30_000));
+				await this.outboxRepo.persist(outboxEvent);
 			});
 		}
 	}

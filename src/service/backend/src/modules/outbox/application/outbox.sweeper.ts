@@ -64,11 +64,15 @@ export class OutboxSweeper {
 						`direct consume failed: outboxId=${eventId} err=${message}`,
 					);
 					await this.uow.transaction(async () => {
-						await this.outboxRepo.recordFailure(
-							eventId,
+						const outboxEvent =
+							await this.outboxRepo.findById(eventId);
+						if (!outboxEvent) return;
+
+						outboxEvent.recordFailure(
 							message,
 							createRetryAt(30_000),
 						);
+						await this.outboxRepo.persist(outboxEvent);
 					});
 					continue;
 				}
@@ -85,7 +89,11 @@ export class OutboxSweeper {
 
 				await this.outboxQueue.enqueue(eventId, { messageGroupId });
 				await this.uow.transaction(async () => {
-					await this.outboxRepo.markAsPublished(eventId);
+					const outboxEvent = await this.outboxRepo.findById(eventId);
+					if (!outboxEvent) return;
+
+					outboxEvent.markPublished();
+					await this.outboxRepo.persist(outboxEvent);
 				});
 				enqueued += 1;
 			} catch (error: unknown) {
@@ -94,11 +102,11 @@ export class OutboxSweeper {
 					`enqueue failed: outboxId=${eventId} err=${message}`,
 				);
 				await this.uow.transaction(async () => {
-					await this.outboxRepo.recordFailure(
-						eventId,
-						message,
-						createRetryAt(30_000),
-					);
+					const outboxEvent = await this.outboxRepo.findById(eventId);
+					if (!outboxEvent) return;
+
+					outboxEvent.recordFailure(message, createRetryAt(30_000));
+					await this.outboxRepo.persist(outboxEvent);
 				});
 			}
 		}

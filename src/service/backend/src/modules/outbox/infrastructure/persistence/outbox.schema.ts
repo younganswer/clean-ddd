@@ -5,6 +5,25 @@ import { BaseSchema } from '@/shared/persistence/mikro-orm/base.schema';
 @Entity({ tableName: 'outbox_events' })
 @Index({ properties: ['status', 'nextAttemptAt'] })
 export class OutboxEventSchema extends BaseSchema {
+	constructor(
+		input: Omit<
+			OutboxEventSchema,
+			| 'id'
+			| 'createdAt'
+			| 'updatedAt'
+			| 'status'
+			| 'attempt'
+			| 'nextAttemptAt'
+			| 'lockedUntil'
+			| 'publishedAt'
+			| 'lastError'
+		>,
+	) {
+		super(input.uuid);
+		this.eventType = input.eventType;
+		this.payload = input.payload;
+	}
+
 	@Property({ type: 'text' })
 	eventType!: string;
 

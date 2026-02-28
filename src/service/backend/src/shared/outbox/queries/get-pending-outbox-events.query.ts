@@ -1,4 +1,4 @@
-import type { OutboxEventDto } from '@/shared/outbox/domain/dto/outbox-event.dto';
+import type { OutboxEvent } from '@/shared/outbox/domain/entities/outbox-event.entity';
 
 export class GetPendingOutboxEventsQuery {
 	constructor(
@@ -8,5 +8,5 @@ export class GetPendingOutboxEventsQuery {
 }
 
 export class GetPendingOutboxEventsResult {
-	constructor(readonly events: OutboxEventDto[]) {}
+	constructor(readonly events: OutboxEvent[]) {}
 }

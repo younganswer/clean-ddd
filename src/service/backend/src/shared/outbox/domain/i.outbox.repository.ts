@@ -1,19 +1,12 @@
-import { OutboxEventDto } from '@/shared/outbox/domain/dto/outbox-event.dto';
+import { OutboxEvent } from '@/shared/outbox/domain/entities/outbox-event.entity';
 
 export interface IOutboxRepository {
-	save(event: OutboxEventDto): Promise<string>;
+	persist(event: OutboxEvent): Promise<void>;
+	findById(uuid: string): Promise<OutboxEvent | null>;
 
-	findDispatchable(limit: number, now: Date): Promise<OutboxEventDto[]>;
+	findDispatchable(limit: number, now: Date): Promise<OutboxEvent[]>;
 	lock(uuid: string, lockedUntil: Date): Promise<boolean>;
 	unlock(uuid: string): Promise<void>;
-
-	markAsPublished(uuid: string): Promise<void>;
-	markAsConsumed(uuid: string): Promise<void>;
-	recordFailure(
-		uuid: string,
-		error: string,
-		nextAttemptAt: Date,
-	): Promise<void>;
 }
 
 export const IOutboxRepositorySymbol = Symbol('I_OUTBOX_REPOSITORY');

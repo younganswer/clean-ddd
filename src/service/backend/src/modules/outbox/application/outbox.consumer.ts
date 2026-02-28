@@ -1,5 +1,3 @@
-import { RequestContext } from '@mikro-orm/core';
-import { EntityManager } from '@mikro-orm/postgresql';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { EventBus } from '@nestjs/cqrs';
 import { ModuleRef } from '@nestjs/core';
@@ -10,7 +8,6 @@ import {
 	IOutboxRepositorySymbol,
 	type IOutboxRepository,
 } from '@/shared/outbox';
-import { OutboxEventSchema } from '@/modules/outbox/infrastructure/persistence/outbox.schema';
 import { OutboxEventStatus } from '@/shared/outbox';
 import { hydrateEvent } from '@/lib/outbox/event-registry';
 import {
@@ -36,7 +33,6 @@ export class OutboxConsumer {
 	private readonly consumerName = 'OutboxConsumer';
 
 	constructor(
-		private readonly em: EntityManager,
 		private readonly moduleRef: ModuleRef,
 		@Inject(IOutboxRepositorySymbol)
 		private readonly outboxRepo: IOutboxRepository,
@@ -112,13 +108,6 @@ export class OutboxConsumer {
 		return false;
 	}
 
-	private emForContext(): EntityManager {
-		return (
-			(RequestContext.getEntityManager() as EntityManager | undefined) ??
-			this.em
-		);
-	}
-
 	async consumeRawMessage(record: Pick<SQSRecord, 'body'>): Promise<void> {
 		let outboxId: string | undefined;
 		try {
@@ -142,18 +131,15 @@ export class OutboxConsumer {
 
 		try {
 			await this.uow.transaction(async () => {
-				const em = this.emForContext();
-				const row = await em.findOne(OutboxEventSchema, {
-					uuid: outboxId,
-				});
-				if (!row) {
+				const outboxEvent = await this.outboxRepo.findById(outboxId);
+				if (!outboxEvent) {
 					await this.outboxRepo.unlock(outboxId);
 					return;
 				}
 				if (
-					row.status !== OutboxEventStatus.PUBLISHED &&
-					row.status !== OutboxEventStatus.FAILED &&
-					row.status !== OutboxEventStatus.PENDING
+					outboxEvent.status !== OutboxEventStatus.PUBLISHED &&
+					outboxEvent.status !== OutboxEventStatus.FAILED &&
+					outboxEvent.status !== OutboxEventStatus.PENDING
 				) {
 					await this.outboxRepo.unlock(outboxId);
 					return;
@@ -164,39 +150,40 @@ export class OutboxConsumer {
 					outboxId,
 				);
 				if (!claimed) {
-					await this.outboxRepo.markAsConsumed(outboxId);
+					outboxEvent.markConsumed();
+					await this.outboxRepo.persist(outboxEvent);
 					return;
 				}
 
 				try {
-					const event = hydrateEvent(row.eventType, row.payload);
+					const event = hydrateEvent(
+						outboxEvent.eventType,
+						outboxEvent.payload,
+					);
 					if (!event) {
 						this.logger.warn(
-							`unknown outbox eventType=${row.eventType}`,
+							`unknown outbox eventType=${outboxEvent.eventType}`,
 						);
-						await this.outboxRepo.recordFailure(
-							outboxId,
-							`unknown eventType=${row.eventType}`,
+						outboxEvent.recordFailure(
+							`unknown eventType=${outboxEvent.eventType}`,
 							createRetryAt(60_000),
 						);
+						await this.outboxRepo.persist(outboxEvent);
 						return;
 					}
 
 					const dispatched = await this.dispatchKnownEvent(
 						event,
-						row.eventType,
+						outboxEvent.eventType,
 					);
 					if (!dispatched) {
 						this.eventBus.publish(event);
 					}
-					await this.outboxRepo.markAsConsumed(outboxId);
+					outboxEvent.markConsumed();
+					await this.outboxRepo.persist(outboxEvent);
 				} catch (error: unknown) {
 					const message = resolveErrorMessage(error);
-					await this.outboxRepo.recordFailure(
-						outboxId,
-						message,
-						createRetryAt(60_000),
-					);
+					outboxEvent.recordFailure(message, createRetryAt(60_000));
 					try {
 						await this.idempotency.release(
 							this.consumerName,

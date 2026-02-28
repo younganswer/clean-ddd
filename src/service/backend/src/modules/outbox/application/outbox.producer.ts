@@ -3,6 +3,7 @@ import { UnitOfWork } from '@/lib/database/unit-of-work';
 import {
 	IOutboxRepositorySymbol,
 	type IOutboxRepository,
+	OutboxEvent,
 } from '@/shared/outbox';
 import { OutboxQueue } from '@/modules/outbox/infrastructure/queue/outbox.queue';
 import { getEventType, toPayload } from '@/lib/outbox/event-registry';
@@ -52,10 +53,14 @@ export class OutboxProducer {
 		const { eventType, payload, options, source } = input;
 
 		const outboxId = await this.uow.transaction(async () => {
-			return await this.outboxRepo.save({
+			const outboxEvent = OutboxEvent.create({
 				eventType,
 				payload,
 			});
+
+			await this.outboxRepo.persist(outboxEvent);
+
+			return outboxEvent.uuid;
 		});
 
 		const delaySeconds = options?.delaySeconds;
@@ -77,7 +82,12 @@ export class OutboxProducer {
 					messageGroupId: inferredMessageGroupId,
 				});
 				await this.uow.transaction(async () => {
-					await this.outboxRepo.markAsPublished(outboxId);
+					const outboxEvent =
+						await this.outboxRepo.findById(outboxId);
+					if (!outboxEvent) return;
+
+					outboxEvent.markPublished();
+					await this.outboxRepo.persist(outboxEvent);
 				});
 			} catch (error) {
 				console.error(
