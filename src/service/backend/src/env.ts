@@ -1,7 +1,16 @@
+import { SYSTEM_INFRA_ERRORS } from '@/shared/errors';
+import { InfrastructureErrorFactory } from '@/shared/errors/base.error-factory';
+
 export function requireEnv(name: string): string {
 	const value = process.env[name];
 	if (!value) {
-		throw new Error(`Missing required env: ${name}`);
+		throw InfrastructureErrorFactory.create(
+			SYSTEM_INFRA_ERRORS.REQUIRED_ENV_MISSING,
+			{
+				message: `Missing required env: ${name}`,
+				details: { name },
+			},
+		);
 	}
 	return value;
 }

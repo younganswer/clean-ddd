@@ -1,6 +1,8 @@
 import { INestApplication } from '@nestjs/common';
 import { NestApplicationContext } from '@nestjs/core';
 import { Type } from '@nestjs/common/interfaces/type.interface';
+import { SYSTEM_INFRA_ERRORS } from '@/shared/errors';
+import { InfrastructureErrorFactory } from '@/shared/errors/base.error-factory';
 
 export class NestApp {
 	private static app: INestApplication | NestApplicationContext | null = null;
@@ -12,7 +14,9 @@ export class NestApp {
 
 	static getApp(): INestApplication | NestApplicationContext {
 		if (!this.app) {
-			throw new Error('NestApp is not initialized');
+			throw InfrastructureErrorFactory.create(
+				SYSTEM_INFRA_ERRORS.NEST_APP_NOT_INITIALIZED,
+			);
 		}
 		return this.app;
 	}
