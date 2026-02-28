@@ -5,6 +5,18 @@ import { BaseSchema } from '@/shared/persistence/mikro-orm/base.schema';
 @Entity({ tableName: 'orders' })
 @Index({ properties: ['status', 'createdAt'] })
 export class OrderSchema extends BaseSchema {
+	constructor(input: OrderSchemaConstructorInput) {
+		super(input.uuid);
+		this.userId = input.userId;
+		this.status = input.status;
+		this.amount = input.amount;
+		this.currency = input.currency;
+		this.items = input.items;
+		this.paymentId = input.paymentId;
+		this.orderedAt = input.orderedAt;
+		this.paidAt = input.paidAt ?? null;
+	}
+
 	@Property({ type: 'uuid' })
 	userId!: string;
 
@@ -24,4 +36,16 @@ export class OrderSchema extends BaseSchema {
 
 	@Property({ type: 'uuid', nullable: true })
 	paymentId: string | null = null;
+
+	@Property({ type: 'timestamptz' })
+	orderedAt!: Date;
+
+	@Property({ type: 'timestamptz', nullable: true })
+	paidAt: Date | null = null;
 }
+
+type OrderSchemaConstructorInput = Omit<
+	OrderSchema,
+	'id' | 'createdAt' | 'updatedAt' | 'paidAt'
+> &
+	Partial<Pick<OrderSchema, 'paidAt'>>;

@@ -54,8 +54,6 @@ export class OrderReader implements IOrderReader {
 		currency: string;
 		items: OrderView['items'];
 		paymentId: string | null;
-		createdAt: Date;
-		updatedAt: Date;
 	}): OrderView {
 		return {
 			orderId: order.uuid,
@@ -65,8 +63,6 @@ export class OrderReader implements IOrderReader {
 			currency: order.currency,
 			items: order.items,
 			paymentId: order.paymentId,
-			createdAt: order.createdAt.toISOString(),
-			updatedAt: order.updatedAt.toISOString(),
 		};
 	}
 }

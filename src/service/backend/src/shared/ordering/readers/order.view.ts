@@ -13,6 +13,4 @@ export type OrderView = {
 	currency: string;
 	items: OrderItemView[];
 	paymentId: string | null;
-	createdAt: string;
-	updatedAt: string;
 };

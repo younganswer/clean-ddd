@@ -5,6 +5,9 @@ import { OrderRepository } from '@/modules/ordering/infrastructure/repositories/
 import { OrderMapper } from '@/modules/ordering/infrastructure/mappers/order.mapper';
 import { OrderSchema } from '@/modules/ordering/infrastructure/schemas/order.schema';
 import { OrderStatus } from '@/shared/ordering/enums/order-status.enum';
+import { Order } from '@/modules/ordering/domains/entities/aggregates/order/order.aggregate';
+import { Money } from '@/modules/ordering/domains/value-objects/money.vo';
+import { OrderItem } from '@/modules/ordering/domains/value-objects/order-item.vo';
 
 const describeDb = process.env.RUN_DB_TESTS === '1' ? describe : describe.skip;
 
@@ -45,13 +48,16 @@ describeDb('OrderRepository (DB)', () => {
 			let orderId: string;
 
 			beforeEach(async () => {
-				const created = await repo.create({
+				const order = Order.create({
 					userId,
-					amount: 100,
-					currency: 'KRW',
-					items: [{ sku: 'SKU-001', quantity: 1 }],
+					total: Money.of(100, 'KRW'),
+					items: [OrderItem.of('SKU-001', 1)],
 				});
-				orderId = created.uuid;
+				await repo.persist(order);
+				orderId = order.uuid;
+
+				await em.flush();
+				em.clear();
 			});
 
 			then('DB에 저장되고 조회 가능합니다', (done: jest.DoneCallback) => {
@@ -77,16 +83,16 @@ describeDb('OrderRepository (DB)', () => {
 			let orderId: string;
 
 			beforeEach(async () => {
-				const created = await repo.create({
+				const order = Order.create({
 					userId,
-					amount: 100,
-					currency: 'KRW',
+					total: Money.of(100, 'KRW'),
+					items: [OrderItem.of('SKU-001', 1)],
 				});
-				orderId = created.uuid;
-				await repo.attachPayment(
-					orderId,
-					'00000000-0000-0000-0000-000000000001',
-				);
+
+				order.attachPayment('00000000-0000-0000-0000-000000000001');
+				await repo.persist(order);
+				await em.flush();
+				orderId = order.uuid;
 			});
 
 			then('paymentId가 저장됩니다', (done: jest.DoneCallback) => {
@@ -110,13 +116,15 @@ describeDb('OrderRepository (DB)', () => {
 			let orderId: string;
 
 			beforeEach(async () => {
-				const created = await repo.create({
+				const order = Order.create({
 					userId,
-					amount: 100,
-					currency: 'KRW',
+					total: Money.of(100, 'KRW'),
+					items: [OrderItem.of('SKU-001', 1)],
 				});
-				orderId = created.uuid;
-				await repo.markPaid(orderId);
+				order.markPaid();
+				await repo.persist(order);
+				await em.flush();
+				orderId = order.uuid;
 			});
 
 			then('상태가 PAID로 변경됩니다', (done: jest.DoneCallback) => {

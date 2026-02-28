@@ -7,12 +7,7 @@ import { OrderSchema } from '@/modules/ordering/infrastructure/schemas/order.sch
 @Injectable()
 export class OrderMapper {
 	toDomain(schema: OrderSchema): Order {
-		if (schema.id == null) {
-			throw new Error('OrderSchema.id is required');
-		}
-
 		return Order.rehydrate({
-			id: schema.id,
 			uuid: schema.uuid,
 			userId: schema.userId,
 			status: schema.status,
@@ -21,8 +16,27 @@ export class OrderMapper {
 				OrderItem.of(i.sku, i.quantity),
 			),
 			paymentId: schema.paymentId,
-			createdAt: schema.createdAt,
-			updatedAt: schema.updatedAt,
+			orderedAt: schema.orderedAt,
+			paidAt: schema.paidAt,
+		});
+	}
+
+	toSchema(order: Order): OrderSchema {
+		const primitives = order.toPrimitives();
+
+		return new OrderSchema({
+			uuid: primitives.orderId,
+			userId: primitives.userId,
+			status: primitives.status,
+			amount: primitives.total.amount,
+			currency: primitives.total.currency,
+			items: primitives.items.map((i) => ({
+				sku: i.sku,
+				quantity: i.quantity,
+			})),
+			paymentId: primitives.paymentId,
+			orderedAt: primitives.orderedAt,
+			paidAt: primitives.paidAt,
 		});
 	}
 }

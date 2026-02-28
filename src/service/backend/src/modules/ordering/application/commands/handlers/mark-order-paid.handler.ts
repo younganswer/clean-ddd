@@ -20,7 +20,11 @@ export class MarkOrderPaidHandler implements ICommandHandler<MarkOrderPaidComman
 		if (!orderId) throw new Error('orderId is required');
 
 		await this.uow.transaction(async () => {
-			await this.orders.markPaid(orderId);
+			const order = await this.orders.findById(orderId);
+			if (!order) throw new Error('order not found');
+
+			order.markPaid();
+			await this.orders.persist(order);
 		});
 	}
 }

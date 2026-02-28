@@ -175,6 +175,8 @@ const seed = async (client: Client): Promise<void> => {
         "currency",
         "payment_id",
         "items",
+        "ordered_at",
+        "paid_at",
         "created_at",
         "updated_at",
         "user_id"
@@ -186,6 +188,8 @@ const seed = async (client: Client): Promise<void> => {
         r.currency,
         r.payment_id,
         jsonb_build_array(jsonb_build_object('sku', r.sku, 'quantity', r.quantity)),
+        r.created_at,
+        r.created_at,
         r.created_at,
         r.created_at,
         r.user_id

@@ -2,79 +2,72 @@ import { OrderStatus } from '@/shared/ordering/enums/order-status.enum';
 import { BaseEntity } from '@/shared/domain/base.entity';
 import { Money } from '@/modules/ordering/domains/value-objects/money.vo';
 import { OrderItem } from '@/modules/ordering/domains/value-objects/order-item.vo';
+import { randomUUID } from 'node:crypto';
 
 export class Order extends BaseEntity {
 	private constructor(
-		id: number,
 		uuid: string,
 		private readonly _userId: string,
 		private _status: OrderStatus,
 		private readonly _total: Money,
 		private readonly _items: OrderItem[],
 		private _paymentId: string | null,
-		private readonly _createdAt: Date,
-		private _updatedAt: Date,
+		private readonly _orderedAt: Date,
+		private _paidAt: Date | null,
 	) {
-		super(id, uuid);
+		super(uuid);
 	}
 
-	static createNew(input: {
-		id: number;
-		uuid: string;
+	static create(input: {
 		userId: string;
 		total: Money;
 		items: OrderItem[];
 		now?: Date;
 	}): Order {
-		const now = input.now ?? new Date();
 		return new Order(
-			input.id,
-			input.uuid,
+			randomUUID(),
 			input.userId,
 			OrderStatus.PENDING_PAYMENT,
 			input.total,
 			input.items,
 			null,
-			now,
-			now,
+			input.now ?? new Date(),
+			null,
 		);
 	}
 
 	static rehydrate(input: {
-		id: number;
 		uuid: string;
 		userId: string;
 		status: OrderStatus;
 		total: Money;
 		items: OrderItem[];
 		paymentId: string | null;
-		createdAt: Date;
-		updatedAt: Date;
+		orderedAt: Date;
+		paidAt: Date | null;
 	}): Order {
 		return new Order(
-			input.id,
 			input.uuid,
 			input.userId,
 			input.status,
 			input.total,
 			input.items,
 			input.paymentId,
-			input.createdAt,
-			input.updatedAt,
+			input.orderedAt,
+			input.paidAt,
 		);
 	}
 
-	attachPayment(paymentId: string, now: Date = new Date()): void {
+	attachPayment(paymentId: string): void {
 		const normalized = String(paymentId ?? '').trim();
 		if (!normalized) throw new Error('paymentId is required');
 
 		this._paymentId = normalized;
-		this._updatedAt = now;
 	}
 
-	markPaid(now: Date = new Date()): void {
+	markPaid(): void {
 		this._status = OrderStatus.PAID;
-		this._updatedAt = now;
+		this._paidAt = new Date();
 	}
 
 	get status(): OrderStatus {
@@ -105,37 +98,33 @@ export class Order extends BaseEntity {
 		return this._paymentId;
 	}
 
-	get createdAt(): Date {
-		return this._createdAt;
+	get orderedAt(): Date {
+		return this._orderedAt;
 	}
 
-	get updatedAt(): Date {
-		return this._updatedAt;
+	get paidAt(): Date | null {
+		return this._paidAt;
 	}
 
 	toPrimitives(): {
-		id: number;
-		uuid: string;
+		orderId: string;
 		userId: string;
 		status: OrderStatus;
-		amount: number;
-		currency: string;
-		items: Array<{ sku: string; quantity: number }>;
+		total: Money;
+		items: OrderItem[];
 		paymentId: string | null;
-		createdAt: Date;
-		updatedAt: Date;
+		orderedAt: Date;
+		paidAt: Date | null;
 	} {
 		return {
-			id: this.id,
-			uuid: this.uuid,
+			orderId: this.uuid,
 			userId: this._userId,
 			status: this._status,
-			amount: this.amount,
-			currency: this.currency,
-			items: this.items,
+			total: this._total,
+			items: [...this._items],
 			paymentId: this._paymentId,
-			createdAt: this._createdAt,
-			updatedAt: this._updatedAt,
+			orderedAt: this._orderedAt,
+			paidAt: this._paidAt,
 		};
 	}
 }

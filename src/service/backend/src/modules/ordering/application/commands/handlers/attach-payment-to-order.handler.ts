@@ -22,7 +22,11 @@ export class AttachPaymentToOrderHandler implements ICommandHandler<AttachPaymen
 		if (!paymentId) throw new Error('paymentId is required');
 
 		await this.uow.transaction(async () => {
-			await this.orders.attachPayment(orderId, paymentId);
+			const order = await this.orders.findById(orderId);
+			if (!order) throw new Error('order not found');
+
+			order.attachPayment(paymentId);
+			await this.orders.persist(order);
 		});
 	}
 }
