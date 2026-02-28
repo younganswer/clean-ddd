@@ -16,12 +16,17 @@ export class InventoryReservation extends BaseEntity {
 		sku: string;
 		quantity: number;
 	}): InventoryReservation {
-		return new InventoryReservation(
-			randomUUID(),
-			input.orderId,
-			input.sku,
-			input.quantity,
-		);
+		const orderId = String(input.orderId ?? '').trim();
+		const sku = String(input.sku ?? '').trim();
+		const quantity = Number(input.quantity ?? 0);
+
+		if (!orderId) throw new Error('orderId is required');
+		if (!sku) throw new Error('sku is required');
+		if (!Number.isFinite(quantity) || quantity <= 0) {
+			throw new Error('quantity must be a positive number');
+		}
+
+		return new InventoryReservation(randomUUID(), orderId, sku, quantity);
 	}
 
 	static rehydrate(input: {
@@ -30,12 +35,19 @@ export class InventoryReservation extends BaseEntity {
 		sku: string;
 		quantity: number;
 	}): InventoryReservation {
-		return new InventoryReservation(
-			input.uuid,
-			input.orderId,
-			input.sku,
-			input.quantity,
-		);
+		const uuid = String(input.uuid ?? '').trim();
+		const orderId = String(input.orderId ?? '').trim();
+		const sku = String(input.sku ?? '').trim();
+		const quantity = Number(input.quantity ?? 0);
+
+		if (!uuid) throw new Error('reservation uuid is required');
+		if (!orderId) throw new Error('orderId is required');
+		if (!sku) throw new Error('sku is required');
+		if (!Number.isFinite(quantity) || quantity <= 0) {
+			throw new Error('quantity must be a positive number');
+		}
+
+		return new InventoryReservation(uuid, orderId, sku, quantity);
 	}
 
 	get orderId(): string {
