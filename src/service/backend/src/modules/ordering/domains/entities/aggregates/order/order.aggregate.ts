@@ -61,11 +61,25 @@ export class Order extends BaseEntity {
 	attachPayment(paymentId: string): void {
 		const normalized = String(paymentId ?? '').trim();
 		if (!normalized) throw new Error('paymentId is required');
+		if (this._status !== OrderStatus.PENDING_PAYMENT) {
+			throw new Error(
+				`cannot attach payment when order is ${this._status}`,
+			);
+		}
+		if (this._paymentId && this._paymentId !== normalized) {
+			throw new Error('paymentId is already attached');
+		}
 
 		this._paymentId = normalized;
 	}
 
 	markPaid(): void {
+		if (this._status !== OrderStatus.PENDING_PAYMENT) {
+			throw new Error(`cannot mark paid when order is ${this._status}`);
+		}
+		if (!this._paymentId) {
+			throw new Error('cannot mark paid before payment is attached');
+		}
 		this._status = OrderStatus.PAID;
 		this._paidAt = new Date();
 	}

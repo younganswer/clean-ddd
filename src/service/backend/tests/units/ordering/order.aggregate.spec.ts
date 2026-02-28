@@ -55,14 +55,28 @@ describe('Order aggregate', () => {
 		});
 	});
 
-	given('주문을 결제완료 처리하면', () => {
-		when('markPaid를 호출하면', () => {
+	given('주문을 결제완료 처리할 때', () => {
+		when('paymentId가 연결되지 않은 상태에서 markPaid를 호출하면', () => {
 			const order = Order.create({
 				userId,
 				total: Money.of(100, 'KRW'),
 				items: [OrderItem.of('SKU-001', 1)],
 			});
 
+			then('예외가 발생합니다', () => {
+				expect(() => order.markPaid()).toThrow(
+					'cannot mark paid before payment is attached',
+				);
+			});
+		});
+
+		when('paymentId가 연결된 상태에서 markPaid를 호출하면', () => {
+			const order = Order.create({
+				userId,
+				total: Money.of(100, 'KRW'),
+				items: [OrderItem.of('SKU-001', 1)],
+			});
+			order.attachPayment(' pay-1 ');
 			order.markPaid();
 
 			then('상태가 PAID로 변경되고 paidAt이 설정됩니다', () => {

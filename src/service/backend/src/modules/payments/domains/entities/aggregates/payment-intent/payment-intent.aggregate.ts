@@ -44,10 +44,20 @@ export class PaymentIntent extends BaseEntity {
 	}
 
 	markSucceeded(): void {
+		if (this._status !== PaymentStatus.PENDING) {
+			throw new Error(
+				`cannot mark payment succeeded when status is ${this._status}`,
+			);
+		}
 		this._status = PaymentStatus.SUCCEEDED;
 	}
 
 	markFailed(): void {
+		if (this._status !== PaymentStatus.PENDING) {
+			throw new Error(
+				`cannot mark payment failed when status is ${this._status}`,
+			);
+		}
 		this._status = PaymentStatus.FAILED;
 	}
 
