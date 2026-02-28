@@ -1,7 +1,7 @@
 import { Inject } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import { IInventoryRepositorySymbol } from '@/modules/inventory/domains/repositories/i.inventory.repository';
-import type { IInventoryRepository } from '@/modules/inventory/domains/repositories/i.inventory.repository';
+import { IInventoryItemRepositorySymbol } from '@/modules/inventory/domains/repositories/i.inventory-item.repository';
+import type { IInventoryItemRepository } from '@/modules/inventory/domains/repositories/i.inventory-item.repository';
 import {
 	GetInventoryItemQuery,
 	type InventoryItemView,
@@ -10,15 +10,15 @@ import {
 @QueryHandler(GetInventoryItemQuery)
 export class GetInventoryItemHandler implements IQueryHandler<GetInventoryItemQuery> {
 	constructor(
-		@Inject(IInventoryRepositorySymbol)
-		private readonly inventory: IInventoryRepository,
+		@Inject(IInventoryItemRepositorySymbol)
+		private readonly inventoryItems: IInventoryItemRepository,
 	) {}
 
 	async execute(
 		query: GetInventoryItemQuery,
 	): Promise<InventoryItemView | null> {
-		await this.inventory.seedIfEmpty();
-		const i = await this.inventory.findBySku(query.sku);
+		await this.inventoryItems.seedIfEmpty();
+		const i = await this.inventoryItems.findBySku(query.sku);
 		if (!i) return null;
 
 		return {
@@ -30,8 +30,6 @@ export class GetInventoryItemHandler implements IQueryHandler<GetInventoryItemQu
 			},
 			availableQuantity: i.availableQuantity,
 			reservedQuantity: i.reservedQuantity,
-			createdAt: i.createdAt.toISOString(),
-			updatedAt: i.updatedAt.toISOString(),
 		};
 	}
 }

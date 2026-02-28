@@ -6,6 +6,4 @@ export type InventoryItemView = {
 	price: MoneyView;
 	availableQuantity: number;
 	reservedQuantity: number;
-	createdAt: string;
-	updatedAt: string;
 };

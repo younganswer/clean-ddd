@@ -5,20 +5,25 @@ import { InventoryItemSchema } from '@/modules/inventory/infrastructure/schemas/
 @Injectable()
 export class InventoryItemMapper {
 	toDomain(schema: InventoryItemSchema): InventoryItem {
-		if (schema.id == null) {
-			throw new Error('InventoryItemSchema.id is required');
-		}
-
 		return InventoryItem.rehydrate({
-			id: schema.id,
 			uuid: schema.uuid,
 			sku: schema.sku,
 			priceCurrency: schema.priceCurrency,
 			priceAmountMinor: schema.priceAmountMinor,
 			availableQuantity: schema.availableQuantity,
 			reservedQuantity: schema.reservedQuantity,
-			createdAt: schema.createdAt,
-			updatedAt: schema.updatedAt,
+		});
+	}
+
+	toSchema(item: InventoryItem): InventoryItemSchema {
+		const primitives = item.toPrimitives();
+		return new InventoryItemSchema({
+			uuid: primitives.uuid,
+			sku: primitives.sku,
+			priceCurrency: primitives.priceCurrency,
+			priceAmountMinor: primitives.priceAmountMinor,
+			availableQuantity: primitives.availableQuantity,
+			reservedQuantity: primitives.reservedQuantity,
 		});
 	}
 }

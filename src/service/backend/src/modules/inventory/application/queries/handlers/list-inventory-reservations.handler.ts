@@ -1,7 +1,7 @@
 import { Inject } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import { IInventoryRepositorySymbol } from '@/modules/inventory/domains/repositories/i.inventory.repository';
-import type { IInventoryRepository } from '@/modules/inventory/domains/repositories/i.inventory.repository';
+import { IInventoryReservationRepositorySymbol } from '@/modules/inventory/domains/repositories/i.inventory-reservation.repository';
+import type { IInventoryReservationRepository } from '@/modules/inventory/domains/repositories/i.inventory-reservation.repository';
 import {
 	ListInventoryReservationsQuery,
 	type InventoryReservationView,
@@ -10,8 +10,8 @@ import {
 @QueryHandler(ListInventoryReservationsQuery)
 export class ListInventoryReservationsHandler implements IQueryHandler<ListInventoryReservationsQuery> {
 	constructor(
-		@Inject(IInventoryRepositorySymbol)
-		private readonly inventory: IInventoryRepository,
+		@Inject(IInventoryReservationRepositorySymbol)
+		private readonly reservations: IInventoryReservationRepository,
 	) {}
 
 	async execute(
@@ -20,13 +20,12 @@ export class ListInventoryReservationsHandler implements IQueryHandler<ListInven
 		const orderId = String(query.orderId ?? '').trim();
 		if (!orderId) return [];
 
-		const rows = await this.inventory.findReservationsByOrderId(orderId);
+		const rows = await this.reservations.findReservationsByOrderId(orderId);
 		return rows.map((r) => ({
 			reservationId: r.uuid,
 			orderId: r.orderId,
 			sku: r.sku,
 			quantity: r.quantity,
-			createdAt: r.createdAt.toISOString(),
 		}));
 	}
 }

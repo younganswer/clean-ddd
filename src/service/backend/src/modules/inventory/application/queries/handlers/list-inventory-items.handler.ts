@@ -1,7 +1,7 @@
 import { Inject } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import { IInventoryRepositorySymbol } from '@/modules/inventory/domains/repositories/i.inventory.repository';
-import type { IInventoryRepository } from '@/modules/inventory/domains/repositories/i.inventory.repository';
+import { IInventoryItemRepositorySymbol } from '@/modules/inventory/domains/repositories/i.inventory-item.repository';
+import type { IInventoryItemRepository } from '@/modules/inventory/domains/repositories/i.inventory-item.repository';
 import {
 	ListInventoryItemsQuery,
 	type InventoryItemView,
@@ -11,8 +11,8 @@ import type { PaginatedView } from '@/shared/readers/paginated.view';
 @QueryHandler(ListInventoryItemsQuery)
 export class ListInventoryItemsHandler implements IQueryHandler<ListInventoryItemsQuery> {
 	constructor(
-		@Inject(IInventoryRepositorySymbol)
-		private readonly inventory: IInventoryRepository,
+		@Inject(IInventoryItemRepositorySymbol)
+		private readonly inventoryItems: IInventoryItemRepository,
 	) {}
 
 	async execute(
@@ -24,10 +24,10 @@ export class ListInventoryItemsHandler implements IQueryHandler<ListInventoryIte
 		);
 		const page = Math.max(1, Number(query.page ?? 1) || 1);
 		const offset = (page - 1) * limit;
-		await this.inventory.seedIfEmpty();
+		await this.inventoryItems.seedIfEmpty();
 		const [rows, total] = await Promise.all([
-			this.inventory.findAll(limit, offset),
-			this.inventory.countItems(),
+			this.inventoryItems.findAll(limit, offset),
+			this.inventoryItems.countItems(),
 		]);
 
 		const items = rows.map((i) => ({
@@ -39,8 +39,6 @@ export class ListInventoryItemsHandler implements IQueryHandler<ListInventoryIte
 			},
 			availableQuantity: i.availableQuantity,
 			reservedQuantity: i.reservedQuantity,
-			createdAt: i.createdAt.toISOString(),
-			updatedAt: i.updatedAt.toISOString(),
 		}));
 
 		const totalPages = Math.max(1, Math.ceil(total / limit));

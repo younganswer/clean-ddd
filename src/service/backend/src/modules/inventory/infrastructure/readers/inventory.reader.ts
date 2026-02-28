@@ -6,19 +6,23 @@ import {
 } from '@/shared/readers/inventory/i.inventory.reader';
 import type { InventoryItemView } from '@/shared/readers/inventory/dto/inventory-item.view';
 import type { InventoryReservationView } from '@/shared/readers/inventory/dto/inventory-reservation.view';
-import { IInventoryRepositorySymbol } from '@/modules/inventory/domains/repositories/i.inventory.repository';
-import type { IInventoryRepository } from '@/modules/inventory/domains/repositories/i.inventory.repository';
+import { IInventoryItemRepositorySymbol } from '@/modules/inventory/domains/repositories/i.inventory-item.repository';
+import type { IInventoryItemRepository } from '@/modules/inventory/domains/repositories/i.inventory-item.repository';
+import { IInventoryReservationRepositorySymbol } from '@/modules/inventory/domains/repositories/i.inventory-reservation.repository';
+import type { IInventoryReservationRepository } from '@/modules/inventory/domains/repositories/i.inventory-reservation.repository';
 
 @Injectable()
 export class InventoryReader implements IInventoryReader {
 	constructor(
-		@Inject(IInventoryRepositorySymbol)
-		private readonly inventory: IInventoryRepository,
+		@Inject(IInventoryItemRepositorySymbol)
+		private readonly inventoryItems: IInventoryItemRepository,
+		@Inject(IInventoryReservationRepositorySymbol)
+		private readonly reservations: IInventoryReservationRepository,
 	) {}
 
 	async findItemBySku(sku: string): Promise<InventoryItemView | null> {
-		await this.inventory.seedIfEmpty();
-		const i = await this.inventory.findBySku(sku);
+		await this.inventoryItems.seedIfEmpty();
+		const i = await this.inventoryItems.findBySku(sku);
 		if (!i) return null;
 
 		return {
@@ -30,15 +34,13 @@ export class InventoryReader implements IInventoryReader {
 			},
 			availableQuantity: i.availableQuantity,
 			reservedQuantity: i.reservedQuantity,
-			createdAt: i.createdAt.toISOString(),
-			updatedAt: i.updatedAt.toISOString(),
 		};
 	}
 
 	async findRecentItems(limit: number): Promise<InventoryItemView[]> {
-		await this.inventory.seedIfEmpty();
+		await this.inventoryItems.seedIfEmpty();
 		const safeLimit = Math.min(50, Math.max(1, Number(limit ?? 20)));
-		const list = await this.inventory.findAll(safeLimit);
+		const list = await this.inventoryItems.findAll(safeLimit);
 
 		return list.map((i) => ({
 			itemId: i.uuid,
@@ -49,21 +51,18 @@ export class InventoryReader implements IInventoryReader {
 			},
 			availableQuantity: i.availableQuantity,
 			reservedQuantity: i.reservedQuantity,
-			createdAt: i.createdAt.toISOString(),
-			updatedAt: i.updatedAt.toISOString(),
 		}));
 	}
 
 	async findReservationsByOrderId(
 		orderId: string,
 	): Promise<InventoryReservationView[]> {
-		const list = await this.inventory.findReservationsByOrderId(orderId);
+		const list = await this.reservations.findReservationsByOrderId(orderId);
 		return list.map((r) => ({
 			reservationId: r.uuid,
 			orderId: r.orderId,
 			sku: r.sku,
 			quantity: r.quantity,
-			createdAt: r.createdAt.toISOString(),
 		}));
 	}
 }

@@ -5,10 +5,12 @@ import { ReserveInventoryForOrderHandler } from '@/modules/inventory/application
 import { GetInventoryItemHandler } from '@/modules/inventory/application/queries/handlers/get-inventory-item.handler';
 import { ListInventoryItemsHandler } from '@/modules/inventory/application/queries/handlers/list-inventory-items.handler';
 import { ListInventoryReservationsHandler } from '@/modules/inventory/application/queries/handlers/list-inventory-reservations.handler';
-import { IInventoryRepositorySymbol } from '@/modules/inventory/domains/repositories/i.inventory.repository';
+import { IInventoryItemRepositorySymbol } from '@/modules/inventory/domains/repositories/i.inventory-item.repository';
+import { IInventoryReservationRepositorySymbol } from '@/modules/inventory/domains/repositories/i.inventory-reservation.repository';
 import { InventoryItemMapper } from '@/modules/inventory/infrastructure/mappers/inventory-item.mapper';
 import { InventoryReservationMapper } from '@/modules/inventory/infrastructure/mappers/inventory-reservation.mapper';
-import { InventoryRepository } from '@/modules/inventory/infrastructure/repositories/inventory.repository';
+import { InventoryItemRepository } from '@/modules/inventory/infrastructure/repositories/inventory.repository';
+import { InventoryReservationRepository } from '@/modules/inventory/infrastructure/repositories/inventory-reservation.repository';
 import { InventoryController } from '@/modules/inventory/presentation/inventory.controller';
 import { InventoryReaderProvider } from '@/modules/inventory/infrastructure/readers/inventory.reader';
 
@@ -18,10 +20,15 @@ import { InventoryReaderProvider } from '@/modules/inventory/infrastructure/read
 	providers: [
 		InventoryItemMapper,
 		InventoryReservationMapper,
-		InventoryRepository,
+		InventoryItemRepository,
+		InventoryReservationRepository,
 		{
-			provide: IInventoryRepositorySymbol,
-			useExisting: InventoryRepository,
+			provide: IInventoryItemRepositorySymbol,
+			useExisting: InventoryItemRepository,
+		},
+		{
+			provide: IInventoryReservationRepositorySymbol,
+			useExisting: InventoryReservationRepository,
 		},
 		InventoryReaderProvider,
 		ReserveInventoryForOrderHandler,

@@ -1,21 +1,17 @@
 import { RequestContext } from '@mikro-orm/core';
 import { EntityManager } from '@mikro-orm/postgresql';
 import { Injectable } from '@nestjs/common';
-import type { InventoryOrderItem } from '@/modules/inventory/domains/inventory-item';
-import type { IInventoryRepository } from '@/modules/inventory/domains/repositories/i.inventory.repository';
+import { randomUUID } from 'node:crypto';
+import type { IInventoryItemRepository } from '@/modules/inventory/domains/repositories/i.inventory-item.repository';
 import { InventoryItem } from '@/modules/inventory/domains/entities/inventory-item.entity';
-import { InventoryReservation } from '@/modules/inventory/domains/entities/inventory-reservation.entity';
 import { InventoryItemMapper } from '@/modules/inventory/infrastructure/mappers/inventory-item.mapper';
-import { InventoryReservationMapper } from '@/modules/inventory/infrastructure/mappers/inventory-reservation.mapper';
 import { InventoryItemSchema } from '@/modules/inventory/infrastructure/schemas/inventory-item.schema';
-import { InventoryReservationSchema } from '@/modules/inventory/infrastructure/schemas/inventory-reservation.schema';
 
 @Injectable()
-export class InventoryRepository implements IInventoryRepository {
+export class InventoryItemRepository implements IInventoryItemRepository {
 	constructor(
 		private readonly em: EntityManager,
-		private readonly itemMapper: InventoryItemMapper,
-		private readonly reservationMapper: InventoryReservationMapper,
+		private readonly mapper: InventoryItemMapper,
 	) {}
 
 	private emForContext(): EntityManager {
@@ -30,19 +26,17 @@ export class InventoryRepository implements IInventoryRepository {
 		const count = await em.count(InventoryItemSchema, {});
 		if (count > 0) return;
 
-		const now = new Date();
 		const items: InventoryItemSchema[] = [];
 		for (let i = 1; i <= 10; i += 1) {
 			const sku = `SKU-${String(i).padStart(3, '0')}`;
 			items.push(
-				em.create(InventoryItemSchema, {
+				new InventoryItemSchema({
+					uuid: randomUUID(),
 					sku,
 					priceCurrency: i % 2 === 0 ? 'USD' : 'KRW',
 					priceAmountMinor: 100 + i * 137,
 					availableQuantity: 1000,
 					reservedQuantity: 0,
-					createdAt: now,
-					updatedAt: now,
 				}),
 			);
 		}
@@ -62,7 +56,7 @@ export class InventoryRepository implements IInventoryRepository {
 			},
 		);
 
-		return found.map((i) => this.itemMapper.toDomain(i));
+		return found.map((i) => this.mapper.toDomain(i));
 	}
 
 	async countItems(): Promise<number> {
@@ -73,76 +67,23 @@ export class InventoryRepository implements IInventoryRepository {
 	async findBySku(sku: string): Promise<InventoryItem | null> {
 		const em = this.emForContext();
 		const found = await em.findOne(InventoryItemSchema, { sku });
-		return found ? this.itemMapper.toDomain(found) : null;
+		return found ? this.mapper.toDomain(found) : null;
 	}
 
-	async reserveForOrder(
-		orderId: string,
-		items: InventoryOrderItem[],
-	): Promise<void> {
+	async persist(item: InventoryItem): Promise<void> {
 		const em = this.emForContext();
-		for (const item of items) {
-			const sku = String(item.sku ?? '');
-			const quantity = Number(item.quantity ?? 0);
-			if (!sku || !Number.isFinite(quantity) || quantity <= 0) {
-				throw new Error('invalid reserve items');
-			}
+		const schema = this.mapper.toSchema(item);
+		const exists = await em.findOne(InventoryItemSchema, {
+			sku: schema.sku,
+		});
 
-			const existingReservation = await em.findOne(
-				InventoryReservationSchema,
-				{
-					orderId,
-					sku,
-				},
-			);
-			if (existingReservation) continue;
-
-			let stock = await em.findOne(InventoryItemSchema, { sku });
-			if (!stock) {
-				stock = em.create(InventoryItemSchema, {
-					sku,
-					priceCurrency: 'USD',
-					priceAmountMinor: 100,
-					availableQuantity: 0,
-					reservedQuantity: 0,
-					createdAt: new Date(),
-					updatedAt: new Date(),
-				});
-			}
-
-			if (stock.availableQuantity < quantity) {
-				throw new Error(
-					`insufficient stock: sku=${sku} available=${stock.availableQuantity} need=${quantity}`,
-				);
-			}
-
-			stock.availableQuantity -= quantity;
-			stock.reservedQuantity += quantity;
-			stock.updatedAt = new Date();
-
-			const reservation = em.create(InventoryReservationSchema, {
-				orderId,
-				sku,
-				quantity,
-				createdAt: new Date(),
+		if (exists) {
+			em.assign(exists, schema, {
+				ignoreUndefined: true,
+				onlyProperties: true,
 			});
-
-			em.persist([stock, reservation]);
+		} else {
+			em.create(InventoryItemSchema, schema);
 		}
-	}
-
-	async findReservationsByOrderId(
-		orderId: string,
-	): Promise<InventoryReservation[]> {
-		const em = this.emForContext();
-		const found = await em.find(
-			InventoryReservationSchema,
-			{ orderId },
-			{
-				orderBy: { id: 'asc' },
-			},
-		);
-
-		return found.map((r) => this.reservationMapper.toDomain(r));
 	}
 }
