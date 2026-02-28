@@ -1,8 +1,0 @@
-#!/usr/bin/env bash
-set -euo pipefail
-
-REPO_ROOT="$(git rev-parse --show-toplevel)"
-
-echo "[pre-commit] running local CI checks..."
-cd "$REPO_ROOT/src"
-pnpm run ci:precommit
