@@ -6,9 +6,14 @@ export const createTestOrm = async (): Promise<MikroORM> => {
 		throw new Error('RUN_DB_TESTS=1 is required to run DB tests');
 	}
 
-	const clientUrl = process.env.TEST_DATABASE_URL;
+	const clientUrl =
+		process.env.TEST_DATABASE_URL ??
+		process.env.DATABASE_URL_DIRECT ??
+		process.env.DATABASE_URL;
 	if (!clientUrl) {
-		throw new Error('TEST_DATABASE_URL is required for DB tests');
+		throw new Error(
+			'TEST_DATABASE_URL (or DATABASE_URL_DIRECT/DATABASE_URL) is required for DB tests',
+		);
 	}
 
 	const orm = await MikroORM.init(
@@ -35,6 +40,13 @@ export const createTestOrm = async (): Promise<MikroORM> => {
 		}),
 	);
 
-	await orm.getMigrator().up();
+	try {
+		await orm.getMigrator().up();
+	} catch (error) {
+		const message = error instanceof Error ? error.message : String(error);
+		if (!message.includes('Migrator extension not registered')) {
+			throw error;
+		}
+	}
 	return orm;
 };

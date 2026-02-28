@@ -16,7 +16,7 @@
 		"lint": "eslint \"{src,apps,libs,tests,test-utils}/**/*.ts\" --fix",
 		"test": "jest",
 		"test:fast": "jest --testPathIgnorePatterns=/tests/db/",
-		"test:db": "RUN_DB_TESTS=1 jest --testPathPatterns=tests/db",
+		"test:db": "RUN_DB_TESTS=1 node --env-file=.env ./node_modules/jest/bin/jest.js --testPathPatterns=tests/db",
 		"test:watch": "jest --watch",
 		"test:cov": "jest --coverage",
 		"test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
@@ -94,9 +94,9 @@
 			"^@/tests/(.*)$": "<rootDir>/tests/$1",
 			"^@/test-utils/(.*)$": "<rootDir>/test-utils/$1",
 			"^@/(.*)$": "<rootDir>/src/$1",
-			"src/(.*)": "<rootDir>/src/$1",
-			"tests/(.*)": "<rootDir>/tests/$1",
-			"test-utils/(.*)": "<rootDir>/test-utils/$1"
+			"^src/(.*)$": "<rootDir>/src/$1",
+			"^tests/(.*)$": "<rootDir>/tests/$1",
+			"^test-utils/(.*)$": "<rootDir>/test-utils/$1"
 		},
 		"rootDir": ".",
 		"testRegex": "tests/.*\\.spec\\.ts$",
