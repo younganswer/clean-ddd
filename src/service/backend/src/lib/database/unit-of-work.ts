@@ -1,5 +1,5 @@
 import { RequestContext } from '@mikro-orm/core';
-import type { EntityManager } from '@mikro-orm/postgresql';
+import { EntityManager } from '@mikro-orm/postgresql';
 import { Injectable } from '@nestjs/common';
 import { AsyncLocalStorage } from 'node:async_hooks';
 
