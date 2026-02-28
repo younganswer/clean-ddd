@@ -18,7 +18,7 @@ describe('Order aggregate', () => {
 			});
 
 			then('결제 대기 상태로 생성됩니다', () => {
-				expect(order.uuid).toBeDefined();
+				expect(order.id).toBeDefined();
 				expect(order.status).toBe(OrderStatus.PENDING_PAYMENT);
 				expect(order.paymentId).toBeNull();
 				expect(order.orderedAt).toBeInstanceOf(Date);

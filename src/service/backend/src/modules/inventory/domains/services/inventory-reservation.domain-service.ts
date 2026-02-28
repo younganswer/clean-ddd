@@ -13,7 +13,7 @@ import { InventoryReservation } from '@/modules/inventory/domains/entities/inven
 export class InventoryReservationDomainService {
 	constructor(
 		@Inject(IInventoryItemRepositorySymbol)
-		private readonly inventoryItems: IInventoryItemRepository,
+		private readonly inventoryItemRepository: IInventoryItemRepository,
 		@Inject(IInventoryReservationRepositorySymbol)
 		private readonly reservations: IInventoryReservationRepository,
 	) {}
@@ -25,7 +25,7 @@ export class InventoryReservationDomainService {
 		const orderId = String(input.orderId ?? '').trim();
 		if (!orderId) throw new Error('orderId is required');
 
-		await this.inventoryItems.seedIfEmpty();
+		await this.inventoryItemRepository.seedIfEmpty();
 
 		for (const requested of input.items ?? []) {
 			const sku = String(requested.sku ?? '').trim();
@@ -40,13 +40,13 @@ export class InventoryReservationDomainService {
 				continue;
 			}
 
-			const stock = await this.inventoryItems.findBySku(sku);
+			const stock = await this.inventoryItemRepository.findBySku(sku);
 			if (!stock) {
 				throw new Error(`inventory item not found: sku=${sku}`);
 			}
 
 			stock.reserve(quantity);
-			await this.inventoryItems.persist(stock);
+			await this.inventoryItemRepository.persist(stock);
 
 			const reservation = InventoryReservation.create({
 				orderId,

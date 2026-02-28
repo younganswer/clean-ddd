@@ -11,12 +11,12 @@ import {
 export class GetPaymentIntentHandler implements IQueryHandler<GetPaymentIntentQuery> {
 	constructor(
 		@Inject(IPaymentIntentReaderSymbol)
-		private readonly payments: IPaymentIntentReader,
+		private readonly paymentRepository: IPaymentIntentReader,
 	) {}
 
 	async execute(
 		query: GetPaymentIntentQuery,
 	): Promise<PaymentIntentView | null> {
-		return this.payments.findById(query.paymentId);
+		return this.paymentRepository.findById(query.paymentId);
 	}
 }

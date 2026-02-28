@@ -15,54 +15,59 @@ import type { IInventoryReservationRepository } from '@/modules/inventory/domain
 export class InventoryReader implements IInventoryReader {
 	constructor(
 		@Inject(IInventoryItemRepositorySymbol)
-		private readonly inventoryItems: IInventoryItemRepository,
+		private readonly inventoryItemRepository: IInventoryItemRepository,
 		@Inject(IInventoryReservationRepositorySymbol)
-		private readonly reservations: IInventoryReservationRepository,
+		private readonly inventoryReservationRepository: IInventoryReservationRepository,
 	) {}
 
 	async findItemBySku(sku: string): Promise<InventoryItemView | null> {
-		await this.inventoryItems.seedIfEmpty();
-		const i = await this.inventoryItems.findBySku(sku);
-		if (!i) return null;
+		await this.inventoryItemRepository.seedIfEmpty();
+		const inventoryItem = await this.inventoryItemRepository.findBySku(sku);
+		if (!inventoryItem) return null;
 
 		return {
-			itemId: i.uuid,
-			sku: i.sku,
+			itemId: inventoryItem.id,
+			sku: inventoryItem.sku,
 			price: {
-				currency: i.priceCurrency,
-				amountMinor: i.priceAmountMinor,
+				currency: inventoryItem.priceCurrency,
+				amountMinor: inventoryItem.priceAmountMinor,
 			},
-			availableQuantity: i.availableQuantity,
-			reservedQuantity: i.reservedQuantity,
+			availableQuantity: inventoryItem.availableQuantity,
+			reservedQuantity: inventoryItem.reservedQuantity,
 		};
 	}
 
 	async findRecentItems(limit: number): Promise<InventoryItemView[]> {
-		await this.inventoryItems.seedIfEmpty();
+		await this.inventoryItemRepository.seedIfEmpty();
 		const safeLimit = Math.min(50, Math.max(1, Number(limit ?? 20)));
-		const list = await this.inventoryItems.findAll(safeLimit);
+		const inventoryItemRepository =
+			await this.inventoryItemRepository.findAll(safeLimit);
 
-		return list.map((i) => ({
-			itemId: i.uuid,
-			sku: i.sku,
+		return inventoryItemRepository.map((inventoryItem) => ({
+			itemId: inventoryItem.id,
+			sku: inventoryItem.sku,
 			price: {
-				currency: i.priceCurrency,
-				amountMinor: i.priceAmountMinor,
+				currency: inventoryItem.priceCurrency,
+				amountMinor: inventoryItem.priceAmountMinor,
 			},
-			availableQuantity: i.availableQuantity,
-			reservedQuantity: i.reservedQuantity,
+			availableQuantity: inventoryItem.availableQuantity,
+			reservedQuantity: inventoryItem.reservedQuantity,
 		}));
 	}
 
 	async findReservationsByOrderId(
 		orderId: string,
 	): Promise<InventoryReservationView[]> {
-		const list = await this.reservations.findReservationsByOrderId(orderId);
-		return list.map((r) => ({
-			reservationId: r.uuid,
-			orderId: r.orderId,
-			sku: r.sku,
-			quantity: r.quantity,
+		const inventoryReservations =
+			await this.inventoryReservationRepository.findReservationsByOrderId(
+				orderId,
+			);
+
+		return inventoryReservations.map((inventoryReservation) => ({
+			reservationId: inventoryReservation.id,
+			orderId: inventoryReservation.orderId,
+			sku: inventoryReservation.sku,
+			quantity: inventoryReservation.quantity,
 		}));
 	}
 }

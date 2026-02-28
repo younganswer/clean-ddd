@@ -13,10 +13,12 @@ export class ShipmentMapper {
 	}
 
 	toSchema(shipment: Shipment): ShipmentSchema {
+		const primitives = shipment.toPrimitives();
+
 		return new ShipmentSchema({
-			uuid: shipment.uuid,
-			orderId: shipment.orderId,
-			status: shipment.status,
+			uuid: primitives.shipmentId,
+			orderId: primitives.orderId,
+			status: primitives.status,
 		});
 	}
 }

@@ -11,10 +11,10 @@ import type { OrderView } from '@/shared/ordering/readers/order.view';
 export class GetOrderHandler implements IQueryHandler<GetOrderQuery> {
 	constructor(
 		@Inject(IOrderReaderSymbol)
-		private readonly orders: IOrderReader,
+		private readonly orderReader: IOrderReader,
 	) {}
 
 	async execute(query: GetOrderQuery): Promise<OrderView | null> {
-		return this.orders.findById(query.orderId);
+		return this.orderReader.findById(query.orderId);
 	}
 }

@@ -1,7 +1,7 @@
 export abstract class BaseEntity {
-	protected constructor(protected readonly _uuid: string) {}
+	protected constructor(protected readonly _id: string) {}
 
-	get uuid(): string {
-		return this._uuid;
+	get id(): string {
+		return this._id;
 	}
 }

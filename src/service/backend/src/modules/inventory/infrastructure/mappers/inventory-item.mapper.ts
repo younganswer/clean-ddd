@@ -17,8 +17,9 @@ export class InventoryItemMapper {
 
 	toSchema(item: InventoryItem): InventoryItemSchema {
 		const primitives = item.toPrimitives();
+
 		return new InventoryItemSchema({
-			uuid: primitives.uuid,
+			uuid: primitives.inventoryItemId,
 			sku: primitives.sku,
 			priceCurrency: primitives.priceCurrency,
 			priceAmountMinor: primitives.priceAmountMinor,

@@ -9,7 +9,7 @@ import type { PaginatedView } from '@/shared/readers/paginated.view';
 export class ListShipmentsHandler implements IQueryHandler<ListShipmentsQuery> {
 	constructor(
 		@Inject(IShipmentRepositorySymbol)
-		private readonly shipments: IShipmentRepository,
+		private readonly shipmentRepository: IShipmentRepository,
 	) {}
 
 	async execute(
@@ -22,14 +22,14 @@ export class ListShipmentsHandler implements IQueryHandler<ListShipmentsQuery> {
 		const page = Math.max(1, Number(query.page ?? 1) || 1);
 		const offset = (page - 1) * limit;
 		const [shipments, total] = await Promise.all([
-			this.shipments.findRecent(limit, offset),
-			this.shipments.countAll(),
+			this.shipmentRepository.findRecent(limit, offset),
+			this.shipmentRepository.countAll(),
 		]);
 
-		const items = shipments.map((s) => ({
-			shipmentId: s.uuid,
-			orderId: s.orderId,
-			status: s.status,
+		const items = shipments.map((shipment) => ({
+			shipmentId: shipment.id,
+			orderId: shipment.orderId,
+			status: shipment.status,
 		}));
 
 		const totalPages = Math.max(1, Math.ceil(total / limit));

@@ -6,7 +6,7 @@ import { randomUUID } from 'node:crypto';
 
 export class Order extends BaseEntity {
 	private constructor(
-		uuid: string,
+		id: string,
 		private readonly _userId: string,
 		private _status: OrderStatus,
 		private readonly _total: Money,
@@ -15,7 +15,7 @@ export class Order extends BaseEntity {
 		private readonly _orderedAt: Date,
 		private _paidAt: Date | null,
 	) {
-		super(uuid);
+		super(id);
 	}
 
 	static create(input: {
@@ -131,7 +131,7 @@ export class Order extends BaseEntity {
 		paidAt: Date | null;
 	} {
 		return {
-			orderId: this.uuid,
+			orderId: this.id,
 			userId: this._userId,
 			status: this._status,
 			total: this._total,

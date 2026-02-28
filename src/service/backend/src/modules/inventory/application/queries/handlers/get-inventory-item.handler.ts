@@ -11,25 +11,27 @@ import {
 export class GetInventoryItemHandler implements IQueryHandler<GetInventoryItemQuery> {
 	constructor(
 		@Inject(IInventoryItemRepositorySymbol)
-		private readonly inventoryItems: IInventoryItemRepository,
+		private readonly inventoryItemRepository: IInventoryItemRepository,
 	) {}
 
 	async execute(
 		query: GetInventoryItemQuery,
 	): Promise<InventoryItemView | null> {
-		await this.inventoryItems.seedIfEmpty();
-		const i = await this.inventoryItems.findBySku(query.sku);
-		if (!i) return null;
+		await this.inventoryItemRepository.seedIfEmpty();
+		const inventoryItem = await this.inventoryItemRepository.findBySku(
+			query.sku,
+		);
+		if (!inventoryItem) return null;
 
 		return {
-			itemId: i.uuid,
-			sku: i.sku,
+			itemId: inventoryItem.id,
+			sku: inventoryItem.sku,
 			price: {
-				currency: i.priceCurrency,
-				amountMinor: i.priceAmountMinor,
+				currency: inventoryItem.priceCurrency,
+				amountMinor: inventoryItem.priceAmountMinor,
 			},
-			availableQuantity: i.availableQuantity,
-			reservedQuantity: i.reservedQuantity,
+			availableQuantity: inventoryItem.availableQuantity,
+			reservedQuantity: inventoryItem.reservedQuantity,
 		};
 	}
 }

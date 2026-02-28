@@ -30,11 +30,11 @@ import { OrderStatus } from '@/shared/ordering/enums/order-status.enum';
 export class PaymentWebhookSucceededHandler implements IEventHandler<PaymentWebhookSucceededEvent> {
 	constructor(
 		@Inject(IPaymentRepositorySymbol)
-		private readonly payments: IPaymentRepository,
+		private readonly paymentRepository: IPaymentRepository,
 		private readonly uow: UnitOfWork,
 		private readonly commandBus: CommandBus,
 		private readonly queryBus: QueryBus,
-		private readonly outbox: OutboxProducer,
+		private readonly outboxProducer: OutboxProducer,
 	) {}
 
 	async handle(event: PaymentWebhookSucceededEvent): Promise<void> {
@@ -45,7 +45,7 @@ export class PaymentWebhookSucceededHandler implements IEventHandler<PaymentWebh
 				throw new Error('invalid webhook payload');
 			}
 
-			const payment = await this.payments.findById(paymentId);
+			const payment = await this.paymentRepository.findById(paymentId);
 			if (!payment) throw new Error('payment not found');
 			if (payment.status === PaymentStatus.FAILED) {
 				throw new Error(
@@ -54,7 +54,7 @@ export class PaymentWebhookSucceededHandler implements IEventHandler<PaymentWebh
 			}
 			if (payment.status === PaymentStatus.PENDING) {
 				payment.markSucceeded();
-				await this.payments.persist(payment);
+				await this.paymentRepository.persist(payment);
 			}
 
 			const order = await executeQuery(
@@ -83,12 +83,12 @@ export class PaymentWebhookSucceededHandler implements IEventHandler<PaymentWebh
 				);
 			}
 
-			await this.outbox.publish(
+			await this.outboxProducer.publish(
 				new ReserveInventoryForOrderRequestedEvent(orderId, items),
 				{ messageGroupId: orderId },
 			);
 
-			await this.outbox.publish(
+			await this.outboxProducer.publish(
 				new CreateShipmentForOrderRequestedEvent(orderId),
 				{ messageGroupId: orderId },
 			);
@@ -101,7 +101,7 @@ export class PaymentWebhookSucceededHandler implements IEventHandler<PaymentWebh
 export class PaymentWebhookFailedHandler implements IEventHandler<PaymentWebhookFailedEvent> {
 	constructor(
 		@Inject(IPaymentRepositorySymbol)
-		private readonly payments: IPaymentRepository,
+		private readonly paymentRepository: IPaymentRepository,
 		private readonly uow: UnitOfWork,
 	) {}
 
@@ -110,7 +110,7 @@ export class PaymentWebhookFailedHandler implements IEventHandler<PaymentWebhook
 			const paymentId = String(event.paymentId ?? '').trim();
 			if (!paymentId) throw new Error('invalid webhook payload');
 
-			const payment = await this.payments.findById(paymentId);
+			const payment = await this.paymentRepository.findById(paymentId);
 			if (!payment) throw new Error('payment not found');
 			if (payment.status === PaymentStatus.SUCCEEDED) {
 				throw new Error(
@@ -122,7 +122,7 @@ export class PaymentWebhookFailedHandler implements IEventHandler<PaymentWebhook
 			}
 
 			payment.markFailed();
-			await this.payments.persist(payment);
+			await this.paymentRepository.persist(payment);
 		});
 	}
 }

@@ -4,11 +4,11 @@ import { randomUUID } from 'node:crypto';
 
 export class Shipment extends BaseEntity {
 	private constructor(
-		uuid: string,
+		id: string,
 		private readonly _orderId: string,
 		private _status: ShipmentStatus,
 	) {
-		super(uuid);
+		super(id);
 	}
 
 	static createForOrder(input: { orderId: string; now?: Date }): Shipment {
@@ -41,7 +41,7 @@ export class Shipment extends BaseEntity {
 		status: ShipmentStatus;
 	} {
 		return {
-			shipmentId: this.uuid,
+			shipmentId: this.id,
 			orderId: this._orderId,
 			status: this._status,
 		};

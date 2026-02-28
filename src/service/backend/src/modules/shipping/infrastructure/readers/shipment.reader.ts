@@ -12,36 +12,36 @@ import type { IShipmentRepository } from '@/modules/shipping/domains/repositorie
 export class ShipmentReader implements IShipmentReader {
 	constructor(
 		@Inject(IShipmentRepositorySymbol)
-		private readonly shipments: IShipmentRepository,
+		private readonly shipmentRepository: IShipmentRepository,
 	) {}
 
 	async findById(shipmentId: string): Promise<ShipmentView | null> {
-		const s = await this.shipments.findById(shipmentId);
+		const s = await this.shipmentRepository.findById(shipmentId);
 		if (!s) return null;
 		return this.toView(s);
 	}
 
 	async findByOrderId(orderId: string): Promise<ShipmentView | null> {
-		const s = await this.shipments.findByOrderId(orderId);
+		const s = await this.shipmentRepository.findByOrderId(orderId);
 		if (!s) return null;
 		return this.toView(s);
 	}
 
 	async findRecent(limit: number): Promise<ShipmentView[]> {
 		const safeLimit = Math.min(50, Math.max(1, Number(limit ?? 20)));
-		const list = await this.shipments.findRecent(safeLimit);
+		const list = await this.shipmentRepository.findRecent(safeLimit);
 		return list.map((s) => this.toView(s));
 	}
 
-	private toView(s: {
-		uuid: string;
+	private toView(shipment: {
+		id: string;
 		orderId: string;
 		status: ShipmentView['status'];
 	}): ShipmentView {
 		return {
-			shipmentId: s.uuid,
-			orderId: s.orderId,
-			status: s.status,
+			shipmentId: shipment.id,
+			orderId: shipment.orderId,
+			status: shipment.status,
 		};
 	}
 }

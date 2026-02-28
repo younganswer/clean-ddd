@@ -11,12 +11,12 @@ import {
 export class ListPaymentIntentsHandler implements IQueryHandler<ListPaymentIntentsQuery> {
 	constructor(
 		@Inject(IPaymentIntentReaderSymbol)
-		private readonly payments: IPaymentIntentReader,
+		private readonly paymentRepository: IPaymentIntentReader,
 	) {}
 
 	async execute(
 		query: ListPaymentIntentsQuery,
 	): Promise<PaymentIntentView[]> {
-		return this.payments.findRecent(query.limit);
+		return this.paymentRepository.findRecent(query.limit);
 	}
 }

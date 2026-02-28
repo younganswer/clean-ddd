@@ -27,9 +27,9 @@ import { UnitOfWork } from '@/lib/database/unit-of-work';
 export class CreatePaymentIntentHandler implements ICommandHandler<CreatePaymentIntentCommand> {
 	constructor(
 		@Inject(IPaymentRepositorySymbol)
-		private readonly payments: IPaymentRepository,
+		private readonly paymentRepository: IPaymentRepository,
 		private readonly uow: UnitOfWork,
-		private readonly outbox: OutboxProducer,
+		private readonly outboxProducer: OutboxProducer,
 		private readonly queryBus: QueryBus,
 		private readonly commandBus: CommandBus,
 	) {}
@@ -52,13 +52,13 @@ export class CreatePaymentIntentHandler implements ICommandHandler<CreatePayment
 				amount: order.amount,
 				currency: order.currency,
 			});
-			await this.payments.persist(payment);
+			await this.paymentRepository.persist(payment);
 
 			await executeCommand(
 				this.commandBus,
 				new AttachPaymentToOrderCommand({
 					orderId,
-					paymentId: payment.uuid,
+					paymentId: payment.id,
 				}),
 			);
 
@@ -70,10 +70,10 @@ export class CreatePaymentIntentHandler implements ICommandHandler<CreatePayment
 
 			const event =
 				outcome === 'SUCCEEDED'
-					? new PaymentWebhookSucceededEvent(orderId, payment.uuid)
-					: new PaymentWebhookFailedEvent(orderId, payment.uuid);
+					? new PaymentWebhookSucceededEvent(orderId, payment.id)
+					: new PaymentWebhookFailedEvent(orderId, payment.id);
 
-			const outboxId = await this.outbox.publish(event, {
+			const outboxId = await this.outboxProducer.publish(event, {
 				delaySeconds,
 				messageGroupId: orderId,
 			});
@@ -84,7 +84,7 @@ export class CreatePaymentIntentHandler implements ICommandHandler<CreatePayment
 					: PaymentWebhookFailedEvent.eventType;
 
 			return {
-				paymentId: payment.uuid,
+				paymentId: payment.id,
 				status: payment.status,
 				scheduled: {
 					eventType,

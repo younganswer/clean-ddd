@@ -11,7 +11,7 @@ import { UnitOfWork } from '@/lib/database/unit-of-work';
 export class AttachPaymentToOrderHandler implements ICommandHandler<AttachPaymentToOrderCommand> {
 	constructor(
 		@Inject(IOrderRepositorySymbol)
-		private readonly orders: IOrderRepository,
+		private readonly orderRepository: IOrderRepository,
 		private readonly uow: UnitOfWork,
 	) {}
 
@@ -22,11 +22,11 @@ export class AttachPaymentToOrderHandler implements ICommandHandler<AttachPaymen
 		if (!paymentId) throw new Error('paymentId is required');
 
 		await this.uow.transaction(async () => {
-			const order = await this.orders.findById(orderId);
+			const order = await this.orderRepository.findById(orderId);
 			if (!order) throw new Error('order not found');
 
 			order.attachPayment(paymentId);
-			await this.orders.persist(order);
+			await this.orderRepository.persist(order);
 		});
 	}
 }

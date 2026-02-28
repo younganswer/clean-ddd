@@ -8,7 +8,7 @@ import { InventoryReservationDomainService } from '@/modules/inventory/domains/s
 export class ReserveInventoryForOrderHandler implements ICommandHandler<ReserveInventoryForOrderCommand> {
 	constructor(
 		@Inject(InventoryReservationDomainService)
-		private readonly reservationDomainService: InventoryReservationDomainService,
+		private readonly inventoryReservationDomainService: InventoryReservationDomainService,
 		private readonly uow: UnitOfWork,
 	) {}
 
@@ -17,7 +17,7 @@ export class ReserveInventoryForOrderHandler implements ICommandHandler<ReserveI
 		if (!orderId) throw new Error('orderId is required');
 
 		await this.uow.transaction(async () => {
-			await this.reservationDomainService.reserveForOrder({
+			await this.inventoryReservationDomainService.reserveForOrder({
 				orderId,
 				items: command.input.items ?? [],
 			});

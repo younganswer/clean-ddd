@@ -12,7 +12,7 @@ import { OrderItem } from '@/modules/ordering/domains/value-objects/order-item.v
 export class CreateOrderHandler implements ICommandHandler<CreateOrderCommand> {
 	constructor(
 		@Inject(IOrderRepositorySymbol)
-		private readonly orders: IOrderRepository,
+		private readonly orderRepository: IOrderRepository,
 		private readonly uow: UnitOfWork,
 	) {}
 
@@ -32,9 +32,9 @@ export class CreateOrderHandler implements ICommandHandler<CreateOrderCommand> {
 				items,
 			});
 
-			await this.orders.persist(order);
+			await this.orderRepository.persist(order);
 
-			return { orderId: order.uuid };
+			return { orderId: order.id };
 		});
 	}
 }

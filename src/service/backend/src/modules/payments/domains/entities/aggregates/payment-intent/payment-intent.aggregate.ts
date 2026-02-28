@@ -4,13 +4,13 @@ import { randomUUID } from 'node:crypto';
 
 export class PaymentIntent extends BaseEntity {
 	private constructor(
-		uuid: string,
+		id: string,
 		private readonly _orderId: string,
 		private readonly _amount: number,
 		private readonly _currency: string,
 		private _status: PaymentStatus,
 	) {
-		super(uuid);
+		super(id);
 	}
 
 	static createPending(input: {
@@ -85,7 +85,7 @@ export class PaymentIntent extends BaseEntity {
 		status: PaymentStatus;
 	} {
 		return {
-			paymentId: this.uuid,
+			paymentId: this.id,
 			orderId: this._orderId,
 			amount: this._amount,
 			currency: this._currency,

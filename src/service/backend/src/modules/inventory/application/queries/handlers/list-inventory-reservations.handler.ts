@@ -11,7 +11,7 @@ import {
 export class ListInventoryReservationsHandler implements IQueryHandler<ListInventoryReservationsQuery> {
 	constructor(
 		@Inject(IInventoryReservationRepositorySymbol)
-		private readonly reservations: IInventoryReservationRepository,
+		private readonly inventoryReservationRepository: IInventoryReservationRepository,
 	) {}
 
 	async execute(
@@ -20,12 +20,16 @@ export class ListInventoryReservationsHandler implements IQueryHandler<ListInven
 		const orderId = String(query.orderId ?? '').trim();
 		if (!orderId) return [];
 
-		const rows = await this.reservations.findReservationsByOrderId(orderId);
-		return rows.map((r) => ({
-			reservationId: r.uuid,
-			orderId: r.orderId,
-			sku: r.sku,
-			quantity: r.quantity,
+		const rows =
+			await this.inventoryReservationRepository.findReservationsByOrderId(
+				orderId,
+			);
+
+		return rows.map((inventoryReservation) => ({
+			reservationId: inventoryReservation.id,
+			orderId: inventoryReservation.orderId,
+			sku: inventoryReservation.sku,
+			quantity: inventoryReservation.quantity,
 		}));
 	}
 }

@@ -8,19 +8,21 @@ import { GetShipmentByOrderQuery, type ShipmentView } from '@/shared/shipping';
 export class GetShipmentByOrderHandler implements IQueryHandler<GetShipmentByOrderQuery> {
 	constructor(
 		@Inject(IShipmentRepositorySymbol)
-		private readonly shipments: IShipmentRepository,
+		private readonly shipmentRepository: IShipmentRepository,
 	) {}
 
 	async execute(
 		query: GetShipmentByOrderQuery,
 	): Promise<ShipmentView | null> {
-		const s = await this.shipments.findByOrderId(query.orderId);
-		if (!s) return null;
+		const shipment = await this.shipmentRepository.findByOrderId(
+			query.orderId,
+		);
+		if (!shipment) return null;
 
 		return {
-			shipmentId: s.uuid,
-			orderId: s.orderId,
-			status: s.status,
+			shipmentId: shipment.id,
+			orderId: shipment.orderId,
+			status: shipment.status,
 		};
 	}
 }

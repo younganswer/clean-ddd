@@ -10,7 +10,7 @@ import { Shipment } from '@/modules/shipping/domains/entities/aggregates/shipmen
 export class CreateShipmentForOrderHandler implements ICommandHandler<CreateShipmentForOrderCommand> {
 	constructor(
 		@Inject(IShipmentRepositorySymbol)
-		private readonly shipments: IShipmentRepository,
+		private readonly shipmentRepository: IShipmentRepository,
 		private readonly uow: UnitOfWork,
 	) {}
 
@@ -21,15 +21,16 @@ export class CreateShipmentForOrderHandler implements ICommandHandler<CreateShip
 		if (!orderId) throw new Error('orderId is required');
 
 		return await this.uow.transaction(async () => {
-			const existing = await this.shipments.findByOrderId(orderId);
+			const existing =
+				await this.shipmentRepository.findByOrderId(orderId);
 			if (existing) {
-				return { shipmentId: existing.uuid };
+				return { shipmentId: existing.id };
 			}
 
 			const shipment = Shipment.createForOrder({ orderId });
-			await this.shipments.persist(shipment);
+			await this.shipmentRepository.persist(shipment);
 
-			return { shipmentId: shipment.uuid };
+			return { shipmentId: shipment.id };
 		});
 	}
 }

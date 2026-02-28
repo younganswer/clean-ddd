@@ -12,7 +12,7 @@ import type { OrderView } from '@/shared/ordering/readers/order.view';
 export class ListOrdersByUserSubjectIdHandler implements IQueryHandler<ListOrdersByUserIdQuery> {
 	constructor(
 		@Inject(IOrderReaderSymbol)
-		private readonly orders: IOrderReader,
+		private readonly orderReader: IOrderReader,
 	) {}
 
 	async execute(query: ListOrdersByUserIdQuery): Promise<OrderView[]> {
@@ -25,6 +25,6 @@ export class ListOrdersByUserSubjectIdHandler implements IQueryHandler<ListOrder
 		);
 		const offset = Math.max(0, Number(query.offset ?? 0) || 0);
 
-		return await this.orders.findByUserId(userId, limit, offset);
+		return await this.orderReader.findByUserId(userId, limit, offset);
 	}
 }

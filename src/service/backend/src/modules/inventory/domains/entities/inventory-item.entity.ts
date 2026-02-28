@@ -3,14 +3,14 @@ import { randomUUID } from 'node:crypto';
 
 export class InventoryItem extends BaseEntity {
 	private constructor(
-		uuid: string,
+		id: string,
 		private readonly _sku: string,
 		private readonly _priceCurrency: string,
 		private readonly _priceAmountMinor: number,
 		private _availableQuantity: number,
 		private _reservedQuantity: number,
 	) {
-		super(uuid);
+		super(id);
 	}
 
 	static create(input: {
@@ -84,7 +84,7 @@ export class InventoryItem extends BaseEntity {
 	}
 
 	toPrimitives(): {
-		uuid: string;
+		inventoryItemId: string;
 		sku: string;
 		priceCurrency: string;
 		priceAmountMinor: number;
@@ -92,7 +92,7 @@ export class InventoryItem extends BaseEntity {
 		reservedQuantity: number;
 	} {
 		return {
-			uuid: this.uuid,
+			inventoryItemId: this.id,
 			sku: this._sku,
 			priceCurrency: this._priceCurrency,
 			priceAmountMinor: this._priceAmountMinor,

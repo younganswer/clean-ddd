@@ -3,12 +3,12 @@ import { randomUUID } from 'node:crypto';
 
 export class InventoryReservation extends BaseEntity {
 	private constructor(
-		uuid: string,
+		id: string,
 		private readonly _orderId: string,
 		private readonly _sku: string,
 		private readonly _quantity: number,
 	) {
-		super(uuid);
+		super(id);
 	}
 
 	static create(input: {
@@ -63,13 +63,13 @@ export class InventoryReservation extends BaseEntity {
 	}
 
 	toPrimitives(): {
-		reservationId: string;
+		inventoryReservationId: string;
 		orderId: string;
 		sku: string;
 		quantity: number;
 	} {
 		return {
-			reservationId: this.uuid,
+			inventoryReservationId: this.id,
 			orderId: this._orderId,
 			sku: this._sku,
 			quantity: this._quantity,

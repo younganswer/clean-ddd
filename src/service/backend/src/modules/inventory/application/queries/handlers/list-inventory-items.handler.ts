@@ -12,7 +12,7 @@ import type { PaginatedView } from '@/shared/readers/paginated.view';
 export class ListInventoryItemsHandler implements IQueryHandler<ListInventoryItemsQuery> {
 	constructor(
 		@Inject(IInventoryItemRepositorySymbol)
-		private readonly inventoryItems: IInventoryItemRepository,
+		private readonly inventoryItemRepository: IInventoryItemRepository,
 	) {}
 
 	async execute(
@@ -24,21 +24,21 @@ export class ListInventoryItemsHandler implements IQueryHandler<ListInventoryIte
 		);
 		const page = Math.max(1, Number(query.page ?? 1) || 1);
 		const offset = (page - 1) * limit;
-		await this.inventoryItems.seedIfEmpty();
+		await this.inventoryItemRepository.seedIfEmpty();
 		const [rows, total] = await Promise.all([
-			this.inventoryItems.findAll(limit, offset),
-			this.inventoryItems.countItems(),
+			this.inventoryItemRepository.findAll(limit, offset),
+			this.inventoryItemRepository.countItems(),
 		]);
 
-		const items = rows.map((i) => ({
-			itemId: i.uuid,
-			sku: i.sku,
+		const items = rows.map((inventoryItem) => ({
+			itemId: inventoryItem.id,
+			sku: inventoryItem.sku,
 			price: {
-				currency: i.priceCurrency,
-				amountMinor: i.priceAmountMinor,
+				currency: inventoryItem.priceCurrency,
+				amountMinor: inventoryItem.priceAmountMinor,
 			},
-			availableQuantity: i.availableQuantity,
-			reservedQuantity: i.reservedQuantity,
+			availableQuantity: inventoryItem.availableQuantity,
+			reservedQuantity: inventoryItem.reservedQuantity,
 		}));
 
 		const totalPages = Math.max(1, Math.ceil(total / limit));

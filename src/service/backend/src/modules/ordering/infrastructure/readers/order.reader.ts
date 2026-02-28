@@ -11,20 +11,24 @@ import type { IOrderRepository } from '@/modules/ordering/domains/repositories/i
 export class OrderReader implements IOrderReader {
 	constructor(
 		@Inject(IOrderRepositorySymbol)
-		private readonly orders: IOrderRepository,
+		private readonly orderRepository: IOrderRepository,
 	) {}
 
 	async findById(orderId: string): Promise<OrderView | null> {
-		const order = await this.orders.findById(orderId);
+		const order = await this.orderRepository.findById(orderId);
 		if (!order) return null;
+
 		return this.toView(order);
 	}
 
 	async findRecent(limit: number, offset: number = 0): Promise<OrderView[]> {
 		const safeLimit = Math.min(50, Math.max(1, Number(limit ?? 20)));
 		const safeOffset = Math.max(0, Number(offset ?? 0) || 0);
-		const orders = await this.orders.findRecent(safeLimit, safeOffset);
-		return orders.map((o) => this.toView(o));
+		const orderRepository = await this.orderRepository.findRecent(
+			safeLimit,
+			safeOffset,
+		);
+		return orderRepository.map((o) => this.toView(o));
 	}
 
 	async findByUserId(
@@ -34,20 +38,20 @@ export class OrderReader implements IOrderReader {
 	): Promise<OrderView[]> {
 		const safeLimit = Math.min(200, Math.max(1, Number(limit ?? 50) || 50));
 		const safeOffset = Math.max(0, Number(offset ?? 0) || 0);
-		const orders = await this.orders.findByUserId(
+		const orderRepository = await this.orderRepository.findByUserId(
 			userId,
 			safeLimit,
 			safeOffset,
 		);
-		return orders.map((o) => this.toView(o));
+		return orderRepository.map((o) => this.toView(o));
 	}
 
 	async countAll(): Promise<number> {
-		return await this.orders.countAll();
+		return await this.orderRepository.countAll();
 	}
 
 	private toView(order: {
-		uuid: string;
+		id: string;
 		userId: string;
 		status: OrderView['status'];
 		amount: number;
@@ -56,7 +60,7 @@ export class OrderReader implements IOrderReader {
 		paymentId: string | null;
 	}): OrderView {
 		return {
-			orderId: order.uuid,
+			orderId: order.id,
 			userId: order.userId,
 			status: order.status,
 			amount: order.amount,

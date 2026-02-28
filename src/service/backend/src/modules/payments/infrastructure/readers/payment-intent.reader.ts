@@ -11,18 +11,18 @@ import type { IPaymentRepository } from '@/modules/payments/domains/repositories
 export class PaymentIntentReader implements IPaymentIntentReader {
 	constructor(
 		@Inject(IPaymentRepositorySymbol)
-		private readonly payments: IPaymentRepository,
+		private readonly paymentRepository: IPaymentRepository,
 	) {}
 
 	async findById(paymentId: string): Promise<PaymentIntentViewDto | null> {
-		const payment = await this.payments.findById(paymentId);
+		const payment = await this.paymentRepository.findById(paymentId);
 		if (!payment) return null;
 		return this.toView(payment);
 	}
 
 	async findRecent(limit: number): Promise<PaymentIntentViewDto[]> {
 		const safeLimit = Math.min(50, Math.max(1, Number(limit ?? 20)));
-		const payments = await this.payments.findRecent(safeLimit);
+		const payments = await this.paymentRepository.findRecent(safeLimit);
 		return payments.map((p) => this.toView(p));
 	}
 

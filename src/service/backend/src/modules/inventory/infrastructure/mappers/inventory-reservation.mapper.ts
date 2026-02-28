@@ -17,7 +17,7 @@ export class InventoryReservationMapper {
 		const primitives = reservation.toPrimitives();
 
 		return new InventoryReservationSchema({
-			uuid: primitives.reservationId,
+			uuid: primitives.inventoryReservationId,
 			orderId: primitives.orderId,
 			sku: primitives.sku,
 			quantity: primitives.quantity,

@@ -12,7 +12,7 @@ import type { OrderView } from '@/shared/ordering/readers/order.view';
 export class ListOrdersHandler implements IQueryHandler<ListOrdersQuery> {
 	constructor(
 		@Inject(IOrderReaderSymbol)
-		private readonly orders: IOrderReader,
+		private readonly orderReader: IOrderReader,
 	) {}
 
 	async execute(query: ListOrdersQuery): Promise<PaginatedView<OrderView>> {
@@ -24,8 +24,8 @@ export class ListOrdersHandler implements IQueryHandler<ListOrdersQuery> {
 		const offset = (page - 1) * limit;
 
 		const [items, total] = await Promise.all([
-			this.orders.findRecent(limit, offset),
-			this.orders.countAll(),
+			this.orderReader.findRecent(limit, offset),
+			this.orderReader.countAll(),
 		]);
 
 		const totalPages = Math.max(1, Math.ceil(total / limit));
