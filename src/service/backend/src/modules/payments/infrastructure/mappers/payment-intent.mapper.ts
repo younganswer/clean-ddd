@@ -11,8 +11,17 @@ export class PaymentIntentMapper {
 			amount: schema.amount,
 			currency: schema.currency,
 			status: schema.status,
-			createdAt: schema.createdAt,
-			updatedAt: schema.updatedAt,
+		});
+	}
+
+	toSchema(payment: PaymentIntent): PaymentIntentSchema {
+		const primitives = payment.toPrimitives();
+		return new PaymentIntentSchema({
+			uuid: primitives.paymentId,
+			orderId: primitives.orderId,
+			amount: primitives.amount,
+			currency: primitives.currency,
+			status: primitives.status,
 		});
 	}
 }

@@ -1,7 +1,6 @@
 import { RequestContext } from '@mikro-orm/core';
 import { EntityManager } from '@mikro-orm/postgresql';
 import { Injectable } from '@nestjs/common';
-import { PaymentStatus } from '@/shared/payments';
 import type { IPaymentRepository } from '@/modules/payments/domains/repositories/i.payment.repository';
 import { PaymentIntent } from '@/modules/payments/domains/entities/aggregates/payment-intent/payment-intent.aggregate';
 import { PaymentIntentMapper } from '@/modules/payments/infrastructure/mappers/payment-intent.mapper';
@@ -21,22 +20,21 @@ export class PaymentRepository implements IPaymentRepository {
 		);
 	}
 
-	createIntent(input: {
-		orderId: string;
-		amount: number;
-		currency: string;
-	}): Promise<PaymentIntent> {
+	async persist(payment: PaymentIntent): Promise<void> {
 		const em = this.emForContext();
-		const payment = em.create(PaymentIntentSchema, {
-			orderId: input.orderId,
-			amount: input.amount,
-			currency: input.currency,
-			status: PaymentStatus.PENDING,
-			createdAt: new Date(),
-			updatedAt: new Date(),
+		const schema = this.mapper.toSchema(payment);
+		const exists = await em.findOne(PaymentIntentSchema, {
+			uuid: schema.uuid,
 		});
-		em.persist(payment);
-		return Promise.resolve(this.mapper.toDomain(payment));
+
+		if (exists) {
+			em.assign(exists, schema, {
+				ignoreUndefined: true,
+				onlyProperties: true,
+			});
+		} else {
+			em.create(PaymentIntentSchema, schema);
+		}
 	}
 
 	async findById(paymentId: string): Promise<PaymentIntent | null> {
@@ -59,25 +57,5 @@ export class PaymentRepository implements IPaymentRepository {
 			},
 		);
 		return found.map((p) => this.mapper.toDomain(p));
-	}
-
-	async markSucceeded(paymentId: string): Promise<void> {
-		const em = this.emForContext();
-		const payment = await em.findOneOrFail(PaymentIntentSchema, {
-			uuid: paymentId,
-		});
-		payment.status = PaymentStatus.SUCCEEDED;
-		payment.updatedAt = new Date();
-		em.persist(payment);
-	}
-
-	async markFailed(paymentId: string): Promise<void> {
-		const em = this.emForContext();
-		const payment = await em.findOneOrFail(PaymentIntentSchema, {
-			uuid: paymentId,
-		});
-		payment.status = PaymentStatus.FAILED;
-		payment.updatedAt = new Date();
-		em.persist(payment);
 	}
 }

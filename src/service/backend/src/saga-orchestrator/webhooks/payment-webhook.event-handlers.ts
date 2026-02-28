@@ -43,7 +43,11 @@ export class PaymentWebhookSucceededHandler implements IEventHandler<PaymentWebh
 				throw new Error('invalid webhook payload');
 			}
 
-			await this.payments.markSucceeded(paymentId);
+			const payment = await this.payments.findById(paymentId);
+			if (!payment) throw new Error('payment not found');
+			payment.markSucceeded();
+			await this.payments.persist(payment);
+
 			await executeCommand(
 				this.commandBus,
 				new MarkOrderPaidCommand(orderId),
@@ -88,7 +92,12 @@ export class PaymentWebhookFailedHandler implements IEventHandler<PaymentWebhook
 		await this.uow.transaction(async () => {
 			const paymentId = String(event.paymentId ?? '').trim();
 			if (!paymentId) throw new Error('invalid webhook payload');
-			await this.payments.markFailed(paymentId);
+
+			const payment = await this.payments.findById(paymentId);
+			if (!payment) throw new Error('payment not found');
+
+			payment.markFailed();
+			await this.payments.persist(payment);
 		});
 	}
 }

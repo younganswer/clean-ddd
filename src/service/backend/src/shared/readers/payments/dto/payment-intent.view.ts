@@ -6,6 +6,4 @@ export type PaymentIntentView = {
 	amount: number;
 	currency: string;
 	status: PaymentStatus;
-	createdAt: string;
-	updatedAt: string;
 };

@@ -1,32 +1,29 @@
+import { BaseEntity } from '@/shared/domain/base.entity';
 import { PaymentStatus } from '@/shared/payments';
+import { randomUUID } from 'node:crypto';
 
-export class PaymentIntent {
+export class PaymentIntent extends BaseEntity {
 	private constructor(
-		private readonly _id: string,
+		uuid: string,
 		private readonly _orderId: string,
 		private readonly _amount: number,
 		private readonly _currency: string,
 		private _status: PaymentStatus,
-		private readonly _createdAt: Date,
-		private _updatedAt: Date,
-	) {}
+	) {
+		super(uuid);
+	}
 
 	static createPending(input: {
-		id: string;
 		orderId: string;
 		amount: number;
 		currency: string;
-		now?: Date;
 	}): PaymentIntent {
-		const now = input.now ?? new Date();
 		return new PaymentIntent(
-			input.id,
+			randomUUID(),
 			input.orderId,
 			input.amount,
 			input.currency,
 			PaymentStatus.PENDING,
-			now,
-			now,
 		);
 	}
 
@@ -36,8 +33,6 @@ export class PaymentIntent {
 		amount: number;
 		currency: string;
 		status: PaymentStatus;
-		createdAt: Date;
-		updatedAt: Date;
 	}): PaymentIntent {
 		return new PaymentIntent(
 			input.id,
@@ -45,13 +40,15 @@ export class PaymentIntent {
 			input.amount,
 			input.currency,
 			input.status,
-			input.createdAt,
-			input.updatedAt,
 		);
 	}
 
-	get id(): string {
-		return this._id;
+	markSucceeded(): void {
+		this._status = PaymentStatus.SUCCEEDED;
+	}
+
+	markFailed(): void {
+		this._status = PaymentStatus.FAILED;
 	}
 
 	get orderId(): string {
@@ -70,31 +67,19 @@ export class PaymentIntent {
 		return this._status;
 	}
 
-	get createdAt(): Date {
-		return this._createdAt;
-	}
-
-	get updatedAt(): Date {
-		return this._updatedAt;
-	}
-
 	toPrimitives(): {
 		paymentId: string;
 		orderId: string;
 		amount: number;
 		currency: string;
 		status: PaymentStatus;
-		createdAt: Date;
-		updatedAt: Date;
 	} {
 		return {
-			paymentId: this._id,
+			paymentId: this.uuid,
 			orderId: this._orderId,
 			amount: this._amount,
 			currency: this._currency,
 			status: this._status,
-			createdAt: this._createdAt,
-			updatedAt: this._updatedAt,
 		};
 	}
 }

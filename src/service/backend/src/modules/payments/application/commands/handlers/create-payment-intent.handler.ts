@@ -9,6 +9,7 @@ import { executeCommand, executeQuery } from '@/common/utils/cqrs-executor';
 import { OutboxProducer } from '@/modules/outbox/application/outbox.producer';
 import { IPaymentRepositorySymbol } from '@/modules/payments/domains/repositories/i.payment.repository';
 import type { IPaymentRepository } from '@/modules/payments/domains/repositories/i.payment.repository';
+import { PaymentIntent } from '@/modules/payments/domains/entities/aggregates/payment-intent/payment-intent.aggregate';
 import { AttachPaymentToOrderCommand } from '@/shared/ordering/commands/attach-payment-to-order.command';
 import { GetOrderQuery } from '@/shared/ordering/queries/get-order.query';
 import {
@@ -46,17 +47,18 @@ export class CreatePaymentIntentHandler implements ICommandHandler<CreatePayment
 			);
 			assertOrderView(order);
 
-			const payment = await this.payments.createIntent({
+			const payment = PaymentIntent.createPending({
 				orderId,
 				amount: order.amount,
 				currency: order.currency,
 			});
+			await this.payments.persist(payment);
 
 			await executeCommand(
 				this.commandBus,
 				new AttachPaymentToOrderCommand({
 					orderId,
-					paymentId: payment.id,
+					paymentId: payment.uuid,
 				}),
 			);
 
@@ -68,8 +70,8 @@ export class CreatePaymentIntentHandler implements ICommandHandler<CreatePayment
 
 			const event =
 				outcome === 'SUCCEEDED'
-					? new PaymentWebhookSucceededEvent(orderId, payment.id)
-					: new PaymentWebhookFailedEvent(orderId, payment.id);
+					? new PaymentWebhookSucceededEvent(orderId, payment.uuid)
+					: new PaymentWebhookFailedEvent(orderId, payment.uuid);
 
 			const outboxId = await this.outbox.publish(event, {
 				delaySeconds,
@@ -82,7 +84,7 @@ export class CreatePaymentIntentHandler implements ICommandHandler<CreatePayment
 					: PaymentWebhookFailedEvent.eventType;
 
 			return {
-				paymentId: payment.id,
+				paymentId: payment.uuid,
 				status: payment.status,
 				scheduled: {
 					eventType,

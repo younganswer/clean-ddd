@@ -33,16 +33,9 @@ export class PaymentIntentReader implements IPaymentIntentReader {
 			amount: number;
 			currency: string;
 			status: PaymentIntentViewDto['status'];
-			createdAt: Date;
-			updatedAt: Date;
 		};
 	}): PaymentIntentViewDto {
-		const primitives = payment.toPrimitives();
-		return {
-			...primitives,
-			createdAt: primitives.createdAt.toISOString(),
-			updatedAt: primitives.updatedAt.toISOString(),
-		};
+		return payment.toPrimitives();
 	}
 }
 
