@@ -39,27 +39,20 @@ export class MongoUserAvatarRepository
 		return collection;
 	}
 
-	async upsert(input: {
-		avatarId: string;
-		userId: string;
-		imageUrl: string;
-	}): Promise<Avatar> {
+	async upsert(avatar: Avatar): Promise<Avatar> {
 		const collection = await this.collection();
 		if (!collection) {
 			throw new Error('MONGODB_URL is required to upsert avatar');
 		}
-		const avatarId = String(input.avatarId ?? '').trim();
-		if (!avatarId) {
-			throw new Error('avatarId is required to upsert avatar');
-		}
+		const document = this.avatarMapper.toDocument(avatar);
 
 		await collection.updateOne(
-			{ uuid: avatarId },
+			{ uuid: document.uuid },
 			{
 				$set: {
-					uuid: avatarId,
-					userId: input.userId,
-					imageUrl: input.imageUrl,
+					uuid: document.uuid,
+					userId: document.userId,
+					imageUrl: document.imageUrl,
 					updatedAt: new Date(),
 				},
 				$setOnInsert: {
@@ -69,7 +62,7 @@ export class MongoUserAvatarRepository
 			{ upsert: true },
 		);
 
-		const found = await collection.findOne({ uuid: avatarId });
+		const found = await collection.findOne({ uuid: document.uuid });
 		if (!found) {
 			throw new Error('Failed to upsert avatar document');
 		}
@@ -92,9 +85,7 @@ export class MongoUserAvatarRepository
 	async findByAvatarIds(avatarIds: string[]): Promise<Avatar[]> {
 		const normalizedIds = [
 			...new Set(avatarIds.map((id) => id.trim())),
-		].filter(
-			(id) => id.length > 0,
-		);
+		].filter((id) => id.length > 0);
 		if (normalizedIds.length === 0) return [];
 
 		const collection = await this.collection();

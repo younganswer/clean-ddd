@@ -33,36 +33,28 @@ export class DynamoDbUserAvatarRepository implements IUserAvatarRepository {
 		});
 	}
 
-	async upsert(input: {
-		avatarId: string;
-		userId: string;
-		imageUrl: string;
-	}): Promise<Avatar> {
+	async upsert(avatar: Avatar): Promise<Avatar> {
 		const tableName = this.getTableName();
 		const nowIso = new Date().toISOString();
-		const normalizedAvatarId = input.avatarId.trim();
-
-		if (!normalizedAvatarId) {
-			throw new Error('avatarId is required to upsert avatar');
-		}
+		const document = this.avatarMapper.toDocument(avatar);
 
 		await this.documentClient.send(
 			new UpdateCommand({
 				TableName: tableName,
-				Key: { avatarId: normalizedAvatarId },
+				Key: { avatarId: document.uuid },
 				UpdateExpression:
 					'SET uuid = :uuid, userId = :userId, imageUrl = :imageUrl, updatedAt = :updatedAt, createdAt = if_not_exists(createdAt, :createdAt)',
 				ExpressionAttributeValues: {
-					':uuid': normalizedAvatarId,
-					':userId': input.userId,
-					':imageUrl': input.imageUrl,
+					':uuid': document.uuid,
+					':userId': document.userId,
+					':imageUrl': document.imageUrl,
 					':updatedAt': nowIso,
 					':createdAt': nowIso,
 				},
 			}),
 		);
 
-		const saved = await this.findByAvatarId(normalizedAvatarId);
+		const saved = await this.findByAvatarId(document.uuid);
 		if (!saved) {
 			throw new Error('Failed to upsert avatar item in DynamoDB');
 		}

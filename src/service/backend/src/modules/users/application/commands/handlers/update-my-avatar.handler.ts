@@ -1,6 +1,5 @@
 import { Inject } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { randomUUID } from 'node:crypto';
 import { UnitOfWork } from '@/lib/database/unit-of-work';
 import { UpdateMyAvatarCommand } from '@/shared/users/commands/update-my-avatar.command';
 import {
@@ -11,6 +10,7 @@ import {
 	IUserRepositorySymbol,
 	type IUserRepository,
 } from '@/modules/users/domains/repositories/i.user.repository';
+import { Avatar } from '@/modules/users/domains/entities/avatar.entity';
 
 @CommandHandler(UpdateMyAvatarCommand)
 export class UpdateMyAvatarHandler implements ICommandHandler<UpdateMyAvatarCommand> {
@@ -35,12 +35,11 @@ export class UpdateMyAvatarHandler implements ICommandHandler<UpdateMyAvatarComm
 			throw new Error('avatarUrl is required');
 		}
 
-		const avatarId = randomUUID();
-		const savedAvatar = await this.userAvatarRepository.upsert({
-			avatarId,
+		const avatar = Avatar.create({
 			userId,
 			imageUrl: avatarUrl,
 		});
+		const savedAvatar = await this.userAvatarRepository.upsert(avatar);
 
 		await this.uow.transaction(async () => {
 			const user = await this.userRepository.findById(userId);
