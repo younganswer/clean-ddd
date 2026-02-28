@@ -13,8 +13,12 @@ function findBackendRoot(): string {
 		while (true) {
 			const hasNestCli = fs.existsSync(path.join(dir, 'nest-cli.json'));
 			const hasSrc = fs.existsSync(path.join(dir, 'src'));
+			const hasPackageJson = fs.existsSync(
+				path.join(dir, 'package.json'),
+			);
+			const hasDistSrc = fs.existsSync(path.join(dir, 'dist', 'src'));
 
-			if (hasNestCli && hasSrc) {
+			if ((hasNestCli && hasSrc) || (hasPackageJson && hasDistSrc)) {
 				return dir;
 			}
 
@@ -27,7 +31,7 @@ function findBackendRoot(): string {
 	}
 
 	throw new Error(
-		`Failed to locate backend root (nest-cli.json + src). cwd=${process.cwd()} dirname=${__dirname}`,
+		`Failed to locate backend root (need either nest-cli.json + src or package.json + dist/src). cwd=${process.cwd()} dirname=${__dirname}`,
 	);
 }
 
