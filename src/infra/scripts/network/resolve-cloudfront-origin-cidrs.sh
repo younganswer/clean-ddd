@@ -9,7 +9,7 @@ INCLUDE_IPV6=1
 usage() {
   cat <<'USAGE'
 Usage:
-  src/infra/scripts/resolve-cloudfront-origin-cidrs.sh [options]
+  src/infra/scripts/network/resolve-cloudfront-origin-cidrs.sh [options]
 
 Options:
   --url <ip-ranges-json-url>   Source URL for AWS ip ranges json
@@ -18,8 +18,8 @@ Options:
   -h, --help                   Show this help
 
 Examples:
-  src/infra/scripts/resolve-cloudfront-origin-cidrs.sh
-  src/infra/scripts/resolve-cloudfront-origin-cidrs.sh --services CLOUDFRONT_ORIGIN_FACING,CLOUDFRONT
+  src/infra/scripts/network/resolve-cloudfront-origin-cidrs.sh
+  src/infra/scripts/network/resolve-cloudfront-origin-cidrs.sh --services CLOUDFRONT_ORIGIN_FACING,CLOUDFRONT
 USAGE
 }
 

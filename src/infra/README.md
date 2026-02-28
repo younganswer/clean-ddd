@@ -5,13 +5,13 @@
 ## 구성 요소 개요
 
 - SAM 템플릿: `sam/template.yaml`
-    - API Gateway HTTP API, Lambda, SQS(FIFO), EventBridge Schedule 등 런타임 토폴로지를 선언합니다.
+  - API Gateway HTTP API, Lambda, SQS(FIFO), EventBridge Schedule 등 런타임 토폴로지를 선언합니다.
 - IAM 정책 예시: `aws-github-oidc-deploy-policy.json`
-    - GitHub OIDC를 통해 배포 시 필요한 권한 경계를 표현합니다.
+  - GitHub OIDC를 통해 배포 시 필요한 권한 경계를 표현합니다.
 - IAM Trust 정책 예시: `aws-github-oidc-trust-policy.json`
-    - 어떤 GitHub 주체가 AWS Role을 가정할 수 있는지 신뢰 조건을 정의합니다.
-- 리소스 부트스트랩 스크립트: `scripts/bootstrap-aws-resources.sh`
-    - 인프라 리소스 naming 및 기본 보안 설정의 기준을 코드로 유지합니다.
+  - 어떤 GitHub 주체가 AWS Role을 가정할 수 있는지 신뢰 조건을 정의합니다.
+- 리소스 부트스트랩 스크립트: `scripts/bootstrap/bootstrap-aws-resources.sh`
+  - 인프라 리소스 naming 및 기본 보안 설정의 기준을 코드로 유지합니다.
 
 ## 아키텍처 원칙
 

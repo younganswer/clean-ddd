@@ -10,7 +10,7 @@ ASSUME_YES="false"
 usage() {
   cat <<'USAGE'
 Usage:
-  src/infra/scripts/delete-github-actions-runs.sh [options]
+  src/infra/scripts/maintenance/delete-github-actions-runs.sh [options]
 
 Options:
   --repo <owner/name>  Target repository (required if GITHUB_REPOSITORY is not set)
@@ -20,8 +20,8 @@ Options:
   -h, --help           Show this help
 
 Examples:
-  src/infra/scripts/delete-github-actions-runs.sh --repo younganswer/clean-ddd --yes
-  src/infra/scripts/delete-github-actions-runs.sh --repo owner/repo --dry-run
+  src/infra/scripts/maintenance/delete-github-actions-runs.sh --repo younganswer/clean-ddd --yes
+  src/infra/scripts/maintenance/delete-github-actions-runs.sh --repo owner/repo --dry-run
 USAGE
 }
 

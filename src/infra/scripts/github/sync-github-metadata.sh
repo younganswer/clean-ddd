@@ -7,7 +7,7 @@ REPO_SLUG="$2"
 API_URL="$3"
 DEPLOY_URL="$4"
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd -- "${SCRIPT_DIR}/../../.." && pwd)"
+REPO_ROOT="$(cd -- "${SCRIPT_DIR}/../../../.." && pwd)"
 README_PATH="${REPO_ROOT}/README.md"
 
 print_usage() {

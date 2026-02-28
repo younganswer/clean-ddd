@@ -16,7 +16,7 @@ GITHUB_OIDC_THUMBPRINT="6938fd4d98bab03faadb97b34396831e3780aea1"
 usage() {
   cat <<'USAGE'
 Usage:
-  src/infra/scripts/bootstrap-aws-resources.sh [options]
+  src/infra/scripts/bootstrap/bootstrap-aws-resources.sh [options]
 
 Options:
   --env <name>                 Environment name (default: dev)
@@ -28,8 +28,8 @@ Options:
   -h, --help                   Show this help
 
 Examples:
-  src/infra/scripts/bootstrap-aws-resources.sh --env dev --write-vars-file .github/env/dev.vars
-  src/infra/scripts/bootstrap-aws-resources.sh --env prod --region ap-northeast-2 --profile clean-ddd --write-vars-file .github/env/prod.vars
+  src/infra/scripts/bootstrap/bootstrap-aws-resources.sh --env dev --write-vars-file .github/env/dev.vars
+  src/infra/scripts/bootstrap/bootstrap-aws-resources.sh --env prod --region ap-northeast-2 --profile clean-ddd --write-vars-file .github/env/prod.vars
 USAGE
 }
 

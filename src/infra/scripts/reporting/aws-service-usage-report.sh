@@ -14,7 +14,7 @@ OUTPUT_DIR="tmp/aws-usage-report"
 usage() {
   cat <<'USAGE'
 Usage:
-  src/infra/scripts/aws-service-usage-report.sh [options]
+  src/infra/scripts/reporting/aws-service-usage-report.sh [options]
 
 Options:
   --days <n>                        Lookback days (default: 30)
@@ -28,7 +28,7 @@ Options:
   -h, --help                        Show this help
 
 Examples:
-  src/infra/scripts/aws-service-usage-report.sh \
+  src/infra/scripts/reporting/aws-service-usage-report.sh \
     --profile clean-ddd \
     --region ap-northeast-2 \
     --stack-name clean-ddd-dev \
