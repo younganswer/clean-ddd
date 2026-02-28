@@ -8,6 +8,14 @@ import { BaseSchema } from '@/shared/persistence/mikro-orm/base.schema';
 })
 @Index({ properties: ['createdAt'] })
 export class ProcessedEventSchema extends BaseSchema {
+	constructor(
+		input: Omit<ProcessedEventSchema, 'id' | 'createdAt' | 'updatedAt'>,
+	) {
+		super(input.uuid);
+		this.consumerName = input.consumerName;
+		this.eventId = input.eventId;
+	}
+
 	@Property()
 	consumerName!: string;
 

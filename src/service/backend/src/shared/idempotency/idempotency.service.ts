@@ -1,26 +1,26 @@
-import { RequestContext } from '@mikro-orm/core';
-import { EntityManager } from '@mikro-orm/postgresql';
-import { Injectable } from '@nestjs/common';
-import { ProcessedEventSchema } from '@/shared/idempotency/processed-event.schema';
+import { Inject, Injectable } from '@nestjs/common';
+import { ProcessedEvent } from '@/shared/idempotency/domain/entities/processed-event.entity';
+import {
+	IProcessedEventRepositorySymbol,
+	type IProcessedEventRepository,
+} from '@/shared/idempotency/domain/i.processed-event.repository';
 
 @Injectable()
 export class IdempotencyService {
-	constructor(private readonly em: EntityManager) {}
-
-	private emForContext(): EntityManager {
-		return (
-			(RequestContext.getEntityManager() as EntityManager | undefined) ??
-			this.em
-		);
-	}
+	constructor(
+		@Inject(IProcessedEventRepositorySymbol)
+		private readonly repository: IProcessedEventRepository,
+	) {}
 
 	async claim(consumerName: string, eventId: string): Promise<boolean> {
+		const claimEvent = ProcessedEvent.create({
+			consumerName,
+			eventId,
+		});
+
 		try {
-			const em = this.emForContext();
-			await em.insert(ProcessedEventSchema, {
-				consumerName,
-				eventId,
-			});
+			await this.repository.persist(claimEvent);
+
 			return true;
 		} catch (error: unknown) {
 			// unique constraint violation -> already processed
@@ -47,10 +47,6 @@ export class IdempotencyService {
 	}
 
 	async release(consumerName: string, eventId: string): Promise<void> {
-		const em = this.emForContext();
-		await em.nativeDelete(ProcessedEventSchema, {
-			consumerName,
-			eventId,
-		});
+		await this.repository.release(consumerName, eventId);
 	}
 }

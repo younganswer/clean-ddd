@@ -1,7 +1,10 @@
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { SqsModule } from '@/lib/queue/sqs.module';
+import { ProcessedEventMapper } from '@/shared/idempotency/infrastructure/processed-event.mapper';
+import { ProcessedEventRepository } from '@/shared/idempotency/infrastructure/processed-event.repository';
 import { IdempotencyService } from '@/shared/idempotency/idempotency.service';
+import { IProcessedEventRepositorySymbol } from '@/shared/idempotency/domain/i.processed-event.repository';
 import { IOutboxRepositorySymbol } from '@/shared/outbox';
 import { OutboxCommandHandlers } from '@/modules/outbox/application/commands';
 import { OutboxProducer } from '@/modules/outbox/application/outbox.producer';
@@ -14,6 +17,12 @@ import { OutboxQueue } from '@/modules/outbox/infrastructure/queue/outbox.queue'
 @Module({
 	imports: [CqrsModule, SqsModule],
 	providers: [
+		ProcessedEventMapper,
+		ProcessedEventRepository,
+		{
+			provide: IProcessedEventRepositorySymbol,
+			useExisting: ProcessedEventRepository,
+		},
 		IdempotencyService,
 		OutboxQueue,
 		OutboxProducer,
