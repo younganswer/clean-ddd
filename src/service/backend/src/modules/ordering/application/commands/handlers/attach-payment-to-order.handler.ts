@@ -6,6 +6,8 @@ import {
 } from '@/modules/ordering/domains/repositories/i.order.repository';
 import { AttachPaymentToOrderCommand } from '@/shared/ordering/commands/attach-payment-to-order.command';
 import { UnitOfWork } from '@/lib/database/unit-of-work';
+import { ORDERING_APPLICATION_ERRORS } from '@/shared/errors';
+import { ApplicationErrorFactory } from '@/shared/errors/base.error-factory';
 
 @CommandHandler(AttachPaymentToOrderCommand)
 export class AttachPaymentToOrderHandler implements ICommandHandler<AttachPaymentToOrderCommand> {
@@ -18,12 +20,27 @@ export class AttachPaymentToOrderHandler implements ICommandHandler<AttachPaymen
 	async execute(command: AttachPaymentToOrderCommand): Promise<void> {
 		const orderId = String(command.input.orderId ?? '').trim();
 		const paymentId = String(command.input.paymentId ?? '').trim();
-		if (!orderId) throw new Error('orderId is required');
-		if (!paymentId) throw new Error('paymentId is required');
+		if (!orderId) {
+			throw ApplicationErrorFactory.create(
+				ORDERING_APPLICATION_ERRORS.ORDER_ID_REQUIRED,
+			);
+		}
+		if (!paymentId) {
+			throw ApplicationErrorFactory.create(
+				ORDERING_APPLICATION_ERRORS.PAYMENT_ID_REQUIRED,
+			);
+		}
 
 		await this.uow.transaction(async () => {
 			const order = await this.orderRepository.findById(orderId);
-			if (!order) throw new Error('order not found');
+			if (!order) {
+				throw ApplicationErrorFactory.create(
+					ORDERING_APPLICATION_ERRORS.ORDER_NOT_FOUND,
+					{
+						details: { orderId },
+					},
+				);
+			}
 
 			order.attachPayment(paymentId);
 			await this.orderRepository.persist(order);

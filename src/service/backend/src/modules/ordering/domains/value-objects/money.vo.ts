@@ -1,3 +1,6 @@
+import { ORDERING_DOMAIN_ERRORS } from '@/shared/errors';
+import { DomainErrorFactory } from '@/shared/errors/base.error-factory';
+
 export class Money {
 	private constructor(
 		private readonly _amount: number,
@@ -9,10 +12,17 @@ export class Money {
 		const normalizedAmount = Number(amount);
 
 		if (!Number.isFinite(normalizedAmount) || normalizedAmount <= 0) {
-			throw new Error('amount must be a positive number');
+			throw DomainErrorFactory.create(
+				ORDERING_DOMAIN_ERRORS.MONEY_AMOUNT_INVALID,
+				{
+					details: { amount },
+				},
+			);
 		}
 		if (!normalizedCurrency) {
-			throw new Error('currency is required');
+			throw DomainErrorFactory.create(
+				ORDERING_DOMAIN_ERRORS.MONEY_CURRENCY_REQUIRED,
+			);
 		}
 
 		return new Money(normalizedAmount, normalizedCurrency);

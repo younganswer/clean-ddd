@@ -1,3 +1,6 @@
+import { ORDERING_DOMAIN_ERRORS } from '@/shared/errors';
+import { DomainErrorFactory } from '@/shared/errors/base.error-factory';
+
 export class OrderItem {
 	private constructor(
 		private readonly _sku: string,
@@ -9,10 +12,17 @@ export class OrderItem {
 		const normalizedQuantity = Number(quantity);
 
 		if (!normalizedSku) {
-			throw new Error('sku is required');
+			throw DomainErrorFactory.create(
+				ORDERING_DOMAIN_ERRORS.ORDER_ITEM_SKU_REQUIRED,
+			);
 		}
 		if (!Number.isFinite(normalizedQuantity) || normalizedQuantity <= 0) {
-			throw new Error('quantity must be a positive number');
+			throw DomainErrorFactory.create(
+				ORDERING_DOMAIN_ERRORS.ORDER_ITEM_QUANTITY_INVALID,
+				{
+					details: { quantity },
+				},
+			);
 		}
 
 		return new OrderItem(normalizedSku, normalizedQuantity);

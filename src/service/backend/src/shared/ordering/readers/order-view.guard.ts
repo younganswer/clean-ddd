@@ -1,4 +1,6 @@
 import type { OrderView } from '@/shared/ordering/readers/order.view';
+import { ORDERING_APPLICATION_ERRORS } from '@/shared/errors';
+import { ApplicationErrorFactory } from '@/shared/errors/base.error-factory';
 
 export const isOrderView = (value: unknown): value is OrderView => {
 	if (!value || typeof value !== 'object') return false;
@@ -13,6 +15,8 @@ export const isOrderView = (value: unknown): value is OrderView => {
 
 export function assertOrderView(value: unknown): asserts value is OrderView {
 	if (!isOrderView(value)) {
-		throw new Error('order not found');
+		throw ApplicationErrorFactory.create(
+			ORDERING_APPLICATION_ERRORS.ORDER_NOT_FOUND,
+		);
 	}
 }
