@@ -2,9 +2,11 @@ import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import { Collection, MongoClient } from 'mongodb';
 import { type IUserAvatarRepository } from '@/modules/users/domains/repositories/i.user-avatar.repository';
 import { optionalEnv } from '@/env';
+import { Avatar } from '@/modules/users/domains/entities/avatar.entity';
 import { AvatarMapper } from '@/modules/users/infrastructure/mappers/avatar.mapper';
 import { AvatarDocument } from '@/modules/users/infrastructure/documents/avatar.document';
-import { Avatar } from '../../domains/entities/avatar.entity';
+import { USER_INFRA_ERRORS } from '@/shared/errors';
+import { InfrastructureErrorFactory } from '@/shared/errors/base.error-factory';
 
 @Injectable()
 export class MongoUserAvatarRepository
@@ -42,7 +44,9 @@ export class MongoUserAvatarRepository
 	async upsert(avatar: Avatar): Promise<Avatar> {
 		const collection = await this.collection();
 		if (!collection) {
-			throw new Error('MONGODB_URL is required to upsert avatar');
+			throw InfrastructureErrorFactory.create(
+				USER_INFRA_ERRORS.MONGODB_URL_REQUIRED,
+			);
 		}
 		const document = this.avatarMapper.toDocument(avatar);
 
@@ -64,7 +68,12 @@ export class MongoUserAvatarRepository
 
 		const found = await collection.findOne({ uuid: document.uuid });
 		if (!found) {
-			throw new Error('Failed to upsert avatar document');
+			throw InfrastructureErrorFactory.create(
+				USER_INFRA_ERRORS.MONGODB_AVATAR_UPSERT_FAILED,
+				{
+					details: { avatarId: document.uuid },
+				},
+			);
 		}
 
 		return this.avatarMapper.toDomain(found);

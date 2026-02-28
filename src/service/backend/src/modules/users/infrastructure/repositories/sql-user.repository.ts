@@ -3,8 +3,8 @@ import { EntityManager } from '@mikro-orm/postgresql';
 import { Injectable } from '@nestjs/common';
 import { User } from '@/modules/users/domains/entities/user.entity';
 import type { IUserRepository } from '@/modules/users/domains/repositories/i.user.repository';
+import { UserMapper } from '@/modules/users/infrastructure/mappers/user.mapper';
 import { UserSchema } from '@/modules/users/infrastructure/schemas/user.schema';
-import { UserMapper } from '../mappers/user.mapper';
 
 @Injectable()
 export class SqlUserRepository implements IUserRepository {

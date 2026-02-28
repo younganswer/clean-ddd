@@ -7,10 +7,12 @@ import {
 	UpdateCommand,
 } from '@aws-sdk/lib-dynamodb';
 import { type IUserAvatarRepository } from '@/modules/users/domains/repositories/i.user-avatar.repository';
+import { Avatar } from '@/modules/users/domains/entities/avatar.entity';
+import { AvatarDocument } from '@/modules/users/infrastructure/documents/avatar.document';
+import { AvatarMapper } from '@/modules/users/infrastructure/mappers/avatar.mapper';
 import { optionalEnv } from '@/env';
-import { Avatar } from '../../domains/entities/avatar.entity';
-import { AvatarMapper } from '../mappers/avatar.mapper';
-import { AvatarDocument } from '../documents/avatar.document';
+import { USER_INFRA_ERRORS } from '@/shared/errors';
+import { InfrastructureErrorFactory } from '@/shared/errors/base.error-factory';
 
 @Injectable()
 export class DynamoDbUserAvatarRepository implements IUserAvatarRepository {
@@ -56,7 +58,12 @@ export class DynamoDbUserAvatarRepository implements IUserAvatarRepository {
 
 		const saved = await this.findByAvatarId(document.uuid);
 		if (!saved) {
-			throw new Error('Failed to upsert avatar item in DynamoDB');
+			throw InfrastructureErrorFactory.create(
+				USER_INFRA_ERRORS.DYNAMODB_AVATAR_UPSERT_FAILED,
+				{
+					details: { avatarId: document.uuid },
+				},
+			);
 		}
 
 		return saved;
@@ -121,8 +128,8 @@ export class DynamoDbUserAvatarRepository implements IUserAvatarRepository {
 
 	private getTableName(): string {
 		if (!this.tableName) {
-			throw new Error(
-				'Missing required env: DYNAMODB_AVATAR_TABLE (when using DynamoDB avatar repository)',
+			throw InfrastructureErrorFactory.create(
+				USER_INFRA_ERRORS.DYNAMODB_AVATAR_TABLE_REQUIRED,
 			);
 		}
 		return this.tableName;

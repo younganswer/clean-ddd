@@ -11,6 +11,8 @@ import {
 	type IUserRepository,
 } from '@/modules/users/domains/repositories/i.user.repository';
 import { Avatar } from '@/modules/users/domains/entities/avatar.entity';
+import { USER_APPLICATION_ERRORS } from '@/shared/errors';
+import { ApplicationErrorFactory } from '@/shared/errors/base.error-factory';
 
 @CommandHandler(UpdateMyAvatarCommand)
 export class UpdateMyAvatarHandler implements ICommandHandler<UpdateMyAvatarCommand> {
@@ -29,10 +31,14 @@ export class UpdateMyAvatarHandler implements ICommandHandler<UpdateMyAvatarComm
 		const avatarUrl = command.input.avatarUrl.trim();
 
 		if (!userId) {
-			throw new Error('userId is required');
+			throw ApplicationErrorFactory.create(
+				USER_APPLICATION_ERRORS.USER_ID_REQUIRED,
+			);
 		}
 		if (!avatarUrl) {
-			throw new Error('avatarUrl is required');
+			throw ApplicationErrorFactory.create(
+				USER_APPLICATION_ERRORS.USER_AVATAR_URL_REQUIRED,
+			);
 		}
 
 		const avatar = Avatar.create({
@@ -44,7 +50,12 @@ export class UpdateMyAvatarHandler implements ICommandHandler<UpdateMyAvatarComm
 		await this.uow.transaction(async () => {
 			const user = await this.userRepository.findById(userId);
 			if (!user) {
-				throw new Error('user not found');
+				throw ApplicationErrorFactory.create(
+					USER_APPLICATION_ERRORS.USER_NOT_FOUND,
+					{
+						details: { userId },
+					},
+				);
 			}
 
 			user.assignAvatarId(savedAvatar.id);
