@@ -37,9 +37,9 @@ jobs:
             run_script: |
                 TARGET_ENV="${{ github.event_name == 'workflow_dispatch' && github.event.inputs.target_env || 'prod' }}"
                 export DEPLOY_TIMEOUT_SECONDS=1200
-                chmod +x infra/scripts/deploy-fullstack.sh
-                chmod +x infra/scripts/sync-github-metadata.sh
-                infra/scripts/deploy-fullstack.sh "$TARGET_ENV"
+                chmod +x infra/scripts/deploy/deploy.sh
+                chmod +x infra/scripts/github/sync-github-metadata.sh
+                infra/scripts/deploy/deploy.sh "$TARGET_ENV"
 
                 API_STAGE_URL=$(aws cloudformation describe-stacks \
                     --stack-name "$SAM_STACK_NAME" \
@@ -53,7 +53,7 @@ jobs:
                     --output text)
                 DEPLOY_URL="https://${CF_DOMAIN}"
 
-                infra/scripts/sync-github-metadata.sh \
+                infra/scripts/github/sync-github-metadata.sh \
                     "$TARGET_ENV" \
                     "${{ github.repository }}" \
                     "$API_URL" \
