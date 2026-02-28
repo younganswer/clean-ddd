@@ -1,17 +1,35 @@
 {
-	"name": "clean-ddd",
-	"private": true,
-	"packageManager": "pnpm@9.15.5+sha512.845196026aab1cc3f098a0474b64dfbab2afe7a1b4e91dd86895d8e4aa32a7a6d03049e2d0ad770bbe4de023a7122fb68c1a1d6e0d033c7076085f9d5d4800d4",
-	"engines": {
-		"node": ">=22"
-	},
-	"devDependencies": {},
-	"scripts": {
-		"build": "corepack pnpm -r --if-present run build",
-		"lint": "corepack pnpm -r --if-present run lint",
-		"typecheck": "corepack pnpm -r --if-present run typecheck",
-		"format": "corepack pnpm -r --if-present run format",
-		"test": "corepack pnpm -r --if-present run test",
-		"ci:precommit": "corepack pnpm --filter api lint && pnpm --filter api typecheck"
-	}
+  "name": "clean-ddd",
+  "private": true,
+  "packageManager": "pnpm@9.15.5+sha512.845196026aab1cc3f098a0474b64dfbab2afe7a1b4e91dd86895d8e4aa32a7a6d03049e2d0ad770bbe4de023a7122fb68c1a1d6e0d033c7076085f9d5d4800d4",
+  "engines": {
+    "node": ">=22"
+  },
+  "devDependencies": {
+    "gitleaks": "^1.0.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7"
+  },
+  "scripts": {
+    "build": "corepack pnpm -r --if-present run build",
+    "lint": "corepack pnpm -r --if-present run lint",
+    "typecheck": "corepack pnpm -r --if-present run typecheck",
+    "format": "corepack pnpm -r --if-present run format",
+    "test": "corepack pnpm -r --if-present run test",
+    "secret:staged": "corepack pnpm gitleaks git --staged --redact --no-banner --exit-code 1",
+    "secret:log-opts": "corepack pnpm gitleaks git --log-opts=origin/main..HEAD --redact --no-banner --exit-code 1"
+  },
+  "lint-staged": {
+    "service/frontend/**/*.{js,jsx,ts,tsx}": [
+      "prettier --write",
+      "eslint --fix"
+    ],
+    "service/backend/**/*.{js,ts}": [
+      "prettier --write",
+      "eslint --fix"
+    ],
+    "**/*.{json,css,md,yml,yaml}": [
+      "prettier --write"
+    ]
+  }
 }
