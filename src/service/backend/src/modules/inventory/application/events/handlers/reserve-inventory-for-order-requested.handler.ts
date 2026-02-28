@@ -10,20 +10,14 @@ export class ReserveInventoryForOrderRequestedHandler implements IEventHandler<R
 	async handle(event: ReserveInventoryForOrderRequestedEvent): Promise<void> {
 		const orderId = String(event.orderId ?? '').trim();
 		if (!orderId) throw new Error('invalid inventory payload');
+		if (!Array.isArray(event.items) || event.items.length === 0) {
+			throw new Error('invalid inventory payload');
+		}
 
-		const items: InventoryOrderItem[] = Array.isArray(event.items)
-			? event.items
-					.map((i) => ({
-						sku: String(i?.sku ?? '').trim(),
-						quantity: Number(i?.quantity ?? 0),
-					}))
-					.filter(
-						(i) =>
-							i.sku &&
-							Number.isFinite(i.quantity) &&
-							i.quantity > 0,
-					)
-			: [];
+		const items: InventoryOrderItem[] = event.items.map((i) => ({
+			sku: String(i?.sku ?? '').trim(),
+			quantity: Number(i?.quantity ?? 0),
+		}));
 
 		await this.commandBus.execute(
 			new ReserveInventoryForOrderCommand({ orderId, items }),
