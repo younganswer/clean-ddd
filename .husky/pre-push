@@ -21,4 +21,4 @@ pnpm test && echo ""
 echo "[pre-push] 🔐 Secret scan (commit range)..."
 pnpm secret:log-opts && echo ""
 
-echo "[pre-push] ✅ Ready to push!"
+echo "[pre-push] ✅ Ready to push!" && echo ""

@@ -10,4 +10,4 @@ pnpm lint-staged && echo ""
 echo "[pre-commit] 🔐 Secret scan (staged)..."
 pnpm secret:staged && echo ""
 
-echo "[pre-commit] ✅ Passed!"
+echo "[pre-commit] ✅ Passed!" && echo ""
