@@ -1,5 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { BaseEntity } from '@/shared/domain/base.entity';
+import { IDEMPOTENCY_DOMAIN_ERRORS } from '@/shared/errors';
+import { DomainErrorFactory } from '@/shared/errors/base.error-factory';
 
 export class ProcessedEvent extends BaseEntity {
 	private constructor(
@@ -17,8 +19,16 @@ export class ProcessedEvent extends BaseEntity {
 		const consumerName = String(input.consumerName ?? '').trim();
 		const eventId = String(input.eventId ?? '').trim();
 
-		if (!consumerName) throw new Error('consumerName is required');
-		if (!eventId) throw new Error('eventId is required');
+		if (!consumerName) {
+			throw DomainErrorFactory.create(
+				IDEMPOTENCY_DOMAIN_ERRORS.IDEMPOTENCY_CONSUMER_NAME_REQUIRED,
+			);
+		}
+		if (!eventId) {
+			throw DomainErrorFactory.create(
+				IDEMPOTENCY_DOMAIN_ERRORS.IDEMPOTENCY_EVENT_ID_REQUIRED,
+			);
+		}
 
 		return new ProcessedEvent(randomUUID(), consumerName, eventId);
 	}

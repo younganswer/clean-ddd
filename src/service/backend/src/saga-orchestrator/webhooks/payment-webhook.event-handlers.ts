@@ -22,6 +22,8 @@ import {
 } from '@/shared/inventory';
 import { CreateShipmentForOrderRequestedEvent } from '@/shared/shipping';
 import { UnitOfWork } from '@/lib/database/unit-of-work';
+import { PAYMENTS_APPLICATION_ERRORS } from '@/shared/errors';
+import { ApplicationErrorFactory } from '@/shared/errors/base.error-factory';
 
 @Injectable()
 @EventsHandler(PaymentWebhookSucceededEvent)
@@ -40,11 +42,23 @@ export class PaymentWebhookSucceededHandler implements IEventHandler<PaymentWebh
 			const orderId = String(event.orderId ?? '').trim();
 			const paymentId = String(event.paymentId ?? '').trim();
 			if (!orderId || !paymentId) {
-				throw new Error('invalid webhook payload');
+				throw ApplicationErrorFactory.create(
+					PAYMENTS_APPLICATION_ERRORS.PAYMENT_WEBHOOK_PAYLOAD_INVALID,
+					{
+						details: { orderId, paymentId },
+					},
+				);
 			}
 
 			const payment = await this.paymentRepository.findById(paymentId);
-			if (!payment) throw new Error('payment not found');
+			if (!payment) {
+				throw ApplicationErrorFactory.create(
+					PAYMENTS_APPLICATION_ERRORS.PAYMENT_NOT_FOUND,
+					{
+						details: { paymentId },
+					},
+				);
+			}
 			payment.markSucceeded();
 			await this.paymentRepository.persist(payment);
 
@@ -67,8 +81,11 @@ export class PaymentWebhookSucceededHandler implements IEventHandler<PaymentWebh
 				: [];
 
 			if (!items.length) {
-				throw new Error(
-					'cannot request inventory reservation without order items',
+				throw ApplicationErrorFactory.create(
+					PAYMENTS_APPLICATION_ERRORS.ORDER_ITEMS_REQUIRED_FOR_INVENTORY_RESERVATION,
+					{
+						details: { orderId },
+					},
 				);
 			}
 
@@ -97,10 +114,24 @@ export class PaymentWebhookFailedHandler implements IEventHandler<PaymentWebhook
 	async handle(event: PaymentWebhookFailedEvent): Promise<void> {
 		await this.uow.transaction(async () => {
 			const paymentId = String(event.paymentId ?? '').trim();
-			if (!paymentId) throw new Error('invalid webhook payload');
+			if (!paymentId) {
+				throw ApplicationErrorFactory.create(
+					PAYMENTS_APPLICATION_ERRORS.PAYMENT_WEBHOOK_PAYLOAD_INVALID,
+					{
+						details: { paymentId },
+					},
+				);
+			}
 
 			const payment = await this.paymentRepository.findById(paymentId);
-			if (!payment) throw new Error('payment not found');
+			if (!payment) {
+				throw ApplicationErrorFactory.create(
+					PAYMENTS_APPLICATION_ERRORS.PAYMENT_NOT_FOUND,
+					{
+						details: { paymentId },
+					},
+				);
+			}
 			payment.markFailed();
 			await this.paymentRepository.persist(payment);
 		});
