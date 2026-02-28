@@ -1,16 +1,12 @@
-import { Inject } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { IShipmentRepositorySymbol } from '@/modules/shipping/domains/repositories/i.shipment.repository';
-import type { IShipmentRepository } from '@/modules/shipping/domains/repositories/i.shipment.repository';
 import { CreateShipmentForOrderCommand } from '@/shared/shipping';
 import { UnitOfWork } from '@/lib/database/unit-of-work';
-import { Shipment } from '@/modules/shipping/domains/entities/aggregates/shipment/shipment.aggregate';
+import { ShipmentCreationDomainService } from '@/modules/shipping/domains/services/shipment-creation.domain-service';
 
 @CommandHandler(CreateShipmentForOrderCommand)
 export class CreateShipmentForOrderHandler implements ICommandHandler<CreateShipmentForOrderCommand> {
 	constructor(
-		@Inject(IShipmentRepositorySymbol)
-		private readonly shipmentRepository: IShipmentRepository,
+		private readonly shipmentCreationDomainService: ShipmentCreationDomainService,
 		private readonly uow: UnitOfWork,
 	) {}
 
@@ -21,14 +17,10 @@ export class CreateShipmentForOrderHandler implements ICommandHandler<CreateShip
 		if (!orderId) throw new Error('orderId is required');
 
 		return await this.uow.transaction(async () => {
-			const existing =
-				await this.shipmentRepository.findByOrderId(orderId);
-			if (existing) {
-				return { shipmentId: existing.id };
-			}
-
-			const shipment = Shipment.createForOrder({ orderId });
-			await this.shipmentRepository.persist(shipment);
+			const shipment =
+				await this.shipmentCreationDomainService.createForOrderIdempotent(
+					orderId,
+				);
 
 			return { shipmentId: shipment.id };
 		});
