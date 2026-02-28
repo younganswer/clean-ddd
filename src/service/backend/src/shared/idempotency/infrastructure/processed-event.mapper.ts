@@ -16,7 +16,7 @@ export class ProcessedEventMapper {
 		const primitives = event.toPrimitives();
 
 		return new ProcessedEventSchema({
-			uuid: primitives.uuid,
+			uuid: primitives.processedEventId,
 			consumerName: primitives.consumerName,
 			eventId: primitives.eventId,
 		});

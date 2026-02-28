@@ -12,7 +12,7 @@ import { getEventType, toPayload } from '@/lib/outbox/event-registry';
 export class OutboxProducer {
 	constructor(
 		@Inject(IOutboxRepositorySymbol)
-		private readonly outboxRepo: IOutboxRepository,
+		private readonly outboxRepository: IOutboxRepository,
 		private readonly outboxQueue: OutboxQueue,
 		private readonly uow: UnitOfWork,
 	) {}
@@ -58,9 +58,9 @@ export class OutboxProducer {
 				payload,
 			});
 
-			await this.outboxRepo.persist(outboxEvent);
+			await this.outboxRepository.persist(outboxEvent);
 
-			return outboxEvent.uuid;
+			return outboxEvent.id;
 		});
 
 		const delaySeconds = options?.delaySeconds;
@@ -83,11 +83,11 @@ export class OutboxProducer {
 				});
 				await this.uow.transaction(async () => {
 					const outboxEvent =
-						await this.outboxRepo.findById(outboxId);
+						await this.outboxRepository.findById(outboxId);
 					if (!outboxEvent) return;
 
 					outboxEvent.markPublished();
-					await this.outboxRepo.persist(outboxEvent);
+					await this.outboxRepository.persist(outboxEvent);
 				});
 			} catch (error) {
 				console.error(

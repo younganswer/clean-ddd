@@ -4,7 +4,7 @@ import { BaseEntity } from '@/shared/domain/base.entity';
 
 export class OutboxEvent extends BaseEntity {
 	private constructor(
-		uuid: string,
+		id: string,
 		private readonly _eventType: string,
 		private readonly _payload: Record<string, unknown>,
 		private _status: OutboxEventStatus,
@@ -14,7 +14,7 @@ export class OutboxEvent extends BaseEntity {
 		private _publishedAt: Date | null,
 		private _lastError: string | null,
 	) {
-		super(uuid);
+		super(id);
 	}
 
 	static create(input: {
@@ -117,7 +117,7 @@ export class OutboxEvent extends BaseEntity {
 	}
 
 	toPrimitives(): {
-		uuid: string;
+		outboxEventId: string;
 		eventType: string;
 		payload: Record<string, unknown>;
 		status: OutboxEventStatus;
@@ -128,7 +128,7 @@ export class OutboxEvent extends BaseEntity {
 		lastError: string | null;
 	} {
 		return {
-			uuid: this.uuid,
+			outboxEventId: this.id,
 			eventType: this._eventType,
 			payload: this._payload,
 			status: this._status,

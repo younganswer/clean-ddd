@@ -13,6 +13,7 @@ import { OutboxQueryHandlers } from '@/modules/outbox/application/queries';
 import { OutboxSweeper } from '@/modules/outbox/application/outbox.sweeper';
 import { OutboxRepository } from '@/modules/outbox/infrastructure/persistence/outbox.repository';
 import { OutboxQueue } from '@/modules/outbox/infrastructure/queue/outbox.queue';
+import { OutboxMapper } from './infrastructure/mappers/outbox.mapper';
 
 @Module({
 	imports: [CqrsModule, SqsModule],
@@ -29,6 +30,7 @@ import { OutboxQueue } from '@/modules/outbox/infrastructure/queue/outbox.queue'
 		OutboxDispatcher,
 		OutboxSweeper,
 		OutboxRepository,
+		OutboxMapper,
 		...OutboxCommandHandlers,
 		...OutboxQueryHandlers,
 		{

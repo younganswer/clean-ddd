@@ -35,8 +35,8 @@ export class OutboxConsumer {
 	constructor(
 		private readonly moduleRef: ModuleRef,
 		@Inject(IOutboxRepositorySymbol)
-		private readonly outboxRepo: IOutboxRepository,
-		private readonly idempotency: IdempotencyService,
+		private readonly outboxRepository: IOutboxRepository,
+		private readonly idempotencyService: IdempotencyService,
 		private readonly eventBus: EventBus,
 		private readonly uow: UnitOfWork,
 	) {}
@@ -123,7 +123,7 @@ export class OutboxConsumer {
 			return;
 		}
 
-		const locked = await this.outboxRepo.lock(
+		const locked = await this.outboxRepository.lock(
 			outboxId,
 			new Date(Date.now() + 120_000),
 		);
@@ -131,9 +131,10 @@ export class OutboxConsumer {
 
 		try {
 			await this.uow.transaction(async () => {
-				const outboxEvent = await this.outboxRepo.findById(outboxId);
+				const outboxEvent =
+					await this.outboxRepository.findById(outboxId);
 				if (!outboxEvent) {
-					await this.outboxRepo.unlock(outboxId);
+					await this.outboxRepository.unlock(outboxId);
 					return;
 				}
 				if (
@@ -141,17 +142,17 @@ export class OutboxConsumer {
 					outboxEvent.status !== OutboxEventStatus.FAILED &&
 					outboxEvent.status !== OutboxEventStatus.PENDING
 				) {
-					await this.outboxRepo.unlock(outboxId);
+					await this.outboxRepository.unlock(outboxId);
 					return;
 				}
 
-				const claimed = await this.idempotency.claim(
+				const claimed = await this.idempotencyService.claim(
 					this.consumerName,
 					outboxId,
 				);
 				if (!claimed) {
 					outboxEvent.markConsumed();
-					await this.outboxRepo.persist(outboxEvent);
+					await this.outboxRepository.persist(outboxEvent);
 					return;
 				}
 
@@ -168,7 +169,7 @@ export class OutboxConsumer {
 							`unknown eventType=${outboxEvent.eventType}`,
 							createRetryAt(60_000),
 						);
-						await this.outboxRepo.persist(outboxEvent);
+						await this.outboxRepository.persist(outboxEvent);
 						return;
 					}
 
@@ -180,12 +181,12 @@ export class OutboxConsumer {
 						this.eventBus.publish(event);
 					}
 					outboxEvent.markConsumed();
-					await this.outboxRepo.persist(outboxEvent);
+					await this.outboxRepository.persist(outboxEvent);
 				} catch (error: unknown) {
 					const message = resolveErrorMessage(error);
 					outboxEvent.recordFailure(message, createRetryAt(60_000));
 					try {
-						await this.idempotency.release(
+						await this.idempotencyService.release(
 							this.consumerName,
 							outboxId,
 						);
@@ -198,7 +199,7 @@ export class OutboxConsumer {
 		} catch (error) {
 			try {
 				await this.uow.transaction(async () => {
-					await this.outboxRepo.unlock(outboxId);
+					await this.outboxRepository.unlock(outboxId);
 				});
 			} catch {
 				// ignore

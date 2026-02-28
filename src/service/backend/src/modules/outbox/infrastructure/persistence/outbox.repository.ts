@@ -5,10 +5,14 @@ import type { IOutboxRepository } from '@/shared/outbox/domain/i.outbox.reposito
 import { OutboxEvent } from '@/shared/outbox/domain/entities/outbox-event.entity';
 import { OutboxEventStatus } from '@/shared/outbox';
 import { OutboxEventSchema } from '@/modules/outbox/infrastructure/persistence/outbox.schema';
+import { OutboxMapper } from '../mappers/outbox.mapper';
 
 @Injectable()
 export class OutboxRepository implements IOutboxRepository {
-	constructor(private readonly em: EntityManager) {}
+	constructor(
+		private readonly em: EntityManager,
+		private readonly mapper: OutboxMapper,
+	) {}
 
 	private emForContext(): EntityManager {
 		return (
@@ -19,11 +23,7 @@ export class OutboxRepository implements IOutboxRepository {
 
 	async persist(event: OutboxEvent): Promise<void> {
 		const em = this.emForContext();
-		const schema = new OutboxEventSchema({
-			uuid: event.uuid,
-			eventType: event.eventType,
-			payload: event.payload,
-		});
+		const schema = this.mapper.toSchema(event);
 		const exists = await em.findOne(OutboxEventSchema, {
 			uuid: schema.uuid,
 		});
@@ -43,17 +43,7 @@ export class OutboxRepository implements IOutboxRepository {
 		const row = await em.findOne(OutboxEventSchema, { uuid });
 		if (!row) return null;
 
-		return OutboxEvent.rehydrate({
-			uuid: row.uuid,
-			eventType: row.eventType,
-			payload: row.payload,
-			status: row.status,
-			attempt: row.attempt,
-			nextAttemptAt: row.nextAttemptAt,
-			lockedUntil: row.lockedUntil,
-			publishedAt: row.publishedAt,
-			lastError: row.lastError,
-		});
+		return this.mapper.toDomain(row);
 	}
 
 	async findDispatchable(limit: number, now: Date): Promise<OutboxEvent[]> {
@@ -73,19 +63,7 @@ export class OutboxRepository implements IOutboxRepository {
 			},
 		);
 
-		return rows.map((r) =>
-			OutboxEvent.rehydrate({
-				uuid: r.uuid,
-				eventType: r.eventType,
-				payload: r.payload,
-				status: r.status,
-				attempt: r.attempt,
-				nextAttemptAt: r.nextAttemptAt,
-				lockedUntil: r.lockedUntil,
-				publishedAt: r.publishedAt,
-				lastError: r.lastError,
-			}),
-		);
+		return rows.map((r) => this.mapper.toDomain(r));
 	}
 
 	async lock(uuid: string, lockedUntil: Date): Promise<boolean> {

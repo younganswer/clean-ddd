@@ -19,7 +19,7 @@ export class OutboxSweeper {
 	constructor(
 		private readonly moduleRef: ModuleRef,
 		@Inject(IOutboxRepositorySymbol)
-		private readonly outboxRepo: IOutboxRepository,
+		private readonly outboxRepository: IOutboxRepository,
 		private readonly outboxQueue: OutboxQueue,
 		private readonly uow: UnitOfWork,
 	) {}
@@ -44,13 +44,16 @@ export class OutboxSweeper {
 
 	async sweepAndEnqueue(limit: number): Promise<number> {
 		const now = new Date();
-		const candidates = await this.outboxRepo.findDispatchable(limit, now);
+		const candidates = await this.outboxRepository.findDispatchable(
+			limit,
+			now,
+		);
 		let enqueued = 0;
 		const directConsumeFallbackEnabled =
 			this.isDirectConsumeFallbackEnabled();
 
 		for (const event of candidates) {
-			const eventId = event.uuid;
+			const eventId = event.id;
 			if (!eventId) continue;
 
 			if (directConsumeFallbackEnabled) {
@@ -65,14 +68,14 @@ export class OutboxSweeper {
 					);
 					await this.uow.transaction(async () => {
 						const outboxEvent =
-							await this.outboxRepo.findById(eventId);
+							await this.outboxRepository.findById(eventId);
 						if (!outboxEvent) return;
 
 						outboxEvent.recordFailure(
 							message,
 							createRetryAt(30_000),
 						);
-						await this.outboxRepo.persist(outboxEvent);
+						await this.outboxRepository.persist(outboxEvent);
 					});
 					continue;
 				}
@@ -89,11 +92,12 @@ export class OutboxSweeper {
 
 				await this.outboxQueue.enqueue(eventId, { messageGroupId });
 				await this.uow.transaction(async () => {
-					const outboxEvent = await this.outboxRepo.findById(eventId);
+					const outboxEvent =
+						await this.outboxRepository.findById(eventId);
 					if (!outboxEvent) return;
 
 					outboxEvent.markPublished();
-					await this.outboxRepo.persist(outboxEvent);
+					await this.outboxRepository.persist(outboxEvent);
 				});
 				enqueued += 1;
 			} catch (error: unknown) {
@@ -102,11 +106,12 @@ export class OutboxSweeper {
 					`enqueue failed: outboxId=${eventId} err=${message}`,
 				);
 				await this.uow.transaction(async () => {
-					const outboxEvent = await this.outboxRepo.findById(eventId);
+					const outboxEvent =
+						await this.outboxRepository.findById(eventId);
 					if (!outboxEvent) return;
 
 					outboxEvent.recordFailure(message, createRetryAt(30_000));
-					await this.outboxRepo.persist(outboxEvent);
+					await this.outboxRepository.persist(outboxEvent);
 				});
 			}
 		}

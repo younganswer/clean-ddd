@@ -9,7 +9,7 @@ import {
 export class IdempotencyService {
 	constructor(
 		@Inject(IProcessedEventRepositorySymbol)
-		private readonly repository: IProcessedEventRepository,
+		private readonly processedEventRepository: IProcessedEventRepository,
 	) {}
 
 	async claim(consumerName: string, eventId: string): Promise<boolean> {
@@ -19,7 +19,7 @@ export class IdempotencyService {
 		});
 
 		try {
-			await this.repository.persist(claimEvent);
+			await this.processedEventRepository.persist(claimEvent);
 
 			return true;
 		} catch (error: unknown) {
@@ -47,6 +47,6 @@ export class IdempotencyService {
 	}
 
 	async release(consumerName: string, eventId: string): Promise<void> {
-		await this.repository.release(consumerName, eventId);
+		await this.processedEventRepository.release(consumerName, eventId);
 	}
 }

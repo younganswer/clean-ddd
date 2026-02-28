@@ -3,11 +3,11 @@ import { BaseEntity } from '@/shared/domain/base.entity';
 
 export class ProcessedEvent extends BaseEntity {
 	private constructor(
-		uuid: string,
+		id: string,
 		private readonly _consumerName: string,
 		private readonly _eventId: string,
 	) {
-		super(uuid);
+		super(id);
 	}
 
 	static create(input: {
@@ -44,12 +44,12 @@ export class ProcessedEvent extends BaseEntity {
 	}
 
 	toPrimitives(): {
-		uuid: string;
+		processedEventId: string;
 		consumerName: string;
 		eventId: string;
 	} {
 		return {
-			uuid: this.uuid,
+			processedEventId: this.id,
 			consumerName: this._consumerName,
 			eventId: this._eventId,
 		};

@@ -16,7 +16,7 @@ import {
 export class DispatchOutboxEventHandler implements ICommandHandler<DispatchOutboxEventCommand> {
 	constructor(
 		@Inject(IOutboxRepositorySymbol)
-		private readonly outboxRepo: IOutboxRepository,
+		private readonly outboxRepository: IOutboxRepository,
 		private readonly outboxQueue: OutboxQueue,
 		private readonly uow: UnitOfWork,
 	) {}
@@ -31,20 +31,22 @@ export class DispatchOutboxEventHandler implements ICommandHandler<DispatchOutbo
 		try {
 			await this.outboxQueue.enqueue(outboxId, { messageGroupId });
 			await this.uow.transaction(async () => {
-				const outboxEvent = await this.outboxRepo.findById(outboxId);
+				const outboxEvent =
+					await this.outboxRepository.findById(outboxId);
 				if (!outboxEvent) return;
 
 				outboxEvent.markPublished();
-				await this.outboxRepo.persist(outboxEvent);
+				await this.outboxRepository.persist(outboxEvent);
 			});
 		} catch (error: unknown) {
 			const message = resolveErrorMessage(error);
 			await this.uow.transaction(async () => {
-				const outboxEvent = await this.outboxRepo.findById(outboxId);
+				const outboxEvent =
+					await this.outboxRepository.findById(outboxId);
 				if (!outboxEvent) return;
 
 				outboxEvent.recordFailure(message, createRetryAt(30_000));
-				await this.outboxRepo.persist(outboxEvent);
+				await this.outboxRepository.persist(outboxEvent);
 			});
 		}
 	}

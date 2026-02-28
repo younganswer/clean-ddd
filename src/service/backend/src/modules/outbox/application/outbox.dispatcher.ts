@@ -36,12 +36,12 @@ export class OutboxDispatcher {
 
 			let dispatched = 0;
 			for (const event of result.events) {
-				if (!event.uuid) continue;
+				if (!event.id) continue;
 
 				const messageGroupId = getOrderId(event.payload) ?? 'outbox';
 				await executeCommand(
 					this.commandBus,
-					new DispatchOutboxEventCommand(event.uuid, messageGroupId),
+					new DispatchOutboxEventCommand(event.id, messageGroupId),
 				);
 				dispatched += 1;
 			}
