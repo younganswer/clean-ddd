@@ -1,5 +1,8 @@
 import { Controller, Get, NotFoundException, Query } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
+import { DataResponse } from '@/common/responses';
+import { ApiDataResponse, ApiErrorEnvelopeResponse } from '@/common/swagger';
+import { GraphResponseDto } from '@/bff/graph/presentation/swagger';
 
 import {
 	GetGraphBffQuery,
@@ -12,7 +15,11 @@ export class GraphBffController {
 	constructor(private readonly queryBus: QueryBus) {}
 
 	@Get()
-	async get(@Query() query: GetGraphBffQueryDto): Promise<GraphView> {
+	@ApiDataResponse({ model: GraphResponseDto })
+	@ApiErrorEnvelopeResponse({ status: 404 })
+	async get(
+		@Query() query: GetGraphBffQueryDto,
+	): Promise<DataResponse<GraphView>> {
 		const result = await this.queryBus.execute<
 			GetGraphBffQuery,
 			GraphView | null
@@ -31,6 +38,6 @@ export class GraphBffController {
 		);
 
 		if (!result) throw new NotFoundException('graph root not found');
-		return result;
+		return DataResponse.of(result);
 	}
 }

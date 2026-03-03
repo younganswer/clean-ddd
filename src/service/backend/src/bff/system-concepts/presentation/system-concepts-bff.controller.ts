@@ -1,5 +1,8 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
+import { DataResponse } from '@/common/responses';
+import { ApiDataResponse, ApiErrorEnvelopeResponse } from '@/common/swagger';
+import { SystemConceptsBootstrapResponseDto } from '@/bff/system-concepts/presentation/swagger';
 import { executeQuery } from '@/common/utils/cqrs-executor';
 import {
 	ListInventoryItemsQuery,
@@ -19,10 +22,12 @@ export class SystemConceptsBffController {
 	constructor(private readonly queryBus: QueryBus) {}
 
 	@Get('bootstrap')
+	@ApiDataResponse({ model: SystemConceptsBootstrapResponseDto })
+	@ApiErrorEnvelopeResponse({ status: 400 })
 	async bootstrap(
 		@Query('limit') limitRaw?: string,
 		@Query('page') pageRaw?: string,
-	): Promise<SystemConceptsBootstrapView> {
+	): Promise<DataResponse<SystemConceptsBootstrapView>> {
 		const limit = Math.min(Math.max(Number(limitRaw ?? 50) || 50, 1), 200);
 		const page = Math.max(1, Number(pageRaw ?? 1) || 1);
 
@@ -40,9 +45,9 @@ export class SystemConceptsBffController {
 			),
 		]);
 
-		return {
+		return DataResponse.of({
 			users,
 			inventoryItems,
-		};
+		});
 	}
 }

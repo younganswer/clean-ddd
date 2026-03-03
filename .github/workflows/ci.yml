@@ -9,21 +9,45 @@ permissions:
     contents: read
 
 jobs:
-    backend:
+    backend-lint:
         uses: ./.github/workflows/reusable-node-ci-task.yml
         with:
             run_script: |
                 pnpm --version
                 pnpm --filter api lint
+
+    backend-build:
+        needs: backend-lint
+        uses: ./.github/workflows/reusable-node-ci-task.yml
+        with:
+            run_script: |
                 pnpm --filter api typecheck
                 pnpm --filter api build
+
+    backend-test:
+        needs: backend-build
+        uses: ./.github/workflows/reusable-node-ci-task.yml
+        with:
+            run_script: |
                 pnpm --filter api test
 
-    frontend:
+    frontend-lint:
         uses: ./.github/workflows/reusable-node-ci-task.yml
         with:
             run_script: |
                 pnpm --filter admin lint
+
+    frontend-build:
+        needs: frontend-lint
+        uses: ./.github/workflows/reusable-node-ci-task.yml
+        with:
+            run_script: |
                 pnpm --filter admin typecheck
                 pnpm --filter admin build
+
+    frontend-test:
+        needs: frontend-build
+        uses: ./.github/workflows/reusable-node-ci-task.yml
+        with:
+            run_script: |
                 pnpm --filter admin test

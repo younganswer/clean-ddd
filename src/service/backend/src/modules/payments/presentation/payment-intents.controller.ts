@@ -7,7 +7,14 @@ import {
 	Query,
 } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
+import { DataResponse, ListResponse } from '@/common/responses';
+import {
+	ApiDataResponse,
+	ApiErrorEnvelopeResponse,
+	ApiListResponse,
+} from '@/common/swagger';
 import { executeQuery } from '@/common/utils/cqrs-executor';
+import { PaymentIntentResponseDto } from '@/modules/payments/presentation/swagger';
 import {
 	GetPaymentIntentQuery,
 	ListPaymentIntentsQuery,
@@ -32,12 +39,14 @@ export class PaymentIntentsController {
 	constructor(private readonly queryBus: QueryBus) {}
 
 	@Get()
+	@ApiListResponse({ model: PaymentIntentResponseDto })
+	@ApiErrorEnvelopeResponse({ status: 500 })
 	async list(
 		@Query('limit') limitRaw?: string,
-	): Promise<PaymentIntentView[]> {
+	): Promise<ListResponse<PaymentIntentView>> {
 		const limit = Math.min(50, Math.max(1, Number(limitRaw ?? '20')));
 
-		const result = await executeQuery(
+		const result = await executeQuery<PaymentIntentView[]>(
 			this.queryBus,
 			new ListPaymentIntentsQuery(limit),
 		);
@@ -48,14 +57,16 @@ export class PaymentIntentsController {
 			);
 		}
 
-		return result;
+		return ListResponse.from(result);
 	}
 
 	@Get(':paymentId')
+	@ApiDataResponse({ model: PaymentIntentResponseDto })
+	@ApiErrorEnvelopeResponse({ status: 404 })
 	async get(
 		@Param('paymentId') paymentId: string,
-	): Promise<PaymentIntentView> {
-		const result = await executeQuery(
+	): Promise<DataResponse<PaymentIntentView>> {
+		const result = await executeQuery<PaymentIntentView | null>(
 			this.queryBus,
 			new GetPaymentIntentQuery(paymentId),
 		);
@@ -70,6 +81,6 @@ export class PaymentIntentsController {
 			);
 		}
 
-		return result;
+		return DataResponse.of(result);
 	}
 }

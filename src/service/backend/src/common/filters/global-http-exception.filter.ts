@@ -6,19 +6,8 @@ import {
 	HttpStatus,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
+import { ErrorData, ErrorResponse } from '@/common/responses';
 import { BaseError, ErrorScope } from '@/shared/errors';
-
-type ProblemDetails = {
-	type: string;
-	title: string;
-	status: number;
-	detail: string;
-	instance: string;
-	code: string;
-	traceId: string;
-	timestamp: string;
-	errors?: unknown;
-};
 
 @Catch()
 export class GlobalHttpExceptionFilter implements ExceptionFilter {
@@ -35,7 +24,7 @@ export class GlobalHttpExceptionFilter implements ExceptionFilter {
 			).trim() || 'unknown';
 
 		const mapped = this.mapException(exception);
-		const body: ProblemDetails = {
+		const body: ErrorData = {
 			type: `about:blank#${mapped.code}`,
 			title: this.getTitle(mapped.status),
 			status: mapped.status,
@@ -50,7 +39,7 @@ export class GlobalHttpExceptionFilter implements ExceptionFilter {
 			body.errors = mapped.errors;
 		}
 
-		res.status(mapped.status).json(body);
+		res.status(mapped.status).json(ErrorResponse.from(body));
 	}
 
 	private mapException(exception: unknown): {
@@ -187,24 +176,17 @@ export class GlobalHttpExceptionFilter implements ExceptionFilter {
 	}
 
 	private codeFromStatus(status: number): string {
-		switch (status) {
-			case HttpStatus.BAD_REQUEST:
-				return 'BAD_REQUEST';
-			case HttpStatus.UNAUTHORIZED:
-				return 'UNAUTHORIZED';
-			case HttpStatus.FORBIDDEN:
-				return 'FORBIDDEN';
-			case HttpStatus.NOT_FOUND:
-				return 'NOT_FOUND';
-			case HttpStatus.CONFLICT:
-				return 'CONFLICT';
-			case HttpStatus.UNPROCESSABLE_ENTITY:
-				return 'UNPROCESSABLE_ENTITY';
-			case HttpStatus.SERVICE_UNAVAILABLE:
-				return 'SERVICE_UNAVAILABLE';
-			default:
-				return 'HTTP_EXCEPTION';
-		}
+		const codeByStatus: Record<number, string> = {
+			400: 'BAD_REQUEST',
+			401: 'UNAUTHORIZED',
+			403: 'FORBIDDEN',
+			404: 'NOT_FOUND',
+			409: 'CONFLICT',
+			422: 'UNPROCESSABLE_ENTITY',
+			503: 'SERVICE_UNAVAILABLE',
+		};
+
+		return codeByStatus[status] ?? 'HTTP_EXCEPTION';
 	}
 
 	private getTitle(status: number): string {
