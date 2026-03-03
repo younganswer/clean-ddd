@@ -15,7 +15,7 @@ export class PaymentIntent extends BaseEntity {
 		super(id);
 	}
 
-	static createPending(input: {
+	static create(input: {
 		orderId: string;
 		amount: number;
 		currency: string;

@@ -24,7 +24,7 @@ export class CreateShipmentForOrderHandler implements ICommandHandler<CreateShip
 
 		return await this.uow.transaction(async () => {
 			const shipment =
-				await this.shipmentCreationDomainService.createForOrderIdempotent(
+				await this.shipmentCreationDomainService.createIdempotent(
 					orderId,
 				);
 

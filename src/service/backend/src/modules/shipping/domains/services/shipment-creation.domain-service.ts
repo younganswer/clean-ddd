@@ -14,7 +14,7 @@ export class ShipmentCreationDomainService {
 		private readonly shipmentRepository: IShipmentRepository,
 	) {}
 
-	async createForOrderIdempotent(orderId: string): Promise<Shipment> {
+	async createIdempotent(orderId: string): Promise<Shipment> {
 		const normalizedOrderId = String(orderId ?? '').trim();
 		if (!normalizedOrderId) {
 			throw DomainErrorFactory.create(
@@ -28,7 +28,7 @@ export class ShipmentCreationDomainService {
 			return existing;
 		}
 
-		const shipment = Shipment.createForOrder({
+		const shipment = Shipment.create({
 			orderId: normalizedOrderId,
 		});
 		await this.shipmentRepository.persist(shipment);

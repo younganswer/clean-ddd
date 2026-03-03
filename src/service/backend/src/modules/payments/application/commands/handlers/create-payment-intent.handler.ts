@@ -53,7 +53,7 @@ export class CreatePaymentIntentHandler implements ICommandHandler<CreatePayment
 			);
 			assertOrderView(order);
 
-			const payment = PaymentIntent.createPending({
+			const payment = PaymentIntent.create({
 				orderId,
 				amount: order.amount,
 				currency: order.currency,

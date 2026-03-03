@@ -20,7 +20,7 @@ export class InventoryReservationDomainService {
 		private readonly reservations: IInventoryReservationRepository,
 	) {}
 
-	async reserveForOrder(input: {
+	async reserve(input: {
 		orderId: string;
 		items: Array<{ sku: string; quantity: number }>;
 	}): Promise<void> {

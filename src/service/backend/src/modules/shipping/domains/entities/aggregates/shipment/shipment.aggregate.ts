@@ -11,7 +11,7 @@ export class Shipment extends BaseEntity {
 		super(id);
 	}
 
-	static createForOrder(input: { orderId: string; now?: Date }): Shipment {
+	static create(input: { orderId: string; now?: Date }): Shipment {
 		return new Shipment(
 			randomUUID(),
 			input.orderId,

@@ -23,7 +23,7 @@ export class ReserveInventoryForOrderHandler implements ICommandHandler<ReserveI
 		}
 
 		await this.uow.transaction(async () => {
-			await this.inventoryReservationDomainService.reserveForOrder({
+			await this.inventoryReservationDomainService.reserve({
 				orderId,
 				items: command.input.items ?? [],
 			});
