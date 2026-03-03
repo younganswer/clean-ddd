@@ -60,6 +60,37 @@ const toQueryString = (
 	return query.toString();
 };
 
+type ApiEnvelope<TData> = {
+	success: boolean;
+	data: TData;
+};
+
+const isRecord = (value: unknown): value is Record<string, unknown> => {
+	return typeof value === "object" && value !== null;
+};
+
+const isEnvelope = (value: unknown): value is ApiEnvelope<unknown> => {
+	return (
+		isRecord(value) && typeof value.success === "boolean" && "data" in value
+	);
+};
+
+const unwrapApiResponse = <T>(value: unknown, path: string): T => {
+	if (!isEnvelope(value)) {
+		return value as T;
+	}
+
+	if (value.success) {
+		return value.data as T;
+	}
+
+	const detail =
+		isRecord(value.data) && typeof value.data.detail === "string"
+			? value.data.detail
+			: "API response success=false";
+	throw new Error(`${detail} (${path})`);
+};
+
 const http = async <T>(path: string, init?: RequestInit): Promise<T> => {
 	const url = `${requireBaseUrl()}${toApiPath(path)}`;
 	const method = (init?.method ?? "GET").toUpperCase();
@@ -95,11 +126,14 @@ const http = async <T>(path: string, init?: RequestInit): Promise<T> => {
 		return null as T;
 	}
 
+	let parsed: unknown;
 	try {
-		return JSON.parse(text) as T;
+		parsed = JSON.parse(text);
 	} catch {
 		throw new Error(`Invalid JSON response for ${path}`);
 	}
+
+	return unwrapApiResponse<T>(parsed, path);
 };
 
 export type Paginated<TItem> = {

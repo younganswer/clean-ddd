@@ -30,7 +30,7 @@ export interface paths {
 						[name: string]: unknown;
 					};
 					content: {
-						"application/json": components["schemas"]["UserProfile"];
+						"application/json": components["schemas"]["UserProfileEnvelope"];
 					};
 				};
 			};
@@ -60,7 +60,7 @@ export interface paths {
 						[name: string]: unknown;
 					};
 					content: {
-						"application/json": components["schemas"]["UpdateMyAvatarResponse"];
+						"application/json": components["schemas"]["UpdateMyAvatarResponseEnvelope"];
 					};
 				};
 			};
@@ -93,7 +93,7 @@ export interface paths {
 						[name: string]: unknown;
 					};
 					content: {
-						"application/json": components["schemas"]["PaginatedUserProfiles"];
+						"application/json": components["schemas"]["PaginatedUserProfilesEnvelope"];
 					};
 				};
 			};
@@ -132,7 +132,7 @@ export interface paths {
 						[name: string]: unknown;
 					};
 					content: {
-						"application/json": components["schemas"]["PaginatedOrders"];
+						"application/json": components["schemas"]["PaginatedOrdersEnvelope"];
 					};
 				};
 			};
@@ -152,13 +152,13 @@ export interface paths {
 				};
 			};
 			responses: {
-				/** @description OK */
-				200: {
+				/** @description Created */
+				201: {
 					headers: {
 						[name: string]: unknown;
 					};
 					content: {
-						"application/json": components["schemas"]["CreateOrderResponse"];
+						"application/json": components["schemas"]["CreateOrderResponseEnvelope"];
 					};
 				};
 			};
@@ -194,7 +194,7 @@ export interface paths {
 						[name: string]: unknown;
 					};
 					content: {
-						"application/json": components["schemas"]["OrderSummary"];
+						"application/json": components["schemas"]["OrderSummaryEnvelope"];
 					};
 				};
 			};
@@ -232,13 +232,13 @@ export interface paths {
 				};
 			};
 			responses: {
-				/** @description OK */
-				200: {
+				/** @description Created */
+				201: {
 					headers: {
 						[name: string]: unknown;
 					};
 					content: {
-						"application/json": components["schemas"]["CreatePaymentIntentResponse"];
+						"application/json": components["schemas"]["CreatePaymentIntentResponseEnvelope"];
 					};
 				};
 			};
@@ -274,7 +274,7 @@ export interface paths {
 						[name: string]: unknown;
 					};
 					content: {
-						"application/json": components["schemas"]["PaymentIntent"][];
+						"application/json": components["schemas"]["PaymentIntentListEnvelope"];
 					};
 				};
 			};
@@ -312,7 +312,7 @@ export interface paths {
 						[name: string]: unknown;
 					};
 					content: {
-						"application/json": components["schemas"]["PaymentIntent"];
+						"application/json": components["schemas"]["PaymentIntentEnvelope"];
 					};
 				};
 			};
@@ -351,7 +351,7 @@ export interface paths {
 						[name: string]: unknown;
 					};
 					content: {
-						"application/json": components["schemas"]["PaginatedShipments"];
+						"application/json": components["schemas"]["PaginatedShipmentsEnvelope"];
 					};
 				};
 			};
@@ -389,9 +389,7 @@ export interface paths {
 						[name: string]: unknown;
 					};
 					content: {
-						"application/json":
-							| components["schemas"]["ShipmentSummary"]
-							| null;
+						"application/json": components["schemas"]["ShipmentSummaryNullableEnvelope"];
 					};
 				};
 			};
@@ -429,9 +427,7 @@ export interface paths {
 						[name: string]: unknown;
 					};
 					content: {
-						"application/json":
-							| components["schemas"]["ShipmentSummary"]
-							| null;
+						"application/json": components["schemas"]["ShipmentSummaryNullableEnvelope"];
 					};
 				};
 			};
@@ -470,7 +466,7 @@ export interface paths {
 						[name: string]: unknown;
 					};
 					content: {
-						"application/json": components["schemas"]["PaginatedInventoryItems"];
+						"application/json": components["schemas"]["PaginatedInventoryItemsEnvelope"];
 					};
 				};
 			};
@@ -508,9 +504,7 @@ export interface paths {
 						[name: string]: unknown;
 					};
 					content: {
-						"application/json":
-							| components["schemas"]["InventoryItem"]
-							| null;
+						"application/json": components["schemas"]["InventoryItemNullableEnvelope"];
 					};
 				};
 			};
@@ -548,7 +542,7 @@ export interface paths {
 						[name: string]: unknown;
 					};
 					content: {
-						"application/json": components["schemas"]["InventoryReservation"][];
+						"application/json": components["schemas"]["InventoryReservationListEnvelope"];
 					};
 				};
 			};
@@ -565,6 +559,9 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
 	schemas: {
+		SuccessEnvelope: {
+			success: boolean;
+		};
 		PaginatedMeta: {
 			page: number;
 			limit: number;
@@ -588,8 +585,17 @@ export interface components {
 			/** Format: uri */
 			avatarUrl: string;
 		};
+		UserProfileEnvelope: components["schemas"]["SuccessEnvelope"] & {
+			data: components["schemas"]["UserProfile"];
+		};
+		UpdateMyAvatarResponseEnvelope: components["schemas"]["SuccessEnvelope"] & {
+			data: components["schemas"]["UpdateMyAvatarResponse"];
+		};
 		PaginatedUserProfiles: components["schemas"]["PaginatedMeta"] & {
 			items: components["schemas"]["UserProfile"][];
+		};
+		PaginatedUserProfilesEnvelope: components["schemas"]["SuccessEnvelope"] & {
+			data: components["schemas"]["PaginatedUserProfiles"];
 		};
 		OrderItem: {
 			sku: string;
@@ -604,6 +610,9 @@ export interface components {
 		};
 		CreateOrderResponse: {
 			orderId: string;
+		};
+		CreateOrderResponseEnvelope: components["schemas"]["SuccessEnvelope"] & {
+			data: components["schemas"]["CreateOrderResponse"];
 		};
 		OrderSummary: {
 			orderId: string;
@@ -623,6 +632,12 @@ export interface components {
 		PaginatedOrders: components["schemas"]["PaginatedMeta"] & {
 			items: components["schemas"]["OrderSummary"][];
 		};
+		PaginatedOrdersEnvelope: components["schemas"]["SuccessEnvelope"] & {
+			data: components["schemas"]["PaginatedOrders"];
+		};
+		OrderSummaryEnvelope: components["schemas"]["SuccessEnvelope"] & {
+			data: components["schemas"]["OrderSummary"];
+		};
 		CreatePaymentIntentRequest: {
 			/** @enum {string} */
 			simulateOutcome?: "SUCCEEDED" | "FAILED";
@@ -638,6 +653,9 @@ export interface components {
 				outboxId: string;
 			};
 		};
+		CreatePaymentIntentResponseEnvelope: components["schemas"]["SuccessEnvelope"] & {
+			data: components["schemas"]["CreatePaymentIntentResponse"];
+		};
 		PaymentIntent: {
 			paymentId: string;
 			orderId: string;
@@ -651,6 +669,12 @@ export interface components {
 			/** Format: date-time */
 			updatedAt: string;
 		};
+		PaymentIntentEnvelope: components["schemas"]["SuccessEnvelope"] & {
+			data: components["schemas"]["PaymentIntent"];
+		};
+		PaymentIntentListEnvelope: components["schemas"]["SuccessEnvelope"] & {
+			data: components["schemas"]["PaymentIntent"][];
+		};
 		ShipmentSummary: {
 			shipmentId: string;
 			orderId: string;
@@ -663,6 +687,12 @@ export interface components {
 		};
 		PaginatedShipments: components["schemas"]["PaginatedMeta"] & {
 			items: components["schemas"]["ShipmentSummary"][];
+		};
+		PaginatedShipmentsEnvelope: components["schemas"]["SuccessEnvelope"] & {
+			data: components["schemas"]["PaginatedShipments"];
+		};
+		ShipmentSummaryNullableEnvelope: components["schemas"]["SuccessEnvelope"] & {
+			data: components["schemas"]["ShipmentSummary"] | null;
 		};
 		Money: {
 			/** @enum {string} */
@@ -690,6 +720,15 @@ export interface components {
 		};
 		PaginatedInventoryItems: components["schemas"]["PaginatedMeta"] & {
 			items: components["schemas"]["InventoryItem"][];
+		};
+		PaginatedInventoryItemsEnvelope: components["schemas"]["SuccessEnvelope"] & {
+			data: components["schemas"]["PaginatedInventoryItems"];
+		};
+		InventoryItemNullableEnvelope: components["schemas"]["SuccessEnvelope"] & {
+			data: components["schemas"]["InventoryItem"] | null;
+		};
+		InventoryReservationListEnvelope: components["schemas"]["SuccessEnvelope"] & {
+			data: components["schemas"]["InventoryReservation"][];
 		};
 	};
 	responses: never;
