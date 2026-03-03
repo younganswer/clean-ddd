@@ -7,7 +7,6 @@ import {
 	ApiListResponse,
 	ApiPageResponse,
 } from '@/common/swagger';
-import { executeQuery } from '@/common/utils/cqrs-executor';
 import {
 	InventoryItemResponseDto,
 	InventoryReservationResponseDto,
@@ -34,10 +33,10 @@ export class InventoryController {
 	): Promise<PageResponse<InventoryItemView>> {
 		const limit = Math.min(Math.max(Number(limitRaw ?? 50) || 50, 1), 200);
 		const page = Math.max(1, Number(pageRaw ?? 1) || 1);
-		const result = await executeQuery<PaginatedView<InventoryItemView>>(
-			this.queryBus,
-			new ListInventoryItemsQuery(limit, page),
-		);
+		const result = await this.queryBus.execute<
+			ListInventoryItemsQuery,
+			PaginatedView<InventoryItemView>
+		>(new ListInventoryItemsQuery(limit, page));
 		return PageResponse.from(result);
 	}
 
@@ -47,10 +46,10 @@ export class InventoryController {
 	async getItem(
 		@Param('sku') sku: string,
 	): Promise<DataResponse<InventoryItemView | null>> {
-		const result = await executeQuery<InventoryItemView | null>(
-			this.queryBus,
-			new GetInventoryItemQuery(sku),
-		);
+		const result = await this.queryBus.execute<
+			GetInventoryItemQuery,
+			InventoryItemView | null
+		>(new GetInventoryItemQuery(sku));
 		return DataResponse.of(result);
 	}
 
@@ -62,10 +61,10 @@ export class InventoryController {
 	): Promise<ListResponse<InventoryReservationView>> {
 		const id = String(orderId ?? '');
 		if (!id) return ListResponse.from([]);
-		const result = await executeQuery<InventoryReservationView[]>(
-			this.queryBus,
-			new ListInventoryReservationsQuery(id),
-		);
+		const result = await this.queryBus.execute<
+			ListInventoryReservationsQuery,
+			InventoryReservationView[]
+		>(new ListInventoryReservationsQuery(id));
 		return ListResponse.from(result);
 	}
 }

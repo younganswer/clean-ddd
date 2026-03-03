@@ -5,7 +5,6 @@ import {
 	ICommandHandler,
 	QueryBus,
 } from '@nestjs/cqrs';
-import { executeCommand, executeQuery } from '@/common/utils/cqrs-executor';
 import { OutboxProducer } from '@/modules/outbox/application/outbox.producer';
 import { IPaymentRepositorySymbol } from '@/modules/payments/domains/repositories/i.payment.repository';
 import type { IPaymentRepository } from '@/modules/payments/domains/repositories/i.payment.repository';
@@ -47,8 +46,7 @@ export class CreatePaymentIntentHandler implements ICommandHandler<CreatePayment
 				);
 			}
 
-			const order = await executeQuery(
-				this.queryBus,
+			const order = await this.queryBus.execute(
 				new GetOrderQuery(orderId),
 			);
 			assertOrderView(order);
@@ -60,8 +58,7 @@ export class CreatePaymentIntentHandler implements ICommandHandler<CreatePayment
 			});
 			await this.paymentRepository.persist(payment);
 
-			await executeCommand(
-				this.commandBus,
+			await this.commandBus.execute(
 				new AttachPaymentToOrderCommand({
 					orderId,
 					paymentId: payment.id,

@@ -26,9 +26,8 @@ type ApiSuccessResponseOptions = {
 	status?: number;
 };
 
-type ApiModelOrSchema = {
-	model?: Type<unknown>;
-	schema?: unknown;
+type ApiResponseModelOptions = {
+	model: Type<unknown>;
 	nullable?: boolean;
 };
 
@@ -52,23 +51,15 @@ class PaginatedDataSchema {
 	hasNext!: boolean;
 }
 
-const resolveDataSchema = (options: ApiModelOrSchema): OpenApiSchema => {
-	if (options.model) {
-		const model = options.model as Parameters<typeof getSchemaPath>[0];
-		if (options.nullable) {
-			return {
-				allOf: [{ $ref: getSchemaPath(model) }],
-				nullable: true,
-			};
-		}
-		return { $ref: getSchemaPath(model) };
+const resolveDataSchema = (options: ApiResponseModelOptions): OpenApiSchema => {
+	const model = options.model as Parameters<typeof getSchemaPath>[0];
+	if (options.nullable) {
+		return {
+			allOf: [{ $ref: getSchemaPath(model) }],
+			nullable: true,
+		};
 	}
-
-	if (options.schema) {
-		return options.schema as OpenApiSchema;
-	}
-
-	return { type: 'object' };
+	return { $ref: getSchemaPath(model) };
 };
 
 const resolveResponseDecorator = (
@@ -90,12 +81,11 @@ const resolveResponseDecorator = (
 };
 
 export const ApiDataResponse = (
-	data: ApiModelOrSchema,
+	data: ApiResponseModelOptions,
 	options: ApiSuccessResponseOptions = {},
 ): MethodDecorator => {
 	const status = options.status ?? 200;
-	const models: Type<unknown>[] = [DataResponse];
-	if (data.model) models.push(data.model);
+	const models: Type<unknown>[] = [DataResponse, data.model];
 
 	return applyDecorators(
 		ApiExtraModels(...models),
@@ -126,12 +116,11 @@ export const ApiMessageResponse = (
 };
 
 export const ApiListResponse = (
-	item: ApiModelOrSchema,
+	item: ApiResponseModelOptions,
 	options: ApiSuccessResponseOptions = {},
 ): MethodDecorator => {
 	const status = options.status ?? 200;
-	const models: Type<unknown>[] = [ListResponse];
-	if (item.model) models.push(item.model);
+	const models: Type<unknown>[] = [ListResponse, item.model];
 
 	const itemSchema = resolveDataSchema(item);
 
@@ -148,12 +137,15 @@ export const ApiListResponse = (
 };
 
 export const ApiPageResponse = (
-	item: ApiModelOrSchema,
+	item: ApiResponseModelOptions,
 	options: ApiSuccessResponseOptions = {},
 ): MethodDecorator => {
 	const status = options.status ?? 200;
-	const models: Type<unknown>[] = [PageResponse, PaginatedDataSchema];
-	if (item.model) models.push(item.model);
+	const models: Type<unknown>[] = [
+		PageResponse,
+		PaginatedDataSchema,
+		item.model,
+	];
 
 	const itemSchema = resolveDataSchema(item);
 
