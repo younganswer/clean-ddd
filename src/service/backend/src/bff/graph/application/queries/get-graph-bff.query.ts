@@ -1,3 +1,5 @@
+import { Query } from '@nestjs/cqrs';
+
 export type GraphRootType = 'USER' | 'ORDER' | 'SHIPMENT' | 'PAYMENT';
 
 export type GraphNodeType = 'USER' | 'ORDER' | 'SHIPMENT' | 'PAYMENT' | 'EVENT';
@@ -26,7 +28,7 @@ export type GraphView = {
 	truncated?: boolean;
 };
 
-export class GetGraphBffQuery {
+export class GetGraphBffQuery extends Query<GraphView | null> {
 	constructor(
 		public readonly input: {
 			rootType: GraphRootType;
@@ -36,5 +38,7 @@ export class GetGraphBffQuery {
 			maxNodes?: number;
 			includeEvents?: boolean;
 		},
-	) {}
+	) {
+		super();
+	}
 }

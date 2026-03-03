@@ -3,7 +3,6 @@ import { QueryBus } from '@nestjs/cqrs';
 import { DataResponse } from '@/common/responses';
 import { ApiDataResponse, ApiErrorEnvelopeResponse } from '@/common/swagger';
 import { SystemConceptsBootstrapResponseDto } from '@/bff/system-concepts/presentation/swagger';
-import { executeQuery } from '@/common/utils/cqrs-executor';
 import {
 	ListInventoryItemsQuery,
 	type InventoryItemView,
@@ -32,17 +31,19 @@ export class SystemConceptsBffController {
 		const page = Math.max(1, Number(pageRaw ?? 1) || 1);
 
 		const [users, inventoryItems] = await Promise.all([
-			executeQuery<PaginatedView<UserProfileView>>(
-				this.queryBus,
+			this.queryBus.execute<
+				ListUserProfilesQuery,
+				PaginatedView<UserProfileView>
+			>(
 				new ListUserProfilesQuery({
 					limit,
 					page,
 				}),
 			),
-			executeQuery<PaginatedView<InventoryItemView>>(
-				this.queryBus,
-				new ListInventoryItemsQuery(limit, page),
-			),
+			this.queryBus.execute<
+				ListInventoryItemsQuery,
+				PaginatedView<InventoryItemView>
+			>(new ListInventoryItemsQuery(limit, page)),
 		]);
 
 		return DataResponse.of({

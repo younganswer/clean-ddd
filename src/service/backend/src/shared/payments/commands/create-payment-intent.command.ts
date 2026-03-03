@@ -1,3 +1,4 @@
+import { Command } from '@nestjs/cqrs';
 import type { PaymentStatus } from '@/shared/payments/enums/payment-status.enum';
 
 export type CreatePaymentIntentResult = {
@@ -10,12 +11,14 @@ export type CreatePaymentIntentResult = {
 	};
 };
 
-export class CreatePaymentIntentCommand {
+export class CreatePaymentIntentCommand extends Command<CreatePaymentIntentResult> {
 	constructor(
 		public readonly input: {
 			orderId: string;
 			simulateOutcome?: 'SUCCEEDED' | 'FAILED';
 			simulateDelaySeconds?: number;
 		},
-	) {}
+	) {
+		super();
+	}
 }

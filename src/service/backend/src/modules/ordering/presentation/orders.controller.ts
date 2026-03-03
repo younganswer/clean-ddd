@@ -14,7 +14,6 @@ import {
 	ApiErrorEnvelopeResponse,
 	ApiPageResponse,
 } from '@/common/swagger';
-import { executeCommand, executeQuery } from '@/common/utils/cqrs-executor';
 import { CreateOrderCommand } from '@/shared/ordering/commands/create-order.command';
 import { GetOrderQuery } from '@/shared/ordering/queries/get-order.query';
 import { ListOrdersQuery } from '@/shared/ordering/queries/list-orders.query';
@@ -40,8 +39,7 @@ export class OrdersController {
 	async create(
 		@Body() body: CreateOrderRequest,
 	): Promise<DataResponse<{ orderId: string }>> {
-		const result = await executeCommand<{ orderId: string }>(
-			this.commandBus,
+		const result = await this.commandBus.execute<{ orderId: string }>(
 			new CreateOrderCommand(body),
 		);
 		return DataResponse.of(result);
@@ -56,8 +54,7 @@ export class OrdersController {
 	): Promise<PageResponse<OrderView>> {
 		const limit = Math.min(50, Math.max(1, Number(limitRaw ?? '20') || 20));
 		const page = Math.max(1, Number(pageRaw ?? '1') || 1);
-		const result = await executeQuery<PaginatedView<OrderView>>(
-			this.queryBus,
+		const result = await this.queryBus.execute<PaginatedView<OrderView>>(
 			new ListOrdersQuery(limit, page),
 		);
 		return PageResponse.from(result);
@@ -67,8 +64,7 @@ export class OrdersController {
 	@ApiDataResponse({ model: OrderResponseDto })
 	@ApiErrorEnvelopeResponse({ status: 404 })
 	async get(@Param('id') id: string): Promise<DataResponse<OrderView>> {
-		const order = await executeQuery<OrderView | null>(
-			this.queryBus,
+		const order = await this.queryBus.execute<OrderView | null>(
 			new GetOrderQuery(id),
 		);
 		if (!isOrderView(order)) throw new NotFoundException('order not found');

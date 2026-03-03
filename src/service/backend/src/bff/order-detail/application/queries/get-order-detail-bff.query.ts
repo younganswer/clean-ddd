@@ -1,3 +1,4 @@
+import { Query } from '@nestjs/cqrs';
 import type { InventoryReservationView } from '@/shared/readers/inventory/dto/inventory-reservation.view';
 import type { PaymentIntentView } from '@/shared/readers/payments/dto/payment-intent.view';
 import type { ShipmentView } from '@/shared/readers/shipping/dto/shipment.view';
@@ -11,7 +12,7 @@ export type OrderDetailBffView = {
 	partialErrors?: string[];
 };
 
-export class GetOrderDetailBffQuery {
+export class GetOrderDetailBffQuery extends Query<OrderDetailBffView | null> {
 	constructor(
 		public readonly input: {
 			orderId: string;
@@ -19,5 +20,7 @@ export class GetOrderDetailBffQuery {
 			includeShipment?: boolean;
 			includeReservations?: boolean;
 		},
-	) {}
+	) {
+		super();
+	}
 }

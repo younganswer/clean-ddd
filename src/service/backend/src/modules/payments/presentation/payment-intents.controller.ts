@@ -13,7 +13,6 @@ import {
 	ApiErrorEnvelopeResponse,
 	ApiListResponse,
 } from '@/common/swagger';
-import { executeQuery } from '@/common/utils/cqrs-executor';
 import { PaymentIntentResponseDto } from '@/modules/payments/presentation/swagger';
 import {
 	GetPaymentIntentQuery,
@@ -46,10 +45,10 @@ export class PaymentIntentsController {
 	): Promise<ListResponse<PaymentIntentView>> {
 		const limit = Math.min(50, Math.max(1, Number(limitRaw ?? '20')));
 
-		const result = await executeQuery<PaymentIntentView[]>(
-			this.queryBus,
-			new ListPaymentIntentsQuery(limit),
-		);
+		const result = await this.queryBus.execute<
+			ListPaymentIntentsQuery,
+			PaymentIntentView[]
+		>(new ListPaymentIntentsQuery(limit));
 
 		if (!Array.isArray(result) || !result.every(isPaymentIntentView)) {
 			throw new InternalServerErrorException(
@@ -66,10 +65,10 @@ export class PaymentIntentsController {
 	async get(
 		@Param('paymentId') paymentId: string,
 	): Promise<DataResponse<PaymentIntentView>> {
-		const result = await executeQuery<PaymentIntentView | null>(
-			this.queryBus,
-			new GetPaymentIntentQuery(paymentId),
-		);
+		const result = await this.queryBus.execute<
+			GetPaymentIntentQuery,
+			PaymentIntentView | null
+		>(new GetPaymentIntentQuery(paymentId));
 
 		if (result === null || result === undefined) {
 			throw new NotFoundException('payment intent not found');
