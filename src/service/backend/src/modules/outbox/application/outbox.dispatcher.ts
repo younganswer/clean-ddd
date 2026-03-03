@@ -1,7 +1,6 @@
 import { MikroORM, RequestContext } from '@mikro-orm/core';
 import { Injectable, Logger } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { executeCommand, executeQuery } from '@/common/utils/cqrs-executor';
 import { DispatchOutboxEventCommand } from '@/shared/outbox/commands/dispatch-outbox-event.command';
 import {
 	GetPendingOutboxEventsQuery,
@@ -20,10 +19,10 @@ export class OutboxDispatcher {
 
 	async dispatchPending(limit = 10, now = new Date()): Promise<number> {
 		return RequestContext.create(this.orm.em.fork(), async () => {
-			const result = await executeQuery<GetPendingOutboxEventsResult>(
-				this.queryBus,
-				new GetPendingOutboxEventsQuery(limit, now),
-			);
+			const result = await this.queryBus.execute<
+				GetPendingOutboxEventsQuery,
+				GetPendingOutboxEventsResult
+			>(new GetPendingOutboxEventsQuery(limit, now));
 
 			const getOrderId = (
 				payload: Record<string, unknown>,
@@ -39,8 +38,7 @@ export class OutboxDispatcher {
 				if (!event.id) continue;
 
 				const messageGroupId = getOrderId(event.payload) ?? 'outbox';
-				await executeCommand(
-					this.commandBus,
+				await this.commandBus.execute<DispatchOutboxEventCommand, void>(
 					new DispatchOutboxEventCommand(event.id, messageGroupId),
 				);
 				dispatched += 1;

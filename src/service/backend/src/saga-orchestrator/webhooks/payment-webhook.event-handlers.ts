@@ -5,7 +5,6 @@ import {
 	IEventHandler,
 	QueryBus,
 } from '@nestjs/cqrs';
-import { executeCommand, executeQuery } from '@/common/utils/cqrs-executor';
 import {
 	PaymentWebhookFailedEvent,
 	PaymentWebhookSucceededEvent,
@@ -62,16 +61,12 @@ export class PaymentWebhookSucceededHandler implements IEventHandler<PaymentWebh
 			payment.markSucceeded();
 			await this.paymentRepository.persist(payment);
 
-			const order = await executeQuery(
-				this.queryBus,
+			const order = await this.queryBus.execute(
 				new GetOrderQuery(orderId),
 			);
 			assertOrderView(order);
 
-			await executeCommand(
-				this.commandBus,
-				new MarkOrderPaidCommand(orderId),
-			);
+			await this.commandBus.execute(new MarkOrderPaidCommand(orderId));
 
 			const items: InventoryOrderItemPayload[] = order.items.length
 				? order.items.map(({ sku, quantity }) => ({

@@ -6,7 +6,6 @@ import {
 	ApiErrorEnvelopeResponse,
 	ApiPageResponse,
 } from '@/common/swagger';
-import { executeQuery } from '@/common/utils/cqrs-executor';
 import { ShipmentResponseDto } from '@/modules/shipping/presentation/swagger';
 import {
 	GetShipmentByOrderQuery,
@@ -29,10 +28,10 @@ export class ShipmentsController {
 	): Promise<PageResponse<ShipmentView>> {
 		const limit = Math.min(Math.max(Number(limitRaw ?? 20) || 20, 1), 100);
 		const page = Math.max(1, Number(pageRaw ?? 1) || 1);
-		const result = await executeQuery<PaginatedView<ShipmentView>>(
-			this.queryBus,
-			new ListShipmentsQuery(limit, page),
-		);
+		const result = await this.queryBus.execute<
+			ListShipmentsQuery,
+			PaginatedView<ShipmentView>
+		>(new ListShipmentsQuery(limit, page));
 		return PageResponse.from(result);
 	}
 
@@ -42,10 +41,10 @@ export class ShipmentsController {
 	async byOrder(
 		@Param('orderId') orderId: string,
 	): Promise<DataResponse<ShipmentView | null>> {
-		const result = await executeQuery<ShipmentView | null>(
-			this.queryBus,
-			new GetShipmentByOrderQuery(orderId),
-		);
+		const result = await this.queryBus.execute<
+			GetShipmentByOrderQuery,
+			ShipmentView | null
+		>(new GetShipmentByOrderQuery(orderId));
 		return DataResponse.of(result);
 	}
 
@@ -55,10 +54,10 @@ export class ShipmentsController {
 	async get(
 		@Param('id') id: string,
 	): Promise<DataResponse<ShipmentView | null>> {
-		const result = await executeQuery<ShipmentView | null>(
-			this.queryBus,
-			new GetShipmentQuery(id),
-		);
+		const result = await this.queryBus.execute<
+			GetShipmentQuery,
+			ShipmentView | null
+		>(new GetShipmentQuery(id));
 		return DataResponse.of(result);
 	}
 }

@@ -3,7 +3,6 @@ import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { AuthContextAccessor } from '@/common/context/auth-context';
 import { DataResponse } from '@/common/responses';
 import { ApiDataResponse, ApiErrorEnvelopeResponse } from '@/common/swagger';
-import { executeCommand, executeQuery } from '@/common/utils/cqrs-executor';
 import {
 	UserProfileResponseDto,
 	UpdateAvatarResultResponseDto,
@@ -26,10 +25,10 @@ export class MeController {
 	@ApiErrorEnvelopeResponse({ status: 404 })
 	async getMyProfile(): Promise<DataResponse<UserProfileView>> {
 		const userId = this.authContextAccessor.getOrAnonymous().actor.userId;
-		const result = await executeQuery<UserProfileView>(
-			this.queryBus,
-			new GetUserProfileQuery(userId),
-		);
+		const result = await this.queryBus.execute<
+			GetUserProfileQuery,
+			UserProfileView
+		>(new GetUserProfileQuery(userId));
 		return DataResponse.of(result);
 	}
 
@@ -40,13 +39,10 @@ export class MeController {
 		@Body() body: UpdateMyAvatarRequest,
 	): Promise<DataResponse<{ avatarId: string; avatarUrl: string }>> {
 		const userId = this.authContextAccessor.getOrAnonymous().actor.userId;
-		const result = await executeCommand<{
-			avatarId: string;
-			avatarUrl: string;
-		}>(
-			this.commandBus,
-			new UpdateMyAvatarCommand(userId, { avatarUrl: body.avatarUrl }),
-		);
+		const result = await this.commandBus.execute<
+			UpdateMyAvatarCommand,
+			{ avatarId: string; avatarUrl: string }
+		>(new UpdateMyAvatarCommand(userId, { avatarUrl: body.avatarUrl }));
 		return DataResponse.of(result);
 	}
 }
