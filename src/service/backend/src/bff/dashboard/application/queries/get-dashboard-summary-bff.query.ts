@@ -1,3 +1,4 @@
+import { Query } from '@nestjs/cqrs';
 import type { OrderView } from '@/shared/ordering/readers/order.view';
 import type { PaymentIntentView } from '@/shared/readers/payments/dto/payment-intent.view';
 import type { ShipmentView } from '@/shared/readers/shipping/dto/shipment.view';
@@ -11,6 +12,8 @@ export type DashboardSummaryBffView = {
 	partialErrors?: string[];
 };
 
-export class GetDashboardSummaryBffQuery {
-	constructor(public readonly input: { limit: number }) {}
+export class GetDashboardSummaryBffQuery extends Query<DashboardSummaryBffView> {
+	constructor(public readonly input: { limit: number }) {
+		super();
+	}
 }
