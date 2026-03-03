@@ -101,7 +101,10 @@ export const runDbSeedDynamoDbAvatars = async (): Promise<void> => {
 				TableName: tableName,
 				Key: { avatarId: item.avatarId },
 				UpdateExpression:
-					'SET _id = if_not_exists(_id, :_id), uuid = :uuid, userId = :userId, imageUrl = :imageUrl, updatedAt = :updatedAt, createdAt = if_not_exists(createdAt, :createdAt)',
+					'SET #id = if_not_exists(#id, :_id), uuid = :uuid, userId = :userId, imageUrl = :imageUrl, updatedAt = :updatedAt, createdAt = if_not_exists(createdAt, :createdAt)',
+				ExpressionAttributeNames: {
+					'#id': '_id',
+				},
 				ExpressionAttributeValues: {
 					':_id': item.objectId,
 					':uuid': item.avatarId,
