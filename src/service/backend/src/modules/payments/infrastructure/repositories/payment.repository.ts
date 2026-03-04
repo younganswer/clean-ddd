@@ -41,31 +41,30 @@ export class PaymentRepository implements IPaymentRepository {
 	}
 
 	async getById(
-		paymentId: string,
+		id: string,
 		options?: RepositoryGetByIdOptions,
 	): Promise<PaymentIntent> {
 		const em = this.emForContext();
 		const failHandler =
 			options?.failHandler ??
-			(() => {
-				throw ApplicationErrorFactory.create(
+			(() =>
+				ApplicationErrorFactory.create(
 					PAYMENTS_APPLICATION_ERRORS.PAYMENT_NOT_FOUND,
-					{ details: { paymentId } },
-				);
-			});
+					{ details: { id } },
+				));
 		const found = await em.findOneOrFail(
 			PaymentIntentSchema,
-			{ uuid: paymentId },
+			{ uuid: id },
 			{ failHandler },
 		);
 
 		return this.mapper.toDomain(found);
 	}
 
-	async findById(paymentId: string): Promise<PaymentIntent | null> {
+	async findById(id: string): Promise<PaymentIntent | null> {
 		const em = this.emForContext();
 		const found = await em.findOne(PaymentIntentSchema, {
-			uuid: paymentId,
+			uuid: id,
 		});
 		return found ? this.mapper.toDomain(found) : null;
 	}

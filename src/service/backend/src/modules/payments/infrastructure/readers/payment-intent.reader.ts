@@ -14,8 +14,8 @@ export class PaymentIntentReader implements IPaymentIntentReader {
 		private readonly paymentRepository: IPaymentRepository,
 	) {}
 
-	async findById(paymentId: string): Promise<PaymentIntentViewDto | null> {
-		const payment = await this.paymentRepository.findById(paymentId);
+	async findById(id: string): Promise<PaymentIntentViewDto | null> {
+		const payment = await this.paymentRepository.findById(id);
 		if (!payment) return null;
 		return this.toView(payment);
 	}

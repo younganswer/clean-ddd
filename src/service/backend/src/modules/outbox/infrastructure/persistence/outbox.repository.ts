@@ -42,7 +42,7 @@ export class OutboxRepository implements IOutboxRepository {
 	}
 
 	async getById(
-		uuid: string,
+		id: string,
 		options?: RepositoryGetByIdOptions,
 	): Promise<OutboxEvent> {
 		const em = this.emForContext();
@@ -51,20 +51,20 @@ export class OutboxRepository implements IOutboxRepository {
 			(() =>
 				InfrastructureErrorFactory.create(
 					OUTBOX_INFRA_ERRORS.OUTBOX_EVENT_NOT_FOUND,
-					{ details: { outboxId: uuid } },
+					{ details: { outboxId: id } },
 				));
 		const row = await em.findOneOrFail(
 			OutboxEventSchema,
-			{ uuid },
+			{ uuid: id },
 			{ failHandler },
 		);
 
 		return this.mapper.toDomain(row);
 	}
 
-	async findById(uuid: string): Promise<OutboxEvent | null> {
+	async findById(id: string): Promise<OutboxEvent | null> {
 		const em = this.emForContext();
-		const row = await em.findOne(OutboxEventSchema, { uuid });
+		const row = await em.findOne(OutboxEventSchema, { uuid: id });
 		return row ? this.mapper.toDomain(row) : null;
 	}
 

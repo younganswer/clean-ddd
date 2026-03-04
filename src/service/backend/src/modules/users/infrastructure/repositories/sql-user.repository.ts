@@ -39,30 +39,29 @@ export class SqlUserRepository implements IUserRepository {
 	}
 
 	async getById(
-		userId: string,
+		id: string,
 		options?: RepositoryGetByIdOptions,
 	): Promise<User> {
 		const em = this.emForContext();
 		const failHandler =
 			options?.failHandler ??
-			(() => {
-				throw ApplicationErrorFactory.create(
+			(() =>
+				ApplicationErrorFactory.create(
 					USER_APPLICATION_ERRORS.USER_NOT_FOUND,
-					{ details: { userId } },
-				);
-			});
+					{ details: { id } },
+				));
 		const user = await em.findOneOrFail(
 			UserSchema,
-			{ uuid: userId },
+			{ uuid: id },
 			{ failHandler },
 		);
 
 		return this.mapper.toDomain(user);
 	}
 
-	async findById(userId: string): Promise<User | null> {
+	async findById(id: string): Promise<User | null> {
 		const em = this.emForContext();
-		const user = await em.findOne(UserSchema, { uuid: userId });
+		const user = await em.findOne(UserSchema, { uuid: id });
 		return user ? this.mapper.toDomain(user) : null;
 	}
 

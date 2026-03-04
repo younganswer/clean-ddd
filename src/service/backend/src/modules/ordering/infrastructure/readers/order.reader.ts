@@ -14,8 +14,8 @@ export class OrderReader implements IOrderReader {
 		private readonly orderRepository: IOrderRepository,
 	) {}
 
-	async findById(orderId: string): Promise<OrderView | null> {
-		const order = await this.orderRepository.findById(orderId);
+	async findById(id: string): Promise<OrderView | null> {
+		const order = await this.orderRepository.findById(id);
 		if (!order) return null;
 
 		return this.toView(order);

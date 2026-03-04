@@ -39,30 +39,29 @@ export class OrderRepository implements IOrderRepository {
 	}
 
 	async getById(
-		orderId: string,
+		id: string,
 		options?: RepositoryGetByIdOptions,
 	): Promise<Order> {
 		const em = this.emForContext();
 		const failHandler =
 			options?.failHandler ??
-			(() => {
-				throw ApplicationErrorFactory.create(
+			(() =>
+				ApplicationErrorFactory.create(
 					ORDERING_APPLICATION_ERRORS.ORDER_NOT_FOUND,
-					{ details: { orderId } },
-				);
-			});
+					{ details: { id } },
+				));
 		const found = await em.findOneOrFail(
 			OrderSchema,
-			{ uuid: orderId },
+			{ uuid: id },
 			{ failHandler },
 		);
 
 		return this.mapper.toDomain(found);
 	}
 
-	async findById(orderId: string): Promise<Order | null> {
+	async findById(id: string): Promise<Order | null> {
 		const em = this.emForContext();
-		const found = await em.findOne(OrderSchema, { uuid: orderId });
+		const found = await em.findOne(OrderSchema, { uuid: id });
 		return found ? this.mapper.toDomain(found) : null;
 	}
 

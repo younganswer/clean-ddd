@@ -15,8 +15,8 @@ export class ShipmentReader implements IShipmentReader {
 		private readonly shipmentRepository: IShipmentRepository,
 	) {}
 
-	async findById(shipmentId: string): Promise<ShipmentView | null> {
-		const s = await this.shipmentRepository.findById(shipmentId);
+	async findById(id: string): Promise<ShipmentView | null> {
+		const s = await this.shipmentRepository.findById(id);
 		if (!s) return null;
 		return this.toView(s);
 	}
