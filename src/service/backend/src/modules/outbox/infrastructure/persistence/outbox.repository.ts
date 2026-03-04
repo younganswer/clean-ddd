@@ -66,6 +66,20 @@ export class OutboxRepository implements IOutboxRepository {
 		return rows.map((r) => this.mapper.toDomain(r));
 	}
 
+	async findRecent(limit: number): Promise<OutboxEvent[]> {
+		const em = this.emForContext();
+		const rows = await em.find(
+			OutboxEventSchema,
+			{},
+			{
+				limit,
+				orderBy: { id: 'desc' },
+			},
+		);
+
+		return rows.map((row) => this.mapper.toDomain(row));
+	}
+
 	async lock(uuid: string, lockedUntil: Date): Promise<boolean> {
 		const em = this.emForContext();
 		const now = new Date();

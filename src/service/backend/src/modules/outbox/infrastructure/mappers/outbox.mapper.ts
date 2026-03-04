@@ -11,6 +11,7 @@ export class OutboxMapper {
 			payload: schema.payload,
 			status: schema.status,
 			attempt: schema.attempt,
+			recordedAt: schema.createdAt,
 			nextAttemptAt: schema.nextAttemptAt,
 			lockedUntil: schema.lockedUntil,
 			publishedAt: schema.publishedAt,

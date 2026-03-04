@@ -7,6 +7,7 @@ export class OutboxEvent extends BaseEntity {
 		id: string,
 		private readonly _eventType: string,
 		private readonly _payload: Record<string, unknown>,
+		private readonly _recordedAt: Date,
 		private _status: OutboxEventStatus,
 		private _attempt: number,
 		private _nextAttemptAt: Date,
@@ -20,6 +21,7 @@ export class OutboxEvent extends BaseEntity {
 	static create(input: {
 		eventType: string;
 		payload: Record<string, unknown>;
+		recordedAt?: Date;
 		status?: OutboxEventStatus;
 		attempt?: number;
 		nextAttemptAt?: Date;
@@ -31,6 +33,7 @@ export class OutboxEvent extends BaseEntity {
 			randomUUID(),
 			input.eventType,
 			input.payload,
+			input.recordedAt ?? new Date(),
 			input.status ?? OutboxEventStatus.PENDING,
 			input.attempt ?? 0,
 			input.nextAttemptAt ?? new Date(),
@@ -44,6 +47,7 @@ export class OutboxEvent extends BaseEntity {
 		uuid: string;
 		eventType: string;
 		payload: Record<string, unknown>;
+		recordedAt: Date;
 		status: OutboxEventStatus;
 		attempt: number;
 		nextAttemptAt: Date;
@@ -55,6 +59,7 @@ export class OutboxEvent extends BaseEntity {
 			input.uuid,
 			input.eventType,
 			input.payload,
+			input.recordedAt,
 			input.status,
 			input.attempt,
 			input.nextAttemptAt,
@@ -92,6 +97,10 @@ export class OutboxEvent extends BaseEntity {
 		return this._payload;
 	}
 
+	get recordedAt(): Date {
+		return this._recordedAt;
+	}
+
 	get status(): OutboxEventStatus {
 		return this._status;
 	}
@@ -120,6 +129,7 @@ export class OutboxEvent extends BaseEntity {
 		outboxEventId: string;
 		eventType: string;
 		payload: Record<string, unknown>;
+		recordedAt: Date;
 		status: OutboxEventStatus;
 		attempt: number;
 		nextAttemptAt: Date;
@@ -131,6 +141,7 @@ export class OutboxEvent extends BaseEntity {
 			outboxEventId: this.id,
 			eventType: this._eventType,
 			payload: this._payload,
+			recordedAt: this._recordedAt,
 			status: this._status,
 			attempt: this._attempt,
 			nextAttemptAt: this._nextAttemptAt,

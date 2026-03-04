@@ -6,9 +6,9 @@ export interface OutboxEventDto {
 	payload: Record<string, unknown>;
 	status?: OutboxEventStatus;
 	attempt?: number;
+	recordedAt?: Date;
 	nextAttemptAt?: Date;
 	lockedUntil?: Date | null;
-	createdAt?: Date;
 	publishedAt?: Date | null;
 	lastError?: string | null;
 }

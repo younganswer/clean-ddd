@@ -5,6 +5,7 @@ export interface IOutboxRepository {
 	findById(uuid: string): Promise<OutboxEvent | null>;
 
 	findDispatchable(limit: number, now: Date): Promise<OutboxEvent[]>;
+	findRecent(limit: number): Promise<OutboxEvent[]>;
 	lock(uuid: string, lockedUntil: Date): Promise<boolean>;
 	unlock(uuid: string): Promise<void>;
 }

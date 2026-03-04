@@ -3,4 +3,6 @@ export * from '@/shared/outbox/domain/entities/outbox-event.entity';
 export * from '@/shared/outbox/domain/dto/outbox-event.dto';
 export * from '@/shared/outbox/domain/outbox-event-status';
 export * from '@/shared/outbox/commands/dispatch-outbox-event.command';
+export * from '@/shared/outbox/commands/dispatch-pending-outbox-events.command';
 export * from '@/shared/outbox/queries/get-pending-outbox-events.query';
+export * from '@/shared/outbox/queries/get-recent-outbox-events.query';

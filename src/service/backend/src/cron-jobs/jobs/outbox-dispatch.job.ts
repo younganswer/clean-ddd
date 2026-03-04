@@ -1,20 +1,23 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { CommandBus } from '@nestjs/cqrs';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { isOutboxCronEnabled } from '@/runtime-role';
-import { OutboxDispatcher } from '@/modules/outbox/application/outbox.dispatcher';
+import { DispatchPendingOutboxEventsCommand } from '@/shared/outbox';
 
 @Injectable()
 export class OutboxDispatchJob {
 	private readonly logger = new Logger(OutboxDispatchJob.name);
 
-	constructor(private readonly outboxDispatcher: OutboxDispatcher) {}
+	constructor(private readonly commandBus: CommandBus) {}
 
 	@Cron(CronExpression.EVERY_5_SECONDS)
 	async run(): Promise<void> {
 		if (!isOutboxCronEnabled()) return;
 
 		try {
-			await this.outboxDispatcher.dispatchPending(10, new Date());
+			await this.commandBus.execute<number>(
+				new DispatchPendingOutboxEventsCommand(10, new Date()),
+			);
 		} catch (error) {
 			this.logger.warn(`failed: ${String(error)}`);
 		}

@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/postgresql';
 import { Injectable } from '@nestjs/common';
 import { IQueryHandler, QueryBus, QueryHandler } from '@nestjs/cqrs';
 
@@ -15,8 +14,10 @@ import type { PaymentIntentView } from '@/shared/readers/payments/dto/payment-in
 
 import { GetUserProfileQuery } from '@/shared/users/queries/get-user-profile.query';
 import type { UserProfileView } from '@/shared/users/readers/user-profile.view';
-
-import { OutboxEventSchema } from '@/modules/outbox/infrastructure/persistence/outbox.schema';
+import {
+	GetRecentOutboxEventsQuery,
+	GetRecentOutboxEventsResult,
+} from '@/shared/outbox';
 
 import {
 	GetGraphBffQuery,
@@ -58,10 +59,7 @@ const normalizeId = (value: unknown): string => {
 @QueryHandler(GetGraphBffQuery)
 @Injectable()
 export class GetGraphBffHandler implements IQueryHandler<GetGraphBffQuery> {
-	constructor(
-		private readonly queryBus: QueryBus,
-		private readonly em: EntityManager,
-	) {}
+	constructor(private readonly queryBus: QueryBus) {}
 
 	async execute(query: GetGraphBffQuery): Promise<GraphView | null> {
 		const rootType = query.input.rootType;
@@ -559,16 +557,12 @@ export class GetGraphBffHandler implements IQueryHandler<GetGraphBffQuery> {
 			const orderIds = new Set(knownOrders);
 			const paymentIds = new Set(knownPayments);
 
-			const recent = await this.em.find(
-				OutboxEventSchema,
-				{},
-				{
-					limit: maxEvents,
-					orderBy: { createdAt: 'desc' },
-				},
-			);
+			const recent =
+				await this.queryBus.execute<GetRecentOutboxEventsResult>(
+					new GetRecentOutboxEventsQuery(maxEvents),
+				);
 
-			for (const row of recent) {
+			for (const row of recent.events) {
 				const eventType = String(row.eventType ?? '');
 				if (eventType.startsWith('INVENTORY.')) continue;
 
@@ -587,7 +581,7 @@ export class GetGraphBffHandler implements IQueryHandler<GetGraphBffQuery> {
 					(paymentId && paymentIds.has(paymentId));
 				if (!matches) continue;
 
-				const eid = row.uuid;
+				const eid = row.outboxId;
 				const eventNodeId = nodeId('EVENT', eid);
 				addNode({
 					id: eventNodeId,
@@ -596,9 +590,9 @@ export class GetGraphBffHandler implements IQueryHandler<GetGraphBffQuery> {
 					data: {
 						eventType,
 						payload,
-						createdAt:
-							row.createdAt?.toISOString?.() ??
-							String(row.createdAt),
+						recordedAt:
+							row.recordedAt?.toISOString?.() ??
+							String(row.recordedAt),
 						status: row.status,
 					},
 				});
