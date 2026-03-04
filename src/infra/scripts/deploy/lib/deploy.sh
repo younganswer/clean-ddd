@@ -42,7 +42,6 @@ deploy_backend() {
       AvatarRepositoryBackend="$AVATAR_REPOSITORY_BACKEND" \
       DynamoDbAvatarTable="$DYNAMODB_AVATAR_TABLE" \
       CloudFrontAllowedCidrs="$API_CLOUDFRONT_ALLOWED_CIDRS" \
-      PrivateApiVpceIds="$PRIVATE_API_VPCE_IDS" \
       EdgeOriginVerifyHeaderValue="$EDGE_ORIGIN_VERIFY_HEADER_VALUE"
 }
 

@@ -64,24 +64,6 @@ PY
     done
   fi
 
-  if [[ "$PRIVATE_API_VPCE_IDS" == *" "* ]]; then
-    echo "PRIVATE_API_VPCE_IDS must be comma-separated without spaces"
-    exit 1
-  fi
-
-  IFS=',' read -r -a vpce_ids <<< "$PRIVATE_API_VPCE_IDS"
-  if [[ "${#vpce_ids[@]}" -eq 0 ]]; then
-    echo "PRIVATE_API_VPCE_IDS must contain at least one vpce id"
-    exit 1
-  fi
-
-  for vpce_id in "${vpce_ids[@]}"; do
-    if [[ ! "$vpce_id" =~ ^vpce-[0-9a-f]+$ ]]; then
-      echo "invalid VPC endpoint id in PRIVATE_API_VPCE_IDS: $vpce_id"
-      exit 1
-    fi
-  done
-
   if [[ ${#EDGE_ORIGIN_VERIFY_HEADER_VALUE} -lt 24 ]]; then
     echo "EDGE_ORIGIN_VERIFY_HEADER_VALUE is too short (min: 24 chars)"
     exit 1

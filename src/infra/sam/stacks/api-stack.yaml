@@ -1,277 +1,223 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
-Description: API resources for clean-ddd (private + edge)
+Description: API resources for clean-ddd (edge)
 
 Globals:
-    Function:
-        MemorySize: 512
-        Timeout: 10
-        Tags:
-            Project: !Ref ProjectName
-            Environment: !Ref EnvironmentName
-        Architectures:
-            - x86_64
-        Environment:
-            Variables:
-                DATABASE_URL_POOLED: !Ref DatabaseUrlPooled
-                DATABASE_URL_DIRECT: !Ref DatabaseUrlDirect
-                PGSSLMODE: require
-                DB_FORCE_SSL: true
-                SQS_OUTBOX_QUEUE_URL: !Ref OutboxQueueUrl
-                AVATAR_REPOSITORY_BACKEND: !Ref AvatarRepositoryBackend
-                DYNAMODB_AVATAR_TABLE: !Ref DynamoDbAvatarTable
+  Function:
+    MemorySize: 512
+    Timeout: 10
+    Tags:
+      Project: !Ref ProjectName
+      Environment: !Ref EnvironmentName
+    Architectures:
+      - x86_64
+    Environment:
+      Variables:
+        DATABASE_URL_POOLED: !Ref DatabaseUrlPooled
+        DATABASE_URL_DIRECT: !Ref DatabaseUrlDirect
+        PGSSLMODE: require
+        DB_FORCE_SSL: true
+        SQS_OUTBOX_QUEUE_URL: !Ref OutboxQueueUrl
+        AVATAR_REPOSITORY_BACKEND: !Ref AvatarRepositoryBackend
+        DYNAMODB_AVATAR_TABLE: !Ref DynamoDbAvatarTable
 
 Parameters:
-    ProjectName:
-        Type: String
-    EnvironmentName:
-        Type: String
-    DatabaseUrlPooled:
-        Type: String
-        NoEcho: true
-    DatabaseUrlDirect:
-        Type: String
-        NoEcho: true
-    AvatarRepositoryBackend:
-        Type: String
-        AllowedValues:
-            - mongo
-            - dynamodb
-    DynamoDbAvatarTable:
-        Type: String
-    OutboxQueueName:
-        Type: String
-    OutboxQueueUrl:
-        Type: String
-    PublicApiThrottleBurst:
-        Type: Number
-        Default: 50
-    PublicApiThrottleRate:
-        Type: Number
-        Default: 25
-    PrivateApiThrottleBurst:
-        Type: Number
-        Default: 20
-    PrivateApiThrottleRate:
-        Type: Number
-        Default: 10
-    ApiFunctionReservedConcurrency:
-        Type: Number
-        Default: 10
-    CloudFrontAllowedCidrs:
-        Type: CommaDelimitedList
-        Description: Allowed source CIDRs for edge API invoke (CloudFront egress CIDRs)
-    PrivateApiVpceIds:
-        Type: CommaDelimitedList
-        Description: Allowed VPC endpoint IDs for private API invoke
-    EdgeOriginVerifyHeaderName:
-        Type: String
-        Default: x-origin-verify
-    EdgeOriginVerifyHeaderValue:
-        Type: String
-        NoEcho: true
-    ApiAccessLogRetentionDays:
-        Type: Number
-        Default: 14
+  ProjectName:
+    Type: String
+  EnvironmentName:
+    Type: String
+  DatabaseUrlPooled:
+    Type: String
+    NoEcho: true
+  DatabaseUrlDirect:
+    Type: String
+    NoEcho: true
+  AvatarRepositoryBackend:
+    Type: String
+    AllowedValues:
+      - mongo
+      - dynamodb
+  DynamoDbAvatarTable:
+    Type: String
+  OutboxQueueName:
+    Type: String
+  OutboxQueueUrl:
+    Type: String
+  PublicApiThrottleBurst:
+    Type: Number
+    Default: 50
+  PublicApiThrottleRate:
+    Type: Number
+    Default: 25
+  ApiFunctionReservedConcurrency:
+    Type: Number
+    Default: 10
+  CloudFrontAllowedCidrs:
+    Type: CommaDelimitedList
+    Description: Allowed source CIDRs for edge API invoke (CloudFront egress CIDRs)
+  EdgeOriginVerifyHeaderName:
+    Type: String
+    Default: x-origin-verify
+  EdgeOriginVerifyHeaderValue:
+    Type: String
+    NoEcho: true
+  ApiAccessLogRetentionDays:
+    Type: Number
+    Default: 14
 
 Mappings:
-    ApiAccessLogFormat:
-        Json:
-            Value: '{"requestId":"$context.requestId","extendedRequestId":"$context.extendedRequestId","apiId":"$context.apiId","stage":"$context.stage","requestTime":"$context.requestTime","httpMethod":"$context.httpMethod","resourcePath":"$context.resourcePath","status":"$context.status","responseLength":"$context.responseLength","sourceIp":"$context.identity.sourceIp","userAgent":"$context.identity.userAgent","errorMessage":"$context.error.message","integrationErrorMessage":"$context.integrationErrorMessage"}'
+  ApiAccessLogFormat:
+    Json:
+      Value: '{"requestId":"$context.requestId","extendedRequestId":"$context.extendedRequestId","apiId":"$context.apiId","stage":"$context.stage","requestTime":"$context.requestTime","httpMethod":"$context.httpMethod","resourcePath":"$context.resourcePath","status":"$context.status","responseLength":"$context.responseLength","sourceIp":"$context.identity.sourceIp","userAgent":"$context.identity.userAgent","errorMessage":"$context.error.message","integrationErrorMessage":"$context.integrationErrorMessage"}'
 
 Resources:
-    ApiGatewayCloudWatchRole:
-        Type: AWS::IAM::Role
-        Properties:
-            RoleName: !Sub "${ProjectName}-${EnvironmentName}-apigw-cw-role"
-            AssumeRolePolicyDocument:
-                Version: "2012-10-17"
-                Statement:
-                    - Effect: Allow
-                      Principal:
-                          Service: apigateway.amazonaws.com
-                      Action: sts:AssumeRole
-            ManagedPolicyArns:
-                - arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs
+  ApiGatewayCloudWatchRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${ProjectName}-${EnvironmentName}-apigw-cw-role"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: apigateway.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs
 
-    ApiGatewayAccount:
-        Type: AWS::ApiGateway::Account
-        Properties:
-            CloudWatchRoleArn: !GetAtt ApiGatewayCloudWatchRole.Arn
+  ApiGatewayAccount:
+    Type: AWS::ApiGateway::Account
+    Properties:
+      CloudWatchRoleArn: !GetAtt ApiGatewayCloudWatchRole.Arn
 
-    PublicEdgeApiAccessLogGroup:
-        Type: AWS::Logs::LogGroup
-        Properties:
-            LogGroupName: !Sub "/aws/apigateway/${ProjectName}-${EnvironmentName}-edge-api-access"
-            RetentionInDays: !Ref ApiAccessLogRetentionDays
+  PublicEdgeApiAccessLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/apigateway/${ProjectName}-${EnvironmentName}-edge-api-access"
+      RetentionInDays: !Ref ApiAccessLogRetentionDays
 
-    InternalPrivateApiAccessLogGroup:
-        Type: AWS::Logs::LogGroup
-        Properties:
-            LogGroupName: !Sub "/aws/apigateway/${ProjectName}-${EnvironmentName}-private-api-access"
-            RetentionInDays: !Ref ApiAccessLogRetentionDays
+  PublicEdgeApi:
+    Type: AWS::Serverless::Api
+    DependsOn:
+      - ApiGatewayAccount
+      - PublicEdgeApiAccessLogGroup
+    Properties:
+      Name: !Sub "${ProjectName}-${EnvironmentName}-edge-api"
+      StageName: v1
+      EndpointConfiguration: REGIONAL
+      AccessLogSetting:
+        DestinationArn: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:${PublicEdgeApiAccessLogGroup}"
+        Format: !FindInMap [ApiAccessLogFormat, Json, Value]
+      Auth:
+        ResourcePolicy:
+          CustomStatements:
+            - Effect: Deny
+              Principal: "*"
+              Action: execute-api:Invoke
+              Resource: execute-api:/*/*/*
+              Condition:
+                NotIpAddress:
+                  aws:SourceIp: !Ref CloudFrontAllowedCidrs
+            - Effect: Allow
+              Principal: "*"
+              Action: execute-api:Invoke
+              Resource: execute-api:/*/*/*
+      MethodSettings:
+        - HttpMethod: "*"
+          ResourcePath: "/*"
+          LoggingLevel: INFO
+          DataTraceEnabled: false
+          MetricsEnabled: true
+          ThrottlingBurstLimit: !Ref PublicApiThrottleBurst
+          ThrottlingRateLimit: !Ref PublicApiThrottleRate
+      Tags:
+        Project: !Ref ProjectName
+        Environment: !Ref EnvironmentName
 
-    PublicEdgeApi:
-        Type: AWS::Serverless::Api
-        DependsOn:
-            - ApiGatewayAccount
-            - PublicEdgeApiAccessLogGroup
-        Properties:
-            Name: !Sub "${ProjectName}-${EnvironmentName}-edge-api"
-            StageName: v1
-            EndpointConfiguration: REGIONAL
-            AccessLogSetting:
-                DestinationArn: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:${PublicEdgeApiAccessLogGroup}"
-                Format: !FindInMap [ApiAccessLogFormat, Json, Value]
-            Auth:
-                ResourcePolicy:
-                    CustomStatements:
-                        - Effect: Allow
-                          Principal: "*"
-                          Action: execute-api:Invoke
-                          Resource: execute-api:/*/*/*
-            MethodSettings:
-                - HttpMethod: "*"
-                  ResourcePath: "/*"
-                  LoggingLevel: INFO
-                  DataTraceEnabled: false
-                  MetricsEnabled: true
-                  ThrottlingBurstLimit: !Ref PublicApiThrottleBurst
-                  ThrottlingRateLimit: !Ref PublicApiThrottleRate
-            Tags:
-                Project: !Ref ProjectName
-                Environment: !Ref EnvironmentName
+  ApiFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      DockerContext: ../../..
+      Dockerfile: service/backend/Dockerfile.lambda
+      DockerTag: api-function
+    Properties:
+      PackageType: Image
+      ImageConfig:
+        Command:
+          - dist/src/lib/lambda/http.handler
+      ReservedConcurrentExecutions: !Ref ApiFunctionReservedConcurrency
+      Environment:
+        Variables:
+          NODE_ENV: !Ref EnvironmentName
+          OUTBOX_CRON_ENABLED: false
+          OUTBOX_ENQUEUE_STRICT: true
+          OUTBOX_DIRECT_CONSUME_FALLBACK: true
+          EDGE_ORIGIN_VERIFY_HEADER_NAME: !Ref EdgeOriginVerifyHeaderName
+          EDGE_ORIGIN_VERIFY_HEADER_VALUE: !Ref EdgeOriginVerifyHeaderValue
+      Policies:
+        - SQSSendMessagePolicy:
+            QueueName: !Ref OutboxQueueName
+        - DynamoDBCrudPolicy:
+            TableName: !Ref DynamoDbAvatarTable
+      Events:
+        PublicApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref PublicEdgeApi
+            Path: /{proxy+}
+            Method: ANY
 
-    InternalPrivateApi:
-        Type: AWS::Serverless::Api
-        DependsOn:
-            - ApiGatewayAccount
-            - InternalPrivateApiAccessLogGroup
-        Properties:
-            Name: !Sub "${ProjectName}-${EnvironmentName}-private-api"
-            StageName: internal
-            EndpointConfiguration: PRIVATE
-            AccessLogSetting:
-                DestinationArn: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:${InternalPrivateApiAccessLogGroup}"
-                Format: !FindInMap [ApiAccessLogFormat, Json, Value]
-            Auth:
-                ResourcePolicy:
-                    CustomStatements:
-                        - Effect: Deny
-                          Principal: "*"
-                          Action: execute-api:Invoke
-                          Resource: execute-api:/*/*/*
-                          Condition:
-                              StringNotEquals:
-                                  aws:SourceVpce: !Ref PrivateApiVpceIds
-            MethodSettings:
-                - HttpMethod: "*"
-                  ResourcePath: "/*"
-                  LoggingLevel: INFO
-                  DataTraceEnabled: false
-                  MetricsEnabled: true
-                  ThrottlingBurstLimit: !Ref PrivateApiThrottleBurst
-                  ThrottlingRateLimit: !Ref PrivateApiThrottleRate
-            Tags:
-                Project: !Ref ProjectName
-                Environment: !Ref EnvironmentName
-
-    ApiFunction:
-        Type: AWS::Serverless::Function
-        Metadata:
-            DockerContext: ../../..
-            Dockerfile: service/backend/Dockerfile.lambda
-            DockerTag: api-function
-        Properties:
-            PackageType: Image
-            ImageConfig:
-                Command:
-                    - dist/src/lib/lambda/http.handler
-            ReservedConcurrentExecutions: !Ref ApiFunctionReservedConcurrency
-            Environment:
-                Variables:
-                    NODE_ENV: !Ref EnvironmentName
-                    OUTBOX_CRON_ENABLED: false
-                    OUTBOX_ENQUEUE_STRICT: true
-                    OUTBOX_DIRECT_CONSUME_FALLBACK: true
-                    EDGE_ORIGIN_VERIFY_HEADER_NAME: !Ref EdgeOriginVerifyHeaderName
-                    EDGE_ORIGIN_VERIFY_HEADER_VALUE: !Ref EdgeOriginVerifyHeaderValue
-            Policies:
-                - SQSSendMessagePolicy:
-                      QueueName: !Ref OutboxQueueName
-                - DynamoDBCrudPolicy:
-                      TableName: !Ref DynamoDbAvatarTable
-            Events:
-                PublicApi:
-                    Type: Api
-                    Properties:
-                        RestApiId: !Ref PublicEdgeApi
-                        Path: /{proxy+}
-                        Method: ANY
-                PrivateApi:
-                    Type: Api
-                    Properties:
-                        RestApiId: !Ref InternalPrivateApi
-                        Path: /{proxy+}
-                        Method: ANY
-
-    ApiEdgeDistribution:
-        Type: AWS::CloudFront::Distribution
-        Properties:
-            DistributionConfig:
-                Enabled: true
-                Comment: !Sub "${ProjectName}-${EnvironmentName}-api-edge"
-                HttpVersion: http2
-                PriceClass: PriceClass_200
-                Origins:
-                    - Id: edge-api-origin
-                      DomainName: !Sub "${PublicEdgeApi}.execute-api.${AWS::Region}.amazonaws.com"
-                      OriginPath: /v1
-                      CustomOriginConfig:
-                          HTTPSPort: 443
-                          OriginProtocolPolicy: https-only
-                          OriginSSLProtocols:
-                              - TLSv1.2
-                      OriginCustomHeaders:
-                          - HeaderName: !Ref EdgeOriginVerifyHeaderName
-                            HeaderValue: !Ref EdgeOriginVerifyHeaderValue
-                DefaultCacheBehavior:
-                    TargetOriginId: edge-api-origin
-                    ViewerProtocolPolicy: https-only
-                    AllowedMethods:
-                        - GET
-                        - HEAD
-                        - OPTIONS
-                        - PUT
-                        - PATCH
-                        - POST
-                        - DELETE
-                    CachedMethods:
-                        - GET
-                        - HEAD
-                        - OPTIONS
-                    Compress: true
-                    CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
-                    OriginRequestPolicyId: b689b0a8-53d0-40ab-baf2-68738e2966ac
-                ViewerCertificate:
-                    CloudFrontDefaultCertificate: true
+  ApiEdgeDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        Comment: !Sub "${ProjectName}-${EnvironmentName}-api-edge"
+        HttpVersion: http2
+        PriceClass: PriceClass_200
+        Origins:
+          - Id: edge-api-origin
+            DomainName: !Sub "${PublicEdgeApi}.execute-api.${AWS::Region}.amazonaws.com"
+            OriginPath: /v1
+            CustomOriginConfig:
+              HTTPSPort: 443
+              OriginProtocolPolicy: https-only
+              OriginSSLProtocols:
+                - TLSv1.2
+            OriginCustomHeaders:
+              - HeaderName: !Ref EdgeOriginVerifyHeaderName
+                HeaderValue: !Ref EdgeOriginVerifyHeaderValue
+        DefaultCacheBehavior:
+          TargetOriginId: edge-api-origin
+          ViewerProtocolPolicy: https-only
+          AllowedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+            - PUT
+            - PATCH
+            - POST
+            - DELETE
+          CachedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+          Compress: true
+          CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
+          OriginRequestPolicyId: b689b0a8-53d0-40ab-baf2-68738e2966ac
+        ViewerCertificate:
+          CloudFrontDefaultCertificate: true
 
 Outputs:
-    PublicApiId:
-        Value: !Ref PublicEdgeApi
-    PublicApiStageName:
-        Value: v1
-    PrivateApiId:
-        Value: !Ref InternalPrivateApi
-    PrivateApiStageName:
-        Value: internal
-    ApiFunctionName:
-        Value: !Ref ApiFunction
-    ApiFunctionArn:
-        Value: !GetAtt ApiFunction.Arn
-    ApiUrl:
-        Value: !Sub "https://${ApiEdgeDistribution.DomainName}"
-    PublicApiAccessLogGroupName:
-        Value: !Ref PublicEdgeApiAccessLogGroup
-    PrivateApiAccessLogGroupName:
-        Value: !Ref InternalPrivateApiAccessLogGroup
+  PublicApiId:
+    Value: !Ref PublicEdgeApi
+  PublicApiStageName:
+    Value: v1
+  ApiFunctionName:
+    Value: !Ref ApiFunction
+  ApiFunctionArn:
+    Value: !GetAtt ApiFunction.Arn
+  ApiUrl:
+    Value: !Sub "https://${ApiEdgeDistribution.DomainName}"
+  PublicApiAccessLogGroupName:
+    Value: !Ref PublicEdgeApiAccessLogGroup
