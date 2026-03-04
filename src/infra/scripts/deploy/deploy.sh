@@ -21,7 +21,6 @@ required_vars=(
   CLOUDFRONT_DISTRIBUTION_ID
   AVATAR_REPOSITORY_BACKEND
   DYNAMODB_AVATAR_TABLE
-  API_CLOUDFRONT_ALLOWED_CIDRS
   EDGE_ORIGIN_VERIFY_HEADER_VALUE
 )
 
@@ -30,11 +29,8 @@ required_secrets=(
   DATABASE_URL_DIRECT
 )
 
-AUTO_RESOLVE_CLOUDFRONT_CIDRS="${AUTO_RESOLVE_CLOUDFRONT_CIDRS-1}"
-
 source "${SCRIPT_DIR}/lib/common.sh"
 source "${SCRIPT_DIR}/lib/validate.sh"
-source "${SCRIPT_DIR}/lib/network.sh"
 source "${SCRIPT_DIR}/lib/data.sh"
 source "${SCRIPT_DIR}/lib/deploy.sh"
 
@@ -45,7 +41,6 @@ main() {
   fi
 
   validate_required_inputs
-  resolve_cloudfront_allowed_cidrs_if_enabled
   validate_guardrail_inputs
   build_workspace
   reset_database_on_every_deploy

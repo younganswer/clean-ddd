@@ -52,9 +52,6 @@ Parameters:
   ApiFunctionReservedConcurrency:
     Type: Number
     Default: 10
-  CloudFrontAllowedCidrs:
-    Type: CommaDelimitedList
-    Description: Allowed source CIDRs for edge API invoke (CloudFront egress CIDRs)
   EdgeOriginVerifyHeaderName:
     Type: String
     Default: x-origin-verify
@@ -111,13 +108,6 @@ Resources:
       Auth:
         ResourcePolicy:
           CustomStatements:
-            - Effect: Deny
-              Principal: "*"
-              Action: execute-api:Invoke
-              Resource: execute-api:/*/*/*
-              Condition:
-                NotIpAddress:
-                  aws:SourceIp: !Ref CloudFrontAllowedCidrs
             - Effect: Allow
               Principal: "*"
               Action: execute-api:Invoke

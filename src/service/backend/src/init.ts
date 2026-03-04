@@ -52,9 +52,7 @@ function configureHttpApp(app: INestApplication): void {
 		process.env['EDGE_ORIGIN_VERIFY_HEADER_VALUE']?.trim();
 	if (
 		originVerifyHeaderName &&
-		originVerifyHeaderValue &&
-		(process.env.NODE_ENV === 'production' ||
-			process.env.NODE_ENV === 'prod')
+		originVerifyHeaderValue
 	) {
 		app.use((req: Request, res: Response, next: NextFunction) => {
 			const incomingHeader = req.header(originVerifyHeaderName);

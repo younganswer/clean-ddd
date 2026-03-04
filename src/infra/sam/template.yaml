@@ -42,9 +42,6 @@ Parameters:
   OutboxDispatchReservedConcurrency:
     Type: Number
     Default: 2
-  CloudFrontAllowedCidrs:
-    Type: CommaDelimitedList
-    Default: 1.1.1.1/32
   EdgeOriginVerifyHeaderName:
     Type: String
     Default: x-origin-verify
@@ -102,7 +99,6 @@ Resources:
         PublicApiThrottleBurst: !Ref PublicApiThrottleBurst
         PublicApiThrottleRate: !Ref PublicApiThrottleRate
         ApiFunctionReservedConcurrency: !Ref ApiFunctionReservedConcurrency
-        CloudFrontAllowedCidrs: !Join [",", !Ref CloudFrontAllowedCidrs]
         EdgeOriginVerifyHeaderName: !Ref EdgeOriginVerifyHeaderName
         EdgeOriginVerifyHeaderValue: !Ref EdgeOriginVerifyHeaderValue
 

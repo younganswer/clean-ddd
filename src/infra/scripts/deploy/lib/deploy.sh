@@ -41,7 +41,6 @@ deploy_backend() {
       DatabaseUrlDirect="$DATABASE_URL_DIRECT" \
       AvatarRepositoryBackend="$AVATAR_REPOSITORY_BACKEND" \
       DynamoDbAvatarTable="$DYNAMODB_AVATAR_TABLE" \
-      CloudFrontAllowedCidrs="$API_CLOUDFRONT_ALLOWED_CIDRS" \
       EdgeOriginVerifyHeaderValue="$EDGE_ORIGIN_VERIFY_HEADER_VALUE"
 }
 
