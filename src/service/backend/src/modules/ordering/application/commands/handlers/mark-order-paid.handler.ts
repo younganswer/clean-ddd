@@ -6,8 +6,6 @@ import {
 } from '@/modules/ordering/domains/repositories/i.order.repository';
 import { MarkOrderPaidCommand } from '@/shared/ordering/commands/mark-order-paid.command';
 import { UnitOfWork } from '@/lib/database/unit-of-work';
-import { ORDERING_APPLICATION_ERRORS } from '@/shared/errors';
-import { ApplicationErrorFactory } from '@/shared/errors/base.error-factory';
 
 @CommandHandler(MarkOrderPaidCommand)
 export class MarkOrderPaidHandler implements ICommandHandler<MarkOrderPaidCommand> {
@@ -21,16 +19,7 @@ export class MarkOrderPaidHandler implements ICommandHandler<MarkOrderPaidComman
 		const { orderId } = command;
 
 		await this.uow.transaction(async () => {
-			const order = await this.orderRepository.getById(orderId, {
-				failHandler: () =>
-					ApplicationErrorFactory.create(
-						ORDERING_APPLICATION_ERRORS.ORDER_NOT_FOUND,
-						{
-							details: { orderId },
-						},
-					),
-			});
-
+			const order = await this.orderRepository.getById(orderId);
 			order.markPaid();
 			await this.orderRepository.persist(order);
 		});

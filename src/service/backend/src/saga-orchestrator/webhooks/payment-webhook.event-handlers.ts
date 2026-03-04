@@ -40,15 +40,7 @@ export class PaymentWebhookSucceededHandler implements IEventHandler<PaymentWebh
 		await this.uow.transaction(async () => {
 			const { orderId, paymentId } = event;
 
-			const payment = await this.paymentRepository.getById(paymentId, {
-				failHandler: () =>
-					ApplicationErrorFactory.create(
-						PAYMENTS_APPLICATION_ERRORS.PAYMENT_NOT_FOUND,
-						{
-							details: { paymentId },
-						},
-					),
-			});
+			const payment = await this.paymentRepository.getById(paymentId);
 			payment.markSucceeded();
 			await this.paymentRepository.persist(payment);
 
@@ -67,12 +59,10 @@ export class PaymentWebhookSucceededHandler implements IEventHandler<PaymentWebh
 				: [];
 
 			if (!items.length) {
-				throw ApplicationErrorFactory.create(
-					PAYMENTS_APPLICATION_ERRORS.ORDER_ITEMS_REQUIRED_FOR_INVENTORY_RESERVATION,
-					{
-						details: { orderId },
-					},
-				);
+				const template =
+					PAYMENTS_APPLICATION_ERRORS.ORDER_ITEMS_REQUIRED_FOR_INVENTORY_RESERVATION;
+				const options = { details: { orderId } };
+				throw ApplicationErrorFactory.create(template, options);
 			}
 
 			await this.outboxProducer.publish(
@@ -100,16 +90,7 @@ export class PaymentWebhookFailedHandler implements IEventHandler<PaymentWebhook
 	async handle(event: PaymentWebhookFailedEvent): Promise<void> {
 		await this.uow.transaction(async () => {
 			const { paymentId } = event;
-
-			const payment = await this.paymentRepository.getById(paymentId, {
-				failHandler: () =>
-					ApplicationErrorFactory.create(
-						PAYMENTS_APPLICATION_ERRORS.PAYMENT_NOT_FOUND,
-						{
-							details: { paymentId },
-						},
-					),
-			});
+			const payment = await this.paymentRepository.getById(paymentId);
 			payment.markFailed();
 			await this.paymentRepository.persist(payment);
 		});

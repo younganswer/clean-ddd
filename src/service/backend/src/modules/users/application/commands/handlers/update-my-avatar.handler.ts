@@ -11,8 +11,6 @@ import {
 	type IUserRepository,
 } from '@/modules/users/domains/repositories/i.user.repository';
 import { Avatar } from '@/modules/users/domains/entities/avatar.entity';
-import { USER_APPLICATION_ERRORS } from '@/shared/errors';
-import { ApplicationErrorFactory } from '@/shared/errors/base.error-factory';
 
 @CommandHandler(UpdateMyAvatarCommand)
 export class UpdateMyAvatarHandler implements ICommandHandler<UpdateMyAvatarCommand> {
@@ -37,13 +35,7 @@ export class UpdateMyAvatarHandler implements ICommandHandler<UpdateMyAvatarComm
 		const savedAvatar = await this.userAvatarRepository.upsert(avatar);
 
 		await this.uow.transaction(async () => {
-			const user = await this.userRepository.getById(userId, {
-				failHandler: () => {
-					const template = USER_APPLICATION_ERRORS.USER_NOT_FOUND;
-					const options = { details: { userId } };
-					return ApplicationErrorFactory.create(template, options);
-				},
-			});
+			const user = await this.userRepository.getById(userId);
 			user.assignAvatarId(savedAvatar.id);
 			await this.userRepository.persist(user);
 		});
