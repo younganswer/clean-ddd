@@ -2,29 +2,57 @@
 
 이 문서는 `clean-ddd` 백엔드의 핵심 설계 원칙을 **개념 정의 + 코드 구조 매핑** 관점으로 정리한 기준 문서입니다.
 
+<br />
+<br />
+
 ## 목차
 
 1. [왜 이 구조를 쓰는가](#왜-이-구조를-쓰는가)
 2. [핵심 개념 정의](#핵심-개념-정의)
 3. [레이어 책임과 의존성](#레이어-책임과-의존성)
-4. [Shared vs Common 경계](#shared-vs-common-경계)
-5. [개념 ↔ 폴더 매핑](#개념--폴더-매핑)
-6. [핸들러/리포지토리 경계 규칙](#핸들러리포지토리-경계-규칙)
-7. [Read 전략 기준](#read-전략-기준)
-8. [애플리케이션 실행 모델](#애플리케이션-실행-모델)
-9. [Outbox + SQS FIFO](#outbox--sqs-fifo)
-10. [테스트 전략](#테스트-전략)
-11. [레이어드(DIP) vs 클린 선택 기준](#레이어드dip-vs-클린-선택-기준)
-12. [빠른 자기 점검 체크리스트](#빠른-자기-점검-체크리스트)
+4. [레이어 의존성 다이어그램 (DIP)](#레이어-의존성-다이어그램-dip)
+5. [시스템 구조 다이어그램](#시스템-구조-다이어그램)
+6. [Shared vs Common 경계](#shared-vs-common-경계)
+7. [개념 ↔ 폴더 매핑](#개념--폴더-매핑)
+8. [핸들러/리포지토리 경계 규칙](#핸들러리포지토리-경계-규칙)
+9. [Read 전략 기준](#read-전략-기준)
+10. [기술 구현 관점: 애플리케이션 실행 모델](#기술-구현-관점-애플리케이션-실행-모델)
+11. [기술 구현 관점: Outbox + SQS FIFO](#기술-구현-관점-outbox--sqs-fifo)
+12. [테스트 전략](#테스트-전략)
+13. [레이어드(DIP) vs 클린 선택 기준](#레이어드dip-vs-클린-선택-기준)
+14. [빠른 자기 점검 체크리스트](#빠른-자기-점검-체크리스트)
 
 <br/>
 <br/>
 
 ## 왜 이 구조를 쓰는가
 
-- 동일 코드베이스를 여러 실행 역할(API, cron, queue poller)로 분리해 운영합니다.
-- 애플리케이션 경계는 유스케이스 중심으로 유지하고, 인프라 세부사항(DB, Queue, 런타임)은 바깥 레이어로 밀어냅니다.
-- 동기(HTTP)와 비동기(SQS/Outbox) 경로를 함께 사용하되, 도메인 처리 흐름은 동일한 모듈/DI 구성을 공유합니다.
+이 구조의 핵심 목적은 **잦은 변경에도 강인한 시스템을 만들고, 도메인 응집도를 극대화하며 결합도를 낮추는 것**입니다.
+
+1. 인프라로부터 독립된 비즈니스 코어 확보 (DIP)
+
+- DB/스토리지/메시징 제품이 바뀌어도 핵심 비즈니스 규칙은 유지되어야 합니다.
+- 이를 위해 Domain/Application은 추상화(Port)에 의존하고, 상세 구현은 Adapter로 분리합니다.
+
+2. 비즈니스 복잡도를 제어하는 풍부한 도메인 모델 (Rich Domain Model)
+
+- 규칙과 제약은 데이터 외부가 아닌 도메인 객체 내부에 응집시킵니다.
+- 서비스 계층의 비대화를 막고 변경 영향 범위를 줄입니다.
+
+3. 팀 간 소통 비용 최소화 (Ubiquitous Language)
+
+- 코드가 문서가 되도록 도메인 용어를 메서드/유스케이스 이름에 반영합니다.
+- 기획/개발/디자인 간 의미 해석 차이를 줄입니다.
+
+4. 비즈니스 성장에 대응하는 확장성 (Scalability)
+
+- 현재 구조를 유지하되, 필요 시 도메인 경계 단위로 분리 가능해야 합니다.
+- Bounded Context와 의존성 방향을 명확히 설계해 분리 비용을 낮춥니다.
+
+5. 아키텍처 수준의 보안 신뢰성 (Security by Design)
+
+- 단순 설정 중심이 아니라 구조 레벨에서 요청 주체 검증을 일관되게 강제합니다.
+- 인증/권한 규칙을 엔트리포인트와 애플리케이션 경계 전체에 통합합니다.
 
 <br/>
 <br/>
@@ -41,6 +69,8 @@
 | Outbox             | 상태 변경 이후 비동기 전달을 보장하는 브리지            | `lib/outbox`, queue consumer 영역                     |
 | RequestContext     | 작업 단위별 EntityManager 스코프                        | HTTP 요청 / cron / queue 실행 경계                    |
 
+> 개념(Concept) 관점에서는 기술 제품명이 아니라 책임 경계와 의존성 방향을 먼저 정의합니다.
+
 <br/>
 <br/>
 
@@ -54,6 +84,82 @@
 | Infrastructure | 기술 구현                 | Repository 구현, Queue/DB adapter | 유스케이스 정책 결정     |
 
 의존성은 안쪽(Domain)으로 향해야 하며, 바깥 레이어가 안쪽 계약을 구현하는 방향을 유지합니다.
+
+<br/>
+<br/>
+
+## 레이어 의존성 다이어그램 (DIP)
+
+```mermaid
+flowchart LR
+		subgraph P[Presentation Layer]
+			C[Controller / Entrypoint]
+		end
+
+		subgraph A[Application Layer]
+			H[Use Case Handler]
+			AP[Application Port]
+		end
+
+		subgraph D[Domain Layer]
+			E[Entity / Value Object]
+			DP[Domain Port<br/>Repository Interface]
+			DS[Domain Service]
+		end
+
+		subgraph I[Infrastructure Layer]
+			R[(Repository Adapter)]
+			M[(Message/Storage Adapter)]
+			X[(External Systems)]
+		end
+
+		C --> H
+		H --> E
+		H --> DS
+		H --> DP
+		AP --> DP
+
+		R -. implements .-> DP
+		M -. implements .-> AP
+		R --> X
+		M --> X
+
+		D -. 금지: Domain -> Infra 직접 의존 .-> I
+		A -. 금지: 정책 레이어의 기술 상세 직접 참조 .-> I
+```
+
+핵심은 “안쪽 레이어가 바깥 구현을 모르고, 바깥 레이어가 안쪽 계약을 구현”하는 역전 구조를 강제하는 것입니다.
+
+<br/>
+<br/>
+
+## 시스템 구조 다이어그램
+
+```mermaid
+flowchart TB
+		Client[Client / External Caller] --> Entry[Entrypoint<br/>HTTP / Worker / Scheduler]
+
+		subgraph Core[Application Core]
+			U[Use Case]
+			Dom[Domain Model]
+			Port[Port Interface]
+			U --> Dom
+			U --> Port
+		end
+
+		Entry --> U
+		Adapter[Infrastructure Adapter] -. implements .-> Port
+		Adapter --> Data[Data Store / Message Broker / External Service]
+
+		U --> Sec[AuthZ / Audit Policy]
+		Sec --> Dom
+
+		EventPath[Async Event Path] --> U
+		U --> EventOut[Event Intent]
+		EventOut --> Adapter
+```
+
+위 구조에서 동기/비동기는 “진입 경로”만 다르고, 정책 실행 지점(Application/Domain)과 의존성 규칙(DIP)은 동일하게 유지됩니다.
 
 <br/>
 <br/>
@@ -183,7 +289,7 @@ Read 모델은 성능 최적화 여지를 허용하되, 상태 변경 경로는 
 <br/>
 <br/>
 
-## 애플리케이션 실행 모델
+## 기술 구현 관점: 애플리케이션 실행 모델
 
 Nest 애플리케이션은 역할에 따라 두 형태로 실행됩니다.
 
@@ -201,7 +307,7 @@ Nest 애플리케이션은 역할에 따라 두 형태로 실행됩니다.
 <br/>
 <br/>
 
-## Outbox + SQS FIFO
+## 기술 구현 관점: Outbox + SQS FIFO
 
 Outbox는 “DB 기록 이후 메시지 전달”을 통해 동기 트랜잭션과 비동기 처리를 연결합니다.
 
