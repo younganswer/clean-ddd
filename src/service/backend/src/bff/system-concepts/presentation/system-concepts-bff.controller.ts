@@ -27,23 +27,20 @@ export class SystemConceptsBffController {
 		@Query('limit') limitRaw?: string,
 		@Query('page') pageRaw?: string,
 	): Promise<DataResponse<SystemConceptsBootstrapView>> {
-		const limit = Math.min(Math.max(Number(limitRaw ?? 50) || 50, 1), 200);
-		const page = Math.max(1, Number(pageRaw ?? 1) || 1);
-
 		const [users, inventoryItems] = await Promise.all([
 			this.queryBus.execute<
 				ListUserProfilesQuery,
 				PaginatedView<UserProfileView>
 			>(
 				new ListUserProfilesQuery({
-					limit,
-					page,
+					limit: Number(limitRaw),
+					page: Number(pageRaw),
 				}),
 			),
 			this.queryBus.execute<
 				ListInventoryItemsQuery,
 				PaginatedView<InventoryItemView>
-			>(new ListInventoryItemsQuery(limit, page)),
+			>(new ListInventoryItemsQuery(Number(limitRaw), Number(pageRaw))),
 		]);
 
 		return DataResponse.of({

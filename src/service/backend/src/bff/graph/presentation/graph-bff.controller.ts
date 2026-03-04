@@ -30,10 +30,7 @@ export class GraphBffController {
 				depth: query.depth,
 				maxEvents: query.maxEvents,
 				maxNodes: query.maxNodes,
-				includeEvents:
-					typeof query.includeEvents === 'string'
-						? query.includeEvents === 'true'
-						: undefined,
+				includeEvents: query.includeEvents,
 			}),
 		);
 

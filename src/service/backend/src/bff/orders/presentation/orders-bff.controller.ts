@@ -41,11 +41,10 @@ export class OrdersBffController {
 	async list(
 		@Query() query: ListOrdersBffQueryDto,
 	): Promise<ListResponse<OrderView>> {
-		const limit = query.limit ?? 20;
 		const result = await this.queryBus.execute<
 			ListOrdersBffQuery,
 			OrderView[]
-		>(new ListOrdersBffQuery({ limit }));
+		>(new ListOrdersBffQuery({ limit: query.limit }));
 		return ListResponse.from(result);
 	}
 

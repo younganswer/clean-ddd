@@ -24,12 +24,12 @@ export class GetOrderDetailBffHandler implements IQueryHandler<GetOrderDetailBff
 	async execute(
 		query: GetOrderDetailBffQuery,
 	): Promise<OrderDetailBffView | null> {
-		const orderId = String(query.input.orderId ?? '').trim();
-		if (!orderId) return null;
-
-		const includePayment = query.input.includePayment ?? true;
-		const includeShipment = query.input.includeShipment ?? true;
-		const includeReservations = query.input.includeReservations ?? true;
+		const {
+			orderId,
+			includePayment,
+			includeShipment,
+			includeReservations,
+		} = query.input;
 
 		const order = await this.queryBus.execute<
 			GetOrderQuery,

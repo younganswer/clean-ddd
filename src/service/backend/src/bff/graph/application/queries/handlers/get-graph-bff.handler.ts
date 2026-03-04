@@ -63,12 +63,11 @@ export class GetGraphBffHandler implements IQueryHandler<GetGraphBffQuery> {
 
 	async execute(query: GetGraphBffQuery): Promise<GraphView | null> {
 		const rootType = query.input.rootType;
-		const rootId = normalizeId(query.input.rootId);
-		if (!rootId) return null;
+		const rootId = query.input.rootId;
 
 		const rootNodeId = nodeId(rootType, rootId);
 
-		const maxDepth = clampInt(query.input.depth, 0, 4, 2);
+		const maxDepth = query.input.depth;
 
 		const defaultMaxNodesByDepth: Record<number, number> = {
 			0: 50,
@@ -92,7 +91,7 @@ export class GetGraphBffHandler implements IQueryHandler<GetGraphBffQuery> {
 		const maxEvents = isDefinedNumber(query.input.maxEvents)
 			? clampInt(query.input.maxEvents, 0, 2000, 500)
 			: clampInt(defaultMaxEventsByDepth[maxDepth] ?? 500, 0, 2000, 500);
-		const includeEvents = query.input.includeEvents ?? true;
+		const includeEvents = query.input.includeEvents;
 		let truncated = false;
 
 		const nodes = new Map<string, GraphNode>();

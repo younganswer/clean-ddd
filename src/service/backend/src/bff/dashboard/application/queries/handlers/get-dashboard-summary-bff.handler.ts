@@ -24,10 +24,7 @@ export class GetDashboardSummaryBffHandler implements IQueryHandler<GetDashboard
 	async execute(
 		query: GetDashboardSummaryBffQuery,
 	): Promise<DashboardSummaryBffView> {
-		const limit = Math.min(
-			50,
-			Math.max(1, Number(query.input.limit ?? 10)),
-		);
+		const { limit } = query.input;
 
 		const partialErrors: string[] = [];
 

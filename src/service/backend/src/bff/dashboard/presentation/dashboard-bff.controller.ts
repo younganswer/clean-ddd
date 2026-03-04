@@ -20,11 +20,10 @@ export class DashboardBffController {
 	async summary(
 		@Query() query: GetDashboardSummaryBffQueryDto,
 	): Promise<DataResponse<DashboardSummaryBffView>> {
-		const limit = query.limit ?? 10;
 		const result = await this.queryBus.execute<
 			GetDashboardSummaryBffQuery,
 			DashboardSummaryBffView
-		>(new GetDashboardSummaryBffQuery({ limit }));
+		>(new GetDashboardSummaryBffQuery({ limit: query.limit }));
 		return DataResponse.of(result);
 	}
 }
