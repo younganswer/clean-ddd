@@ -22,11 +22,10 @@ export class DispatchOutboxEventHandler implements ICommandHandler<DispatchOutbo
 	) {}
 
 	async execute(command: DispatchOutboxEventCommand): Promise<void> {
-		const outboxId = String(command.outboxId ?? '').trim();
+		const outboxId = command.outboxId;
 		if (!outboxId) return;
 
-		const messageGroupId =
-			String(command.messageGroupId ?? '').trim() || 'outbox';
+		const { messageGroupId } = command;
 
 		try {
 			await this.outboxQueue.enqueue(outboxId, { messageGroupId });

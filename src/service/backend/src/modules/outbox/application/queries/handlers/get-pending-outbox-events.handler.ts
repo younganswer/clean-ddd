@@ -22,11 +22,10 @@ export class GetPendingOutboxEventsHandler implements IQueryHandler<
 	async execute(
 		query: GetPendingOutboxEventsQuery,
 	): Promise<GetPendingOutboxEventsResult> {
-		const limit = Number.isFinite(query.limit)
-			? Math.max(0, query.limit)
-			: 10;
-		const now = query.now instanceof Date ? query.now : new Date();
-		const events = await this.outboxRepository.findDispatchable(limit, now);
+		const events = await this.outboxRepository.findDispatchable(
+			query.limit,
+			query.now,
+		);
 		return new GetPendingOutboxEventsResult(events);
 	}
 }

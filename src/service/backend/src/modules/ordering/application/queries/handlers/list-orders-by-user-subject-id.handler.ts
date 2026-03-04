@@ -16,15 +16,10 @@ export class ListOrdersByUserSubjectIdHandler implements IQueryHandler<ListOrder
 	) {}
 
 	async execute(query: ListOrdersByUserIdQuery): Promise<OrderView[]> {
-		const userId = String(query.userId ?? '').trim();
-		if (!userId) return [];
-
-		const limit = Math.min(
-			200,
-			Math.max(1, Number(query.limit ?? 200) || 200),
+		return await this.orderReader.findByUserId(
+			query.userId,
+			query.limit,
+			query.offset,
 		);
-		const offset = Math.max(0, Number(query.offset ?? 0) || 0);
-
-		return await this.orderReader.findByUserId(userId, limit, offset);
 	}
 }

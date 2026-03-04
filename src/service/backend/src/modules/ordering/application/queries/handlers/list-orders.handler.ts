@@ -16,11 +16,7 @@ export class ListOrdersHandler implements IQueryHandler<ListOrdersQuery> {
 	) {}
 
 	async execute(query: ListOrdersQuery): Promise<PaginatedView<OrderView>> {
-		const limit = Math.min(
-			50,
-			Math.max(1, Number(query.limit ?? 20) || 20),
-		);
-		const page = Math.max(1, Number(query.page ?? 1) || 1);
+		const { limit, page } = query;
 		const offset = (page - 1) * limit;
 
 		const [items, total] = await Promise.all([

@@ -12,10 +12,9 @@ export class DispatchPendingOutboxEventsHandler implements ICommandHandler<
 	async execute(
 		command: DispatchPendingOutboxEventsCommand,
 	): Promise<number> {
-		const limit = Number.isFinite(command.limit)
-			? Math.max(0, Math.trunc(command.limit))
-			: 10;
-		const now = command.now instanceof Date ? command.now : new Date();
-		return await this.outboxDispatcher.dispatchPending(limit, now);
+		return await this.outboxDispatcher.dispatchPending(
+			command.limit,
+			command.now,
+		);
 	}
 }

@@ -3,8 +3,6 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { ReserveInventoryForOrderCommand } from '@/shared/inventory';
 import { UnitOfWork } from '@/lib/database/unit-of-work';
 import { InventoryReservationDomainService } from '@/modules/inventory/domains/services/inventory-reservation.domain-service';
-import { INVENTORY_APPLICATION_ERRORS } from '@/shared/errors';
-import { ApplicationErrorFactory } from '@/shared/errors/base.error-factory';
 
 @CommandHandler(ReserveInventoryForOrderCommand)
 export class ReserveInventoryForOrderHandler implements ICommandHandler<ReserveInventoryForOrderCommand> {
@@ -15,17 +13,10 @@ export class ReserveInventoryForOrderHandler implements ICommandHandler<ReserveI
 	) {}
 
 	async execute(command: ReserveInventoryForOrderCommand): Promise<void> {
-		const orderId = String(command.input.orderId ?? '').trim();
-		if (!orderId) {
-			throw ApplicationErrorFactory.create(
-				INVENTORY_APPLICATION_ERRORS.INVENTORY_ORDER_ID_REQUIRED,
-			);
-		}
-
 		await this.uow.transaction(async () => {
 			await this.inventoryReservationDomainService.reserve({
-				orderId,
-				items: command.input.items ?? [],
+				orderId: command.input.orderId,
+				items: command.input.items,
 			});
 		});
 	}

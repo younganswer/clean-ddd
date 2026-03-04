@@ -15,11 +15,7 @@ export class ListShipmentsHandler implements IQueryHandler<ListShipmentsQuery> {
 	async execute(
 		query: ListShipmentsQuery,
 	): Promise<PaginatedView<ShipmentView>> {
-		const limit = Math.min(
-			100,
-			Math.max(1, Number(query.limit ?? 20) || 20),
-		);
-		const page = Math.max(1, Number(query.page ?? 1) || 1);
+		const { limit, page } = query;
 		const offset = (page - 1) * limit;
 		const [shipments, total] = await Promise.all([
 			this.shipmentRepository.findRecent(limit, offset),

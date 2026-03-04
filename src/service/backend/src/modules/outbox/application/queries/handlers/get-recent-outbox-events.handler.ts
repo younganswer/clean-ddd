@@ -21,20 +21,14 @@ export class GetRecentOutboxEventsHandler implements IQueryHandler<
 	async execute(
 		query: GetRecentOutboxEventsQuery,
 	): Promise<GetRecentOutboxEventsResult> {
-		const limit = Number.isFinite(query.limit)
-			? Math.max(0, Math.trunc(query.limit))
-			: 200;
-
-		const events = await this.outboxRepository.findRecent(limit);
-		const views: RecentOutboxEventView[] = events.map(
-			(event) => ({
-				outboxId: event.id,
-				eventType: event.eventType,
-				payload: event.payload,
-				status: event.status,
-				recordedAt: event.recordedAt,
-			}),
-		);
+		const events = await this.outboxRepository.findRecent(query.limit);
+		const views: RecentOutboxEventView[] = events.map((event) => ({
+			outboxId: event.id,
+			eventType: event.eventType,
+			payload: event.payload,
+			status: event.status,
+			recordedAt: event.recordedAt,
+		}));
 
 		return new GetRecentOutboxEventsResult(views);
 	}

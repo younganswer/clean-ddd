@@ -52,10 +52,8 @@ export class OrdersController {
 		@Query('limit') limitRaw?: string,
 		@Query('page') pageRaw?: string,
 	): Promise<PageResponse<OrderView>> {
-		const limit = Math.min(50, Math.max(1, Number(limitRaw ?? '20') || 20));
-		const page = Math.max(1, Number(pageRaw ?? '1') || 1);
 		const result = await this.queryBus.execute<PaginatedView<OrderView>>(
-			new ListOrdersQuery(limit, page),
+			new ListOrdersQuery(Number(limitRaw), Number(pageRaw)),
 		);
 		return PageResponse.from(result);
 	}

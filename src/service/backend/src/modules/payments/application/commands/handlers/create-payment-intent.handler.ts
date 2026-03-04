@@ -39,12 +39,7 @@ export class CreatePaymentIntentHandler implements ICommandHandler<CreatePayment
 		command: CreatePaymentIntentCommand,
 	): Promise<CreatePaymentIntentResult> {
 		return this.uow.transaction(async () => {
-			const orderId = String(command.input.orderId ?? '').trim();
-			if (!orderId) {
-				throw ApplicationErrorFactory.create(
-					PAYMENTS_APPLICATION_ERRORS.PAYMENT_ORDER_ID_REQUIRED,
-				);
-			}
+			const { orderId } = command.input;
 
 			const order = await this.queryBus.execute(
 				new GetOrderQuery(orderId),
@@ -66,10 +61,7 @@ export class CreatePaymentIntentHandler implements ICommandHandler<CreatePayment
 			);
 
 			const outcome = command.input.simulateOutcome ?? 'SUCCEEDED';
-			const delaySeconds = Math.max(
-				0,
-				Number(command.input.simulateDelaySeconds ?? 10),
-			);
+			const delaySeconds = command.input.simulateDelaySeconds;
 
 			const event =
 				outcome === 'SUCCEEDED'

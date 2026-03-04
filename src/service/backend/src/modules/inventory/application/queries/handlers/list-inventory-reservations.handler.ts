@@ -17,12 +17,9 @@ export class ListInventoryReservationsHandler implements IQueryHandler<ListInven
 	async execute(
 		query: ListInventoryReservationsQuery,
 	): Promise<InventoryReservationView[]> {
-		const orderId = String(query.orderId ?? '').trim();
-		if (!orderId) return [];
-
 		const rows =
 			await this.inventoryReservationRepository.findReservationsByOrderId(
-				orderId,
+				query.orderId,
 			);
 
 		return rows.map((inventoryReservation) => ({

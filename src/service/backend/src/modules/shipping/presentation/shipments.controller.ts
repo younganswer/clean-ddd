@@ -26,12 +26,10 @@ export class ShipmentsController {
 		@Query('limit') limitRaw?: string,
 		@Query('page') pageRaw?: string,
 	): Promise<PageResponse<ShipmentView>> {
-		const limit = Math.min(Math.max(Number(limitRaw ?? 20) || 20, 1), 100);
-		const page = Math.max(1, Number(pageRaw ?? 1) || 1);
 		const result = await this.queryBus.execute<
 			ListShipmentsQuery,
 			PaginatedView<ShipmentView>
-		>(new ListShipmentsQuery(limit, page));
+		>(new ListShipmentsQuery(Number(limitRaw), Number(pageRaw)));
 		return PageResponse.from(result);
 	}
 

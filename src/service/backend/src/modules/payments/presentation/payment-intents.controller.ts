@@ -43,12 +43,10 @@ export class PaymentIntentsController {
 	async list(
 		@Query('limit') limitRaw?: string,
 	): Promise<ListResponse<PaymentIntentView>> {
-		const limit = Math.min(50, Math.max(1, Number(limitRaw ?? '20')));
-
 		const result = await this.queryBus.execute<
 			ListPaymentIntentsQuery,
 			PaymentIntentView[]
-		>(new ListPaymentIntentsQuery(limit));
+		>(new ListPaymentIntentsQuery(Number(limitRaw)));
 
 		if (!Array.isArray(result) || !result.every(isPaymentIntentView)) {
 			throw new InternalServerErrorException(

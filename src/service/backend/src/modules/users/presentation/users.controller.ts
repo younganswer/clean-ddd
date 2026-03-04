@@ -18,12 +18,15 @@ export class UsersController {
 		@Query('limit') limitRaw?: string,
 		@Query('page') pageRaw?: string,
 	): Promise<PageResponse<UserProfileView>> {
-		const limit = Math.min(200, Math.max(1, Number(limitRaw ?? 20) || 20));
-		const page = Math.max(1, Number(pageRaw ?? 1) || 1);
 		const result = await this.queryBus.execute<
 			ListUserProfilesQuery,
 			PaginatedView<UserProfileView>
-		>(new ListUserProfilesQuery({ limit, page }));
+		>(
+			new ListUserProfilesQuery({
+				limit: Number(limitRaw),
+				page: Number(pageRaw),
+			}),
+		);
 		return PageResponse.from(result);
 	}
 }

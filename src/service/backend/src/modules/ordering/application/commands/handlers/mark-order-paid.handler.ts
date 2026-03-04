@@ -18,12 +18,7 @@ export class MarkOrderPaidHandler implements ICommandHandler<MarkOrderPaidComman
 	) {}
 
 	async execute(command: MarkOrderPaidCommand): Promise<void> {
-		const orderId = String(command.orderId ?? '').trim();
-		if (!orderId) {
-			throw ApplicationErrorFactory.create(
-				ORDERING_APPLICATION_ERRORS.ORDER_ID_REQUIRED,
-			);
-		}
+		const { orderId } = command;
 
 		await this.uow.transaction(async () => {
 			const order = await this.orderRepository.findById(orderId);

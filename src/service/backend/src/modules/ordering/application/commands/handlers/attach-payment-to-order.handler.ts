@@ -18,14 +18,7 @@ export class AttachPaymentToOrderHandler implements ICommandHandler<AttachPaymen
 	) {}
 
 	async execute(command: AttachPaymentToOrderCommand): Promise<void> {
-		const orderId = String(command.input.orderId ?? '').trim();
-		const paymentId = String(command.input.paymentId ?? '').trim();
-		if (!orderId || !paymentId) {
-			const template = orderId
-				? ORDERING_APPLICATION_ERRORS.PAYMENT_ID_REQUIRED
-				: ORDERING_APPLICATION_ERRORS.ORDER_ID_REQUIRED;
-			throw ApplicationErrorFactory.create(template);
-		}
+		const { orderId, paymentId } = command.input;
 
 		await this.uow.transaction(async () => {
 			const order = await this.orderRepository.findById(orderId);

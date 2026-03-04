@@ -27,15 +27,8 @@ export class UpdateMyAvatarHandler implements ICommandHandler<UpdateMyAvatarComm
 	async execute(
 		command: UpdateMyAvatarCommand,
 	): Promise<{ avatarId: string; avatarUrl: string }> {
-		const userId = command.userId.trim();
-		const avatarUrl = command.input.avatarUrl.trim();
-
-		if (!userId || !avatarUrl) {
-			const template = userId
-				? USER_APPLICATION_ERRORS.USER_AVATAR_URL_REQUIRED
-				: USER_APPLICATION_ERRORS.USER_ID_REQUIRED;
-			throw ApplicationErrorFactory.create(template);
-		}
+		const userId = command.userId;
+		const avatarUrl = command.input.avatarUrl;
 
 		const avatar = Avatar.create({
 			userId,

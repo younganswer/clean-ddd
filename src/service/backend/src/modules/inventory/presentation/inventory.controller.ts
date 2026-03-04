@@ -31,12 +31,10 @@ export class InventoryController {
 		@Query('limit') limitRaw?: string,
 		@Query('page') pageRaw?: string,
 	): Promise<PageResponse<InventoryItemView>> {
-		const limit = Math.min(Math.max(Number(limitRaw ?? 50) || 50, 1), 200);
-		const page = Math.max(1, Number(pageRaw ?? 1) || 1);
 		const result = await this.queryBus.execute<
 			ListInventoryItemsQuery,
 			PaginatedView<InventoryItemView>
-		>(new ListInventoryItemsQuery(limit, page));
+		>(new ListInventoryItemsQuery(Number(limitRaw), Number(pageRaw)));
 		return PageResponse.from(result);
 	}
 
@@ -59,12 +57,10 @@ export class InventoryController {
 	async listReservations(
 		@Query('orderId') orderId?: string,
 	): Promise<ListResponse<InventoryReservationView>> {
-		const id = String(orderId ?? '');
-		if (!id) return ListResponse.from([]);
 		const result = await this.queryBus.execute<
 			ListInventoryReservationsQuery,
 			InventoryReservationView[]
-		>(new ListInventoryReservationsQuery(id));
+		>(new ListInventoryReservationsQuery(String(orderId)));
 		return ListResponse.from(result);
 	}
 }

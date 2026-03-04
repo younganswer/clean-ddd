@@ -18,11 +18,7 @@ export class ListInventoryItemsHandler implements IQueryHandler<ListInventoryIte
 	async execute(
 		query: ListInventoryItemsQuery,
 	): Promise<PaginatedView<InventoryItemView>> {
-		const limit = Math.min(
-			200,
-			Math.max(1, Number(query.limit ?? 50) || 50),
-		);
-		const page = Math.max(1, Number(query.page ?? 1) || 1);
+		const { limit, page } = query;
 		const offset = (page - 1) * limit;
 		await this.inventoryItemRepository.seedIfEmpty();
 		const [rows, total] = await Promise.all([
