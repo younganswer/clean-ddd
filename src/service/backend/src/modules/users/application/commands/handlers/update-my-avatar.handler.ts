@@ -30,15 +30,11 @@ export class UpdateMyAvatarHandler implements ICommandHandler<UpdateMyAvatarComm
 		const userId = command.userId.trim();
 		const avatarUrl = command.input.avatarUrl.trim();
 
-		if (!userId) {
-			throw ApplicationErrorFactory.create(
-				USER_APPLICATION_ERRORS.USER_ID_REQUIRED,
-			);
-		}
-		if (!avatarUrl) {
-			throw ApplicationErrorFactory.create(
-				USER_APPLICATION_ERRORS.USER_AVATAR_URL_REQUIRED,
-			);
+		if (!userId || !avatarUrl) {
+			const template = userId
+				? USER_APPLICATION_ERRORS.USER_AVATAR_URL_REQUIRED
+				: USER_APPLICATION_ERRORS.USER_ID_REQUIRED;
+			throw ApplicationErrorFactory.create(template);
 		}
 
 		const avatar = Avatar.create({
@@ -50,14 +46,10 @@ export class UpdateMyAvatarHandler implements ICommandHandler<UpdateMyAvatarComm
 		await this.uow.transaction(async () => {
 			const user = await this.userRepository.findById(userId);
 			if (!user) {
-				throw ApplicationErrorFactory.create(
-					USER_APPLICATION_ERRORS.USER_NOT_FOUND,
-					{
-						details: { userId },
-					},
-				);
+				const template = USER_APPLICATION_ERRORS.USER_NOT_FOUND;
+				const options = { details: { userId } };
+				throw ApplicationErrorFactory.create(template, options);
 			}
-
 			user.assignAvatarId(savedAvatar.id);
 			await this.userRepository.persist(user);
 		});

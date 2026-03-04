@@ -18,16 +18,14 @@ export class CreateOrderHandler implements ICommandHandler<CreateOrderCommand> {
 
 	async execute(command: CreateOrderCommand): Promise<{ orderId: string }> {
 		return this.uow.transaction(async () => {
-			const total = Money.of(
-				command.input.amount,
-				command.input.currency,
-			);
+			const { userId, amount, currency } = command.input;
+			const total = Money.of(amount, currency);
 			const items =
-				command.input.items?.map((i) =>
-					OrderItem.of(i.sku, i.quantity),
+				command.input.items?.map((item) =>
+					OrderItem.of(item.sku, item.quantity),
 				) ?? [];
 			const order = Order.create({
-				userId: command.input.userId,
+				userId,
 				total,
 				items,
 			});

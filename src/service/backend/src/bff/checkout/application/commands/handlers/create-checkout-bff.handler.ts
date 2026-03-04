@@ -18,30 +18,32 @@ export class CreateCheckoutBffHandler implements ICommandHandler<CreateCheckoutB
 	async execute(
 		command: CreateCheckoutBffCommand,
 	): Promise<CreateCheckoutBffResult> {
-		const body = command.input.body;
+		const {
+			userId,
+			amount,
+			currency,
+			items,
+			simulateOutcome,
+			simulateDelaySeconds,
+		} = command.input.body;
 
-		const { orderId } = await this.commandBus.execute<
-			CreateOrderCommand,
-			{ orderId: string }
-		>(
+		const { orderId } = await this.commandBus.execute<{ orderId: string }>(
 			new CreateOrderCommand({
-				userId: body.userId,
-				amount: body.amount,
-				currency: body.currency,
-				items: body.items,
+				userId,
+				amount,
+				currency,
+				items,
 			}),
 		);
 
-		const payment = await this.commandBus.execute<
-			CreatePaymentIntentCommand,
-			CreatePaymentIntentResult
-		>(
-			new CreatePaymentIntentCommand({
-				orderId,
-				simulateOutcome: body.simulateOutcome,
-				simulateDelaySeconds: body.simulateDelaySeconds,
-			}),
-		);
+		const payment =
+			await this.commandBus.execute<CreatePaymentIntentResult>(
+				new CreatePaymentIntentCommand({
+					orderId,
+					simulateOutcome,
+					simulateDelaySeconds,
+				}),
+			);
 
 		return { orderId, payment };
 	}
