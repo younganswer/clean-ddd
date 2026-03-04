@@ -38,16 +38,7 @@ export class PaymentWebhookSucceededHandler implements IEventHandler<PaymentWebh
 
 	async handle(event: PaymentWebhookSucceededEvent): Promise<void> {
 		await this.uow.transaction(async () => {
-			const orderId = String(event.orderId ?? '').trim();
-			const paymentId = String(event.paymentId ?? '').trim();
-			if (!orderId || !paymentId) {
-				throw ApplicationErrorFactory.create(
-					PAYMENTS_APPLICATION_ERRORS.PAYMENT_WEBHOOK_PAYLOAD_INVALID,
-					{
-						details: { orderId, paymentId },
-					},
-				);
-			}
+			const { orderId, paymentId } = event;
 
 			const payment = await this.paymentRepository.findById(paymentId);
 			if (!payment) {
@@ -108,15 +99,7 @@ export class PaymentWebhookFailedHandler implements IEventHandler<PaymentWebhook
 
 	async handle(event: PaymentWebhookFailedEvent): Promise<void> {
 		await this.uow.transaction(async () => {
-			const paymentId = String(event.paymentId ?? '').trim();
-			if (!paymentId) {
-				throw ApplicationErrorFactory.create(
-					PAYMENTS_APPLICATION_ERRORS.PAYMENT_WEBHOOK_PAYLOAD_INVALID,
-					{
-						details: { paymentId },
-					},
-				);
-			}
+			const { paymentId } = event;
 
 			const payment = await this.paymentRepository.findById(paymentId);
 			if (!payment) {

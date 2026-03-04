@@ -51,39 +51,13 @@ export function hydrateEvent(
 ): KnownOutboxEvent | null {
 	switch (eventType) {
 		case PAYMENT_WEBHOOK_SUCCEEDED_EVENT_TYPE:
-			return new PaymentWebhookSucceededEvent(
-				typeof payload.orderId === 'string' ? payload.orderId : '',
-				typeof payload.paymentId === 'string' ? payload.paymentId : '',
-			);
+			return PaymentWebhookSucceededEvent.fromRaw(payload);
 		case PAYMENT_WEBHOOK_FAILED_EVENT_TYPE:
-			return new PaymentWebhookFailedEvent(
-				typeof payload.orderId === 'string' ? payload.orderId : '',
-				typeof payload.paymentId === 'string' ? payload.paymentId : '',
-			);
+			return PaymentWebhookFailedEvent.fromRaw(payload);
 		case INVENTORY_RESERVE_FOR_ORDER_REQUESTED_EVENT_TYPE:
-			return new ReserveInventoryForOrderRequestedEvent(
-				typeof payload.orderId === 'string' ? payload.orderId : '',
-				Array.isArray(payload.items)
-					? (payload.items as Array<Record<string, unknown>>)
-							.map((i) => ({
-								sku: typeof i.sku === 'string' ? i.sku : '',
-								quantity:
-									typeof i.quantity === 'number'
-										? i.quantity
-										: Number(i.quantity ?? 0),
-							}))
-							.filter(
-								(i) =>
-									i.sku &&
-									Number.isFinite(i.quantity) &&
-									i.quantity > 0,
-							)
-					: [],
-			);
+			return ReserveInventoryForOrderRequestedEvent.fromRaw(payload);
 		case SHIPPING_CREATE_FOR_ORDER_REQUESTED_EVENT_TYPE:
-			return new CreateShipmentForOrderRequestedEvent(
-				typeof payload.orderId === 'string' ? payload.orderId : '',
-			);
+			return CreateShipmentForOrderRequestedEvent.fromRaw(payload);
 		default:
 			return null;
 	}
