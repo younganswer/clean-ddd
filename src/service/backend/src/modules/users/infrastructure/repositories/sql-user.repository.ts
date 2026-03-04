@@ -1,10 +1,13 @@
 import { RequestContext } from '@mikro-orm/core';
 import { EntityManager } from '@mikro-orm/postgresql';
 import { Injectable } from '@nestjs/common';
+import type { RepositoryGetByIdOptions } from '@/lib/database/repository-get-options';
 import { User } from '@/modules/users/domains/entities/user.entity';
 import type { IUserRepository } from '@/modules/users/domains/repositories/i.user.repository';
 import { UserMapper } from '@/modules/users/infrastructure/mappers/user.mapper';
 import { UserSchema } from '@/modules/users/infrastructure/schemas/user.schema';
+import { USER_APPLICATION_ERRORS } from '@/shared/errors';
+import { ApplicationErrorFactory } from '@/shared/errors/base.error-factory';
 
 @Injectable()
 export class SqlUserRepository implements IUserRepository {
@@ -35,15 +38,32 @@ export class SqlUserRepository implements IUserRepository {
 		}
 	}
 
-	async findById(userId: string): Promise<User | null> {
-		const normalized = String(userId ?? '').trim();
-		if (!normalized) return null;
-
+	async getById(
+		userId: string,
+		options?: RepositoryGetByIdOptions,
+	): Promise<User> {
 		const em = this.emForContext();
-		const user = await em.findOne(UserSchema, { uuid: normalized });
-		if (!user) return null;
+		const failHandler =
+			options?.failHandler ??
+			(() => {
+				throw ApplicationErrorFactory.create(
+					USER_APPLICATION_ERRORS.USER_NOT_FOUND,
+					{ details: { userId } },
+				);
+			});
+		const user = await em.findOneOrFail(
+			UserSchema,
+			{ uuid: userId },
+			{ failHandler },
+		);
 
 		return this.mapper.toDomain(user);
+	}
+
+	async findById(userId: string): Promise<User | null> {
+		const em = this.emForContext();
+		const user = await em.findOne(UserSchema, { uuid: userId });
+		return user ? this.mapper.toDomain(user) : null;
 	}
 
 	async findAll(input: { limit: number; page: number }): Promise<User[]> {

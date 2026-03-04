@@ -1,10 +1,13 @@
 import { RequestContext } from '@mikro-orm/core';
 import { EntityManager } from '@mikro-orm/postgresql';
 import { Injectable } from '@nestjs/common';
+import type { RepositoryGetByIdOptions } from '@/lib/database/repository-get-options';
 import type { IPaymentRepository } from '@/modules/payments/domains/repositories/i.payment.repository';
 import { PaymentIntent } from '@/modules/payments/domains/entities/aggregates/payment-intent/payment-intent.aggregate';
 import { PaymentIntentMapper } from '@/modules/payments/infrastructure/mappers/payment-intent.mapper';
 import { PaymentIntentSchema } from '@/modules/payments/infrastructure/schemas/payment-intent.schema';
+import { PAYMENTS_APPLICATION_ERRORS } from '@/shared/errors';
+import { ApplicationErrorFactory } from '@/shared/errors/base.error-factory';
 
 @Injectable()
 export class PaymentRepository implements IPaymentRepository {
@@ -35,6 +38,28 @@ export class PaymentRepository implements IPaymentRepository {
 		} else {
 			em.create(PaymentIntentSchema, schema);
 		}
+	}
+
+	async getById(
+		paymentId: string,
+		options?: RepositoryGetByIdOptions,
+	): Promise<PaymentIntent> {
+		const em = this.emForContext();
+		const failHandler =
+			options?.failHandler ??
+			(() => {
+				throw ApplicationErrorFactory.create(
+					PAYMENTS_APPLICATION_ERRORS.PAYMENT_NOT_FOUND,
+					{ details: { paymentId } },
+				);
+			});
+		const found = await em.findOneOrFail(
+			PaymentIntentSchema,
+			{ uuid: paymentId },
+			{ failHandler },
+		);
+
+		return this.mapper.toDomain(found);
 	}
 
 	async findById(paymentId: string): Promise<PaymentIntent | null> {

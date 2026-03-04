@@ -1,11 +1,14 @@
 import { RequestContext } from '@mikro-orm/core';
 import { EntityManager } from '@mikro-orm/postgresql';
 import { Injectable } from '@nestjs/common';
+import type { RepositoryGetByIdOptions } from '@/lib/database/repository-get-options';
 import type { IOutboxRepository } from '@/shared/outbox/domain/i.outbox.repository';
 import { OutboxEvent } from '@/shared/outbox/domain/entities/outbox-event.entity';
 import { OutboxEventStatus } from '@/shared/outbox';
 import { OutboxMapper } from '@/modules/outbox/infrastructure/mappers/outbox.mapper';
 import { OutboxEventSchema } from '@/modules/outbox/infrastructure/persistence/outbox.schema';
+import { OUTBOX_INFRA_ERRORS } from '@/shared/errors';
+import { InfrastructureErrorFactory } from '@/shared/errors/base.error-factory';
 
 @Injectable()
 export class OutboxRepository implements IOutboxRepository {
@@ -38,12 +41,31 @@ export class OutboxRepository implements IOutboxRepository {
 		}
 	}
 
+	async getById(
+		uuid: string,
+		options?: RepositoryGetByIdOptions,
+	): Promise<OutboxEvent> {
+		const em = this.emForContext();
+		const failHandler =
+			options?.failHandler ??
+			(() =>
+				InfrastructureErrorFactory.create(
+					OUTBOX_INFRA_ERRORS.OUTBOX_EVENT_NOT_FOUND,
+					{ details: { outboxId: uuid } },
+				));
+		const row = await em.findOneOrFail(
+			OutboxEventSchema,
+			{ uuid },
+			{ failHandler },
+		);
+
+		return this.mapper.toDomain(row);
+	}
+
 	async findById(uuid: string): Promise<OutboxEvent | null> {
 		const em = this.emForContext();
 		const row = await em.findOne(OutboxEventSchema, { uuid });
-		if (!row) return null;
-
-		return this.mapper.toDomain(row);
+		return row ? this.mapper.toDomain(row) : null;
 	}
 
 	async findDispatchable(limit: number, now: Date): Promise<OutboxEvent[]> {

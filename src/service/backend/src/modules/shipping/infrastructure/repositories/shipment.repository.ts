@@ -1,10 +1,13 @@
 import { RequestContext } from '@mikro-orm/core';
 import { EntityManager } from '@mikro-orm/postgresql';
 import { Injectable } from '@nestjs/common';
+import type { RepositoryGetByIdOptions } from '@/lib/database/repository-get-options';
 import type { IShipmentRepository } from '@/modules/shipping/domains/repositories/i.shipment.repository';
 import { ShipmentSchema } from '@/modules/shipping/infrastructure/schemas/shipment.schema';
 import { Shipment } from '@/modules/shipping/domains/entities/aggregates/shipment/shipment.aggregate';
 import { ShipmentMapper } from '@/modules/shipping/infrastructure/mappers/shipment.mapper';
+import { SHIPPING_APPLICATION_ERRORS } from '@/shared/errors';
+import { ApplicationErrorFactory } from '@/shared/errors/base.error-factory';
 
 @Injectable()
 export class ShipmentRepository implements IShipmentRepository {
@@ -35,6 +38,27 @@ export class ShipmentRepository implements IShipmentRepository {
 		} else {
 			em.create(ShipmentSchema, schema);
 		}
+	}
+
+	async getById(
+		id: string,
+		options?: RepositoryGetByIdOptions,
+	): Promise<Shipment> {
+		const em = this.emForContext();
+		const failHandler =
+			options?.failHandler ??
+			(() =>
+				ApplicationErrorFactory.create(
+					SHIPPING_APPLICATION_ERRORS.SHIPMENT_NOT_FOUND,
+					{ details: { id } },
+				));
+		const found = await em.findOneOrFail(
+			ShipmentSchema,
+			{ uuid: id },
+			{ failHandler },
+		);
+
+		return this.mapper.toDomain(found);
 	}
 
 	async findById(id: string): Promise<Shipment | null> {

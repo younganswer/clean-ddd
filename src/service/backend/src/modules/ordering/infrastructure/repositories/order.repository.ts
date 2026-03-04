@@ -1,10 +1,13 @@
 import { RequestContext } from '@mikro-orm/core';
 import { EntityManager } from '@mikro-orm/postgresql';
 import { Injectable } from '@nestjs/common';
+import type { RepositoryGetByIdOptions } from '@/lib/database/repository-get-options';
 import type { IOrderRepository } from '@/modules/ordering/domains/repositories/i.order.repository';
 import { Order } from '@/modules/ordering/domains/entities/aggregates/order/order.aggregate';
 import { OrderMapper } from '@/modules/ordering/infrastructure/mappers/order.mapper';
 import { OrderSchema } from '@/modules/ordering/infrastructure/schemas/order.schema';
+import { ORDERING_APPLICATION_ERRORS } from '@/shared/errors';
+import { ApplicationErrorFactory } from '@/shared/errors/base.error-factory';
 
 @Injectable()
 export class OrderRepository implements IOrderRepository {
@@ -35,10 +38,31 @@ export class OrderRepository implements IOrderRepository {
 		}
 	}
 
+	async getById(
+		orderId: string,
+		options?: RepositoryGetByIdOptions,
+	): Promise<Order> {
+		const em = this.emForContext();
+		const failHandler =
+			options?.failHandler ??
+			(() => {
+				throw ApplicationErrorFactory.create(
+					ORDERING_APPLICATION_ERRORS.ORDER_NOT_FOUND,
+					{ details: { orderId } },
+				);
+			});
+		const found = await em.findOneOrFail(
+			OrderSchema,
+			{ uuid: orderId },
+			{ failHandler },
+		);
+
+		return this.mapper.toDomain(found);
+	}
+
 	async findById(orderId: string): Promise<Order | null> {
 		const em = this.emForContext();
 		const found = await em.findOne(OrderSchema, { uuid: orderId });
-
 		return found ? this.mapper.toDomain(found) : null;
 	}
 
