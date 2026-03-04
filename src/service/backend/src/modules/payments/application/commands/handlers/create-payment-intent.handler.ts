@@ -21,8 +21,6 @@ import {
 	type CreatePaymentIntentResult,
 } from '@/shared/payments';
 import { UnitOfWork } from '@/lib/database/unit-of-work';
-import { PAYMENTS_APPLICATION_ERRORS } from '@/shared/errors';
-import { ApplicationErrorFactory } from '@/shared/errors/base.error-factory';
 
 @CommandHandler(CreatePaymentIntentCommand)
 export class CreatePaymentIntentHandler implements ICommandHandler<CreatePaymentIntentCommand> {

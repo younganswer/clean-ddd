@@ -1,10 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { UnitOfWork } from '@/lib/database/unit-of-work';
-import {
-	IOutboxRepositorySymbol,
-	type IOutboxRepository,
-	OutboxEvent,
-} from '@/shared/outbox';
+import { IOutboxRepositorySymbol } from '@/shared/outbox/domain/i.outbox.repository';
+import type { IOutboxRepository } from '@/shared/outbox/domain/i.outbox.repository';
+import { OutboxEvent } from '@/shared/outbox/domain/entities/outbox-event.entity';
 import { OutboxQueue } from '@/modules/outbox/infrastructure/queue/outbox.queue';
 import { getEventType, toPayload } from '@/lib/outbox/event-registry';
 
