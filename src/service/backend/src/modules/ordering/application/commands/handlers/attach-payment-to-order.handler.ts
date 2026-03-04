@@ -21,12 +21,14 @@ export class AttachPaymentToOrderHandler implements ICommandHandler<AttachPaymen
 		const { orderId, paymentId } = command.input;
 
 		await this.uow.transaction(async () => {
-			const order = await this.orderRepository.findById(orderId);
-			if (!order) {
-				const template = ORDERING_APPLICATION_ERRORS.ORDER_NOT_FOUND;
-				const options = { details: { orderId } };
-				throw ApplicationErrorFactory.create(template, options);
-			}
+			const order = await this.orderRepository.getById(orderId, {
+				failHandler: () => {
+					const template =
+						ORDERING_APPLICATION_ERRORS.ORDER_NOT_FOUND;
+					const options = { details: { orderId } };
+					return ApplicationErrorFactory.create(template, options);
+				},
+			});
 
 			order.attachPayment(paymentId);
 			await this.orderRepository.persist(order);

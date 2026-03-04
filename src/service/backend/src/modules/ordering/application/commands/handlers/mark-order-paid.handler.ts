@@ -21,15 +21,15 @@ export class MarkOrderPaidHandler implements ICommandHandler<MarkOrderPaidComman
 		const { orderId } = command;
 
 		await this.uow.transaction(async () => {
-			const order = await this.orderRepository.findById(orderId);
-			if (!order) {
-				throw ApplicationErrorFactory.create(
-					ORDERING_APPLICATION_ERRORS.ORDER_NOT_FOUND,
-					{
-						details: { orderId },
-					},
-				);
-			}
+			const order = await this.orderRepository.getById(orderId, {
+				failHandler: () =>
+					ApplicationErrorFactory.create(
+						ORDERING_APPLICATION_ERRORS.ORDER_NOT_FOUND,
+						{
+							details: { orderId },
+						},
+					),
+			});
 
 			order.markPaid();
 			await this.orderRepository.persist(order);

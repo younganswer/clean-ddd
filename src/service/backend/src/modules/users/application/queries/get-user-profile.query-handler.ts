@@ -10,8 +10,6 @@ import {
 	IUserAvatarRepositorySymbol,
 	type IUserAvatarRepository,
 } from '@/modules/users/domains/repositories/i.user-avatar.repository';
-import { USER_APPLICATION_ERRORS } from '@/shared/errors';
-import { ApplicationErrorFactory } from '@/shared/errors/base.error-factory';
 
 @QueryHandler(GetUserProfileQuery)
 export class GetUserProfileQueryHandler implements IQueryHandler<GetUserProfileQuery> {
@@ -23,15 +21,7 @@ export class GetUserProfileQueryHandler implements IQueryHandler<GetUserProfileQ
 	) {}
 
 	async execute(query: GetUserProfileQuery): Promise<UserProfileView> {
-		const user = await this.userRepository.findById(query.userId);
-		if (!user) {
-			throw ApplicationErrorFactory.create(
-				USER_APPLICATION_ERRORS.USER_NOT_FOUND,
-				{
-					details: { userId: query.userId },
-				},
-			);
-		}
+		const user = await this.userRepository.getById(query.userId);
 
 		const profile: UserProfileView = {
 			userId: user.id,
