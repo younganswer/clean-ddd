@@ -15,6 +15,11 @@ export const SHIPPING_APPLICATION_ERRORS = {
 		message: 'orderId is required',
 		status: HttpStatus.BAD_REQUEST,
 	},
+	SHIPMENT_NOT_FOUND: {
+		code: 'SHIPMENT_NOT_FOUND',
+		message: 'shipment not found',
+		status: HttpStatus.NOT_FOUND,
+	},
 	SHIPPING_EVENT_PAYLOAD_INVALID: {
 		code: 'SHIPPING_EVENT_PAYLOAD_INVALID',
 		message: 'invalid shipping payload',

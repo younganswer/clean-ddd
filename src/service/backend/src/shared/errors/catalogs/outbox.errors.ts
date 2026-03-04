@@ -2,6 +2,11 @@ import { HttpStatus } from '@nestjs/common';
 import { ErrorTemplate } from '@/shared/errors/error-template.type';
 
 export const OUTBOX_INFRA_ERRORS = {
+	OUTBOX_EVENT_NOT_FOUND: {
+		code: 'OUTBOX_EVENT_NOT_FOUND',
+		message: 'outbox event not found',
+		status: HttpStatus.NOT_FOUND,
+	},
 	OUTBOX_CONSUMER_PROVIDER_NOT_FOUND: {
 		code: 'OUTBOX_CONSUMER_PROVIDER_NOT_FOUND',
 		message: 'OutboxConsumer provider not found',
