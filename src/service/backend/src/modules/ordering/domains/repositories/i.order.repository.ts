@@ -3,11 +3,8 @@ import type { RepositoryGetByIdOptions } from '@/lib/database/repository-get-opt
 
 export interface IOrderRepository {
 	persist(order: Order): Promise<void>;
-	findById(orderId: string): Promise<Order | null>;
-	getById(
-		orderId: string,
-		options?: RepositoryGetByIdOptions,
-	): Promise<Order>;
+	findById(id: string): Promise<Order | null>;
+	getById(id: string, options?: RepositoryGetByIdOptions): Promise<Order>;
 	findRecent(limit: number, offset?: number): Promise<Order[]>;
 	findByUserId(
 		userId: string,

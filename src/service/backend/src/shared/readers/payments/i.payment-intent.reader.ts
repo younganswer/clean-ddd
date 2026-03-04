@@ -3,6 +3,6 @@ import type { PaymentIntentView } from '@/shared/readers/payments/dto/payment-in
 export const IPaymentIntentReaderSymbol = Symbol('IPaymentIntentReader');
 
 export interface IPaymentIntentReader {
-	findById(paymentId: string): Promise<PaymentIntentView | null>;
+	findById(id: string): Promise<PaymentIntentView | null>;
 	findRecent(limit: number): Promise<PaymentIntentView[]>;
 }

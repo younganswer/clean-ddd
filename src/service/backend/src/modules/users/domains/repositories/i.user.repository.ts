@@ -5,11 +5,8 @@ export const IUserRepositorySymbol = Symbol('IUserRepository');
 
 export interface IUserRepository {
 	persist(user: User): Promise<void>;
-	findById(userId: string): Promise<User | null>;
-
-	getById(userId: string, options?: RepositoryGetByIdOptions): Promise<User>;
-
+	findById(id: string): Promise<User | null>;
+	getById(id: string, options?: RepositoryGetByIdOptions): Promise<User>;
 	findAll(input: { limit: number; page: number }): Promise<User[]>;
-
 	countAll(): Promise<number>;
 }

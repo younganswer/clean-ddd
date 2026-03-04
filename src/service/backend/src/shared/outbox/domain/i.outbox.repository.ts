@@ -3,9 +3,9 @@ import type { RepositoryGetByIdOptions } from '@/lib/database/repository-get-opt
 
 export interface IOutboxRepository {
 	persist(event: OutboxEvent): Promise<void>;
-	findById(uuid: string): Promise<OutboxEvent | null>;
+	findById(id: string): Promise<OutboxEvent | null>;
 	getById(
-		uuid: string,
+		id: string,
 		options?: RepositoryGetByIdOptions,
 	): Promise<OutboxEvent>;
 

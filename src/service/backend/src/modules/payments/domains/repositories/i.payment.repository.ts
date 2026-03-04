@@ -3,10 +3,10 @@ import type { RepositoryGetByIdOptions } from '@/lib/database/repository-get-opt
 
 export interface IPaymentRepository {
 	persist(payment: PaymentIntent): Promise<void>;
-	findById(paymentId: string): Promise<PaymentIntent | null>;
+	findById(id: string): Promise<PaymentIntent | null>;
 
 	getById(
-		paymentId: string,
+		id: string,
 		options?: RepositoryGetByIdOptions,
 	): Promise<PaymentIntent>;
 
