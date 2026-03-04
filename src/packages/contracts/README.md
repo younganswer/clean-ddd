@@ -13,5 +13,6 @@
 
 ## 이 저장소에서의 형태
 
-- OpenAPI: `src/packages/contracts/openapi.yaml`
+- 도메인 API OpenAPI: `src/packages/contracts/openapi.yaml`
+- BFF API OpenAPI: `src/packages/contracts/openapi.bff.yaml`
 - 타입 진입점: `src/packages/contracts/index.ts`

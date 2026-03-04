@@ -1,0 +1,243 @@
+openapi: 3.0.3
+info:
+    title: clean-ddd BFF API
+    version: 0.0.1
+servers:
+    - url: /api/v1
+
+paths:
+    /bff/dashboard/summary:
+        get:
+            summary: Get dashboard summary
+            parameters:
+                - in: query
+                  name: limit
+                  required: false
+                  schema:
+                      type: integer
+                      default: 10
+                      minimum: 1
+                      maximum: 100
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/BffDataEnvelope"
+
+    /bff/orders:
+        get:
+            summary: List orders (BFF)
+            parameters:
+                - in: query
+                  name: limit
+                  required: false
+                  schema:
+                      type: integer
+                      default: 20
+                      minimum: 1
+                      maximum: 200
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/BffListEnvelope"
+        post:
+            summary: Create order (BFF)
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            additionalProperties: true
+            responses:
+                "201":
+                    description: Created
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/BffDataEnvelope"
+
+    /bff/orders/{orderId}:
+        get:
+            summary: Get order (BFF)
+            parameters:
+                - in: path
+                  name: orderId
+                  required: true
+                  schema:
+                      type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/BffDataEnvelope"
+                "404":
+                    description: Not Found
+
+    /bff/order-detail/{orderId}:
+        get:
+            summary: Get order detail aggregate (BFF)
+            parameters:
+                - in: path
+                  name: orderId
+                  required: true
+                  schema:
+                      type: string
+                - in: query
+                  name: includePayment
+                  required: false
+                  schema:
+                      type: boolean
+                - in: query
+                  name: includeShipment
+                  required: false
+                  schema:
+                      type: boolean
+                - in: query
+                  name: includeReservations
+                  required: false
+                  schema:
+                      type: boolean
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/BffDataEnvelope"
+                "404":
+                    description: Not Found
+
+    /bff/checkout:
+        post:
+            summary: Create checkout flow (BFF)
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            additionalProperties: true
+            responses:
+                "201":
+                    description: Created
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/BffDataEnvelope"
+
+    /bff/graph:
+        get:
+            summary: Get relationship graph (BFF)
+            parameters:
+                - in: query
+                  name: rootType
+                  required: true
+                  schema:
+                      type: string
+                      enum: [USER, ORDER, SHIPMENT, PAYMENT]
+                - in: query
+                  name: rootId
+                  required: true
+                  schema:
+                      type: string
+                - in: query
+                  name: depth
+                  required: false
+                  schema:
+                      type: integer
+                      minimum: 0
+                      maximum: 4
+                - in: query
+                  name: maxEvents
+                  required: false
+                  schema:
+                      type: integer
+                      minimum: 0
+                      maximum: 2000
+                - in: query
+                  name: maxNodes
+                  required: false
+                  schema:
+                      type: integer
+                      minimum: 1
+                      maximum: 2000
+                - in: query
+                  name: includeEvents
+                  required: false
+                  schema:
+                      type: boolean
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/BffDataEnvelope"
+                "404":
+                    description: Not Found
+
+    /bff/system-concepts/bootstrap:
+        get:
+            summary: Get system concepts bootstrap data (BFF)
+            parameters:
+                - in: query
+                  name: limit
+                  required: false
+                  schema:
+                      type: integer
+                      default: 50
+                      minimum: 1
+                      maximum: 200
+                - in: query
+                  name: page
+                  required: false
+                  schema:
+                      type: integer
+                      default: 1
+                      minimum: 1
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/BffDataEnvelope"
+
+components:
+    schemas:
+        SuccessEnvelope:
+            type: object
+            required: [success]
+            properties:
+                success:
+                    type: boolean
+
+        BffDataEnvelope:
+            allOf:
+                - $ref: "#/components/schemas/SuccessEnvelope"
+                - type: object
+                  required: [data]
+                  properties:
+                      data:
+                          type: object
+                          additionalProperties: true
+
+        BffListEnvelope:
+            allOf:
+                - $ref: "#/components/schemas/SuccessEnvelope"
+                - type: object
+                  required: [data]
+                  properties:
+                      data:
+                          type: array
+                          items:
+                              type: object
+                              additionalProperties: true

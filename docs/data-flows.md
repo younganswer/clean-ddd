@@ -91,14 +91,15 @@ sequenceDiagram
 
 ## 단계별 코드 탐색 경로
 
-| 단계            | 확인할 위치                                        | 확인할 것                                         |
-| --------------- | -------------------------------------------------- | ------------------------------------------------- |
-| HTTP 진입       | `src/service/backend/src/modules/*/presentation`   | Controller, input/output DTO                      |
-| 유스케이스 실행 | `src/service/backend/src/modules/*/application`    | Command/Query handler                             |
-| 도메인 규칙     | `src/service/backend/src/modules/*/domains`        | Entity, domain rule                               |
-| 영속 구현       | `src/service/backend/src/modules/*/infrastructure` | repository 구현/mapper/schema                     |
-| Outbox/큐 연결  | `src/service/backend/src/lib`                      | outbox dispatcher, queue adapter, lambda/consumer |
-| 검증            | `src/service/backend/tests`                        | unit/db/e2e 테스트                                |
+| 단계             | 확인할 위치                                        | 확인할 것                                      |
+| ---------------- | -------------------------------------------------- | ---------------------------------------------- |
+| HTTP 진입        | `src/service/backend/src/modules/*/presentation`   | Controller, input/output DTO                   |
+| 유스케이스 실행  | `src/service/backend/src/modules/*/application`    | Command/Query handler                          |
+| 도메인 규칙      | `src/service/backend/src/modules/*/domains`        | Entity, domain rule                            |
+| 영속 구현        | `src/service/backend/src/modules/*/infrastructure` | repository 구현/mapper/schema                  |
+| Outbox 핵심 흐름 | `src/service/backend/src/modules/outbox`           | outbox producer/dispatcher/consumer, 상태 전이 |
+| 런타임 어댑터    | `src/service/backend/src/lib`                      | queue client, lambda/infra adapter             |
+| 검증             | `src/service/backend/tests`                        | unit/db/e2e 테스트                             |
 
 <br/>
 <br/>

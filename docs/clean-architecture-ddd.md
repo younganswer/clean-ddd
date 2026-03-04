@@ -210,13 +210,14 @@ flowchart TB
 
 ## 개념 ↔ 폴더 매핑
 
-| 알고 싶은 것    | 먼저 볼 폴더                                       | 확인 포인트                       |
-| --------------- | -------------------------------------------------- | --------------------------------- |
-| 유스케이스 흐름 | `src/service/backend/src/modules/*/application`    | handler 입력/출력과 orchestration |
-| 도메인 규칙     | `src/service/backend/src/modules/*/domains`        | entity 불변성/규칙                |
-| DB 매핑/영속    | `src/service/backend/src/modules/*/infrastructure` | repository 구현, mapper/schema    |
-| 런타임 어댑터   | `src/service/backend/src/lib`                      | lambda/queue/outbox 결합          |
-| 테스트 전략     | `src/service/backend/tests`                        | unit/db/e2e 분리 기준             |
+| 알고 싶은 것     | 먼저 볼 폴더                                       | 확인 포인트                         |
+| ---------------- | -------------------------------------------------- | ----------------------------------- |
+| 유스케이스 흐름  | `src/service/backend/src/modules/*/application`    | handler 입력/출력과 orchestration   |
+| 도메인 규칙      | `src/service/backend/src/modules/*/domains`        | entity 불변성/규칙                  |
+| DB 매핑/영속     | `src/service/backend/src/modules/*/infrastructure` | repository 구현, mapper/schema      |
+| Outbox 핵심 흐름 | `src/service/backend/src/modules/outbox`           | outbox 상태 전이/디스패치/소비 로직 |
+| 런타임 어댑터    | `src/service/backend/src/lib`                      | lambda/queue 클라이언트/infra 결합  |
+| 테스트 전략      | `src/service/backend/tests`                        | unit/db/e2e 분리 기준               |
 
 <br/>
 <br/>

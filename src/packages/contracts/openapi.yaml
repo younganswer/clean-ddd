@@ -6,6 +6,28 @@ servers:
     - url: /api/v1
 
 paths:
+    /:
+        get:
+            summary: Get service hello message
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/MessageEnvelope"
+
+    /app/health-check:
+        get:
+            summary: Get service health check message
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/MessageEnvelope"
+
     /me:
         get:
             summary: Get my profile
@@ -23,6 +45,7 @@ paths:
                         application/json:
                             schema:
                                 $ref: "#/components/schemas/UserProfileEnvelope"
+    /me/avatar:
         patch:
             summary: Update my avatar
             requestBody:
@@ -306,6 +329,15 @@ components:
             properties:
                 success:
                     type: boolean
+
+        MessageEnvelope:
+            allOf:
+                - $ref: "#/components/schemas/SuccessEnvelope"
+                - type: object
+                  required: [data]
+                  properties:
+                      data:
+                          type: string
 
         PaginatedMeta:
             type: object
