@@ -131,6 +131,7 @@ Resources:
       Dockerfile: service/backend/Dockerfile.lambda
       DockerTag: api-function
     Properties:
+      FunctionName: !Sub "${ProjectName}-${EnvironmentName}-ApiStack-api"
       PackageType: Image
       ImageConfig:
         Command:
@@ -156,6 +157,12 @@ Resources:
             RestApiId: !Ref PublicEdgeApi
             Path: /{proxy+}
             Method: ANY
+
+  ApiFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${ProjectName}-${EnvironmentName}-ApiStack-api"
+      RetentionInDays: !Ref ApiAccessLogRetentionDays
 
   ApiEdgeDistribution:
     Type: AWS::CloudFront::Distribution

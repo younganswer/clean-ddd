@@ -3,378 +3,388 @@ Transform: AWS::Serverless-2016-10-31
 Description: Monitoring and automated mitigation resources for clean-ddd
 
 Parameters:
-    ProjectName:
-        Type: String
-    EnvironmentName:
-        Type: String
-    PublicApiId:
-        Type: String
-    PublicApiStageName:
-        Type: String
-    ApiFunctionName:
-        Type: String
-    OutboxConsumerFunctionName:
-        Type: String
-    OutboxDispatchSchedulerFunctionName:
-        Type: String
-    OutboxQueueName:
-        Type: String
-    MitigationThrottleRate:
-        Type: Number
-        Default: 5
-    MitigationThrottleBurst:
-        Type: Number
-        Default: 10
-    MitigationApiReservedConcurrency:
-        Type: Number
-        Default: 3
-    MitigationConsumerReservedConcurrency:
-        Type: Number
-        Default: 1
-    MitigationDispatchReservedConcurrency:
-        Type: Number
-        Default: 1
-    MitigationBlockedPaths:
-        Type: CommaDelimitedList
-        Default: /api/v1/users/search:GET,/api/v1/users/list:GET
+  ProjectName:
+    Type: String
+  EnvironmentName:
+    Type: String
+  PublicApiId:
+    Type: String
+  PublicApiStageName:
+    Type: String
+  ApiFunctionName:
+    Type: String
+  OutboxConsumerFunctionName:
+    Type: String
+  OutboxDispatchSchedulerFunctionName:
+    Type: String
+  OutboxQueueName:
+    Type: String
+  MitigationThrottleRate:
+    Type: Number
+    Default: 5
+  MitigationThrottleBurst:
+    Type: Number
+    Default: 10
+  MitigationApiReservedConcurrency:
+    Type: Number
+    Default: 3
+  MitigationConsumerReservedConcurrency:
+    Type: Number
+    Default: 1
+  MitigationDispatchReservedConcurrency:
+    Type: Number
+    Default: 1
+  MitigationBlockedPaths:
+    Type: CommaDelimitedList
+    Default: /api/v1/users/search:GET,/api/v1/users/list:GET
+  MonitoringLogRetentionDays:
+    Type: Number
+    Default: 14
 
 Resources:
-    SecurityAlertsTopic:
-        Type: AWS::SNS::Topic
-        Properties:
-            TopicName: !Sub "${ProjectName}-${EnvironmentName}-security-alerts"
-            Tags:
-                - Key: Project
-                  Value: !Ref ProjectName
-                - Key: Environment
-                  Value: !Ref EnvironmentName
+  SecurityAlertsTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub "${ProjectName}-${EnvironmentName}-security-alerts"
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref EnvironmentName
 
-    MitigationRole:
-        Type: AWS::IAM::Role
-        Properties:
-            AssumeRolePolicyDocument:
-                Version: "2012-10-17"
-                Statement:
-                    - Effect: Allow
-                      Principal:
-                          Service: lambda.amazonaws.com
-                      Action: sts:AssumeRole
-            ManagedPolicyArns:
-                - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
-            Policies:
-                - PolicyName: ApiThrottleMitigationPolicy
-                  PolicyDocument:
-                      Version: "2012-10-17"
-                      Statement:
-                          - Effect: Allow
-                            Action:
-                                - apigateway:GET
-                                - apigateway:PATCH
-                            Resource:
-                                - !Sub "arn:aws:apigateway:${AWS::Region}::/restapis/${PublicApiId}/stages/${PublicApiStageName}"
-                          - Effect: Allow
-                            Action:
-                                - lambda:PutFunctionConcurrency
-                            Resource:
-                                - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${ApiFunctionName}"
-                                - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${OutboxConsumerFunctionName}"
-                                - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${OutboxDispatchSchedulerFunctionName}"
+  MitigationRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: ApiThrottleMitigationPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - apigateway:GET
+                  - apigateway:PATCH
+                Resource:
+                  - !Sub "arn:aws:apigateway:${AWS::Region}::/restapis/${PublicApiId}/stages/${PublicApiStageName}"
+              - Effect: Allow
+                Action:
+                  - lambda:PutFunctionConcurrency
+                Resource:
+                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${ApiFunctionName}"
+                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${OutboxConsumerFunctionName}"
+                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${OutboxDispatchSchedulerFunctionName}"
 
-    MitigationFunction:
-        Type: AWS::Lambda::Function
-        Properties:
-            Runtime: python3.12
-            Handler: index.handler
-            Role: !GetAtt MitigationRole.Arn
-            Timeout: 20
-            MemorySize: 256
-            Environment:
-                Variables:
-                    API_ID: !Ref PublicApiId
-                    API_STAGE_NAME: !Ref PublicApiStageName
-                    TARGET_THROTTLE_RATE: !Ref MitigationThrottleRate
-                    TARGET_THROTTLE_BURST: !Ref MitigationThrottleBurst
-                    API_FUNCTION_NAME: !Ref ApiFunctionName
-                    CONSUMER_FUNCTION_NAME: !Ref OutboxConsumerFunctionName
-                    DISPATCH_FUNCTION_NAME: !Ref OutboxDispatchSchedulerFunctionName
-                    API_RESERVED_CONCURRENCY: !Ref MitigationApiReservedConcurrency
-                    CONSUMER_RESERVED_CONCURRENCY: !Ref MitigationConsumerReservedConcurrency
-                    DISPATCH_RESERVED_CONCURRENCY: !Ref MitigationDispatchReservedConcurrency
-                    BLOCKED_PATHS: !Join [",", !Ref MitigationBlockedPaths]
-            Code:
-                ZipFile: |
-                    import json
-                    import os
+  MitigationFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub "${ProjectName}-${EnvironmentName}-MonitoringStack-mitigation"
+      Runtime: python3.12
+      Handler: index.handler
+      Role: !GetAtt MitigationRole.Arn
+      Timeout: 20
+      MemorySize: 256
+      Environment:
+        Variables:
+          API_ID: !Ref PublicApiId
+          API_STAGE_NAME: !Ref PublicApiStageName
+          TARGET_THROTTLE_RATE: !Ref MitigationThrottleRate
+          TARGET_THROTTLE_BURST: !Ref MitigationThrottleBurst
+          API_FUNCTION_NAME: !Ref ApiFunctionName
+          CONSUMER_FUNCTION_NAME: !Ref OutboxConsumerFunctionName
+          DISPATCH_FUNCTION_NAME: !Ref OutboxDispatchSchedulerFunctionName
+          API_RESERVED_CONCURRENCY: !Ref MitigationApiReservedConcurrency
+          CONSUMER_RESERVED_CONCURRENCY: !Ref MitigationConsumerReservedConcurrency
+          DISPATCH_RESERVED_CONCURRENCY: !Ref MitigationDispatchReservedConcurrency
+          BLOCKED_PATHS: !Join [",", !Ref MitigationBlockedPaths]
+      Code:
+        ZipFile: |
+          import json
+          import os
 
-                    import boto3
+          import boto3
 
-                    apigw = boto3.client("apigateway")
-                    lambda_client = boto3.client("lambda")
-
-
-                    def apply_patch(api_id, stage_name, patch_operations):
-                        try:
-                            apigw.update_stage(
-                                restApiId=api_id,
-                                stageName=stage_name,
-                                patchOperations=patch_operations,
-                            )
-                            return True
-                        except Exception:
-                            return False
+          apigw = boto3.client("apigateway")
+          lambda_client = boto3.client("lambda")
 
 
-                    def encode_resource_path(path):
-                        normalized = path if path.startswith("/") else f"/{path}"
-                        return normalized.replace("/", "~1")
+          def apply_patch(api_id, stage_name, patch_operations):
+              try:
+                  apigw.update_stage(
+                      restApiId=api_id,
+                      stageName=stage_name,
+                      patchOperations=patch_operations,
+                  )
+                  return True
+              except Exception:
+                  return False
 
 
-                    def enforce_stage_throttle(api_id, stage_name, rate, burst):
-                        paths = [
-                            (
-                                [
-                                    {
-                                        "op": "replace",
-                                        "path": "/*/*/throttling/rateLimit",
-                                        "value": str(rate),
-                                    },
-                                    {
-                                        "op": "replace",
-                                        "path": "/*/*/throttling/burstLimit",
-                                        "value": str(burst),
-                                    },
-                                ],
-                                [
-                                    {
-                                        "op": "add",
-                                        "path": "/*/*/throttling/rateLimit",
-                                        "value": str(rate),
-                                    },
-                                    {
-                                        "op": "add",
-                                        "path": "/*/*/throttling/burstLimit",
-                                        "value": str(burst),
-                                    },
-                                ],
-                            )
-                        ]
-
-                        for primary, fallback in paths:
-                            if apply_patch(api_id, stage_name, primary):
-                                return
-                            apply_patch(api_id, stage_name, fallback)
+          def encode_resource_path(path):
+              normalized = path if path.startswith("/") else f"/{path}"
+              return normalized.replace("/", "~1")
 
 
-                    def block_paths(api_id, stage_name, rate, burst, blocked_paths):
-                        for item in blocked_paths:
-                            if not item:
-                                continue
-                            if ":" in item:
-                                route_path, method = item.rsplit(":", 1)
-                            else:
-                                route_path, method = item, "*"
-                            encoded = encode_resource_path(route_path)
-                            method = method.upper()
-                            base = f"/{encoded}/{method}/throttling"
+          def enforce_stage_throttle(api_id, stage_name, rate, burst):
+              paths = [
+                  (
+                      [
+                          {
+                              "op": "replace",
+                              "path": "/*/*/throttling/rateLimit",
+                              "value": str(rate),
+                          },
+                          {
+                              "op": "replace",
+                              "path": "/*/*/throttling/burstLimit",
+                              "value": str(burst),
+                          },
+                      ],
+                      [
+                          {
+                              "op": "add",
+                              "path": "/*/*/throttling/rateLimit",
+                              "value": str(rate),
+                          },
+                          {
+                              "op": "add",
+                              "path": "/*/*/throttling/burstLimit",
+                              "value": str(burst),
+                          },
+                      ],
+                  )
+              ]
 
-                            ops_replace = [
-                                {
-                                    "op": "replace",
-                                    "path": f"{base}/rateLimit",
-                                    "value": str(rate),
-                                },
-                                {
-                                    "op": "replace",
-                                    "path": f"{base}/burstLimit",
-                                    "value": str(burst),
-                                },
-                            ]
-
-                            if apply_patch(api_id, stage_name, ops_replace):
-                                continue
-
-                            ops_add = [
-                                {
-                                    "op": "add",
-                                    "path": f"{base}/rateLimit",
-                                    "value": str(rate),
-                                },
-                                {
-                                    "op": "add",
-                                    "path": f"{base}/burstLimit",
-                                    "value": str(burst),
-                                },
-                            ]
-                            apply_patch(api_id, stage_name, ops_add)
+              for primary, fallback in paths:
+                  if apply_patch(api_id, stage_name, primary):
+                      return
+                  apply_patch(api_id, stage_name, fallback)
 
 
-                    def lower_reserved_concurrency(function_name, target):
-                        if not function_name:
-                            return
-                        lambda_client.put_function_concurrency(
-                            FunctionName=function_name,
-                            ReservedConcurrentExecutions=int(target),
-                        )
+          def block_paths(api_id, stage_name, rate, burst, blocked_paths):
+              for item in blocked_paths:
+                  if not item:
+                      continue
+                  if ":" in item:
+                      route_path, method = item.rsplit(":", 1)
+                  else:
+                      route_path, method = item, "*"
+                  encoded = encode_resource_path(route_path)
+                  method = method.upper()
+                  base = f"/{encoded}/{method}/throttling"
+
+                  ops_replace = [
+                      {
+                          "op": "replace",
+                          "path": f"{base}/rateLimit",
+                          "value": str(rate),
+                      },
+                      {
+                          "op": "replace",
+                          "path": f"{base}/burstLimit",
+                          "value": str(burst),
+                      },
+                  ]
+
+                  if apply_patch(api_id, stage_name, ops_replace):
+                      continue
+
+                  ops_add = [
+                      {
+                          "op": "add",
+                          "path": f"{base}/rateLimit",
+                          "value": str(rate),
+                      },
+                      {
+                          "op": "add",
+                          "path": f"{base}/burstLimit",
+                          "value": str(burst),
+                      },
+                  ]
+                  apply_patch(api_id, stage_name, ops_add)
 
 
-                    def handler(event, context):
-                        api_id = os.environ["API_ID"]
-                        stage_name = os.environ["API_STAGE_NAME"]
-                        target_rate = float(os.environ["TARGET_THROTTLE_RATE"])
-                        target_burst = float(os.environ["TARGET_THROTTLE_BURST"])
-                        blocked_paths = [
-                            path.strip()
-                            for path in os.environ.get("BLOCKED_PATHS", "").split(",")
-                            if path.strip()
-                        ]
+          def lower_reserved_concurrency(function_name, target):
+              if not function_name:
+                  return
+              lambda_client.put_function_concurrency(
+                  FunctionName=function_name,
+                  ReservedConcurrentExecutions=int(target),
+              )
 
-                        enforce_stage_throttle(api_id, stage_name, target_rate, target_burst)
-                        block_paths(api_id, stage_name, 0, 1, blocked_paths)
 
-                        lower_reserved_concurrency(
-                            os.environ.get("API_FUNCTION_NAME"),
-                            os.environ.get("API_RESERVED_CONCURRENCY", "3"),
-                        )
-                        lower_reserved_concurrency(
-                            os.environ.get("CONSUMER_FUNCTION_NAME"),
-                            os.environ.get("CONSUMER_RESERVED_CONCURRENCY", "1"),
-                        )
-                        lower_reserved_concurrency(
-                            os.environ.get("DISPATCH_FUNCTION_NAME"),
-                            os.environ.get("DISPATCH_RESERVED_CONCURRENCY", "1"),
-                        )
+          def handler(event, context):
+              api_id = os.environ["API_ID"]
+              stage_name = os.environ["API_STAGE_NAME"]
+              target_rate = float(os.environ["TARGET_THROTTLE_RATE"])
+              target_burst = float(os.environ["TARGET_THROTTLE_BURST"])
+              blocked_paths = [
+                  path.strip()
+                  for path in os.environ.get("BLOCKED_PATHS", "").split(",")
+                  if path.strip()
+              ]
 
-                        return {
-                            "statusCode": 200,
-                            "body": json.dumps(
-                                {
-                                    "message": "mitigation applied",
-                                    "event": event,
-                                }
-                            ),
-                        }
+              enforce_stage_throttle(api_id, stage_name, target_rate, target_burst)
+              block_paths(api_id, stage_name, 0, 1, blocked_paths)
 
-    MitigationSubscription:
-        Type: AWS::SNS::Subscription
-        Properties:
-            TopicArn: !Ref SecurityAlertsTopic
-            Protocol: lambda
-            Endpoint: !GetAtt MitigationFunction.Arn
+              lower_reserved_concurrency(
+                  os.environ.get("API_FUNCTION_NAME"),
+                  os.environ.get("API_RESERVED_CONCURRENCY", "3"),
+              )
+              lower_reserved_concurrency(
+                  os.environ.get("CONSUMER_FUNCTION_NAME"),
+                  os.environ.get("CONSUMER_RESERVED_CONCURRENCY", "1"),
+              )
+              lower_reserved_concurrency(
+                  os.environ.get("DISPATCH_FUNCTION_NAME"),
+                  os.environ.get("DISPATCH_RESERVED_CONCURRENCY", "1"),
+              )
 
-    AllowSnsInvokeMitigationFunction:
-        Type: AWS::Lambda::Permission
-        Properties:
-            Action: lambda:InvokeFunction
-            FunctionName: !Ref MitigationFunction
-            Principal: sns.amazonaws.com
-            SourceArn: !Ref SecurityAlertsTopic
+              return {
+                  "statusCode": 200,
+                  "body": json.dumps(
+                      {
+                          "message": "mitigation applied",
+                          "event": event,
+                      }
+                  ),
+              }
 
-    ApiGateway5xxAlarm:
-        Type: AWS::CloudWatch::Alarm
-        Properties:
-            AlarmName: !Sub "${ProjectName}-${EnvironmentName}-apigw-5xx"
-            AlarmDescription: Public edge API 5xx error count is elevated.
-            Namespace: AWS/ApiGateway
-            MetricName: 5XXError
-            Dimensions:
-                - Name: ApiName
-                  Value: !Sub "${ProjectName}-${EnvironmentName}-edge-api"
-                - Name: Stage
-                  Value: !Ref PublicApiStageName
-            Statistic: Sum
-            Period: 60
-            EvaluationPeriods: 3
-            DatapointsToAlarm: 2
-            Threshold: 10
-            ComparisonOperator: GreaterThanOrEqualToThreshold
-            TreatMissingData: notBreaching
-            AlarmActions:
-                - !Ref SecurityAlertsTopic
+  MitigationFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${ProjectName}-${EnvironmentName}-MonitoringStack-mitigation"
+      RetentionInDays: !Ref MonitoringLogRetentionDays
 
-    ApiGateway4xxAlarm:
-        Type: AWS::CloudWatch::Alarm
-        Properties:
-            AlarmName: !Sub "${ProjectName}-${EnvironmentName}-apigw-4xx"
-            AlarmDescription: Public edge API 4xx error count is elevated.
-            Namespace: AWS/ApiGateway
-            MetricName: 4XXError
-            Dimensions:
-                - Name: ApiName
-                  Value: !Sub "${ProjectName}-${EnvironmentName}-edge-api"
-                - Name: Stage
-                  Value: !Ref PublicApiStageName
-            Statistic: Sum
-            Period: 60
-            EvaluationPeriods: 5
-            DatapointsToAlarm: 3
-            Threshold: 100
-            ComparisonOperator: GreaterThanOrEqualToThreshold
-            TreatMissingData: notBreaching
-            AlarmActions:
-                - !Ref SecurityAlertsTopic
+  MitigationSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      TopicArn: !Ref SecurityAlertsTopic
+      Protocol: lambda
+      Endpoint: !GetAtt MitigationFunction.Arn
 
-    ApiGatewayLatencyAlarm:
-        Type: AWS::CloudWatch::Alarm
-        Properties:
-            AlarmName: !Sub "${ProjectName}-${EnvironmentName}-apigw-latency-p95"
-            AlarmDescription: Public edge API p95 latency is elevated.
-            Namespace: AWS/ApiGateway
-            MetricName: Latency
-            Dimensions:
-                - Name: ApiName
-                  Value: !Sub "${ProjectName}-${EnvironmentName}-edge-api"
-                - Name: Stage
-                  Value: !Ref PublicApiStageName
-            ExtendedStatistic: p95
-            Period: 60
-            EvaluationPeriods: 5
-            DatapointsToAlarm: 3
-            Threshold: 1500
-            ComparisonOperator: GreaterThanOrEqualToThreshold
-            TreatMissingData: notBreaching
-            AlarmActions:
-                - !Ref SecurityAlertsTopic
+  AllowSnsInvokeMitigationFunction:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref MitigationFunction
+      Principal: sns.amazonaws.com
+      SourceArn: !Ref SecurityAlertsTopic
 
-    ApiLambdaThrottleAlarm:
-        Type: AWS::CloudWatch::Alarm
-        Properties:
-            AlarmName: !Sub "${ProjectName}-${EnvironmentName}-api-lambda-throttles"
-            AlarmDescription: API Lambda throttles are elevated.
-            Namespace: AWS/Lambda
-            MetricName: Throttles
-            Dimensions:
-                - Name: FunctionName
-                  Value: !Ref ApiFunctionName
-            Statistic: Sum
-            Period: 60
-            EvaluationPeriods: 3
-            DatapointsToAlarm: 2
-            Threshold: 5
-            ComparisonOperator: GreaterThanOrEqualToThreshold
-            TreatMissingData: notBreaching
-            AlarmActions:
-                - !Ref SecurityAlertsTopic
+  ApiGateway5xxAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${ProjectName}-${EnvironmentName}-apigw-5xx"
+      AlarmDescription: Public edge API 5xx error count is elevated.
+      Namespace: AWS/ApiGateway
+      MetricName: 5XXError
+      Dimensions:
+        - Name: ApiName
+          Value: !Sub "${ProjectName}-${EnvironmentName}-edge-api"
+        - Name: Stage
+          Value: !Ref PublicApiStageName
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 2
+      Threshold: 10
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref SecurityAlertsTopic
 
-    OutboxQueueBacklogAgeAlarm:
-        Type: AWS::CloudWatch::Alarm
-        Properties:
-            AlarmName: !Sub "${ProjectName}-${EnvironmentName}-outbox-queue-age"
-            AlarmDescription: Outbox queue backlog age is elevated.
-            Namespace: AWS/SQS
-            MetricName: ApproximateAgeOfOldestMessage
-            Dimensions:
-                - Name: QueueName
-                  Value: !Ref OutboxQueueName
-            Statistic: Maximum
-            Period: 60
-            EvaluationPeriods: 5
-            DatapointsToAlarm: 3
-            Threshold: 300
-            ComparisonOperator: GreaterThanOrEqualToThreshold
-            TreatMissingData: notBreaching
-            AlarmActions:
-                - !Ref SecurityAlertsTopic
+  ApiGateway4xxAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${ProjectName}-${EnvironmentName}-apigw-4xx"
+      AlarmDescription: Public edge API 4xx error count is elevated.
+      Namespace: AWS/ApiGateway
+      MetricName: 4XXError
+      Dimensions:
+        - Name: ApiName
+          Value: !Sub "${ProjectName}-${EnvironmentName}-edge-api"
+        - Name: Stage
+          Value: !Ref PublicApiStageName
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 5
+      DatapointsToAlarm: 3
+      Threshold: 100
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref SecurityAlertsTopic
+
+  ApiGatewayLatencyAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${ProjectName}-${EnvironmentName}-apigw-latency-p95"
+      AlarmDescription: Public edge API p95 latency is elevated.
+      Namespace: AWS/ApiGateway
+      MetricName: Latency
+      Dimensions:
+        - Name: ApiName
+          Value: !Sub "${ProjectName}-${EnvironmentName}-edge-api"
+        - Name: Stage
+          Value: !Ref PublicApiStageName
+      ExtendedStatistic: p95
+      Period: 60
+      EvaluationPeriods: 5
+      DatapointsToAlarm: 3
+      Threshold: 1500
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref SecurityAlertsTopic
+
+  ApiLambdaThrottleAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${ProjectName}-${EnvironmentName}-api-lambda-throttles"
+      AlarmDescription: API Lambda throttles are elevated.
+      Namespace: AWS/Lambda
+      MetricName: Throttles
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref ApiFunctionName
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 2
+      Threshold: 5
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref SecurityAlertsTopic
+
+  OutboxQueueBacklogAgeAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${ProjectName}-${EnvironmentName}-outbox-queue-age"
+      AlarmDescription: Outbox queue backlog age is elevated.
+      Namespace: AWS/SQS
+      MetricName: ApproximateAgeOfOldestMessage
+      Dimensions:
+        - Name: QueueName
+          Value: !Ref OutboxQueueName
+      Statistic: Maximum
+      Period: 60
+      EvaluationPeriods: 5
+      DatapointsToAlarm: 3
+      Threshold: 300
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref SecurityAlertsTopic
 
 Outputs:
-    SecurityAlertsTopicArn:
-        Value: !Ref SecurityAlertsTopic
+  SecurityAlertsTopicArn:
+    Value: !Ref SecurityAlertsTopic
