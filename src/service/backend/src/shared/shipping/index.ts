@@ -6,7 +6,7 @@ export * from '@/shared/shipping/commands/create-shipment-for-order.command';
 
 export * from '@/shared/shipping/queries/get-shipment.query';
 export * from '@/shared/shipping/queries/get-shipment-by-order.query';
-export * from '@/shared/shipping/queries/list-shipments.query';
+export * from '@/shared/shipping/queries/get-shipments.query';
 
 export * from '@/shared/shipping/views/shipment.result';
 

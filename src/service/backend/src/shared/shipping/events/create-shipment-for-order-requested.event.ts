@@ -9,12 +9,11 @@ import {
 
 export class CreateShipmentForOrderRequestedEvent {
 	static readonly eventType = SHIPPING_CREATE_FOR_ORDER_REQUESTED_EVENT_TYPE;
-
 	public readonly orderId: string;
 
-	constructor(orderId: string) {
+	constructor(input: { orderId: string }) {
 		this.orderId = requireTrimmedString(
-			orderId,
+			input.orderId,
 			SHIPPING_APPLICATION_ERRORS.SHIPPING_EVENT_PAYLOAD_INVALID,
 			{ reason: 'orderId' },
 		);
@@ -25,6 +24,6 @@ export class CreateShipmentForOrderRequestedEvent {
 	): CreateShipmentForOrderRequestedEvent | null {
 		const orderId = toTrimmedString(payload.orderId);
 		if (!orderId) return null;
-		return new CreateShipmentForOrderRequestedEvent(orderId);
+		return new CreateShipmentForOrderRequestedEvent({ orderId });
 	}
 }

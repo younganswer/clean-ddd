@@ -3,22 +3,21 @@ import type { PaginatedResult } from '@/shared/readers/paginated.result';
 import type { ShipmentResult } from '@/shared/readers/shipping/dto/shipment.result';
 import { toBoundedInt } from '@/shared/cqrs/input-normalizer';
 
-export class ListShipmentsQuery extends Query<PaginatedResult<ShipmentResult>> {
+export class GetShipmentsQuery extends Query<PaginatedResult<ShipmentResult>> {
 	public readonly limit: number;
+	public readonly offset: number;
 
-	public readonly page: number;
-
-	constructor(limit: number, page: number = 1) {
+	constructor(input: { limit?: number; offset?: number }) {
 		super();
-		this.limit = toBoundedInt(limit, {
+		this.limit = toBoundedInt(input.limit, {
 			min: 1,
 			max: 100,
 			fallback: 20,
 		});
-		this.page = toBoundedInt(page, {
-			min: 1,
+		this.offset = toBoundedInt(input.offset, {
+			min: 0,
 			max: Number.MAX_SAFE_INTEGER,
-			fallback: 1,
+			fallback: 0,
 		});
 	}
 }

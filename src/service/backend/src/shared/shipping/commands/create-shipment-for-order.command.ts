@@ -9,10 +9,10 @@ export type CreateShipmentForOrderResult = {
 export class CreateShipmentForOrderCommand extends Command<CreateShipmentForOrderResult> {
 	public readonly orderId: string;
 
-	constructor(orderId: string) {
+	constructor(input: { orderId: string }) {
 		super();
 		this.orderId = requireTrimmedString(
-			orderId,
+			input.orderId,
 			SHIPPING_APPLICATION_ERRORS.SHIPMENT_ORDER_ID_REQUIRED,
 		);
 	}

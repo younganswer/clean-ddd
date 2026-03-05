@@ -8,7 +8,9 @@ export class CreateShipmentForOrderRequestedHandler implements IEventHandler<Cre
 
 	async handle(event: CreateShipmentForOrderRequestedEvent): Promise<void> {
 		await this.commandBus.execute(
-			new CreateShipmentForOrderCommand(event.orderId),
+			new CreateShipmentForOrderCommand({
+				orderId: event.orderId,
+			}),
 		);
 	}
 }

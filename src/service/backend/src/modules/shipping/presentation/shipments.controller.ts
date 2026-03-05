@@ -10,10 +10,9 @@ import { ShipmentResponse } from '@/modules/shipping/presentation/swagger';
 import {
 	GetShipmentByOrderQuery,
 	GetShipmentQuery,
-	ListShipmentsQuery,
-	type ShipmentResult,
+	GetShipmentsQuery,
 } from '@/shared/shipping';
-import type { PaginatedResult } from '@/shared/readers/paginated.result';
+import { PageQueryDto } from '@/shared/cqrs/query-input.dto';
 
 @Controller('shipments')
 export class ShipmentsController {
@@ -23,13 +22,14 @@ export class ShipmentsController {
 	@ApiPageResponse({ model: ShipmentResponse })
 	@ApiErrorEnvelopeResponse({ status: 400 })
 	async list(
-		@Query('limit') limitRaw?: string,
-		@Query('page') pageRaw?: string,
+		@Query() query: PageQueryDto,
 	): Promise<PageEnvelope<ShipmentResponse>> {
-		const result = await this.queryBus.execute<
-			ListShipmentsQuery,
-			PaginatedResult<ShipmentResult>
-		>(new ListShipmentsQuery(Number(limitRaw), Number(pageRaw)));
+		const result = await this.queryBus.execute(
+			new GetShipmentsQuery({
+				limit: query.limit ?? Number.NaN,
+				offset: query.offset ?? Number.NaN,
+			}),
+		);
 		return ResponseHelper.page({
 			...result,
 			items: ShipmentResponse.fromResults(result.items),
@@ -42,13 +42,12 @@ export class ShipmentsController {
 	async byOrder(
 		@Param('orderId') orderId: string,
 	): Promise<DataEnvelope<ShipmentResponse | null>> {
-		const result = await this.queryBus.execute<
-			GetShipmentByOrderQuery,
-			ShipmentResult | null
-		>(new GetShipmentByOrderQuery(orderId));
-		return ResponseHelper.data(
-			result ? ShipmentResponse.fromResult(result) : null,
+		const result = await this.queryBus.execute(
+			new GetShipmentByOrderQuery({ orderId }),
 		);
+		const response = result ? ShipmentResponse.fromResult(result) : null;
+
+		return ResponseHelper.data(response);
 	}
 
 	@Get(':id')
@@ -57,12 +56,11 @@ export class ShipmentsController {
 	async get(
 		@Param('id') id: string,
 	): Promise<DataEnvelope<ShipmentResponse | null>> {
-		const result = await this.queryBus.execute<
-			GetShipmentQuery,
-			ShipmentResult | null
-		>(new GetShipmentQuery(id));
-		return ResponseHelper.data(
-			result ? ShipmentResponse.fromResult(result) : null,
+		const result = await this.queryBus.execute(
+			new GetShipmentQuery({ shipmentId: id }),
 		);
+		const response = result ? ShipmentResponse.fromResult(result) : null;
+
+		return ResponseHelper.data(response);
 	}
 }
