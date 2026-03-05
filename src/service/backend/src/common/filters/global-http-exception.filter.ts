@@ -6,7 +6,7 @@ import {
 	HttpStatus,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { ErrorData, ErrorResponse } from '@/common/responses';
+import { ErrorResponse, ResponseHelper } from '@/common/responses';
 import { BaseError, ErrorScope } from '@/shared/errors';
 
 @Catch()
@@ -24,7 +24,7 @@ export class GlobalHttpExceptionFilter implements ExceptionFilter {
 			).trim() || 'unknown';
 
 		const mapped = this.mapException(exception);
-		const body: ErrorData = {
+		const body: ErrorResponse = {
 			type: `about:blank#${mapped.code}`,
 			title: this.getTitle(mapped.status),
 			status: mapped.status,
@@ -39,7 +39,7 @@ export class GlobalHttpExceptionFilter implements ExceptionFilter {
 			body.errors = mapped.errors;
 		}
 
-		res.status(mapped.status).json(ErrorResponse.from(body));
+		res.status(mapped.status).json(ResponseHelper.error(body));
 	}
 
 	private mapException(exception: unknown): {

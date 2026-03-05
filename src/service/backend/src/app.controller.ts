@@ -1,5 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
-import { MessageResponse } from '@/common/responses';
+import { MessageEnvelope, ResponseHelper } from '@/common/responses';
 import { ApiMessageResponse } from '@/common/swagger';
 import { AppService } from '@/app.service';
 import { NestApp } from '@/nest-app';
@@ -10,13 +10,13 @@ export class AppController {
 
 	@Get()
 	@ApiMessageResponse()
-	getHello(): MessageResponse {
-		return MessageResponse.from(this.appService.getHello());
+	getHello(): MessageEnvelope {
+		return ResponseHelper.message(this.appService.getHello());
 	}
 
 	@Get('/app/health-check')
 	@ApiMessageResponse()
-	healthCheck(): MessageResponse {
-		return MessageResponse.from(NestApp.getName() || 'api');
+	healthCheck(): MessageEnvelope {
+		return ResponseHelper.message(NestApp.getName() || 'api');
 	}
 }

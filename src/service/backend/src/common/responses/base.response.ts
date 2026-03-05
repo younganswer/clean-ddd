@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-export abstract class BaseResponse<TData> {
+export abstract class BaseEnvelope<TData> {
 	@ApiProperty({
 		description: '요청 처리 성공 여부',
 		example: true,

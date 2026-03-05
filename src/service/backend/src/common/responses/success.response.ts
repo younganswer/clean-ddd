@@ -1,18 +1,18 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { BaseResponse } from '@/common/responses/base.response';
+import { BaseEnvelope } from '@/common/responses/base.response';
 import type { PaginatedResult } from '@/shared/readers/paginated.result';
 
-export class DataResponse<TData> extends BaseResponse<TData> {
+export class DataEnvelope<TData> extends BaseEnvelope<TData> {
 	constructor(data: TData) {
 		super(true, data);
 	}
 
-	static of<TData>(data: TData): DataResponse<TData> {
-		return new DataResponse<TData>(data);
+	static of<TData>(data: TData): DataEnvelope<TData> {
+		return new DataEnvelope<TData>(data);
 	}
 }
 
-export class MessageResponse extends DataResponse<string> {
+export class MessageEnvelope extends DataEnvelope<string> {
 	@ApiProperty({
 		description: '메시지 문자열',
 		example: 'ok',
@@ -23,27 +23,27 @@ export class MessageResponse extends DataResponse<string> {
 		super(message);
 	}
 
-	static from(message: string): MessageResponse {
-		return new MessageResponse(message);
+	static from(message: string): MessageEnvelope {
+		return new MessageEnvelope(message);
 	}
 }
 
-export class ListResponse<TItem> extends DataResponse<TItem[]> {
+export class ListEnvelope<TItem> extends DataEnvelope<TItem[]> {
 	constructor(items: TItem[]) {
 		super(items);
 	}
 
-	static from<TItem>(items: TItem[]): ListResponse<TItem> {
-		return new ListResponse<TItem>(items);
+	static from<TItem>(items: TItem[]): ListEnvelope<TItem> {
+		return new ListEnvelope<TItem>(items);
 	}
 }
 
-export class PageResponse<TItem> extends DataResponse<PaginatedResult<TItem>> {
+export class PageEnvelope<TItem> extends DataEnvelope<PaginatedResult<TItem>> {
 	constructor(page: PaginatedResult<TItem>) {
 		super(page);
 	}
 
-	static from<TItem>(page: PaginatedResult<TItem>): PageResponse<TItem> {
-		return new PageResponse<TItem>(page);
+	static from<TItem>(page: PaginatedResult<TItem>): PageEnvelope<TItem> {
+		return new PageEnvelope<TItem>(page);
 	}
 }

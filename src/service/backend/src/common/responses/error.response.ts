@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { BaseResponse } from '@/common/responses/base.response';
+import { BaseEnvelope } from '@/common/responses/base.response';
 
-export class ErrorData {
+export class ErrorResponse {
 	@ApiProperty({
 		description: '문제 유형 식별자 URI',
 		example: 'about:blank#NOT_FOUND',
@@ -59,21 +59,21 @@ export class ErrorData {
 	errors?: unknown;
 }
 
-export class ErrorResponse extends BaseResponse<ErrorData> {
+export class ErrorEnvelope extends BaseEnvelope<ErrorResponse> {
 	@ApiProperty({
 		description: '요청 처리 성공 여부',
 		example: false,
 	})
 	declare readonly success: false;
 
-	@ApiProperty({ type: ErrorData })
-	declare readonly data: ErrorData;
+	@ApiProperty({ type: ErrorResponse })
+	declare readonly data: ErrorResponse;
 
-	constructor(data: ErrorData) {
+	constructor(data: ErrorResponse) {
 		super(false, data);
 	}
 
-	static from(data: ErrorData): ErrorResponse {
-		return new ErrorResponse(data);
+	static from(data: ErrorResponse): ErrorEnvelope {
+		return new ErrorEnvelope(data);
 	}
 }
