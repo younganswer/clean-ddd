@@ -1,12 +1,12 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
-import { DataResponse, PageResponse } from '@/common/responses';
+import { DataEnvelope, PageEnvelope, ResponseHelper } from '@/common/responses';
 import {
 	ApiDataResponse,
 	ApiErrorEnvelopeResponse,
 	ApiPageResponse,
 } from '@/common/swagger';
-import { ShipmentResponseDto } from '@/modules/shipping/presentation/swagger';
+import { ShipmentResponse } from '@/modules/shipping/presentation/swagger';
 import {
 	GetShipmentByOrderQuery,
 	GetShipmentQuery,
@@ -20,42 +20,49 @@ export class ShipmentsController {
 	constructor(private readonly queryBus: QueryBus) {}
 
 	@Get()
-	@ApiPageResponse({ model: ShipmentResponseDto })
+	@ApiPageResponse({ model: ShipmentResponse })
 	@ApiErrorEnvelopeResponse({ status: 400 })
 	async list(
 		@Query('limit') limitRaw?: string,
 		@Query('page') pageRaw?: string,
-	): Promise<PageResponse<ShipmentResult>> {
+	): Promise<PageEnvelope<ShipmentResponse>> {
 		const result = await this.queryBus.execute<
 			ListShipmentsQuery,
 			PaginatedResult<ShipmentResult>
 		>(new ListShipmentsQuery(Number(limitRaw), Number(pageRaw)));
-		return PageResponse.from(result);
+		return ResponseHelper.page({
+			...result,
+			items: ShipmentResponse.fromResults(result.items),
+		});
 	}
 
 	@Get('by-order/:orderId')
-	@ApiDataResponse({ model: ShipmentResponseDto, nullable: true })
+	@ApiDataResponse({ model: ShipmentResponse, nullable: true })
 	@ApiErrorEnvelopeResponse({ status: 400 })
 	async byOrder(
 		@Param('orderId') orderId: string,
-	): Promise<DataResponse<ShipmentResult | null>> {
+	): Promise<DataEnvelope<ShipmentResponse | null>> {
 		const result = await this.queryBus.execute<
 			GetShipmentByOrderQuery,
 			ShipmentResult | null
 		>(new GetShipmentByOrderQuery(orderId));
-		return DataResponse.of(result);
+		return ResponseHelper.data(
+			result ? ShipmentResponse.fromResult(result) : null,
+		);
 	}
 
 	@Get(':id')
-	@ApiDataResponse({ model: ShipmentResponseDto, nullable: true })
+	@ApiDataResponse({ model: ShipmentResponse, nullable: true })
 	@ApiErrorEnvelopeResponse({ status: 400 })
 	async get(
 		@Param('id') id: string,
-	): Promise<DataResponse<ShipmentResult | null>> {
+	): Promise<DataEnvelope<ShipmentResponse | null>> {
 		const result = await this.queryBus.execute<
 			GetShipmentQuery,
 			ShipmentResult | null
 		>(new GetShipmentQuery(id));
-		return DataResponse.of(result);
+		return ResponseHelper.data(
+			result ? ShipmentResponse.fromResult(result) : null,
+		);
 	}
 }
