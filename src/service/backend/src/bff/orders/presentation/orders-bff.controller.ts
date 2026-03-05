@@ -26,7 +26,7 @@ import {
 import { CreateOrderBffCommand } from '@/bff/orders/application/commands/create-order-bff.command';
 import { GetOrderBffQuery } from '@/bff/orders/application/queries/get-order-bff.query';
 import { ListOrdersBffQuery } from '@/bff/orders/application/queries/list-orders-bff.query';
-import type { OrderView } from '@/shared/ordering/readers/order.view';
+import type { OrderResult } from '@/shared/ordering/readers/order.result';
 
 @Controller('bff/orders')
 export class OrdersBffController {
@@ -40,10 +40,10 @@ export class OrdersBffController {
 	@ApiErrorEnvelopeResponse({ status: 400 })
 	async list(
 		@Query() query: ListOrdersBffQueryDto,
-	): Promise<ListResponse<OrderView>> {
+	): Promise<ListResponse<OrderResult>> {
 		const result = await this.queryBus.execute<
 			ListOrdersBffQuery,
-			OrderView[]
+			OrderResult[]
 		>(new ListOrdersBffQuery({ limit: query.limit }));
 		return ListResponse.from(result);
 	}
@@ -53,10 +53,10 @@ export class OrdersBffController {
 	@ApiErrorEnvelopeResponse({ status: 404 })
 	async get(
 		@Param('orderId') orderId: string,
-	): Promise<DataResponse<OrderView>> {
+	): Promise<DataResponse<OrderResult>> {
 		const order = await this.queryBus.execute<
 			GetOrderBffQuery,
-			OrderView | null
+			OrderResult | null
 		>(new GetOrderBffQuery({ orderId }));
 		if (!order) throw new NotFoundException('order not found');
 		return DataResponse.of(order);

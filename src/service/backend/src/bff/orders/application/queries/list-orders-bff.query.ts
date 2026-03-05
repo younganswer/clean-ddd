@@ -1,8 +1,8 @@
 import { Query } from '@nestjs/cqrs';
-import type { OrderView } from '@/shared/ordering/readers/order.view';
+import type { OrderResult } from '@/shared/ordering/readers/order.result';
 import { toBoundedInt } from '@/shared/cqrs/input-normalizer';
 
-export class ListOrdersBffQuery extends Query<OrderView[]> {
+export class ListOrdersBffQuery extends Query<OrderResult[]> {
 	public readonly input: { limit: number };
 
 	constructor(input: { limit?: number }) {
