@@ -16,33 +16,39 @@ describe('OutboxConsumer idempotency', () => {
 			status: OutboxEventStatus.PUBLISHED,
 		});
 
+		const persistMock = jest.fn(() => Promise.resolve(undefined));
 		const outboxRepository: IOutboxRepository = {
-			persist: jest.fn(async () => undefined),
-			findById: jest.fn(async () => outboxEvent),
-			getById: jest.fn(async () => outboxEvent),
-			findDispatchable: jest.fn(async () => [outboxEvent]),
-			findRecent: jest.fn(async () => [outboxEvent]),
-			lock: jest.fn(async () => true),
-			unlock: jest.fn(async () => undefined),
+			persist: persistMock,
+			findById: jest.fn(() => Promise.resolve(outboxEvent)),
+			getById: jest.fn(() => Promise.resolve(outboxEvent)),
+			findDispatchable: jest.fn(() => Promise.resolve([outboxEvent])),
+			findRecent: jest.fn(() => Promise.resolve([outboxEvent])),
+			lock: jest.fn(() => Promise.resolve(true)),
+			unlock: jest.fn(() => Promise.resolve(undefined)),
 		};
 
-		const knownHandler = { handle: jest.fn(async () => undefined) };
+		const knownHandlerHandle = jest.fn(() => Promise.resolve(undefined));
+		const knownHandler = { handle: knownHandlerHandle };
 		const moduleRef = {
 			get: jest.fn(() => knownHandler),
 		} as unknown as ModuleRef;
 
+		const claimMock = jest.fn(() => Promise.resolve(false));
+		const releaseMock = jest.fn(() => Promise.resolve(undefined));
 		const idempotency = {
-			claim: jest.fn(async () => false),
-			release: jest.fn(async () => undefined),
+			claim: claimMock,
+			release: releaseMock,
 		} as unknown as IdempotencyService;
 
+		const publishMock = jest.fn();
 		const eventBus = {
-			publish: jest.fn(),
+			publish: publishMock,
 		} as unknown as EventBus;
 
 		const uow: Pick<UnitOfWork, 'transaction'> = {
-			transaction: async <T>(work: () => Promise<T>): Promise<T> =>
-				await work(),
+			transaction: async <T>(
+				work: (em: never) => Promise<T>,
+			): Promise<T> => await work(undefined as never),
 		};
 
 		const consumer = new OutboxConsumer(
@@ -58,8 +64,9 @@ describe('OutboxConsumer idempotency', () => {
 		});
 
 		expect(outboxEvent.status).toBe(OutboxEventStatus.CONSUMED);
-		expect(knownHandler.handle).not.toHaveBeenCalled();
-		expect(eventBus.publish).not.toHaveBeenCalled();
-		expect(idempotency.release).not.toHaveBeenCalled();
+		expect(knownHandlerHandle).not.toHaveBeenCalled();
+		expect(publishMock).not.toHaveBeenCalled();
+		expect(releaseMock).not.toHaveBeenCalled();
+		expect(persistMock).toHaveBeenCalled();
 	});
 });

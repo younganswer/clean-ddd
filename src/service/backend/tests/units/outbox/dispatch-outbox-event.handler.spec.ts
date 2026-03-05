@@ -14,21 +14,25 @@ describe('DispatchOutboxEventHandler', () => {
 			status: OutboxEventStatus.PENDING,
 		});
 
+		const persistMock = jest.fn(() => Promise.resolve(undefined));
+		const findByIdMock = jest.fn(() => Promise.resolve(event));
 		const outboxRepository: IOutboxRepository = {
-			persist: jest.fn(async () => undefined),
-			findById: jest.fn(async () => event),
-			getById: jest.fn(async () => event),
-			findDispatchable: jest.fn(async () => [event]),
-			findRecent: jest.fn(async () => [event]),
-			lock: jest.fn(async () => true),
-			unlock: jest.fn(async () => undefined),
+			persist: persistMock,
+			findById: findByIdMock,
+			getById: jest.fn(() => Promise.resolve(event)),
+			findDispatchable: jest.fn(() => Promise.resolve([event])),
+			findRecent: jest.fn(() => Promise.resolve([event])),
+			lock: jest.fn(() => Promise.resolve(true)),
+			unlock: jest.fn(() => Promise.resolve(undefined)),
 		};
+		const enqueueMock = jest.fn(() => Promise.resolve(undefined));
 		const outboxQueue: IOutboxQueuePort = {
-			enqueue: jest.fn(async () => undefined),
+			enqueue: enqueueMock,
 		};
 		const uow: Pick<UnitOfWork, 'transaction'> = {
-			transaction: async <T>(work: () => Promise<T>): Promise<T> =>
-				await work(),
+			transaction: async <T>(
+				work: (em: never) => Promise<T>,
+			): Promise<T> => await work(undefined as never),
 		};
 
 		const handler = new DispatchOutboxEventHandler(
@@ -41,11 +45,11 @@ describe('DispatchOutboxEventHandler', () => {
 			new DispatchOutboxEventCommand(event.id, 'order-1'),
 		);
 
-		expect(outboxQueue.enqueue).toHaveBeenCalledWith(event.id, {
+		expect(enqueueMock).toHaveBeenCalledWith(event.id, {
 			messageGroupId: 'order-1',
 		});
 		expect(event.status).toBe(OutboxEventStatus.PUBLISHED);
-		expect(outboxRepository.persist).toHaveBeenCalled();
+		expect(persistMock).toHaveBeenCalled();
 	});
 
 	it('marks event as failed when enqueue throws', async () => {
@@ -55,23 +59,26 @@ describe('DispatchOutboxEventHandler', () => {
 			status: OutboxEventStatus.PENDING,
 		});
 
+		const persistMock = jest.fn(() => Promise.resolve(undefined));
+		const findByIdMock = jest.fn(() => Promise.resolve(event));
 		const outboxRepository: IOutboxRepository = {
-			persist: jest.fn(async () => undefined),
-			findById: jest.fn(async () => event),
-			getById: jest.fn(async () => event),
-			findDispatchable: jest.fn(async () => [event]),
-			findRecent: jest.fn(async () => [event]),
-			lock: jest.fn(async () => true),
-			unlock: jest.fn(async () => undefined),
+			persist: persistMock,
+			findById: findByIdMock,
+			getById: jest.fn(() => Promise.resolve(event)),
+			findDispatchable: jest.fn(() => Promise.resolve([event])),
+			findRecent: jest.fn(() => Promise.resolve([event])),
+			lock: jest.fn(() => Promise.resolve(true)),
+			unlock: jest.fn(() => Promise.resolve(undefined)),
 		};
 		const outboxQueue: IOutboxQueuePort = {
-			enqueue: jest.fn(async () => {
+			enqueue: jest.fn(() => {
 				throw new Error('enqueue failed');
 			}),
 		};
 		const uow: Pick<UnitOfWork, 'transaction'> = {
-			transaction: async <T>(work: () => Promise<T>): Promise<T> =>
-				await work(),
+			transaction: async <T>(
+				work: (em: never) => Promise<T>,
+			): Promise<T> => await work(undefined as never),
 		};
 
 		const handler = new DispatchOutboxEventHandler(
@@ -87,6 +94,6 @@ describe('DispatchOutboxEventHandler', () => {
 		expect(event.status).toBe(OutboxEventStatus.FAILED);
 		expect(event.attempt).toBe(1);
 		expect(event.lastError).toBe('enqueue failed');
-		expect(outboxRepository.persist).toHaveBeenCalled();
+		expect(persistMock).toHaveBeenCalled();
 	});
 });

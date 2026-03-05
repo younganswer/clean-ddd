@@ -19,23 +19,27 @@ describe('OutboxProducer', () => {
 
 	it('emit: stores a pending outbox event', async () => {
 		const persisted = new Array<unknown>();
+		const persistMock = jest.fn((event: unknown) => {
+			persisted.push(event);
+			return Promise.resolve(undefined);
+		});
 		const outboxRepository: IOutboxRepository = {
-			persist: jest.fn(async (event) => {
-				persisted.push(event);
-			}),
-			findById: jest.fn(async () => null),
-			getById: jest.fn(async () => {
+			persist: persistMock,
+			findById: jest.fn(() => Promise.resolve(null)),
+			getById: jest.fn(() => {
 				throw new Error('not used');
 			}),
-			findDispatchable: jest.fn(async () => []),
-			findRecent: jest.fn(async () => []),
-			lock: jest.fn(async () => false),
-			unlock: jest.fn(async () => undefined),
+			findDispatchable: jest.fn(() => Promise.resolve([])),
+			findRecent: jest.fn(() => Promise.resolve([])),
+			lock: jest.fn(() => Promise.resolve(false)),
+			unlock: jest.fn(() => Promise.resolve(undefined)),
 		};
 
 		const uow: Pick<UnitOfWork, 'transaction'> = {
-			transaction: async <T>(work: () => Promise<T>): Promise<T> => {
-				return await work();
+			transaction: async <T>(
+				work: (em: never) => Promise<T>,
+			): Promise<T> => {
+				return await work(undefined as never);
 			},
 		};
 
@@ -47,7 +51,7 @@ describe('OutboxProducer', () => {
 		const outboxId = await producer.emit('EVENT.TYPE', { orderId: 'o-1' });
 
 		expect(outboxId).toBeTruthy();
-		expect(outboxRepository.persist).toHaveBeenCalledTimes(1);
+		expect(persistMock).toHaveBeenCalledTimes(1);
 
 		const event = persisted[0] as {
 			toPrimitives: () => {
@@ -73,24 +77,27 @@ describe('OutboxProducer', () => {
 			| undefined;
 
 		const outboxRepository: IOutboxRepository = {
-			persist: jest.fn(async (event) => {
+			persist: jest.fn((event) => {
 				persistedEvent = event as {
 					toPrimitives: () => { nextAttemptAt: Date };
 				};
+				return Promise.resolve(undefined);
 			}),
-			findById: jest.fn(async () => null),
-			getById: jest.fn(async () => {
+			findById: jest.fn(() => Promise.resolve(null)),
+			getById: jest.fn(() => {
 				throw new Error('not used');
 			}),
-			findDispatchable: jest.fn(async () => []),
-			findRecent: jest.fn(async () => []),
-			lock: jest.fn(async () => false),
-			unlock: jest.fn(async () => undefined),
+			findDispatchable: jest.fn(() => Promise.resolve([])),
+			findRecent: jest.fn(() => Promise.resolve([])),
+			lock: jest.fn(() => Promise.resolve(false)),
+			unlock: jest.fn(() => Promise.resolve(undefined)),
 		};
 
 		const uow: Pick<UnitOfWork, 'transaction'> = {
-			transaction: async <T>(work: () => Promise<T>): Promise<T> => {
-				return await work();
+			transaction: async <T>(
+				work: (em: never) => Promise<T>,
+			): Promise<T> => {
+				return await work(undefined as never);
 			},
 		};
 

@@ -16,33 +16,41 @@ describe('OutboxConsumer (registry dispatch)', () => {
 			status: OutboxEventStatus.PUBLISHED,
 		});
 
+		const persistMock = jest.fn(() => Promise.resolve(undefined));
+		const unlockMock = jest.fn(() => Promise.resolve(undefined));
 		const outboxRepository: IOutboxRepository = {
-			persist: jest.fn(async () => undefined),
-			findById: jest.fn(async () => outboxEvent),
-			getById: jest.fn(async () => outboxEvent),
-			findDispatchable: jest.fn(async () => [outboxEvent]),
-			findRecent: jest.fn(async () => [outboxEvent]),
-			lock: jest.fn(async () => true),
-			unlock: jest.fn(async () => undefined),
+			persist: persistMock,
+			findById: jest.fn(() => Promise.resolve(outboxEvent)),
+			getById: jest.fn(() => Promise.resolve(outboxEvent)),
+			findDispatchable: jest.fn(() => Promise.resolve([outboxEvent])),
+			findRecent: jest.fn(() => Promise.resolve([outboxEvent])),
+			lock: jest.fn(() => Promise.resolve(true)),
+			unlock: unlockMock,
 		};
 
-		const handler = { handle: jest.fn(async () => undefined) };
+		const handlerHandle = jest.fn(() => Promise.resolve(undefined));
+		const handler = { handle: handlerHandle };
+		const moduleRefGetMock = jest.fn(() => handler);
 		const moduleRef = {
-			get: jest.fn(() => handler),
+			get: moduleRefGetMock,
 		} as unknown as ModuleRef;
 
+		const claimMock = jest.fn(() => Promise.resolve(true));
+		const releaseMock = jest.fn(() => Promise.resolve(undefined));
 		const idempotency = {
-			claim: jest.fn(async () => true),
-			release: jest.fn(async () => undefined),
+			claim: claimMock,
+			release: releaseMock,
 		} as unknown as IdempotencyService;
 
+		const publishMock = jest.fn();
 		const eventBus = {
-			publish: jest.fn(),
+			publish: publishMock,
 		} as unknown as EventBus;
 
 		const uow: Pick<UnitOfWork, 'transaction'> = {
-			transaction: async <T>(work: () => Promise<T>): Promise<T> =>
-				await work(),
+			transaction: async <T>(
+				work: (em: never) => Promise<T>,
+			): Promise<T> => await work(undefined as never),
 		};
 
 		const consumer = new OutboxConsumer(
@@ -57,10 +65,11 @@ describe('OutboxConsumer (registry dispatch)', () => {
 			body: JSON.stringify({ outboxId: outboxEvent.id }),
 		});
 
-		expect(moduleRef.get).toHaveBeenCalled();
-		expect(handler.handle).toHaveBeenCalledTimes(1);
-		expect(eventBus.publish).not.toHaveBeenCalled();
+		expect(moduleRefGetMock).toHaveBeenCalled();
+		expect(handlerHandle).toHaveBeenCalledTimes(1);
+		expect(publishMock).not.toHaveBeenCalled();
 		expect(outboxEvent.status).toBe(OutboxEventStatus.CONSUMED);
+		expect(persistMock).toHaveBeenCalled();
 	});
 
 	it('fails when known event handler provider is missing', async () => {
@@ -70,32 +79,38 @@ describe('OutboxConsumer (registry dispatch)', () => {
 			status: OutboxEventStatus.PUBLISHED,
 		});
 
+		const persistMock = jest.fn(() => Promise.resolve(undefined));
+		const unlockMock = jest.fn(() => Promise.resolve(undefined));
 		const outboxRepository: IOutboxRepository = {
-			persist: jest.fn(async () => undefined),
-			findById: jest.fn(async () => outboxEvent),
-			getById: jest.fn(async () => outboxEvent),
-			findDispatchable: jest.fn(async () => [outboxEvent]),
-			findRecent: jest.fn(async () => [outboxEvent]),
-			lock: jest.fn(async () => true),
-			unlock: jest.fn(async () => undefined),
+			persist: persistMock,
+			findById: jest.fn(() => Promise.resolve(outboxEvent)),
+			getById: jest.fn(() => Promise.resolve(outboxEvent)),
+			findDispatchable: jest.fn(() => Promise.resolve([outboxEvent])),
+			findRecent: jest.fn(() => Promise.resolve([outboxEvent])),
+			lock: jest.fn(() => Promise.resolve(true)),
+			unlock: unlockMock,
 		};
 
 		const moduleRef = {
 			get: jest.fn(() => undefined),
 		} as unknown as ModuleRef;
 
+		const claimMock2 = jest.fn(() => Promise.resolve(true));
+		const releaseMock2 = jest.fn(() => Promise.resolve(undefined));
 		const idempotency = {
-			claim: jest.fn(async () => true),
-			release: jest.fn(async () => undefined),
+			claim: claimMock2,
+			release: releaseMock2,
 		} as unknown as IdempotencyService;
 
+		const publishMock2 = jest.fn();
 		const eventBus = {
-			publish: jest.fn(),
+			publish: publishMock2,
 		} as unknown as EventBus;
 
 		const uow: Pick<UnitOfWork, 'transaction'> = {
-			transaction: async <T>(work: () => Promise<T>): Promise<T> =>
-				await work(),
+			transaction: async <T>(
+				work: (em: never) => Promise<T>,
+			): Promise<T> => await work(undefined as never),
 		};
 
 		const consumer = new OutboxConsumer(
@@ -113,7 +128,7 @@ describe('OutboxConsumer (registry dispatch)', () => {
 		).rejects.toThrow('provider not found');
 
 		expect(outboxEvent.status).toBe(OutboxEventStatus.FAILED);
-		expect(idempotency.release).toHaveBeenCalledTimes(1);
-		expect(outboxRepository.unlock).toHaveBeenCalledTimes(1);
+		expect(releaseMock2).toHaveBeenCalledTimes(1);
+		expect(unlockMock).toHaveBeenCalledTimes(1);
 	});
 });

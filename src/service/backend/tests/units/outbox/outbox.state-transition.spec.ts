@@ -25,25 +25,26 @@ class InMemoryOutboxRepository implements IOutboxRepository {
 		this.events.set(event.id, event);
 	}
 
-	async persist(event: OutboxEvent): Promise<void> {
+	persist(event: OutboxEvent): Promise<void> {
 		this.events.set(event.id, event);
+		return Promise.resolve();
 	}
 
-	async findById(id: string): Promise<OutboxEvent | null> {
-		return this.events.get(id) ?? null;
+	findById(id: string): Promise<OutboxEvent | null> {
+		return Promise.resolve(this.events.get(id) ?? null);
 	}
 
-	async getById(
+	getById(
 		id: string,
 		_options?: RepositoryGetByIdOptions,
 	): Promise<OutboxEvent> {
 		const event = this.events.get(id);
 		if (!event) throw new Error(`outbox event not found: ${id}`);
-		return event;
+		return Promise.resolve(event);
 	}
 
-	async findDispatchable(limit: number, now: Date): Promise<OutboxEvent[]> {
-		return [...this.events.values()]
+	findDispatchable(limit: number, now: Date): Promise<OutboxEvent[]> {
+		const filtered = [...this.events.values()]
 			.filter((event) => {
 				const unlocked = !event.lockedUntil || event.lockedUntil < now;
 				const retryReady = event.nextAttemptAt <= now;
@@ -53,16 +54,19 @@ class InMemoryOutboxRepository implements IOutboxRepository {
 				return unlocked && retryReady && dispatchableStatus;
 			})
 			.slice(0, limit);
+
+		return Promise.resolve(filtered);
 	}
 
-	async findRecent(limit: number): Promise<OutboxEvent[]> {
-		return [...this.events.values()].slice(0, limit);
+	findRecent(limit: number): Promise<OutboxEvent[]> {
+		return Promise.resolve([...this.events.values()].slice(0, limit));
 	}
 
-	async lock(uuid: string, lockedUntil: Date): Promise<boolean> {
+	lock(uuid: string, lockedUntil: Date): Promise<boolean> {
 		const event = this.events.get(uuid);
-		if (!event) return false;
-		if (event.lockedUntil && event.lockedUntil >= new Date()) return false;
+		if (!event) return Promise.resolve(false);
+		if (event.lockedUntil && event.lockedUntil >= new Date())
+			return Promise.resolve(false);
 
 		const next = OutboxEvent.rehydrate({
 			uuid: event.id,
@@ -77,12 +81,12 @@ class InMemoryOutboxRepository implements IOutboxRepository {
 			lastError: event.lastError,
 		});
 		this.events.set(uuid, next);
-		return true;
+		return Promise.resolve(true);
 	}
 
-	async unlock(uuid: string): Promise<void> {
+	unlock(uuid: string): Promise<void> {
 		const event = this.events.get(uuid);
-		if (!event) return;
+		if (!event) return Promise.resolve();
 
 		const next = OutboxEvent.rehydrate({
 			uuid: event.id,
@@ -97,18 +101,21 @@ class InMemoryOutboxRepository implements IOutboxRepository {
 			lastError: event.lastError,
 		});
 		this.events.set(uuid, next);
+		return Promise.resolve();
 	}
 }
 
 describe('Outbox flow state transition', () => {
 	it('transitions PENDING -> PUBLISHED -> CONSUMED', async () => {
 		const repository = new InMemoryOutboxRepository();
+		const enqueueMock = jest.fn(() => Promise.resolve(undefined));
 		const queue: IOutboxQueuePort = {
-			enqueue: jest.fn(async () => undefined),
+			enqueue: enqueueMock,
 		};
 		const uow: Pick<UnitOfWork, 'transaction'> = {
-			transaction: async <T>(work: () => Promise<T>): Promise<T> =>
-				await work(),
+			transaction: async <T>(
+				work: (em: never) => Promise<T>,
+			): Promise<T> => await work(undefined as never),
 		};
 
 		const pendingEvent = OutboxEvent.create({
@@ -178,18 +185,19 @@ describe('Outbox flow state transition', () => {
 			new Date('2026-03-05T00:00:01.000Z'),
 		);
 		expect(dispatchedCount).toBe(1);
-		expect(queue.enqueue).toHaveBeenCalledTimes(1);
+		expect(enqueueMock).toHaveBeenCalledTimes(1);
 
 		const publishedEvent = await repository.getById(pendingEvent.id);
 		expect(publishedEvent.status).toBe(OutboxEventStatus.PUBLISHED);
 
-		const knownHandler = { handle: jest.fn(async () => undefined) };
+		const knownHandlerHandle = jest.fn(() => Promise.resolve(undefined));
+		const knownHandler = { handle: knownHandlerHandle };
 		const moduleRef = {
 			get: jest.fn(() => knownHandler),
 		} as unknown as ModuleRef;
 		const idempotency = {
-			claim: jest.fn(async () => true),
-			release: jest.fn(async () => undefined),
+			claim: jest.fn(() => Promise.resolve(true)),
+			release: jest.fn(() => Promise.resolve(undefined)),
 		} as unknown as IdempotencyService;
 		const eventBus = { publish: jest.fn() } as unknown as EventBus;
 
@@ -207,7 +215,7 @@ describe('Outbox flow state transition', () => {
 
 		const consumedEvent = await repository.getById(pendingEvent.id);
 		expect(consumedEvent.status).toBe(OutboxEventStatus.CONSUMED);
-		expect(knownHandler.handle).toHaveBeenCalledTimes(1);
+		expect(knownHandlerHandle).toHaveBeenCalledTimes(1);
 
 		requestContextSpy.mockRestore();
 	});
