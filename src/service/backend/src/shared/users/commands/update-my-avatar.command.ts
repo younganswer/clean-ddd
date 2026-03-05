@@ -7,20 +7,17 @@ export class UpdateMyAvatarCommand extends Command<{
 	avatarUrl: string;
 }> {
 	public readonly userId: string;
+	public readonly avatarUrl: string;
 
-	public readonly input: { avatarUrl: string };
-
-	constructor(userId: string, input: { avatarUrl: string }) {
+	constructor(input: { userId: string; avatarUrl: string }) {
 		super();
 		this.userId = requireTrimmedString(
-			userId,
+			input.userId,
 			USER_APPLICATION_ERRORS.USER_ID_REQUIRED,
 		);
-		this.input = {
-			avatarUrl: requireTrimmedString(
-				input.avatarUrl,
-				USER_APPLICATION_ERRORS.USER_AVATAR_URL_REQUIRED,
-			),
-		};
+		this.avatarUrl = requireTrimmedString(
+			input.avatarUrl,
+			USER_APPLICATION_ERRORS.USER_AVATAR_URL_REQUIRED,
+		);
 	}
 }

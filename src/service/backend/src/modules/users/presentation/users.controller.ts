@@ -3,9 +3,8 @@ import { QueryBus } from '@nestjs/cqrs';
 import { PageEnvelope, ResponseHelper } from '@/common/responses';
 import { ApiErrorEnvelopeResponse, ApiPageResponse } from '@/common/swagger';
 import { UserProfileResponse } from '@/modules/users/presentation/swagger';
-import { ListUserProfilesQuery } from '@/shared/users/queries/list-user-profiles.query';
-import type { UserProfileResult } from '@/shared/users/readers/user-profile.result';
-import type { PaginatedResult } from '@/shared/readers/paginated.result';
+import { PageQueryDto } from '@/shared/cqrs/query-input.dto';
+import { GetUserProfilesQuery } from '@/shared/users/queries/get-user-profiles.query';
 
 @Controller('users')
 export class UsersController {
@@ -15,16 +14,12 @@ export class UsersController {
 	@ApiPageResponse({ model: UserProfileResponse as never })
 	@ApiErrorEnvelopeResponse({ status: 400 })
 	async list(
-		@Query('limit') limitRaw?: string,
-		@Query('page') pageRaw?: string,
+		@Query() query: PageQueryDto,
 	): Promise<PageEnvelope<UserProfileResponse>> {
-		const result = await this.queryBus.execute<
-			ListUserProfilesQuery,
-			PaginatedResult<UserProfileResult>
-		>(
-			new ListUserProfilesQuery({
-				limit: Number(limitRaw),
-				page: Number(pageRaw),
+		const result = await this.queryBus.execute(
+			new GetUserProfilesQuery({
+				limit: query.limit ?? Number.NaN,
+				offset: query.offset ?? Number.NaN,
 			}),
 		);
 		return ResponseHelper.page({

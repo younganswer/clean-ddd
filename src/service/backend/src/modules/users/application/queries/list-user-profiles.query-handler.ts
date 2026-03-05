@@ -1,6 +1,6 @@
 import { Inject } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import { ListUserProfilesQuery } from '@/shared/users/queries/list-user-profiles.query';
+import { GetUserProfilesQuery } from '@/shared/users/queries/get-user-profiles.query';
 import type { UserProfileResult } from '@/shared/users/readers/user-profile.result';
 import type { PaginatedResult } from '@/shared/readers/paginated.result';
 import {
@@ -12,8 +12,8 @@ import {
 	type IUserAvatarRepository,
 } from '@/modules/users/domains/repositories/i.user-avatar.repository';
 
-@QueryHandler(ListUserProfilesQuery)
-export class ListUserProfilesQueryHandler implements IQueryHandler<ListUserProfilesQuery> {
+@QueryHandler(GetUserProfilesQuery)
+export class GetUserProfilesQueryHandler implements IQueryHandler<GetUserProfilesQuery> {
 	constructor(
 		@Inject(IUserRepositorySymbol)
 		private readonly userRepository: IUserRepository,
@@ -22,13 +22,10 @@ export class ListUserProfilesQueryHandler implements IQueryHandler<ListUserProfi
 	) {}
 
 	async execute(
-		query: ListUserProfilesQuery,
+		query: GetUserProfilesQuery,
 	): Promise<PaginatedResult<UserProfileResult>> {
-		const { limit, page } = query.input;
-		const offset = (page - 1) * limit;
-
 		const [items, total] = await Promise.all([
-			this.userRepository.findAll({ limit, page }),
+			this.userRepository.findAll(query),
 			this.userRepository.countAll(),
 		]);
 
@@ -58,15 +55,15 @@ export class ListUserProfilesQueryHandler implements IQueryHandler<ListUserProfi
 				: undefined,
 		}));
 
-		const totalPages = Math.max(1, Math.ceil(total / limit));
+		const totalPages = Math.max(1, Math.ceil(total / query.limit));
 
 		return {
 			items: enrichedItems,
-			page,
-			limit,
+			offset: query.offset,
+			limit: query.limit,
 			total,
 			totalPages,
-			hasNext: offset + items.length < total,
+			hasNext: query.offset + items.length < total,
 		};
 	}
 }

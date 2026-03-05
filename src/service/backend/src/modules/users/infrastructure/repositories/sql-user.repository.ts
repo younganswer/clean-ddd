@@ -65,20 +65,19 @@ export class SqlUserRepository implements IUserRepository {
 		return user ? this.mapper.toDomain(user) : null;
 	}
 
-	async findAll(input: { limit: number; page: number }): Promise<User[]> {
+	async findAll(input: { limit: number; offset: number }): Promise<User[]> {
 		const limit = Math.min(
 			200,
 			Math.max(1, Number(input.limit ?? 20) || 20),
 		);
-		const page = Math.max(1, Number(input.page ?? 1) || 1);
-		const offset = (page - 1) * limit;
+		const offset = Math.max(0, Number(input.offset ?? 0) || 0);
 		const em = this.emForContext();
 		const rows = await em.find(
 			UserSchema,
 			{},
 			{
 				limit,
-				offset: Math.max(0, offset),
+				offset,
 				orderBy: { id: 'asc' },
 			},
 		);

@@ -9,7 +9,6 @@ import {
 } from '@/modules/users/presentation/swagger';
 import { GetUserProfileQuery } from '@/shared/users/queries/get-user-profile.query';
 import { UpdateMyAvatarCommand } from '@/shared/users/commands/update-my-avatar.command';
-import type { UserProfileResult } from '@/shared/users/readers/user-profile.result';
 import { UpdateMyAvatarRequest } from '@/modules/users/presentation/dto/update-my-avatar.request';
 
 @Controller('me')
@@ -25,11 +24,12 @@ export class MeController {
 	@ApiErrorEnvelopeResponse({ status: 404 })
 	async getMyProfile(): Promise<DataEnvelope<UserProfileResponse>> {
 		const userId = this.authContextAccessor.getOrAnonymous().actor.userId;
-		const result = await this.queryBus.execute<
-			GetUserProfileQuery,
-			UserProfileResult
-		>(new GetUserProfileQuery(userId));
-		return ResponseHelper.data(UserProfileResponse.fromResult(result));
+		const result = await this.queryBus.execute(
+			new GetUserProfileQuery({ userId }),
+		);
+		const response = UserProfileResponse.fromResult(result);
+
+		return ResponseHelper.data(response);
 	}
 
 	@Patch('avatar')
@@ -39,10 +39,14 @@ export class MeController {
 		@Body() body: UpdateMyAvatarRequest,
 	): Promise<DataEnvelope<UpdateAvatarResponse>> {
 		const userId = this.authContextAccessor.getOrAnonymous().actor.userId;
-		const result = await this.commandBus.execute<
-			UpdateMyAvatarCommand,
-			{ avatarId: string; avatarUrl: string }
-		>(new UpdateMyAvatarCommand(userId, { avatarUrl: body.avatarUrl }));
-		return ResponseHelper.data(UpdateAvatarResponse.fromResult(result));
+		const result = await this.commandBus.execute(
+			new UpdateMyAvatarCommand({
+				userId,
+				avatarUrl: body.avatarUrl,
+			}),
+		);
+		const response = UpdateAvatarResponse.fromResult(result);
+
+		return ResponseHelper.data(response);
 	}
 }

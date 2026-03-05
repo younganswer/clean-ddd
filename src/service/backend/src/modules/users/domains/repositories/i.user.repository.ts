@@ -7,6 +7,6 @@ export interface IUserRepository {
 	persist(user: User): Promise<void>;
 	findById(id: string): Promise<User | null>;
 	getById(id: string, options?: RepositoryGetByIdOptions): Promise<User>;
-	findAll(input: { limit: number; page: number }): Promise<User[]>;
+	findAll(input: { limit: number; offset: number }): Promise<User[]>;
 	countAll(): Promise<number>;
 }

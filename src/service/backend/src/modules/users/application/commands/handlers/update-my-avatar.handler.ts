@@ -25,17 +25,14 @@ export class UpdateMyAvatarHandler implements ICommandHandler<UpdateMyAvatarComm
 	async execute(
 		command: UpdateMyAvatarCommand,
 	): Promise<{ avatarId: string; avatarUrl: string }> {
-		const userId = command.userId;
-		const avatarUrl = command.input.avatarUrl;
-
 		const avatar = Avatar.create({
-			userId,
-			imageUrl: avatarUrl,
+			userId: command.userId,
+			imageUrl: command.avatarUrl,
 		});
 		const savedAvatar = await this.userAvatarRepository.upsert(avatar);
 
 		await this.uow.transaction(async () => {
-			const user = await this.userRepository.getById(userId);
+			const user = await this.userRepository.getById(command.userId);
 			user.assignAvatarId(savedAvatar.id);
 			await this.userRepository.persist(user);
 		});

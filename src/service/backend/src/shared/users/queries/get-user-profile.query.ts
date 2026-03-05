@@ -6,10 +6,10 @@ import { requireTrimmedString } from '@/shared/cqrs/input-normalizer';
 export class GetUserProfileQuery extends Query<UserProfileResult> {
 	public readonly userId: string;
 
-	constructor(userId: string) {
+	constructor(input: { userId: string }) {
 		super();
 		this.userId = requireTrimmedString(
-			userId,
+			input.userId,
 			USER_APPLICATION_ERRORS.USER_ID_REQUIRED,
 		);
 	}
