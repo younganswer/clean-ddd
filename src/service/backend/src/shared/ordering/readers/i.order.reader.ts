@@ -1,14 +1,14 @@
-import type { OrderView } from '@/shared/ordering/readers/order.view';
+import type { OrderResult } from '@/shared/ordering/readers/order.result';
 
 export const IOrderReaderSymbol = Symbol('IOrderReader');
 
 export interface IOrderReader {
-	findById(id: string): Promise<OrderView | null>;
-	findRecent(limit: number, offset?: number): Promise<OrderView[]>;
+	findById(id: string): Promise<OrderResult | null>;
+	findRecent(limit: number, offset?: number): Promise<OrderResult[]>;
 	findByUserId(
 		userId: string,
 		limit: number,
 		offset?: number,
-	): Promise<OrderView[]>;
+	): Promise<OrderResult[]>;
 	countAll(): Promise<number>;
 }

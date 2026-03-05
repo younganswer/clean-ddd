@@ -1,8 +1,8 @@
-import type { OrderView } from '@/shared/ordering/readers/order.view';
+import type { OrderResult } from '@/shared/ordering/readers/order.result';
 import { ORDERING_APPLICATION_ERRORS } from '@/shared/errors';
 import { ApplicationErrorFactory } from '@/shared/errors/base.error-factory';
 
-export const isOrderView = (value: unknown): value is OrderView => {
+export const isOrderResult = (value: unknown): value is OrderResult => {
 	if (!value || typeof value !== 'object') return false;
 	const record = value as Record<string, unknown>;
 	return (
@@ -13,8 +13,8 @@ export const isOrderView = (value: unknown): value is OrderView => {
 	);
 };
 
-export function assertOrderView(value: unknown): asserts value is OrderView {
-	if (!isOrderView(value)) {
+export function assertOrderResult(value: unknown): asserts value is OrderResult {
+	if (!isOrderResult(value)) {
 		throw ApplicationErrorFactory.create(
 			ORDERING_APPLICATION_ERRORS.ORDER_NOT_FOUND,
 		);

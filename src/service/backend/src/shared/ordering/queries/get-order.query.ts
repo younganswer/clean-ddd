@@ -1,9 +1,9 @@
 import { Query } from '@nestjs/cqrs';
-import { OrderView } from '@/shared/ordering/readers/order.view';
+import { OrderResult } from '@/shared/ordering/readers/order.result';
 import { ORDERING_APPLICATION_ERRORS } from '@/shared/errors';
 import { requireTrimmedString } from '@/shared/cqrs/input-normalizer';
 
-export class GetOrderQuery extends Query<OrderView | null> {
+export class GetOrderQuery extends Query<OrderResult | null> {
 	public readonly orderId: string;
 
 	constructor(orderId: string) {

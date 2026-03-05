@@ -1,9 +1,9 @@
-import { PaginatedView } from '@/shared/readers';
-import { OrderView } from '@/shared/readers/ordering/dto/order.view';
+import { PaginatedResult } from '@/shared/readers';
+import { OrderResult } from '@/shared/readers/ordering/dto/order.result';
 import { Query } from '@nestjs/cqrs';
 import { toBoundedInt } from '@/shared/cqrs/input-normalizer';
 
-export class ListOrdersQuery extends Query<PaginatedView<OrderView>> {
+export class ListOrdersQuery extends Query<PaginatedResult<OrderResult>> {
 	public readonly limit: number;
 
 	public readonly page: number;

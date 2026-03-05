@@ -4,6 +4,6 @@ export * from '@/shared/ordering/commands/mark-order-paid.command';
 export * from '@/shared/ordering/queries/get-order.query';
 export * from '@/shared/ordering/queries/list-orders.query';
 export * from '@/shared/ordering/readers/i.order.reader';
-export * from '@/shared/ordering/readers/order.view';
-export * from '@/shared/ordering/readers/order-view.guard';
+export * from '@/shared/ordering/readers/order.result';
+export * from '@/shared/ordering/readers/order-result.guard';
 export * from '@/shared/ordering/enums/order-status.enum';

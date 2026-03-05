@@ -1,5 +1,5 @@
 import { Query } from '@nestjs/cqrs';
-import type { OrderView } from '@/shared/ordering/readers/order.view';
+import type { OrderResult } from '@/shared/ordering/readers/order.result';
 import { USER_APPLICATION_ERRORS } from '@/shared/errors';
 import {
 	requireTrimmedString,
@@ -7,7 +7,7 @@ import {
 	toNonNegativeInt,
 } from '@/shared/cqrs/input-normalizer';
 
-export class ListOrdersByUserIdQuery extends Query<OrderView[]> {
+export class ListOrdersByUserIdQuery extends Query<OrderResult[]> {
 	public readonly userId: string;
 
 	public readonly limit: number;

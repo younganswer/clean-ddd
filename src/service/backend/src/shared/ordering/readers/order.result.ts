@@ -1,16 +1,16 @@
 import type { OrderStatus } from '@/shared/ordering/enums/order-status.enum';
 
-export type OrderItemView = {
+export type OrderItemResult = {
 	sku: string;
 	quantity: number;
 };
 
-export type OrderView = {
+export type OrderResult = {
 	orderId: string;
 	userId: string;
 	status: OrderStatus;
 	amount: number;
 	currency: string;
-	items: OrderItemView[];
+	items: OrderItemResult[];
 	paymentId: string | null;
 };
