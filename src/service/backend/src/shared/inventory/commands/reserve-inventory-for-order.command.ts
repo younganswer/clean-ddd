@@ -9,13 +9,12 @@ import {
 import { ApplicationErrorFactory } from '@/shared/errors/base.error-factory';
 
 export class ReserveInventoryForOrderCommand extends Command<void> {
-	public readonly input: {
-		orderId: string;
-		items: InventoryOrderItemDto[];
-	};
+	public readonly orderId: string;
+	public readonly items: InventoryOrderItemDto[];
 
 	constructor(input: { orderId: string; items: InventoryOrderItemDto[] }) {
 		super();
+
 		const normalizedItems = Array.isArray(input.items)
 			? input.items
 					.map((item) => ({
@@ -36,12 +35,10 @@ export class ReserveInventoryForOrderCommand extends Command<void> {
 			);
 		}
 
-		this.input = {
-			orderId: requireTrimmedString(
-				input.orderId,
-				INVENTORY_APPLICATION_ERRORS.INVENTORY_ORDER_ID_REQUIRED,
-			),
-			items: normalizedItems,
-		};
+		this.orderId = requireTrimmedString(
+			input.orderId,
+			INVENTORY_APPLICATION_ERRORS.INVENTORY_ORDER_ID_REQUIRED,
+		);
+		this.items = normalizedItems;
 	}
 }

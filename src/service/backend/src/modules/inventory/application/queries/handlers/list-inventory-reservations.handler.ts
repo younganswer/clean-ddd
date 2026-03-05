@@ -3,19 +3,19 @@ import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { IInventoryReservationRepositorySymbol } from '@/modules/inventory/domains/repositories/i.inventory-reservation.repository';
 import type { IInventoryReservationRepository } from '@/modules/inventory/domains/repositories/i.inventory-reservation.repository';
 import {
-	ListInventoryReservationsQuery,
+	GetInventoryReservationsQuery,
 	type InventoryReservationResult,
 } from '@/shared/inventory';
 
-@QueryHandler(ListInventoryReservationsQuery)
-export class ListInventoryReservationsHandler implements IQueryHandler<ListInventoryReservationsQuery> {
+@QueryHandler(GetInventoryReservationsQuery)
+export class ListInventoryReservationsHandler implements IQueryHandler<GetInventoryReservationsQuery> {
 	constructor(
 		@Inject(IInventoryReservationRepositorySymbol)
 		private readonly inventoryReservationRepository: IInventoryReservationRepository,
 	) {}
 
 	async execute(
-		query: ListInventoryReservationsQuery,
+		query: GetInventoryReservationsQuery,
 	): Promise<InventoryReservationResult[]> {
 		const rows =
 			await this.inventoryReservationRepository.findReservationsByOrderId(

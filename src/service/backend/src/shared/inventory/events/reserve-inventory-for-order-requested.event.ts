@@ -14,20 +14,21 @@ import { ApplicationErrorFactory } from '@/shared/errors/base.error-factory';
 export class ReserveInventoryForOrderRequestedEvent {
 	static readonly eventType =
 		INVENTORY_RESERVE_FOR_ORDER_REQUESTED_EVENT_TYPE;
-
 	public readonly orderId: string;
-
 	public readonly items: InventoryOrderItemPayload[];
 
-	constructor(orderId: string, items: InventoryOrderItemPayload[]) {
+	constructor(input: {
+		orderId: string;
+		items: InventoryOrderItemPayload[];
+	}) {
 		this.orderId = requireTrimmedString(
-			orderId,
+			input.orderId,
 			INVENTORY_APPLICATION_ERRORS.INVENTORY_EVENT_PAYLOAD_INVALID,
 			{ reason: 'orderId' },
 		);
 
-		const normalizedItems = Array.isArray(items)
-			? items
+		const normalizedItems = Array.isArray(input.items)
+			? input.items
 					.map((item) => ({
 						sku: toTrimmedString(item?.sku),
 						quantity: toBoundedInt(item?.quantity, {
@@ -70,6 +71,6 @@ export class ReserveInventoryForOrderRequestedEvent {
 			: [];
 
 		if (!orderId || !items.length) return null;
-		return new ReserveInventoryForOrderRequestedEvent(orderId, items);
+		return new ReserveInventoryForOrderRequestedEvent({ orderId, items });
 	}
 }

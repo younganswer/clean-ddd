@@ -3,23 +3,22 @@ import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { IInventoryItemRepositorySymbol } from '@/modules/inventory/domains/repositories/i.inventory-item.repository';
 import type { IInventoryItemRepository } from '@/modules/inventory/domains/repositories/i.inventory-item.repository';
 import {
-	ListInventoryItemsQuery,
+	GetInventoryItemsQuery,
 	type InventoryItemResult,
 } from '@/shared/inventory';
 import type { PaginatedResult } from '@/shared/readers/paginated.result';
 
-@QueryHandler(ListInventoryItemsQuery)
-export class ListInventoryItemsHandler implements IQueryHandler<ListInventoryItemsQuery> {
+@QueryHandler(GetInventoryItemsQuery)
+export class ListInventoryItemsHandler implements IQueryHandler<GetInventoryItemsQuery> {
 	constructor(
 		@Inject(IInventoryItemRepositorySymbol)
 		private readonly inventoryItemRepository: IInventoryItemRepository,
 	) {}
 
 	async execute(
-		query: ListInventoryItemsQuery,
+		query: GetInventoryItemsQuery,
 	): Promise<PaginatedResult<InventoryItemResult>> {
-		const { limit, page } = query;
-		const offset = (page - 1) * limit;
+		const { limit, offset } = query;
 		await this.inventoryItemRepository.seedIfEmpty();
 		const [rows, total] = await Promise.all([
 			this.inventoryItemRepository.findAll(limit, offset),
@@ -41,7 +40,7 @@ export class ListInventoryItemsHandler implements IQueryHandler<ListInventoryIte
 
 		return {
 			items,
-			page,
+			offset,
 			limit,
 			total,
 			totalPages,

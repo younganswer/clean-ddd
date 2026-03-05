@@ -5,8 +5,8 @@ export * from '@/shared/inventory/dto/inventory-order-item.dto';
 export * from '@/shared/inventory/commands/reserve-inventory-for-order.command';
 
 export * from '@/shared/inventory/queries/get-inventory-item.query';
-export * from '@/shared/inventory/queries/list-inventory-items.query';
-export * from '@/shared/inventory/queries/list-inventory-reservations.query';
+export * from '@/shared/inventory/queries/get-inventory-items.query';
+export * from '@/shared/inventory/queries/get-inventory-reservations.query';
 
 export * from '@/shared/inventory/views/inventory-item.result';
 export * from '@/shared/inventory/views/inventory-reservation.result';

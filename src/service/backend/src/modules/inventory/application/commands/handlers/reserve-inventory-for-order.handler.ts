@@ -14,10 +14,7 @@ export class ReserveInventoryForOrderHandler implements ICommandHandler<ReserveI
 
 	async execute(command: ReserveInventoryForOrderCommand): Promise<void> {
 		await this.uow.transaction(async () => {
-			await this.inventoryReservationDomainService.reserve({
-				orderId: command.input.orderId,
-				items: command.input.items,
-			});
+			await this.inventoryReservationDomainService.reserve(command);
 		});
 	}
 }

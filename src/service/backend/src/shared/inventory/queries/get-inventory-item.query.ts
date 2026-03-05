@@ -6,10 +6,10 @@ import { requireTrimmedString } from '@/shared/cqrs/input-normalizer';
 export class GetInventoryItemQuery extends Query<InventoryItemResult | null> {
 	public readonly sku: string;
 
-	constructor(sku: string) {
+	constructor(input: { sku: string }) {
 		super();
 		this.sku = requireTrimmedString(
-			sku,
+			input.sku,
 			INVENTORY_DOMAIN_ERRORS.INVENTORY_RESERVATION_SKU_REQUIRED,
 		);
 	}

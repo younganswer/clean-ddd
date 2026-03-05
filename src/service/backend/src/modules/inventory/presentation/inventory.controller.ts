@@ -18,12 +18,10 @@ import {
 } from '@/modules/inventory/presentation/swagger';
 import {
 	GetInventoryItemQuery,
-	type InventoryItemResult,
-	ListInventoryItemsQuery,
-	ListInventoryReservationsQuery,
-	type InventoryReservationResult,
+	GetInventoryItemsQuery,
+	GetInventoryReservationsQuery,
 } from '@/shared/inventory';
-import type { PaginatedResult } from '@/shared/readers/paginated.result';
+import { PageQueryDto } from '@/shared/cqrs/query-input.dto';
 
 @Controller('inventory')
 export class InventoryController {
@@ -33,13 +31,14 @@ export class InventoryController {
 	@ApiPageResponse({ model: InventoryItemResponse })
 	@ApiErrorEnvelopeResponse({ status: 400 })
 	async listItems(
-		@Query('limit') limitRaw?: string,
-		@Query('page') pageRaw?: string,
+		@Query() query: PageQueryDto,
 	): Promise<PageEnvelope<InventoryItemResponse>> {
-		const result = await this.queryBus.execute<
-			ListInventoryItemsQuery,
-			PaginatedResult<InventoryItemResult>
-		>(new ListInventoryItemsQuery(Number(limitRaw), Number(pageRaw)));
+		const result = await this.queryBus.execute(
+			new GetInventoryItemsQuery({
+				limit: query.limit ?? Number.NaN,
+				offset: query.offset ?? Number.NaN,
+			}),
+		);
 		return ResponseHelper.page({
 			...result,
 			items: InventoryItemResponse.fromResults(result.items),
@@ -52,10 +51,9 @@ export class InventoryController {
 	async getItem(
 		@Param('sku') sku: string,
 	): Promise<DataEnvelope<InventoryItemResponse | null>> {
-		const result = await this.queryBus.execute<
-			GetInventoryItemQuery,
-			InventoryItemResult | null
-		>(new GetInventoryItemQuery(sku));
+		const result = await this.queryBus.execute(
+			new GetInventoryItemQuery({ sku }),
+		);
 		return ResponseHelper.data(
 			result ? InventoryItemResponse.fromResult(result) : null,
 		);
@@ -65,12 +63,11 @@ export class InventoryController {
 	@ApiListResponse({ model: InventoryReservationResponse })
 	@ApiErrorEnvelopeResponse({ status: 400 })
 	async listReservations(
-		@Query('orderId') orderId?: string,
+		@Query('orderId') orderId: string,
 	): Promise<ListEnvelope<InventoryReservationResponse>> {
-		const result = await this.queryBus.execute<
-			ListInventoryReservationsQuery,
-			InventoryReservationResult[]
-		>(new ListInventoryReservationsQuery(String(orderId)));
+		const result = await this.queryBus.execute(
+			new GetInventoryReservationsQuery({ orderId }),
+		);
 		return ResponseHelper.list(
 			InventoryReservationResponse.fromResults(result),
 		);
