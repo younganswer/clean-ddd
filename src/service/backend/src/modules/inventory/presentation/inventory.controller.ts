@@ -54,9 +54,11 @@ export class InventoryController {
 		const result = await this.queryBus.execute(
 			new GetInventoryItemQuery({ sku }),
 		);
-		return ResponseHelper.data(
-			result ? InventoryItemResponse.fromResult(result) : null,
-		);
+		const response = result
+			? InventoryItemResponse.fromResult(result)
+			: null;
+
+		return ResponseHelper.data(response);
 	}
 
 	@Get('reservations')
@@ -68,8 +70,8 @@ export class InventoryController {
 		const result = await this.queryBus.execute(
 			new GetInventoryReservationsQuery({ orderId }),
 		);
-		return ResponseHelper.list(
-			InventoryReservationResponse.fromResults(result),
-		);
+		const response = InventoryReservationResponse.fromResults(result);
+
+		return ResponseHelper.list(response);
 	}
 }

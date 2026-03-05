@@ -64,20 +64,19 @@ export class PaymentIntentsController {
 		const result = await this.queryBus.execute(
 			new GetPaymentIntentQuery({ paymentId }),
 		);
-
 		if (result === null || result === undefined) {
 			throw ApplicationErrorFactory.create(
 				PAYMENTS_APPLICATION_ERRORS.PAYMENT_NOT_FOUND,
 				{ message: 'payment intent not found' },
 			);
 		}
-
 		if (!isPaymentIntentResult(result)) {
 			throw ApplicationErrorFactory.create(
 				PAYMENTS_APPLICATION_ERRORS.PAYMENT_INTENT_RESULT_INVALID,
 			);
 		}
+		const response = PaymentIntentResponse.fromResult(result);
 
-		return ResponseHelper.data(PaymentIntentResponse.fromResult(result));
+		return ResponseHelper.data(response);
 	}
 }

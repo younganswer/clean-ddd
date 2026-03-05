@@ -11,12 +11,16 @@ export class AppController {
 	@Get()
 	@ApiMessageResponse()
 	getHello(): MessageEnvelope {
-		return ResponseHelper.message(this.appService.getHello());
+		const response = this.appService.getHello();
+
+		return ResponseHelper.message(response);
 	}
 
 	@Get('/app/health-check')
 	@ApiMessageResponse()
 	healthCheck(): MessageEnvelope {
-		return ResponseHelper.message(NestApp.getName() || 'api');
+		const response = NestApp.getName() || 'api';
+
+		return ResponseHelper.message(response);
 	}
 }
