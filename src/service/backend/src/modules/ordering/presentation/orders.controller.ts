@@ -17,9 +17,9 @@ import {
 import { CreateOrderCommand } from '@/shared/ordering/commands/create-order.command';
 import { GetOrderQuery } from '@/shared/ordering/queries/get-order.query';
 import { ListOrdersQuery } from '@/shared/ordering/queries/list-orders.query';
-import type { PaginatedView } from '@/shared/readers/paginated.view';
-import type { OrderView } from '@/shared/ordering/readers/order.view';
-import { isOrderView } from '@/shared/ordering/readers/order-view.guard';
+import type { PaginatedResult } from '@/shared/readers/paginated.result';
+import type { OrderResult } from '@/shared/ordering/readers/order.result';
+import { isOrderResult } from '@/shared/ordering/readers/order-result.guard';
 import { CreateOrderRequest } from '@/modules/ordering/presentation/dto/create-order.request';
 import {
 	CreateOrderResultResponseDto,
@@ -51,8 +51,8 @@ export class OrdersController {
 	async list(
 		@Query('limit') limitRaw?: string,
 		@Query('page') pageRaw?: string,
-	): Promise<PageResponse<OrderView>> {
-		const result = await this.queryBus.execute<PaginatedView<OrderView>>(
+	): Promise<PageResponse<OrderResult>> {
+		const result = await this.queryBus.execute<PaginatedResult<OrderResult>>(
 			new ListOrdersQuery(Number(limitRaw), Number(pageRaw)),
 		);
 		return PageResponse.from(result);
@@ -61,11 +61,11 @@ export class OrdersController {
 	@Get(':id')
 	@ApiDataResponse({ model: OrderResponseDto })
 	@ApiErrorEnvelopeResponse({ status: 404 })
-	async get(@Param('id') id: string): Promise<DataResponse<OrderView>> {
-		const order = await this.queryBus.execute<OrderView | null>(
+	async get(@Param('id') id: string): Promise<DataResponse<OrderResult>> {
+		const order = await this.queryBus.execute<OrderResult | null>(
 			new GetOrderQuery(id),
 		);
-		if (!isOrderView(order)) throw new NotFoundException('order not found');
+		if (!isOrderResult(order)) throw new NotFoundException('order not found');
 		return DataResponse.of(order);
 	}
 }

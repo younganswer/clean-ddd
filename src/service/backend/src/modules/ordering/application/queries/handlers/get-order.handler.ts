@@ -5,7 +5,7 @@ import {
 	IOrderReaderSymbol,
 	type IOrderReader,
 } from '@/shared/ordering/readers/i.order.reader';
-import type { OrderView } from '@/shared/ordering/readers/order.view';
+import type { OrderResult } from '@/shared/ordering/readers/order.result';
 
 @QueryHandler(GetOrderQuery)
 export class GetOrderHandler implements IQueryHandler<GetOrderQuery> {
@@ -14,7 +14,7 @@ export class GetOrderHandler implements IQueryHandler<GetOrderQuery> {
 		private readonly orderReader: IOrderReader,
 	) {}
 
-	async execute(query: GetOrderQuery): Promise<OrderView | null> {
+	async execute(query: GetOrderQuery): Promise<OrderResult | null> {
 		return this.orderReader.findById(query.orderId);
 	}
 }

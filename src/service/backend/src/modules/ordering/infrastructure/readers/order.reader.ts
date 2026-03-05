@@ -3,7 +3,7 @@ import {
 	IOrderReaderSymbol,
 	type IOrderReader,
 } from '@/shared/ordering/readers/i.order.reader';
-import type { OrderView } from '@/shared/ordering/readers/order.view';
+import type { OrderResult } from '@/shared/ordering/readers/order.result';
 import { IOrderRepositorySymbol } from '@/modules/ordering/domains/repositories/i.order.repository';
 import type { IOrderRepository } from '@/modules/ordering/domains/repositories/i.order.repository';
 
@@ -14,28 +14,31 @@ export class OrderReader implements IOrderReader {
 		private readonly orderRepository: IOrderRepository,
 	) {}
 
-	async findById(id: string): Promise<OrderView | null> {
+	async findById(id: string): Promise<OrderResult | null> {
 		const order = await this.orderRepository.findById(id);
 		if (!order) return null;
 
-		return this.toView(order);
+		return this.toResult(order);
 	}
 
-	async findRecent(limit: number, offset: number = 0): Promise<OrderView[]> {
+	async findRecent(
+		limit: number,
+		offset: number = 0,
+	): Promise<OrderResult[]> {
 		const safeLimit = Math.min(50, Math.max(1, Number(limit ?? 20)));
 		const safeOffset = Math.max(0, Number(offset ?? 0) || 0);
 		const orderRepository = await this.orderRepository.findRecent(
 			safeLimit,
 			safeOffset,
 		);
-		return orderRepository.map((o) => this.toView(o));
+		return orderRepository.map((o) => this.toResult(o));
 	}
 
 	async findByUserId(
 		userId: string,
 		limit: number,
 		offset: number = 0,
-	): Promise<OrderView[]> {
+	): Promise<OrderResult[]> {
 		const safeLimit = Math.min(200, Math.max(1, Number(limit ?? 50) || 50));
 		const safeOffset = Math.max(0, Number(offset ?? 0) || 0);
 		const orderRepository = await this.orderRepository.findByUserId(
@@ -43,22 +46,22 @@ export class OrderReader implements IOrderReader {
 			safeLimit,
 			safeOffset,
 		);
-		return orderRepository.map((o) => this.toView(o));
+		return orderRepository.map((o) => this.toResult(o));
 	}
 
 	async countAll(): Promise<number> {
 		return await this.orderRepository.countAll();
 	}
 
-	private toView(order: {
+	private toResult(order: {
 		id: string;
 		userId: string;
-		status: OrderView['status'];
+		status: OrderResult['status'];
 		amount: number;
 		currency: string;
-		items: OrderView['items'];
+		items: OrderResult['items'];
 		paymentId: string | null;
-	}): OrderView {
+	}): OrderResult {
 		return {
 			orderId: order.id,
 			userId: order.userId,

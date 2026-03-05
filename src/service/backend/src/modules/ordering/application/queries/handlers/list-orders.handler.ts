@@ -5,8 +5,8 @@ import {
 	IOrderReaderSymbol,
 	type IOrderReader,
 } from '@/shared/ordering/readers/i.order.reader';
-import type { PaginatedView } from '@/shared/readers/paginated.view';
-import type { OrderView } from '@/shared/ordering/readers/order.view';
+import type { PaginatedResult } from '@/shared/readers/paginated.result';
+import type { OrderResult } from '@/shared/ordering/readers/order.result';
 
 @QueryHandler(ListOrdersQuery)
 export class ListOrdersHandler implements IQueryHandler<ListOrdersQuery> {
@@ -15,7 +15,7 @@ export class ListOrdersHandler implements IQueryHandler<ListOrdersQuery> {
 		private readonly orderReader: IOrderReader,
 	) {}
 
-	async execute(query: ListOrdersQuery): Promise<PaginatedView<OrderView>> {
+	async execute(query: ListOrdersQuery): Promise<PaginatedResult<OrderResult>> {
 		const { limit, page } = query;
 		const offset = (page - 1) * limit;
 
