@@ -1,6 +1,11 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
-import { DataResponse, ListResponse, PageResponse } from '@/common/responses';
+import {
+	DataEnvelope,
+	ListEnvelope,
+	PageEnvelope,
+	ResponseHelper,
+} from '@/common/responses';
 import {
 	ApiDataResponse,
 	ApiErrorEnvelopeResponse,
@@ -8,8 +13,8 @@ import {
 	ApiPageResponse,
 } from '@/common/swagger';
 import {
-	InventoryItemResponseDto,
-	InventoryReservationResponseDto,
+	InventoryItemResponse,
+	InventoryReservationResponse,
 } from '@/modules/inventory/presentation/swagger';
 import {
 	GetInventoryItemQuery,
@@ -25,42 +30,49 @@ export class InventoryController {
 	constructor(private readonly queryBus: QueryBus) {}
 
 	@Get('items')
-	@ApiPageResponse({ model: InventoryItemResponseDto })
+	@ApiPageResponse({ model: InventoryItemResponse })
 	@ApiErrorEnvelopeResponse({ status: 400 })
 	async listItems(
 		@Query('limit') limitRaw?: string,
 		@Query('page') pageRaw?: string,
-	): Promise<PageResponse<InventoryItemResult>> {
+	): Promise<PageEnvelope<InventoryItemResponse>> {
 		const result = await this.queryBus.execute<
 			ListInventoryItemsQuery,
 			PaginatedResult<InventoryItemResult>
 		>(new ListInventoryItemsQuery(Number(limitRaw), Number(pageRaw)));
-		return PageResponse.from(result);
+		return ResponseHelper.page({
+			...result,
+			items: InventoryItemResponse.fromResults(result.items),
+		});
 	}
 
 	@Get('items/:sku')
-	@ApiDataResponse({ model: InventoryItemResponseDto, nullable: true })
+	@ApiDataResponse({ model: InventoryItemResponse, nullable: true })
 	@ApiErrorEnvelopeResponse({ status: 400 })
 	async getItem(
 		@Param('sku') sku: string,
-	): Promise<DataResponse<InventoryItemResult | null>> {
+	): Promise<DataEnvelope<InventoryItemResponse | null>> {
 		const result = await this.queryBus.execute<
 			GetInventoryItemQuery,
 			InventoryItemResult | null
 		>(new GetInventoryItemQuery(sku));
-		return DataResponse.of(result);
+		return ResponseHelper.data(
+			result ? InventoryItemResponse.fromResult(result) : null,
+		);
 	}
 
 	@Get('reservations')
-	@ApiListResponse({ model: InventoryReservationResponseDto })
+	@ApiListResponse({ model: InventoryReservationResponse })
 	@ApiErrorEnvelopeResponse({ status: 400 })
 	async listReservations(
 		@Query('orderId') orderId?: string,
-	): Promise<ListResponse<InventoryReservationResult>> {
+	): Promise<ListEnvelope<InventoryReservationResponse>> {
 		const result = await this.queryBus.execute<
 			ListInventoryReservationsQuery,
 			InventoryReservationResult[]
 		>(new ListInventoryReservationsQuery(String(orderId)));
-		return ListResponse.from(result);
+		return ResponseHelper.list(
+			InventoryReservationResponse.fromResults(result),
+		);
 	}
 }
