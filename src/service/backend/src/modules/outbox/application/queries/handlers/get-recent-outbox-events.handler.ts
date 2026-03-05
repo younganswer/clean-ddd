@@ -3,7 +3,7 @@ import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import {
 	GetRecentOutboxEventsQuery,
 	GetRecentOutboxEventsResult,
-	type RecentOutboxEventView,
+	type RecentOutboxEventResult,
 	IOutboxRepositorySymbol,
 	type IOutboxRepository,
 } from '@/shared/outbox';
@@ -22,7 +22,7 @@ export class GetRecentOutboxEventsHandler implements IQueryHandler<
 		query: GetRecentOutboxEventsQuery,
 	): Promise<GetRecentOutboxEventsResult> {
 		const events = await this.outboxRepository.findRecent(query.limit);
-		const views: RecentOutboxEventView[] = events.map((event) => ({
+		const results: RecentOutboxEventResult[] = events.map((event) => ({
 			outboxId: event.id,
 			eventType: event.eventType,
 			payload: event.payload,
@@ -30,6 +30,6 @@ export class GetRecentOutboxEventsHandler implements IQueryHandler<
 			recordedAt: event.recordedAt,
 		}));
 
-		return new GetRecentOutboxEventsResult(views);
+		return new GetRecentOutboxEventsResult(results);
 	}
 }

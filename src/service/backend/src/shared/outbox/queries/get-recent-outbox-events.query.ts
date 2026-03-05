@@ -2,7 +2,7 @@ import { Query } from '@nestjs/cqrs';
 import { OutboxEventStatus } from '@/shared/outbox/domain/outbox-event-status';
 import { toBoundedInt } from '@/shared/cqrs/input-normalizer';
 
-export type RecentOutboxEventView = {
+export type RecentOutboxEventResult = {
 	outboxId: string;
 	eventType: string;
 	payload: Record<string, unknown>;
@@ -24,5 +24,5 @@ export class GetRecentOutboxEventsQuery extends Query<GetRecentOutboxEventsResul
 }
 
 export class GetRecentOutboxEventsResult {
-	constructor(readonly events: RecentOutboxEventView[]) {}
+	constructor(readonly events: RecentOutboxEventResult[]) {}
 }
