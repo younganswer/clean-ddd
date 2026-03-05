@@ -7,3 +7,4 @@ export * from '@/shared/outbox/commands/dispatch-outbox-event.command';
 export * from '@/shared/outbox/commands/dispatch-pending-outbox-events.command';
 export * from '@/shared/outbox/queries/get-pending-outbox-events.query';
 export * from '@/shared/outbox/queries/get-recent-outbox-events.query';
+export * from '@/shared/outbox/queries/get-recent-outbox-events.result';

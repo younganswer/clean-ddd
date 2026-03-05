@@ -3,12 +3,11 @@ import { toTrimmedString } from '@/shared/cqrs/input-normalizer';
 
 export class DispatchOutboxEventCommand extends Command<void> {
 	readonly outboxId: string;
-
 	readonly messageGroupId: string;
 
-	constructor(outboxId: string, messageGroupId: string = 'outbox') {
+	constructor(input: { outboxId: string; messageGroupId?: string }) {
 		super();
-		this.outboxId = toTrimmedString(outboxId);
-		this.messageGroupId = toTrimmedString(messageGroupId) || 'outbox';
+		this.outboxId = toTrimmedString(input.outboxId);
+		this.messageGroupId = toTrimmedString(input.messageGroupId) || 'outbox';
 	}
 }

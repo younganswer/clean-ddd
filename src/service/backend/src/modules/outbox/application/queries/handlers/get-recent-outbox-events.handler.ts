@@ -2,11 +2,13 @@ import { Inject } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import {
 	GetRecentOutboxEventsQuery,
-	GetRecentOutboxEventsResult,
-	type RecentOutboxEventResult,
 	IOutboxRepositorySymbol,
 	type IOutboxRepository,
 } from '@/shared/outbox';
+import {
+	GetRecentOutboxEventsResult,
+	type RecentOutboxEventResult,
+} from '@/shared/outbox/queries/get-recent-outbox-events.result';
 
 @QueryHandler(GetRecentOutboxEventsQuery)
 export class GetRecentOutboxEventsHandler implements IQueryHandler<

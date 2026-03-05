@@ -42,7 +42,10 @@ describe('DispatchOutboxEventHandler', () => {
 		);
 
 		await handler.execute(
-			new DispatchOutboxEventCommand(event.id, 'order-1'),
+			new DispatchOutboxEventCommand({
+				outboxId: event.id,
+				messageGroupId: 'order-1',
+			}),
 		);
 
 		expect(enqueueMock).toHaveBeenCalledWith(event.id, {
@@ -88,7 +91,10 @@ describe('DispatchOutboxEventHandler', () => {
 		);
 
 		await handler.execute(
-			new DispatchOutboxEventCommand(event.id, 'order-1'),
+			new DispatchOutboxEventCommand({
+				outboxId: event.id,
+				messageGroupId: 'order-1',
+			}),
 		);
 
 		expect(event.status).toBe(OutboxEventStatus.FAILED);

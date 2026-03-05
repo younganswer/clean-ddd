@@ -15,8 +15,11 @@ export class OutboxDispatchJob {
 		if (!isOutboxCronEnabled()) return;
 
 		try {
-			await this.commandBus.execute<number>(
-				new DispatchPendingOutboxEventsCommand(10, new Date()),
+			await this.commandBus.execute(
+				new DispatchPendingOutboxEventsCommand({
+					limit: 10,
+					now: new Date(),
+				}),
 			);
 		} catch (error) {
 			this.logger.warn(`failed: ${String(error)}`);

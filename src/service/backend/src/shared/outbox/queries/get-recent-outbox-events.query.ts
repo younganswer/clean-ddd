@@ -1,28 +1,16 @@
 import { Query } from '@nestjs/cqrs';
-import { OutboxEventStatus } from '@/shared/outbox/domain/outbox-event-status';
 import { toBoundedInt } from '@/shared/cqrs/input-normalizer';
-
-export type RecentOutboxEventResult = {
-	outboxId: string;
-	eventType: string;
-	payload: Record<string, unknown>;
-	status: OutboxEventStatus;
-	recordedAt: Date;
-};
+import { GetRecentOutboxEventsResult } from '@/shared/outbox/queries/get-recent-outbox-events.result';
 
 export class GetRecentOutboxEventsQuery extends Query<GetRecentOutboxEventsResult> {
 	readonly limit: number;
 
-	constructor(limit: number = 200) {
+	constructor(input: { limit?: number }) {
 		super();
-		this.limit = toBoundedInt(limit, {
+		this.limit = toBoundedInt(input.limit, {
 			min: 0,
 			max: Number.MAX_SAFE_INTEGER,
 			fallback: 200,
 		});
 	}
-}
-
-export class GetRecentOutboxEventsResult {
-	constructor(readonly events: RecentOutboxEventResult[]) {}
 }

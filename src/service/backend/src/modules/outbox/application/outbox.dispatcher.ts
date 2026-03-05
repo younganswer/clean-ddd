@@ -2,10 +2,7 @@ import { MikroORM, RequestContext } from '@mikro-orm/core';
 import { Injectable, Logger } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { DispatchOutboxEventCommand } from '@/shared/outbox/commands/dispatch-outbox-event.command';
-import {
-	GetPendingOutboxEventsQuery,
-	type GetPendingOutboxEventsResult,
-} from '@/shared/outbox/queries/get-pending-outbox-events.query';
+import { GetPendingOutboxEventsQuery } from '@/shared/outbox/queries/get-pending-outbox-events.query';
 
 @Injectable()
 export class OutboxDispatcher {
@@ -19,10 +16,9 @@ export class OutboxDispatcher {
 
 	async dispatchPending(limit = 10, now = new Date()): Promise<number> {
 		return RequestContext.create(this.orm.em.fork(), async () => {
-			const result = await this.queryBus.execute<
-				GetPendingOutboxEventsQuery,
-				GetPendingOutboxEventsResult
-			>(new GetPendingOutboxEventsQuery(limit, now));
+			const result = await this.queryBus.execute(
+				new GetPendingOutboxEventsQuery({ limit, now }),
+			);
 
 			const getOrderId = (
 				payload: Record<string, unknown>,
@@ -38,8 +34,11 @@ export class OutboxDispatcher {
 				if (!event.id) continue;
 
 				const messageGroupId = getOrderId(event.payload) ?? 'outbox';
-				await this.commandBus.execute<DispatchOutboxEventCommand, void>(
-					new DispatchOutboxEventCommand(event.id, messageGroupId),
+				await this.commandBus.execute(
+					new DispatchOutboxEventCommand({
+						outboxId: event.id,
+						messageGroupId,
+					}),
 				);
 				dispatched += 1;
 			}
