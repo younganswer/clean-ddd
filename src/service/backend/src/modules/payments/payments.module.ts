@@ -1,6 +1,5 @@
 import { forwardRef, Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
-import { OrderingModule } from '@/modules/ordering/ordering.module';
 import { OutboxModule } from '@/modules/outbox/outbox.module';
 import { CreatePaymentIntentHandler } from '@/modules/payments/application/commands/handlers/create-payment-intent.handler';
 import { GetPaymentIntentHandler } from '@/modules/payments/application/queries/handlers/get-payment-intent.handler';
@@ -11,9 +10,10 @@ import { PaymentIntentMapper } from '@/modules/payments/infrastructure/mappers/p
 import { PaymentRepository } from '@/modules/payments/infrastructure/repositories/payment.repository';
 import { PaymentsController } from '@/modules/payments/presentation/payments.controller';
 import { PaymentIntentsController } from '@/modules/payments/presentation/payment-intents.controller';
+import { QueryBusOrderReaderProvider } from '@/modules/payments/infrastructure/readers/query-bus-order.reader';
 
 @Module({
-	imports: [CqrsModule, OrderingModule, forwardRef(() => OutboxModule)],
+	imports: [CqrsModule, forwardRef(() => OutboxModule)],
 	controllers: [PaymentsController, PaymentIntentsController],
 	providers: [
 		PaymentIntentMapper,
@@ -23,6 +23,7 @@ import { PaymentIntentsController } from '@/modules/payments/presentation/paymen
 			useExisting: PaymentRepository,
 		},
 		PaymentIntentReaderProvider,
+		QueryBusOrderReaderProvider,
 		CreatePaymentIntentHandler,
 		GetPaymentIntentHandler,
 		ListPaymentIntentsHandler,

@@ -1,21 +1,19 @@
 import { Inject } from '@nestjs/common';
-import {
-	CommandBus,
-	CommandHandler,
-	ICommandHandler,
-	QueryBus,
-} from '@nestjs/cqrs';
+import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { OutboxProducer } from '@/modules/outbox/application/outbox.producer';
 import { IPaymentRepositorySymbol } from '@/modules/payments/domains/repositories/i.payment.repository';
 import type { IPaymentRepository } from '@/modules/payments/domains/repositories/i.payment.repository';
 import { PaymentIntent } from '@/modules/payments/domains/entities/aggregates/payment-intent/payment-intent.aggregate';
 import { AttachPaymentToOrderCommand } from '@/shared/ordering/commands/attach-payment-to-order.command';
-import { GetOrderQuery } from '@/shared/ordering/queries/get-order.query';
 import {
 	PaymentWebhookFailedEvent,
 	PaymentWebhookSucceededEvent,
 } from '@/shared/payments';
 import { assertOrderResult } from '@/shared/ordering/readers/order-result.guard';
+import {
+	IOrderReaderSymbol,
+	type IOrderReader,
+} from '@/shared/ordering/readers/i.order.reader';
 import {
 	CreatePaymentIntentCommand,
 	type CreatePaymentIntentResult,
@@ -27,9 +25,10 @@ export class CreatePaymentIntentHandler implements ICommandHandler<CreatePayment
 	constructor(
 		@Inject(IPaymentRepositorySymbol)
 		private readonly paymentRepository: IPaymentRepository,
+		@Inject(IOrderReaderSymbol)
+		private readonly orderReader: IOrderReader,
 		private readonly uow: UnitOfWork,
 		private readonly outboxProducer: OutboxProducer,
-		private readonly queryBus: QueryBus,
 		private readonly commandBus: CommandBus,
 	) {}
 
@@ -37,9 +36,7 @@ export class CreatePaymentIntentHandler implements ICommandHandler<CreatePayment
 		command: CreatePaymentIntentCommand,
 	): Promise<CreatePaymentIntentResult> {
 		return this.uow.transaction(async () => {
-			const order = await this.queryBus.execute(
-				new GetOrderQuery(command),
-			);
+			const order = await this.orderReader.findById(command.orderId);
 			assertOrderResult(order);
 
 			const payment = PaymentIntent.create({

@@ -7,6 +7,7 @@ import { CommandHandlers } from '@/modules/ordering/application/commands';
 import { QueryHandlers } from '@/modules/ordering/application/queries';
 import { OrdersController } from '@/modules/ordering/presentation/orders.controller';
 import { OrderReaderProvider } from '@/modules/ordering/infrastructure/readers/order.reader';
+import { IOrderReaderSymbol } from '@/shared/ordering/readers/i.order.reader';
 
 @Module({
 	imports: [CqrsModule],
@@ -22,6 +23,6 @@ import { OrderReaderProvider } from '@/modules/ordering/infrastructure/readers/o
 		...CommandHandlers,
 		...QueryHandlers,
 	],
-	exports: [IOrderRepositorySymbol],
+	exports: [IOrderRepositorySymbol, IOrderReaderSymbol],
 })
 export class OrderingModule {}
