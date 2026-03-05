@@ -7,18 +7,18 @@ import {
 	getSchemaPath,
 } from '@nestjs/swagger';
 import {
-	buildBaseResponseSchema,
-	buildListResponseSchema,
-	buildPageResponseSchema,
+	buildBaseEnvelopeSchema,
+	buildListEnvelopeSchema,
+	buildPageEnvelopeSchema,
 	type OpenApiSchema,
 } from '@/common/swagger/base-response-schema.factory';
 import {
-	DataResponse,
-	ErrorData,
+	DataEnvelope,
+	ErrorEnvelope,
 	ErrorResponse,
-	ListResponse,
-	MessageResponse,
-	PageResponse,
+	ListEnvelope,
+	MessageEnvelope,
+	PageEnvelope,
 } from '@/common/responses';
 
 type ApiSuccessResponseOptions = {
@@ -85,14 +85,14 @@ export const ApiDataResponse = (
 	options: ApiSuccessResponseOptions = {},
 ): MethodDecorator => {
 	const status = options.status ?? 200;
-	const models: Type<unknown>[] = [DataResponse, data.model];
+	const models: Type<unknown>[] = [DataEnvelope, data.model];
 
 	return applyDecorators(
 		ApiExtraModels(...models),
 		resolveResponseDecorator(status, {
 			description: options.description,
-			schema: buildBaseResponseSchema(
-				getSchemaPath(DataResponse),
+			schema: buildBaseEnvelopeSchema(
+				getSchemaPath(DataEnvelope),
 				resolveDataSchema(data),
 			),
 		}),
@@ -105,11 +105,11 @@ export const ApiMessageResponse = (
 	const status = options.status ?? 200;
 
 	return applyDecorators(
-		ApiExtraModels(MessageResponse),
+		ApiExtraModels(MessageEnvelope),
 		resolveResponseDecorator(status, {
 			description: options.description,
 			schema: {
-				$ref: getSchemaPath(MessageResponse),
+				$ref: getSchemaPath(MessageEnvelope),
 			},
 		}),
 	);
@@ -120,7 +120,7 @@ export const ApiListResponse = (
 	options: ApiSuccessResponseOptions = {},
 ): MethodDecorator => {
 	const status = options.status ?? 200;
-	const models: Type<unknown>[] = [ListResponse, item.model];
+	const models: Type<unknown>[] = [ListEnvelope, item.model];
 
 	const itemSchema = resolveDataSchema(item);
 
@@ -128,8 +128,8 @@ export const ApiListResponse = (
 		ApiExtraModels(...models),
 		resolveResponseDecorator(status, {
 			description: options.description,
-			schema: buildListResponseSchema(
-				getSchemaPath(ListResponse),
+			schema: buildListEnvelopeSchema(
+				getSchemaPath(ListEnvelope),
 				itemSchema,
 			),
 		}),
@@ -142,7 +142,7 @@ export const ApiPageResponse = (
 ): MethodDecorator => {
 	const status = options.status ?? 200;
 	const models: Type<unknown>[] = [
-		PageResponse,
+		PageEnvelope,
 		PaginatedDataSchema,
 		item.model,
 	];
@@ -153,8 +153,8 @@ export const ApiPageResponse = (
 		ApiExtraModels(...models),
 		resolveResponseDecorator(status, {
 			description: options.description,
-			schema: buildPageResponseSchema(
-				getSchemaPath(PageResponse),
+			schema: buildPageEnvelopeSchema(
+				getSchemaPath(PageEnvelope),
 				getSchemaPath(PaginatedDataSchema),
 				itemSchema,
 			),
@@ -167,12 +167,12 @@ export const ApiErrorEnvelopeResponse = (options: {
 	description?: string;
 }): MethodDecorator => {
 	return applyDecorators(
-		ApiExtraModels(ErrorResponse, ErrorData),
+		ApiExtraModels(ErrorEnvelope, ErrorResponse),
 		ApiResponse({
 			status: options.status,
 			description: options.description,
 			schema: {
-				$ref: getSchemaPath(ErrorResponse),
+				$ref: getSchemaPath(ErrorEnvelope),
 			},
 		}),
 	);

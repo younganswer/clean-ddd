@@ -5,34 +5,34 @@ import type {
 
 export type OpenApiSchema = SchemaObject | ReferenceObject;
 
-export const buildBaseResponseSchema = (
-	baseResponseRef: string,
+export const buildBaseEnvelopeSchema = (
+	baseEnvelopeRef: string,
 	dataSchema: OpenApiSchema,
 ): OpenApiSchema => {
 	return {
-		allOf: [{ $ref: baseResponseRef }],
+		allOf: [{ $ref: baseEnvelopeRef }],
 		properties: {
 			data: dataSchema,
 		},
 	};
 };
 
-export const buildListResponseSchema = (
-	listResponseRef: string,
+export const buildListEnvelopeSchema = (
+	listEnvelopeRef: string,
 	itemSchema: OpenApiSchema,
 ): OpenApiSchema => {
-	return buildBaseResponseSchema(listResponseRef, {
+	return buildBaseEnvelopeSchema(listEnvelopeRef, {
 		type: 'array',
 		items: itemSchema,
 	});
 };
 
-export const buildPageResponseSchema = (
-	pageResponseRef: string,
+export const buildPageEnvelopeSchema = (
+	pageEnvelopeRef: string,
 	paginatedDataRef: string,
 	itemSchema: OpenApiSchema,
 ): OpenApiSchema => {
-	return buildBaseResponseSchema(pageResponseRef, {
+	return buildBaseEnvelopeSchema(pageEnvelopeRef, {
 		allOf: [{ $ref: paginatedDataRef }],
 		properties: {
 			items: {
