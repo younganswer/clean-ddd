@@ -1,8 +1,19 @@
 import { Command } from '@nestjs/cqrs';
-import type { CreateOrderBffBodyDto } from '@/bff/orders/presentation/orders-bff.dto';
+
+export type CreateOrderBffItemInput = {
+	sku: string;
+	quantity: number;
+};
+
+export type CreateOrderBffBodyInput = {
+	userId: string;
+	amount: number;
+	currency: string;
+	items?: CreateOrderBffItemInput[];
+};
 
 export class CreateOrderBffCommand extends Command<{ orderId: string }> {
-	constructor(public readonly input: { body: CreateOrderBffBodyDto }) {
+	constructor(public readonly input: { body: CreateOrderBffBodyInput }) {
 		super();
 	}
 }

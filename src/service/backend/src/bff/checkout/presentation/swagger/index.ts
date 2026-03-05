@@ -1,1 +1,1 @@
-export * from '@/bff/checkout/presentation/swagger/checkout.response.dto';
+export * from '@/bff/checkout/presentation/swagger/checkout.response';

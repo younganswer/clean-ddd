@@ -8,15 +8,15 @@ import {
 	Query,
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { DataResponse, ListResponse } from '@/common/responses';
+import { DataEnvelope, ListEnvelope, ResponseHelper } from '@/common/responses';
 import {
 	ApiDataResponse,
 	ApiErrorEnvelopeResponse,
 	ApiListResponse,
 } from '@/common/swagger';
 import {
-	CreateOrderResultResponseDto,
-	OrderResponseDto,
+	CreateOrderResponse,
+	OrderResponse,
 } from '@/bff/orders/presentation/swagger';
 
 import {
@@ -36,42 +36,42 @@ export class OrdersBffController {
 	) {}
 
 	@Get()
-	@ApiListResponse({ model: OrderResponseDto })
+	@ApiListResponse({ model: OrderResponse })
 	@ApiErrorEnvelopeResponse({ status: 400 })
 	async list(
 		@Query() query: ListOrdersBffQueryDto,
-	): Promise<ListResponse<OrderResult>> {
+	): Promise<ListEnvelope<OrderResponse>> {
 		const result = await this.queryBus.execute<
 			ListOrdersBffQuery,
 			OrderResult[]
 		>(new ListOrdersBffQuery({ limit: query.limit }));
-		return ListResponse.from(result);
+		return ResponseHelper.list(OrderResponse.fromResults(result));
 	}
 
 	@Get(':orderId')
-	@ApiDataResponse({ model: OrderResponseDto })
+	@ApiDataResponse({ model: OrderResponse })
 	@ApiErrorEnvelopeResponse({ status: 404 })
 	async get(
 		@Param('orderId') orderId: string,
-	): Promise<DataResponse<OrderResult>> {
+	): Promise<DataEnvelope<OrderResponse>> {
 		const order = await this.queryBus.execute<
 			GetOrderBffQuery,
 			OrderResult | null
 		>(new GetOrderBffQuery({ orderId }));
 		if (!order) throw new NotFoundException('order not found');
-		return DataResponse.of(order);
+		return ResponseHelper.data(OrderResponse.fromResult(order));
 	}
 
 	@Post()
-	@ApiDataResponse({ model: CreateOrderResultResponseDto }, { status: 201 })
+	@ApiDataResponse({ model: CreateOrderResponse }, { status: 201 })
 	@ApiErrorEnvelopeResponse({ status: 400 })
 	async create(
 		@Body() body: CreateOrderBffBodyDto,
-	): Promise<DataResponse<{ orderId: string }>> {
+	): Promise<DataEnvelope<CreateOrderResponse>> {
 		const result = await this.commandBus.execute<
 			CreateOrderBffCommand,
 			{ orderId: string }
 		>(new CreateOrderBffCommand({ body }));
-		return DataResponse.of(result);
+		return ResponseHelper.data(CreateOrderResponse.fromResult(result));
 	}
 }
