@@ -1,6 +1,6 @@
-import { ModuleRef } from '@nestjs/core';
 import { EventBus } from '@nestjs/cqrs';
 import { OutboxConsumer } from '@/modules/outbox/application/outbox.consumer';
+import { OutboxKnownHandlerRegistryService } from '@/modules/outbox/application/outbox-known-handler.registry.service';
 import { OutboxEvent } from '@/shared/outbox/domain/entities/outbox-event.entity';
 import { OutboxEventStatus } from '@/shared/outbox';
 import { IdempotencyService } from '@/shared/idempotency/idempotency.service';
@@ -29,11 +29,14 @@ describe('OutboxConsumer (registry dispatch)', () => {
 		};
 
 		const handlerHandle = jest.fn(() => Promise.resolve(undefined));
-		const handler = { handle: handlerHandle };
-		const moduleRefGetMock = jest.fn(() => handler);
-		const moduleRef = {
-			get: moduleRefGetMock,
-		} as unknown as ModuleRef;
+		const knownHandlerFindMock = jest.fn(() => ({
+			eventType: PaymentWebhookSucceededEvent.eventType,
+			handlerName: 'PaymentWebhookSucceededHandler',
+			handler: { handle: handlerHandle },
+		}));
+		const knownHandlerRegistry = {
+			find: knownHandlerFindMock,
+		} as unknown as OutboxKnownHandlerRegistryService;
 
 		const claimMock = jest.fn(() => Promise.resolve(true));
 		const releaseMock = jest.fn(() => Promise.resolve(undefined));
@@ -54,25 +57,27 @@ describe('OutboxConsumer (registry dispatch)', () => {
 		};
 
 		const consumer = new OutboxConsumer(
-			moduleRef,
 			outboxRepository,
 			idempotency,
 			eventBus,
 			uow as UnitOfWork,
+			knownHandlerRegistry,
 		);
 
 		await consumer.consumeRawMessage({
 			body: JSON.stringify({ outboxId: outboxEvent.id }),
 		});
 
-		expect(moduleRefGetMock).toHaveBeenCalled();
+		expect(knownHandlerFindMock).toHaveBeenCalledWith(
+			PaymentWebhookSucceededEvent.eventType,
+		);
 		expect(handlerHandle).toHaveBeenCalledTimes(1);
 		expect(publishMock).not.toHaveBeenCalled();
 		expect(outboxEvent.status).toBe(OutboxEventStatus.CONSUMED);
 		expect(persistMock).toHaveBeenCalled();
 	});
 
-	it('fails when known event handler provider is missing', async () => {
+	it('publishes via EventBus when known handler is not registered', async () => {
 		const outboxEvent = OutboxEvent.create({
 			eventType: PaymentWebhookSucceededEvent.eventType,
 			payload: { orderId: 'order-1', paymentId: 'payment-1' },
@@ -91,9 +96,9 @@ describe('OutboxConsumer (registry dispatch)', () => {
 			unlock: unlockMock,
 		};
 
-		const moduleRef = {
-			get: jest.fn(() => undefined),
-		} as unknown as ModuleRef;
+		const knownHandlerRegistry = {
+			find: jest.fn(() => undefined),
+		} as unknown as OutboxKnownHandlerRegistryService;
 
 		const claimMock2 = jest.fn(() => Promise.resolve(true));
 		const releaseMock2 = jest.fn(() => Promise.resolve(undefined));
@@ -114,21 +119,20 @@ describe('OutboxConsumer (registry dispatch)', () => {
 		};
 
 		const consumer = new OutboxConsumer(
-			moduleRef,
 			outboxRepository,
 			idempotency,
 			eventBus,
 			uow as UnitOfWork,
+			knownHandlerRegistry,
 		);
 
-		await expect(
-			consumer.consumeRawMessage({
-				body: JSON.stringify({ outboxId: outboxEvent.id }),
-			}),
-		).rejects.toThrow('provider not found');
+		await consumer.consumeRawMessage({
+			body: JSON.stringify({ outboxId: outboxEvent.id }),
+		});
 
-		expect(outboxEvent.status).toBe(OutboxEventStatus.FAILED);
-		expect(releaseMock2).toHaveBeenCalledTimes(1);
-		expect(unlockMock).toHaveBeenCalledTimes(1);
+		expect(outboxEvent.status).toBe(OutboxEventStatus.CONSUMED);
+		expect(publishMock2).toHaveBeenCalledTimes(1);
+		expect(releaseMock2).not.toHaveBeenCalled();
+		expect(unlockMock).not.toHaveBeenCalled();
 	});
 });

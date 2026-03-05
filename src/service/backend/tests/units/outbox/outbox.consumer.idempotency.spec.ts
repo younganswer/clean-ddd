@@ -1,6 +1,6 @@
-import { ModuleRef } from '@nestjs/core';
 import { EventBus } from '@nestjs/cqrs';
 import { OutboxConsumer } from '@/modules/outbox/application/outbox.consumer';
+import { OutboxKnownHandlerRegistryService } from '@/modules/outbox/application/outbox-known-handler.registry.service';
 import { OutboxEvent } from '@/shared/outbox/domain/entities/outbox-event.entity';
 import { OutboxEventStatus } from '@/shared/outbox';
 import { IdempotencyService } from '@/shared/idempotency/idempotency.service';
@@ -28,10 +28,13 @@ describe('OutboxConsumer idempotency', () => {
 		};
 
 		const knownHandlerHandle = jest.fn(() => Promise.resolve(undefined));
-		const knownHandler = { handle: knownHandlerHandle };
-		const moduleRef = {
-			get: jest.fn(() => knownHandler),
-		} as unknown as ModuleRef;
+		const knownHandlerRegistry = {
+			find: jest.fn(() => ({
+				eventType: PaymentWebhookSucceededEvent.eventType,
+				handlerName: 'KnownHandler',
+				handler: { handle: knownHandlerHandle },
+			})),
+		} as unknown as OutboxKnownHandlerRegistryService;
 
 		const claimMock = jest.fn(() => Promise.resolve(false));
 		const releaseMock = jest.fn(() => Promise.resolve(undefined));
@@ -52,11 +55,11 @@ describe('OutboxConsumer idempotency', () => {
 		};
 
 		const consumer = new OutboxConsumer(
-			moduleRef,
 			outboxRepository,
 			idempotency,
 			eventBus,
 			uow as UnitOfWork,
+			knownHandlerRegistry,
 		);
 
 		await consumer.consumeRawMessage({

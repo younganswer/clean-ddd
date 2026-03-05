@@ -1,9 +1,9 @@
 import { RequestContext } from '@mikro-orm/core';
-import { ModuleRef } from '@nestjs/core';
 import { CommandBus, EventBus, QueryBus } from '@nestjs/cqrs';
 import { OutboxDispatcher } from '@/modules/outbox/application/outbox.dispatcher';
 import { DispatchOutboxEventHandler } from '@/modules/outbox/application/commands/handlers/dispatch-outbox-event.handler';
 import { OutboxConsumer } from '@/modules/outbox/application/outbox.consumer';
+import { OutboxKnownHandlerRegistryService } from '@/modules/outbox/application/outbox-known-handler.registry.service';
 import { DispatchOutboxEventCommand } from '@/shared/outbox/commands/dispatch-outbox-event.command';
 import {
 	GetPendingOutboxEventsResult,
@@ -191,10 +191,13 @@ describe('Outbox flow state transition', () => {
 		expect(publishedEvent.status).toBe(OutboxEventStatus.PUBLISHED);
 
 		const knownHandlerHandle = jest.fn(() => Promise.resolve(undefined));
-		const knownHandler = { handle: knownHandlerHandle };
-		const moduleRef = {
-			get: jest.fn(() => knownHandler),
-		} as unknown as ModuleRef;
+		const knownHandlerRegistry = {
+			find: jest.fn(() => ({
+				eventType: CreateShipmentForOrderRequestedEvent.eventType,
+				handlerName: 'KnownHandler',
+				handler: { handle: knownHandlerHandle },
+			})),
+		} as unknown as OutboxKnownHandlerRegistryService;
 		const idempotency = {
 			claim: jest.fn(() => Promise.resolve(true)),
 			release: jest.fn(() => Promise.resolve(undefined)),
@@ -202,11 +205,11 @@ describe('Outbox flow state transition', () => {
 		const eventBus = { publish: jest.fn() } as unknown as EventBus;
 
 		const consumer = new OutboxConsumer(
-			moduleRef,
 			repository,
 			idempotency,
 			eventBus,
 			uow as UnitOfWork,
+			knownHandlerRegistry,
 		);
 
 		await consumer.consumeRawMessage({
