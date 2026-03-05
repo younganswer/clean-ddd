@@ -3,7 +3,7 @@ import { InventoryReservationResponse } from '@/modules/inventory/presentation/s
 import { OrderResponse } from '@/modules/ordering/presentation/swagger';
 import { PaymentIntentResponse } from '@/modules/payments/presentation/swagger';
 import { ShipmentResponse } from '@/modules/shipping/presentation/swagger';
-import type { OrderDetailBffView } from '@/bff/order-detail/application/queries/get-order-detail-bff.query';
+import type { OrderDetailBffView } from '@/bff/order-detail/application/views/order-detail-bff.view';
 
 export class OrderDetailBffResponse {
 	@ApiProperty({ type: OrderResponse })

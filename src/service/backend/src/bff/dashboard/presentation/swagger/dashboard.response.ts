@@ -3,7 +3,7 @@ import { InventoryItemResponse } from '@/modules/inventory/presentation/swagger'
 import { OrderResponse } from '@/modules/ordering/presentation/swagger';
 import { PaymentIntentResponse } from '@/modules/payments/presentation/swagger';
 import { ShipmentResponse } from '@/modules/shipping/presentation/swagger';
-import type { DashboardSummaryBffView } from '@/bff/dashboard/application/queries/get-dashboard-summary-bff.query';
+import type { DashboardSummaryBffView } from '@/bff/dashboard/application/views/dashboard-summary-bff.view';
 
 export class DashboardSummaryBffResponse {
 	@ApiProperty({ type: [OrderResponse] })

@@ -3,7 +3,7 @@ import { IQueryHandler, QueryBus, QueryHandler } from '@nestjs/cqrs';
 
 import { GetOrderQuery } from '@/shared/ordering/queries/get-order.query';
 import type { OrderResult } from '@/shared/ordering/readers/order.result';
-import { ListOrdersByUserIdQuery } from '@/shared/ordering/queries/list-orders-by-user-subject-id.query';
+import { GetOrdersByUserIdQuery } from '@/shared/ordering/queries/get-orders-by-user-subject-id.query';
 
 import { GetShipmentQuery } from '@/shared/shipping/queries/get-shipment.query';
 import type { ShipmentResult } from '@/shared/readers/shipping/dto/shipment.result';
@@ -14,18 +14,17 @@ import type { PaymentIntentResult } from '@/shared/readers/payments/dto/payment-
 
 import { GetUserProfileQuery } from '@/shared/users/queries/get-user-profile.query';
 import type { UserProfileResult } from '@/shared/users/readers/user-profile.result';
-import {
-	GetRecentOutboxEventsQuery,
-	GetRecentOutboxEventsResult,
-} from '@/shared/outbox';
+import { GetRecentOutboxEventsQuery } from '@/shared/outbox';
 
 import {
 	GetGraphBffQuery,
-	type GraphEdge,
-	type GraphNode,
 	type GraphRootType,
-	type GraphView,
 } from '@/bff/graph/application/queries/get-graph-bff.query';
+import type {
+	GraphEdge,
+	GraphNode,
+	GraphView,
+} from '@/bff/graph/application/views/graph.view';
 
 type EntityRef = { type: GraphRootType; id: string };
 
@@ -62,13 +61,11 @@ export class GetGraphBffHandler implements IQueryHandler<GetGraphBffQuery> {
 	constructor(private readonly queryBus: QueryBus) {}
 
 	async execute(query: GetGraphBffQuery): Promise<GraphView | null> {
-		const rootType = query.input.rootType;
-		const rootId = query.input.rootId;
-
+		const rootType = query.rootType;
+		const rootId = query.rootId;
 		const rootNodeId = nodeId(rootType, rootId);
 
-		const maxDepth = query.input.depth;
-
+		const maxDepth = query.depth;
 		const defaultMaxNodesByDepth: Record<number, number> = {
 			0: 50,
 			1: 250,
@@ -83,15 +80,14 @@ export class GetGraphBffHandler implements IQueryHandler<GetGraphBffQuery> {
 			3: 800,
 			4: 1200,
 		};
-
-		const maxNodes = isDefinedNumber(query.input.maxNodes)
-			? clampInt(query.input.maxNodes, 1, 2000, 600)
+		const maxNodes = isDefinedNumber(query.maxNodes)
+			? clampInt(query.maxNodes, 1, 2000, 600)
 			: clampInt(defaultMaxNodesByDepth[maxDepth] ?? 600, 1, 2000, 600);
-
-		const maxEvents = isDefinedNumber(query.input.maxEvents)
-			? clampInt(query.input.maxEvents, 0, 2000, 500)
+		const maxEvents = isDefinedNumber(query.maxEvents)
+			? clampInt(query.maxEvents, 0, 2000, 500)
 			: clampInt(defaultMaxEventsByDepth[maxDepth] ?? 500, 0, 2000, 500);
-		const includeEvents = query.input.includeEvents;
+		const includeEvents = query.includeEvents;
+
 		let truncated = false;
 
 		const nodes = new Map<string, GraphNode>();
@@ -184,10 +180,9 @@ export class GetGraphBffHandler implements IQueryHandler<GetGraphBffQuery> {
 			const cached = userProfileCache.get(id);
 			if (cached) return cached;
 
-			const profile = await this.queryBus.execute<
-				GetUserProfileQuery,
-				UserProfileResult
-			>(new GetUserProfileQuery(id));
+			const profile = await this.queryBus.execute(
+				new GetUserProfileQuery({ userId: id }),
+			);
 
 			userProfileCache.set(id, profile);
 			return profile;
@@ -286,10 +281,9 @@ export class GetGraphBffHandler implements IQueryHandler<GetGraphBffQuery> {
 		): Promise<OrderResult | null> => {
 			const id = normalizeId(orderId);
 			if (!id) return null;
-			return await this.queryBus.execute<
-				GetOrderQuery,
-				OrderResult | null
-			>(new GetOrderQuery(id));
+			return await this.queryBus.execute(
+				new GetOrderQuery({ orderId: id }),
+			);
 		};
 
 		const fetchShipmentById = async (
@@ -297,10 +291,9 @@ export class GetGraphBffHandler implements IQueryHandler<GetGraphBffQuery> {
 		): Promise<ShipmentResult | null> => {
 			const id = normalizeId(shipmentId);
 			if (!id) return null;
-			return await this.queryBus.execute<
-				GetShipmentQuery,
-				ShipmentResult | null
-			>(new GetShipmentQuery(id));
+			return await this.queryBus.execute(
+				new GetShipmentQuery({ shipmentId: id }),
+			);
 		};
 
 		const fetchShipmentByOrderId = async (
@@ -308,10 +301,9 @@ export class GetGraphBffHandler implements IQueryHandler<GetGraphBffQuery> {
 		): Promise<ShipmentResult | null> => {
 			const id = normalizeId(orderId);
 			if (!id) return null;
-			return await this.queryBus.execute<
-				GetShipmentByOrderQuery,
-				ShipmentResult | null
-			>(new GetShipmentByOrderQuery(id));
+			return await this.queryBus.execute(
+				new GetShipmentByOrderQuery({ orderId: id }),
+			);
 		};
 
 		const fetchPayment = async (
@@ -319,10 +311,9 @@ export class GetGraphBffHandler implements IQueryHandler<GetGraphBffQuery> {
 		): Promise<PaymentIntentResult | null> => {
 			const id = normalizeId(paymentId);
 			if (!id) return null;
-			return await this.queryBus.execute<
-				GetPaymentIntentQuery,
-				PaymentIntentResult | null
-			>(new GetPaymentIntentQuery(id));
+			return await this.queryBus.execute(
+				new GetPaymentIntentQuery({ paymentId: id }),
+			);
 		};
 
 		const expandEntity = async (ref: EntityRef): Promise<void> => {
@@ -340,10 +331,13 @@ export class GetGraphBffHandler implements IQueryHandler<GetGraphBffQuery> {
 						// ignore (fallback label=userId)
 					}
 
-					const list = await this.queryBus.execute<
-						ListOrdersByUserIdQuery,
-						OrderResult[]
-					>(new ListOrdersByUserIdQuery(userId, 200, 0));
+					const list = await this.queryBus.execute(
+						new GetOrdersByUserIdQuery({
+							userId,
+							limit: 200,
+							offset: 0,
+						}),
+					);
 
 					for (const o of list) addOrder(o);
 					return;
@@ -557,10 +551,11 @@ export class GetGraphBffHandler implements IQueryHandler<GetGraphBffQuery> {
 			const orderIds = new Set(knownOrders);
 			const paymentIds = new Set(knownPayments);
 
-			const recent =
-				await this.queryBus.execute<GetRecentOutboxEventsResult>(
-					new GetRecentOutboxEventsQuery(maxEvents),
-				);
+			const recent = await this.queryBus.execute(
+				new GetRecentOutboxEventsQuery({
+					limit: maxEvents,
+				}),
+			);
 
 			for (const row of recent.events) {
 				const eventType = String(row.eventType ?? '');

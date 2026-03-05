@@ -3,7 +3,7 @@ import type {
 	GraphEdge,
 	GraphNode,
 	GraphView,
-} from '@/bff/graph/application/queries/get-graph-bff.query';
+} from '@/bff/graph/application/views/graph.view';
 
 export class GraphNodeResponse {
 	@ApiProperty()

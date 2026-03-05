@@ -1,21 +1,15 @@
 import { IQueryHandler, QueryBus, QueryHandler } from '@nestjs/cqrs';
 
 import { GetOrderQuery } from '@/shared/ordering/queries/get-order.query';
-import type { OrderResult } from '@/shared/ordering/readers/order.result';
 
 import { GetPaymentIntentQuery } from '@/shared/payments/queries/get-payment-intent.query';
-import type { PaymentIntentResult } from '@/shared/readers/payments/dto/payment-intent.result';
 
 import { GetShipmentByOrderQuery } from '@/shared/shipping/queries/get-shipment-by-order.query';
-import type { ShipmentResult } from '@/shared/readers/shipping/dto/shipment.result';
 
-import { ListInventoryReservationsQuery } from '@/shared/inventory/queries/list-inventory-reservations.query';
-import type { InventoryReservationResult } from '@/shared/readers/inventory/dto/inventory-reservation.result';
+import { GetInventoryReservationsQuery } from '@/shared/inventory/queries/get-inventory-reservations.query';
 
-import {
-	GetOrderDetailBffQuery,
-	type OrderDetailBffView,
-} from '@/bff/order-detail/application/queries/get-order-detail-bff.query';
+import { GetOrderDetailBffQuery } from '@/bff/order-detail/application/queries/get-order-detail-bff.query';
+import type { OrderDetailBffView } from '@/bff/order-detail/application/views/order-detail-bff.view';
 
 @QueryHandler(GetOrderDetailBffQuery)
 export class GetOrderDetailBffHandler implements IQueryHandler<GetOrderDetailBffQuery> {
@@ -29,36 +23,38 @@ export class GetOrderDetailBffHandler implements IQueryHandler<GetOrderDetailBff
 			includePayment,
 			includeShipment,
 			includeReservations,
-		} = query.input;
+		} = query;
 
-		const order = await this.queryBus.execute<
-			GetOrderQuery,
-			OrderResult | null
-		>(new GetOrderQuery(orderId));
+		const order = await this.queryBus.execute(
+			new GetOrderQuery({ orderId }),
+		);
 		if (!order) return null;
 
 		const partialErrors: string[] = [];
 
 		const paymentPromise =
 			includePayment && order.paymentId
-				? this.queryBus.execute<
-						GetPaymentIntentQuery,
-						PaymentIntentResult | null
-					>(new GetPaymentIntentQuery(order.paymentId))
+				? this.queryBus.execute(
+						new GetPaymentIntentQuery({
+							paymentId: order.paymentId,
+						}),
+					)
 				: Promise.resolve(null);
 
 		const shipmentPromise = includeShipment
-			? this.queryBus.execute<
-					GetShipmentByOrderQuery,
-					ShipmentResult | null
-				>(new GetShipmentByOrderQuery(orderId))
+			? this.queryBus.execute(
+					new GetShipmentByOrderQuery({
+						orderId,
+					}),
+				)
 			: Promise.resolve(null);
 
 		const reservationsPromise = includeReservations
-			? this.queryBus.execute<
-					ListInventoryReservationsQuery,
-					InventoryReservationResult[]
-				>(new ListInventoryReservationsQuery(orderId))
+			? this.queryBus.execute(
+					new GetInventoryReservationsQuery({
+						orderId,
+					}),
+				)
 			: Promise.resolve([]);
 
 		const [paymentSettled, shipmentSettled, reservationsSettled] =

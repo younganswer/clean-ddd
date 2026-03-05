@@ -36,3 +36,11 @@ export const IDEMPOTENCY_DOMAIN_ERRORS = {
 		status: HttpStatus.BAD_REQUEST,
 	},
 } as const satisfies Record<string, ErrorTemplate>;
+
+export const SYSTEM_APPLICATION_ERRORS = {
+	GRAPH_ROOT_NOT_FOUND: {
+		code: 'GRAPH_ROOT_NOT_FOUND',
+		message: 'graph root not found',
+		status: HttpStatus.NOT_FOUND,
+	},
+} as const satisfies Record<string, ErrorTemplate>;

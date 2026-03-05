@@ -1,22 +1,15 @@
 import { IQueryHandler, QueryBus, QueryHandler } from '@nestjs/cqrs';
 
-import { ListOrdersQuery } from '@/shared/ordering/queries/list-orders.query';
-import type { OrderResult } from '@/shared/ordering/readers/order.result';
-import type { PaginatedResult } from '@/shared/readers/paginated.result';
+import { GetOrdersQuery } from '@/shared/ordering/queries/get-orders.query';
 
-import { ListPaymentIntentsQuery } from '@/shared/payments/queries/list-payment-intents.query';
-import type { PaymentIntentResult } from '@/shared/readers/payments/dto/payment-intent.result';
+import { GetPaymentIntentsQuery } from '@/shared/payments/queries/get-payment-intents.query';
 
-import { ListShipmentsQuery } from '@/shared/shipping/queries/list-shipments.query';
-import type { ShipmentResult } from '@/shared/readers/shipping/dto/shipment.result';
+import { GetShipmentsQuery } from '@/shared/shipping/queries/get-shipments.query';
 
-import { ListInventoryItemsQuery } from '@/shared/inventory/queries/list-inventory-items.query';
-import type { InventoryItemResult } from '@/shared/readers/inventory/dto/inventory-item.result';
+import { GetInventoryItemsQuery } from '@/shared/inventory/queries/get-inventory-items.query';
 
-import {
-	GetDashboardSummaryBffQuery,
-	type DashboardSummaryBffView,
-} from '@/bff/dashboard/application/queries/get-dashboard-summary-bff.query';
+import { GetDashboardSummaryBffQuery } from '@/bff/dashboard/application/queries/get-dashboard-summary-bff.query';
+import type { DashboardSummaryBffView } from '@/bff/dashboard/application/views/dashboard-summary-bff.view';
 
 @QueryHandler(GetDashboardSummaryBffQuery)
 export class GetDashboardSummaryBffHandler implements IQueryHandler<GetDashboardSummaryBffQuery> {
@@ -24,7 +17,7 @@ export class GetDashboardSummaryBffHandler implements IQueryHandler<GetDashboard
 	async execute(
 		query: GetDashboardSummaryBffQuery,
 	): Promise<DashboardSummaryBffView> {
-		const { limit } = query.input;
+		const limit = query.limit;
 		const partialErrors: string[] = [];
 		const [
 			ordersSettled,
@@ -32,22 +25,10 @@ export class GetDashboardSummaryBffHandler implements IQueryHandler<GetDashboard
 			shipmentsSettled,
 			inventorySettled,
 		] = await Promise.allSettled([
-			this.queryBus.execute<
-				ListOrdersQuery,
-				PaginatedResult<OrderResult>
-			>(new ListOrdersQuery(limit)),
-			this.queryBus.execute<
-				ListPaymentIntentsQuery,
-				PaymentIntentResult[]
-			>(new ListPaymentIntentsQuery(limit)),
-			this.queryBus.execute<
-				ListShipmentsQuery,
-				PaginatedResult<ShipmentResult>
-			>(new ListShipmentsQuery(limit)),
-			this.queryBus.execute<
-				ListInventoryItemsQuery,
-				PaginatedResult<InventoryItemResult>
-			>(new ListInventoryItemsQuery(limit)),
+			this.queryBus.execute(new GetOrdersQuery({ limit })),
+			this.queryBus.execute(new GetPaymentIntentsQuery({ limit })),
+			this.queryBus.execute(new GetShipmentsQuery({ limit })),
+			this.queryBus.execute(new GetInventoryItemsQuery({ limit })),
 		]);
 
 		const orders =

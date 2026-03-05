@@ -1,18 +1,13 @@
-import {
-	Controller,
-	Get,
-	NotFoundException,
-	Param,
-	Query,
-} from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 import { DataEnvelope, ResponseHelper } from '@/common/responses';
 import { ApiDataResponse, ApiErrorEnvelopeResponse } from '@/common/swagger';
 import { OrderDetailBffResponse } from '@/bff/order-detail/presentation/swagger';
 
 import { GetOrderDetailBffQuery } from '@/bff/order-detail/application/queries/get-order-detail-bff.query';
-import type { OrderDetailBffView } from '@/bff/order-detail/application/queries/get-order-detail-bff.query';
 import { GetOrderDetailBffQueryDto } from '@/bff/order-detail/presentation/order-detail-bff.dto';
+import { ORDERING_APPLICATION_ERRORS } from '@/shared/errors';
+import { ApplicationErrorFactory } from '@/shared/errors/base.error-factory';
 
 @Controller('bff/order-detail')
 export class OrderDetailBffController {
@@ -25,19 +20,18 @@ export class OrderDetailBffController {
 		@Param('orderId') orderId: string,
 		@Query() query: GetOrderDetailBffQueryDto,
 	): Promise<DataEnvelope<OrderDetailBffResponse>> {
-		const result = await this.queryBus.execute<
-			GetOrderDetailBffQuery,
-			OrderDetailBffView | null
-		>(
+		const result = await this.queryBus.execute(
 			new GetOrderDetailBffQuery({
 				orderId,
-				includePayment: query.includePayment,
-				includeShipment: query.includeShipment,
-				includeReservations: query.includeReservations,
+				...query,
 			}),
 		);
+		if (!result)
+			throw ApplicationErrorFactory.create(
+				ORDERING_APPLICATION_ERRORS.ORDER_NOT_FOUND,
+			);
+		const response = OrderDetailBffResponse.fromResult(result);
 
-		if (!result) throw new NotFoundException('order not found');
-		return ResponseHelper.data(OrderDetailBffResponse.fromResult(result));
+		return ResponseHelper.data(response);
 	}
 }
