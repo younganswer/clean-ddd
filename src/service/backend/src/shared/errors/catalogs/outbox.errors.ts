@@ -17,4 +17,14 @@ export const OUTBOX_INFRA_ERRORS = {
 		message: 'Outbox handler provider not found',
 		status: HttpStatus.SERVICE_UNAVAILABLE,
 	},
+	OUTBOX_HANDLER_INVALID: {
+		code: 'OUTBOX_HANDLER_INVALID',
+		message: 'Outbox handler contract is invalid',
+		status: HttpStatus.SERVICE_UNAVAILABLE,
+	},
+	OUTBOX_HANDLER_DUPLICATE_EVENT_TYPE: {
+		code: 'OUTBOX_HANDLER_DUPLICATE_EVENT_TYPE',
+		message: 'duplicate outbox handler registration',
+		status: HttpStatus.SERVICE_UNAVAILABLE,
+	},
 } as const satisfies Record<string, ErrorTemplate>;

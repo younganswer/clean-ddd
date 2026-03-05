@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
+import { DiscoveryModule } from '@nestjs/core';
 import { SqsModule } from '@/lib/queue/sqs.module';
 import { ProcessedEventMapper } from '@/shared/idempotency/infrastructure/processed-event.mapper';
 import { ProcessedEventRepository } from '@/shared/idempotency/infrastructure/processed-event.repository';
@@ -16,9 +17,10 @@ import { OutboxQueryHandlers } from '@/modules/outbox/application/queries';
 import { OutboxRepository } from '@/modules/outbox/infrastructure/persistence/outbox.repository';
 import { OutboxQueue } from '@/modules/outbox/infrastructure/queue/outbox.queue';
 import { OutboxMapper } from '@/modules/outbox/infrastructure/mappers/outbox.mapper';
+import { OutboxKnownHandlerRegistryService } from '@/modules/outbox/application/outbox-known-handler.registry.service';
 
 @Module({
-	imports: [CqrsModule, SqsModule],
+	imports: [CqrsModule, DiscoveryModule, SqsModule],
 	providers: [
 		ProcessedEventMapper,
 		ProcessedEventRepository,
@@ -34,6 +36,7 @@ import { OutboxMapper } from '@/modules/outbox/infrastructure/mappers/outbox.map
 		},
 		OutboxProducer,
 		OutboxDispatcher,
+		OutboxKnownHandlerRegistryService,
 		OutboxRepository,
 		OutboxMapper,
 		...OutboxCommandHandlers,
@@ -47,6 +50,7 @@ import { OutboxMapper } from '@/modules/outbox/infrastructure/mappers/outbox.map
 		OutboxQueue,
 		OutboxProducer,
 		OutboxDispatcher,
+		OutboxKnownHandlerRegistryService,
 		IdempotencyService,
 		IOutboxQueuePortSymbol,
 		IOutboxRepositorySymbol,
