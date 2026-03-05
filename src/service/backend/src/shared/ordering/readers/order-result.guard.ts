@@ -13,7 +13,9 @@ export const isOrderResult = (value: unknown): value is OrderResult => {
 	);
 };
 
-export function assertOrderResult(value: unknown): asserts value is OrderResult {
+export function assertOrderResult(
+	value: unknown,
+): asserts value is OrderResult {
 	if (!isOrderResult(value)) {
 		throw ApplicationErrorFactory.create(
 			ORDERING_APPLICATION_ERRORS.ORDER_NOT_FOUND,

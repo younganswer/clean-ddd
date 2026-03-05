@@ -15,7 +15,9 @@ export class ListOrdersHandler implements IQueryHandler<ListOrdersQuery> {
 		private readonly orderReader: IOrderReader,
 	) {}
 
-	async execute(query: ListOrdersQuery): Promise<PaginatedResult<OrderResult>> {
+	async execute(
+		query: ListOrdersQuery,
+	): Promise<PaginatedResult<OrderResult>> {
 		const { limit, page } = query;
 		const offset = (page - 1) * limit;
 
