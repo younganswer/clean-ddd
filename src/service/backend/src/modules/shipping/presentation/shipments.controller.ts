@@ -11,9 +11,9 @@ import {
 	GetShipmentByOrderQuery,
 	GetShipmentQuery,
 	ListShipmentsQuery,
-	type ShipmentView,
+	type ShipmentResult,
 } from '@/shared/shipping';
-import type { PaginatedView } from '@/shared/readers/paginated.view';
+import type { PaginatedResult } from '@/shared/readers/paginated.result';
 
 @Controller('shipments')
 export class ShipmentsController {
@@ -25,10 +25,10 @@ export class ShipmentsController {
 	async list(
 		@Query('limit') limitRaw?: string,
 		@Query('page') pageRaw?: string,
-	): Promise<PageResponse<ShipmentView>> {
+	): Promise<PageResponse<ShipmentResult>> {
 		const result = await this.queryBus.execute<
 			ListShipmentsQuery,
-			PaginatedView<ShipmentView>
+			PaginatedResult<ShipmentResult>
 		>(new ListShipmentsQuery(Number(limitRaw), Number(pageRaw)));
 		return PageResponse.from(result);
 	}
@@ -38,10 +38,10 @@ export class ShipmentsController {
 	@ApiErrorEnvelopeResponse({ status: 400 })
 	async byOrder(
 		@Param('orderId') orderId: string,
-	): Promise<DataResponse<ShipmentView | null>> {
+	): Promise<DataResponse<ShipmentResult | null>> {
 		const result = await this.queryBus.execute<
 			GetShipmentByOrderQuery,
-			ShipmentView | null
+			ShipmentResult | null
 		>(new GetShipmentByOrderQuery(orderId));
 		return DataResponse.of(result);
 	}
@@ -51,10 +51,10 @@ export class ShipmentsController {
 	@ApiErrorEnvelopeResponse({ status: 400 })
 	async get(
 		@Param('id') id: string,
-	): Promise<DataResponse<ShipmentView | null>> {
+	): Promise<DataResponse<ShipmentResult | null>> {
 		const result = await this.queryBus.execute<
 			GetShipmentQuery,
-			ShipmentView | null
+			ShipmentResult | null
 		>(new GetShipmentQuery(id));
 		return DataResponse.of(result);
 	}

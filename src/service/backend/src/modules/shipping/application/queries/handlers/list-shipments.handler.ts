@@ -2,8 +2,8 @@ import { Inject } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { IShipmentRepositorySymbol } from '@/modules/shipping/domains/repositories/i.shipment.repository';
 import type { IShipmentRepository } from '@/modules/shipping/domains/repositories/i.shipment.repository';
-import { ListShipmentsQuery, type ShipmentView } from '@/shared/shipping';
-import type { PaginatedView } from '@/shared/readers/paginated.view';
+import { ListShipmentsQuery, type ShipmentResult } from '@/shared/shipping';
+import type { PaginatedResult } from '@/shared/readers/paginated.result';
 
 @QueryHandler(ListShipmentsQuery)
 export class ListShipmentsHandler implements IQueryHandler<ListShipmentsQuery> {
@@ -14,7 +14,7 @@ export class ListShipmentsHandler implements IQueryHandler<ListShipmentsQuery> {
 
 	async execute(
 		query: ListShipmentsQuery,
-	): Promise<PaginatedView<ShipmentView>> {
+	): Promise<PaginatedResult<ShipmentResult>> {
 		const { limit, page } = query;
 		const offset = (page - 1) * limit;
 		const [shipments, total] = await Promise.all([

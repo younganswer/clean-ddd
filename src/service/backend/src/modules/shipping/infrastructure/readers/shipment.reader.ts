@@ -4,7 +4,7 @@ import {
 	IShipmentReaderSymbol,
 	type IShipmentReader,
 } from '@/shared/readers/shipping/i.shipment.reader';
-import type { ShipmentView } from '@/shared/readers/shipping/dto/shipment.view';
+import type { ShipmentResult } from '@/shared/readers/shipping/dto/shipment.result';
 import { IShipmentRepositorySymbol } from '@/modules/shipping/domains/repositories/i.shipment.repository';
 import type { IShipmentRepository } from '@/modules/shipping/domains/repositories/i.shipment.repository';
 
@@ -15,29 +15,29 @@ export class ShipmentReader implements IShipmentReader {
 		private readonly shipmentRepository: IShipmentRepository,
 	) {}
 
-	async findById(id: string): Promise<ShipmentView | null> {
+	async findById(id: string): Promise<ShipmentResult | null> {
 		const s = await this.shipmentRepository.findById(id);
 		if (!s) return null;
-		return this.toView(s);
+		return this.toResult(s);
 	}
 
-	async findByOrderId(orderId: string): Promise<ShipmentView | null> {
+	async findByOrderId(orderId: string): Promise<ShipmentResult | null> {
 		const s = await this.shipmentRepository.findByOrderId(orderId);
 		if (!s) return null;
-		return this.toView(s);
+		return this.toResult(s);
 	}
 
-	async findRecent(limit: number): Promise<ShipmentView[]> {
+	async findRecent(limit: number): Promise<ShipmentResult[]> {
 		const safeLimit = Math.min(50, Math.max(1, Number(limit ?? 20)));
 		const list = await this.shipmentRepository.findRecent(safeLimit);
-		return list.map((s) => this.toView(s));
+		return list.map((s) => this.toResult(s));
 	}
 
-	private toView(shipment: {
+	private toResult(shipment: {
 		id: string;
 		orderId: string;
-		status: ShipmentView['status'];
-	}): ShipmentView {
+		status: ShipmentResult['status'];
+	}): ShipmentResult {
 		return {
 			shipmentId: shipment.id,
 			orderId: shipment.orderId,

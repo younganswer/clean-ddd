@@ -2,7 +2,7 @@ import { Inject } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { IShipmentRepositorySymbol } from '@/modules/shipping/domains/repositories/i.shipment.repository';
 import type { IShipmentRepository } from '@/modules/shipping/domains/repositories/i.shipment.repository';
-import { GetShipmentByOrderQuery, type ShipmentView } from '@/shared/shipping';
+import { GetShipmentByOrderQuery, type ShipmentResult } from '@/shared/shipping';
 
 @QueryHandler(GetShipmentByOrderQuery)
 export class GetShipmentByOrderHandler implements IQueryHandler<GetShipmentByOrderQuery> {
@@ -13,7 +13,7 @@ export class GetShipmentByOrderHandler implements IQueryHandler<GetShipmentByOrd
 
 	async execute(
 		query: GetShipmentByOrderQuery,
-	): Promise<ShipmentView | null> {
+	): Promise<ShipmentResult | null> {
 		const shipment = await this.shipmentRepository.findByOrderId(
 			query.orderId,
 		);
