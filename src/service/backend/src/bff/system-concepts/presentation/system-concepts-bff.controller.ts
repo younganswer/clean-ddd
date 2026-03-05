@@ -5,15 +5,15 @@ import { ApiDataResponse, ApiErrorEnvelopeResponse } from '@/common/swagger';
 import { SystemConceptsBootstrapResponseDto } from '@/bff/system-concepts/presentation/swagger';
 import {
 	ListInventoryItemsQuery,
-	type InventoryItemView,
+	type InventoryItemResult,
 } from '@/shared/inventory';
-import type { PaginatedView } from '@/shared/readers/paginated.view';
+import type { PaginatedResult } from '@/shared/readers/paginated.result';
 import { ListUserProfilesQuery } from '@/shared/users/queries/list-user-profiles.query';
-import type { UserProfileView } from '@/shared/users/readers/user-profile.view';
+import type { UserProfileResult } from '@/shared/users/readers/user-profile.result';
 
 type SystemConceptsBootstrapView = {
-	users: PaginatedView<UserProfileView>;
-	inventoryItems: PaginatedView<InventoryItemView>;
+	users: PaginatedResult<UserProfileResult>;
+	inventoryItems: PaginatedResult<InventoryItemResult>;
 };
 
 @Controller('bff/system-concepts')
@@ -30,7 +30,7 @@ export class SystemConceptsBffController {
 		const [users, inventoryItems] = await Promise.all([
 			this.queryBus.execute<
 				ListUserProfilesQuery,
-				PaginatedView<UserProfileView>
+				PaginatedResult<UserProfileResult>
 			>(
 				new ListUserProfilesQuery({
 					limit: Number(limitRaw),
@@ -39,7 +39,7 @@ export class SystemConceptsBffController {
 			),
 			this.queryBus.execute<
 				ListInventoryItemsQuery,
-				PaginatedView<InventoryItemView>
+				PaginatedResult<InventoryItemResult>
 			>(new ListInventoryItemsQuery(Number(limitRaw), Number(pageRaw))),
 		]);
 

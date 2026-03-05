@@ -2,18 +2,18 @@ import { Injectable } from '@nestjs/common';
 import { IQueryHandler, QueryBus, QueryHandler } from '@nestjs/cqrs';
 
 import { GetOrderQuery } from '@/shared/ordering/queries/get-order.query';
-import type { OrderView } from '@/shared/ordering/readers/order.view';
+import type { OrderResult } from '@/shared/ordering/readers/order.result';
 import { ListOrdersByUserIdQuery } from '@/shared/ordering/queries/list-orders-by-user-subject-id.query';
 
 import { GetShipmentQuery } from '@/shared/shipping/queries/get-shipment.query';
-import type { ShipmentView } from '@/shared/readers/shipping/dto/shipment.view';
+import type { ShipmentResult } from '@/shared/readers/shipping/dto/shipment.result';
 import { GetShipmentByOrderQuery } from '@/shared/shipping/queries/get-shipment-by-order.query';
 
 import { GetPaymentIntentQuery } from '@/shared/payments/queries/get-payment-intent.query';
-import type { PaymentIntentView } from '@/shared/readers/payments/dto/payment-intent.view';
+import type { PaymentIntentResult } from '@/shared/readers/payments/dto/payment-intent.result';
 
 import { GetUserProfileQuery } from '@/shared/users/queries/get-user-profile.query';
-import type { UserProfileView } from '@/shared/users/readers/user-profile.view';
+import type { UserProfileResult } from '@/shared/users/readers/user-profile.result';
 import {
 	GetRecentOutboxEventsQuery,
 	GetRecentOutboxEventsResult,
@@ -102,7 +102,7 @@ export class GetGraphBffHandler implements IQueryHandler<GetGraphBffQuery> {
 		const knownShipments = new Set<string>();
 		const knownPayments = new Set<string>();
 
-		const userProfileCache = new Map<string, UserProfileView>();
+		const userProfileCache = new Map<string, UserProfileResult>();
 
 		const userToOrderIds = new Map<string, Set<string>>();
 		const orderToShipmentId = new Map<string, string>();
@@ -142,7 +142,7 @@ export class GetGraphBffHandler implements IQueryHandler<GetGraphBffQuery> {
 			});
 		};
 
-		const upsertUserProfile = (profile: UserProfileView): void => {
+		const upsertUserProfile = (profile: UserProfileResult): void => {
 			const userId = normalizeId(profile.userId);
 			if (!userId) return;
 
@@ -178,7 +178,7 @@ export class GetGraphBffHandler implements IQueryHandler<GetGraphBffQuery> {
 
 		const fetchUserProfile = async (
 			userId: string,
-		): Promise<UserProfileView | null> => {
+		): Promise<UserProfileResult | null> => {
 			const id = normalizeId(userId);
 			if (!id) return null;
 			const cached = userProfileCache.get(id);
@@ -186,14 +186,14 @@ export class GetGraphBffHandler implements IQueryHandler<GetGraphBffQuery> {
 
 			const profile = await this.queryBus.execute<
 				GetUserProfileQuery,
-				UserProfileView
+				UserProfileResult
 			>(new GetUserProfileQuery(id));
 
 			userProfileCache.set(id, profile);
 			return profile;
 		};
 
-		const addOrder = (order: OrderView): void => {
+		const addOrder = (order: OrderResult): void => {
 			const id = normalizeId(order.orderId);
 			if (!id) return;
 			if (knownOrders.has(id)) return;
@@ -233,7 +233,7 @@ export class GetGraphBffHandler implements IQueryHandler<GetGraphBffQuery> {
 			if (pid) orderToPaymentId.set(id, pid);
 		};
 
-		const addShipment = (shipment: ShipmentView): void => {
+		const addShipment = (shipment: ShipmentResult): void => {
 			const sid = normalizeId(shipment.shipmentId);
 			const oid = normalizeId(shipment.orderId);
 			if (!sid) return;
@@ -260,7 +260,7 @@ export class GetGraphBffHandler implements IQueryHandler<GetGraphBffQuery> {
 			}
 		};
 
-		const addPayment = (payment: PaymentIntentView): void => {
+		const addPayment = (payment: PaymentIntentResult): void => {
 			const pid = normalizeId(payment.paymentId);
 			const oid = normalizeId(payment.orderId);
 			if (!pid) return;
@@ -283,44 +283,44 @@ export class GetGraphBffHandler implements IQueryHandler<GetGraphBffQuery> {
 
 		const fetchOrder = async (
 			orderId: string,
-		): Promise<OrderView | null> => {
+		): Promise<OrderResult | null> => {
 			const id = normalizeId(orderId);
 			if (!id) return null;
-			return await this.queryBus.execute<GetOrderQuery, OrderView | null>(
+			return await this.queryBus.execute<GetOrderQuery, OrderResult | null>(
 				new GetOrderQuery(id),
 			);
 		};
 
 		const fetchShipmentById = async (
 			shipmentId: string,
-		): Promise<ShipmentView | null> => {
+		): Promise<ShipmentResult | null> => {
 			const id = normalizeId(shipmentId);
 			if (!id) return null;
 			return await this.queryBus.execute<
 				GetShipmentQuery,
-				ShipmentView | null
+				ShipmentResult | null
 			>(new GetShipmentQuery(id));
 		};
 
 		const fetchShipmentByOrderId = async (
 			orderId: string,
-		): Promise<ShipmentView | null> => {
+		): Promise<ShipmentResult | null> => {
 			const id = normalizeId(orderId);
 			if (!id) return null;
 			return await this.queryBus.execute<
 				GetShipmentByOrderQuery,
-				ShipmentView | null
+				ShipmentResult | null
 			>(new GetShipmentByOrderQuery(id));
 		};
 
 		const fetchPayment = async (
 			paymentId: string,
-		): Promise<PaymentIntentView | null> => {
+		): Promise<PaymentIntentResult | null> => {
 			const id = normalizeId(paymentId);
 			if (!id) return null;
 			return await this.queryBus.execute<
 				GetPaymentIntentQuery,
-				PaymentIntentView | null
+				PaymentIntentResult | null
 			>(new GetPaymentIntentQuery(id));
 		};
 
@@ -341,7 +341,7 @@ export class GetGraphBffHandler implements IQueryHandler<GetGraphBffQuery> {
 
 					const list = await this.queryBus.execute<
 						ListOrdersByUserIdQuery,
-						OrderView[]
+						OrderResult[]
 					>(new ListOrdersByUserIdQuery(userId, 200, 0));
 
 					for (const o of list) addOrder(o);
