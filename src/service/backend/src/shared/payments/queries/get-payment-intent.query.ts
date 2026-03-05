@@ -1,9 +1,9 @@
 import { Query } from '@nestjs/cqrs';
-import type { PaymentIntentView } from '@/shared/readers/payments/dto/payment-intent.view';
+import type { PaymentIntentResult } from '@/shared/readers/payments/dto/payment-intent.result';
 import { PAYMENTS_APPLICATION_ERRORS } from '@/shared/errors';
 import { requireTrimmedString } from '@/shared/cqrs/input-normalizer';
 
-export class GetPaymentIntentQuery extends Query<PaymentIntentView | null> {
+export class GetPaymentIntentQuery extends Query<PaymentIntentResult | null> {
 	public readonly paymentId: string;
 
 	constructor(paymentId: string) {
