@@ -1,10 +1,19 @@
 // @ts-check
+import path from 'node:path';
 import eslint from '@eslint/js';
 import eslintPluginImport from 'eslint-plugin-import';
 import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
 import eslintPluginUnusedImports from 'eslint-plugin-unused-imports';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
+
+const ignoreExports = [
+	'src/main.ts',
+	'src/init.ts',
+	'src/lib/lambda/**/*.ts',
+	'tests/**/*.ts',
+	'test-utils/**/*.ts',
+].map((pattern) => path.join(import.meta.dirname, pattern));
 
 export default tseslint.config(
 	{
@@ -53,13 +62,7 @@ export default tseslint.config(
 				'error',
 				{
 					unusedExports: true,
-					ignoreExports: [
-						'src/main.ts',
-						'src/init.ts',
-						'src/lib/lambda/**/*.ts',
-						'tests/**/*.ts',
-						'test-utils/**/*.ts',
-					],
+					ignoreExports,
 				},
 			],
 			'prettier/prettier': ['error', { endOfLine: 'auto' }],
