@@ -4,7 +4,7 @@ import {
 	IPaymentIntentReaderSymbol,
 	ListPaymentIntentsQuery,
 	type IPaymentIntentReader,
-	type PaymentIntentView,
+	type PaymentIntentResult,
 } from '@/shared/payments';
 
 @QueryHandler(ListPaymentIntentsQuery)
@@ -16,7 +16,7 @@ export class ListPaymentIntentsHandler implements IQueryHandler<ListPaymentInten
 
 	async execute(
 		query: ListPaymentIntentsQuery,
-	): Promise<PaymentIntentView[]> {
+	): Promise<PaymentIntentResult[]> {
 		return this.paymentRepository.findRecent(query.limit);
 	}
 }

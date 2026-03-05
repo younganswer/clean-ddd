@@ -4,7 +4,7 @@ import {
 	GetPaymentIntentQuery,
 	IPaymentIntentReaderSymbol,
 	type IPaymentIntentReader,
-	type PaymentIntentView,
+	type PaymentIntentResult,
 } from '@/shared/payments';
 
 @QueryHandler(GetPaymentIntentQuery)
@@ -16,7 +16,7 @@ export class GetPaymentIntentHandler implements IQueryHandler<GetPaymentIntentQu
 
 	async execute(
 		query: GetPaymentIntentQuery,
-	): Promise<PaymentIntentView | null> {
+	): Promise<PaymentIntentResult | null> {
 		return this.paymentRepository.findById(query.paymentId);
 	}
 }

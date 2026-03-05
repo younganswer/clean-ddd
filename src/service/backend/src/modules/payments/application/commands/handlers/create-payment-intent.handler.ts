@@ -15,7 +15,7 @@ import {
 	PaymentWebhookFailedEvent,
 	PaymentWebhookSucceededEvent,
 } from '@/shared/payments';
-import { assertOrderView } from '@/shared/ordering/readers/order-view.guard';
+import { assertOrderResult } from '@/shared/ordering/readers/order-result.guard';
 import {
 	CreatePaymentIntentCommand,
 	type CreatePaymentIntentResult,
@@ -42,7 +42,7 @@ export class CreatePaymentIntentHandler implements ICommandHandler<CreatePayment
 			const order = await this.queryBus.execute(
 				new GetOrderQuery(orderId),
 			);
-			assertOrderView(order);
+			assertOrderResult(order);
 
 			const payment = PaymentIntent.create({
 				orderId,

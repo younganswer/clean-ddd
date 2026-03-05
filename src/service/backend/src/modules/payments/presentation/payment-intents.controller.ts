@@ -17,10 +17,12 @@ import { PaymentIntentResponseDto } from '@/modules/payments/presentation/swagge
 import {
 	GetPaymentIntentQuery,
 	ListPaymentIntentsQuery,
-	type PaymentIntentView,
+	type PaymentIntentResult,
 } from '@/shared/payments';
 
-const isPaymentIntentView = (value: unknown): value is PaymentIntentView => {
+const isPaymentIntentResult = (
+	value: unknown,
+): value is PaymentIntentResult => {
 	if (!value || typeof value !== 'object') return false;
 	const record = value as Record<string, unknown>;
 
@@ -42,16 +44,14 @@ export class PaymentIntentsController {
 	@ApiErrorEnvelopeResponse({ status: 500 })
 	async list(
 		@Query('limit') limitRaw?: string,
-	): Promise<ListResponse<PaymentIntentView>> {
+	): Promise<ListResponse<PaymentIntentResult>> {
 		const result = await this.queryBus.execute<
 			ListPaymentIntentsQuery,
-			PaymentIntentView[]
+			PaymentIntentResult[]
 		>(new ListPaymentIntentsQuery(Number(limitRaw)));
 
-		if (!Array.isArray(result) || !result.every(isPaymentIntentView)) {
-			throw new InternalServerErrorException(
-				'invalid payments view result',
-			);
+		if (!Array.isArray(result) || !result.every(isPaymentIntentResult)) {
+			throw new InternalServerErrorException('invalid payments result');
 		}
 
 		return ListResponse.from(result);
@@ -62,19 +62,18 @@ export class PaymentIntentsController {
 	@ApiErrorEnvelopeResponse({ status: 404 })
 	async get(
 		@Param('paymentId') paymentId: string,
-	): Promise<DataResponse<PaymentIntentView>> {
-		const result = await this.queryBus.execute<
-			GetPaymentIntentQuery,
-			PaymentIntentView | null
-		>(new GetPaymentIntentQuery(paymentId));
+	): Promise<DataResponse<PaymentIntentResult>> {
+		const result = await this.queryBus.execute<PaymentIntentResult | null>(
+			new GetPaymentIntentQuery(paymentId),
+		);
 
 		if (result === null || result === undefined) {
 			throw new NotFoundException('payment intent not found');
 		}
 
-		if (!isPaymentIntentView(result)) {
+		if (!isPaymentIntentResult(result)) {
 			throw new InternalServerErrorException(
-				'invalid payment intent view',
+				'invalid payment intent result',
 			);
 		}
 

@@ -13,7 +13,7 @@ import { IPaymentRepositorySymbol } from '@/modules/payments/domains/repositorie
 import type { IPaymentRepository } from '@/modules/payments/domains/repositories/i.payment.repository';
 import { MarkOrderPaidCommand } from '@/shared/ordering/commands/mark-order-paid.command';
 import { GetOrderQuery } from '@/shared/ordering/queries/get-order.query';
-import { assertOrderView } from '@/shared/ordering/readers/order-view.guard';
+import { assertOrderResult } from '@/shared/ordering/readers/order-result.guard';
 import { OutboxProducer } from '@/modules/outbox/application/outbox.producer';
 import {
 	ReserveInventoryForOrderRequestedEvent,
@@ -47,7 +47,7 @@ export class PaymentWebhookSucceededHandler implements IEventHandler<PaymentWebh
 			const order = await this.queryBus.execute(
 				new GetOrderQuery(orderId),
 			);
-			assertOrderView(order);
+			assertOrderResult(order);
 
 			await this.commandBus.execute(new MarkOrderPaidCommand(orderId));
 

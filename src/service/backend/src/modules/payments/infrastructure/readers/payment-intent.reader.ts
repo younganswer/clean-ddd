@@ -3,7 +3,7 @@ import {
 	IPaymentIntentReaderSymbol,
 	type IPaymentIntentReader,
 } from '@/shared/readers/payments/i.payment-intent.reader';
-import type { PaymentIntentView as PaymentIntentViewDto } from '@/shared/readers/payments/dto/payment-intent.view';
+import type { PaymentIntentResult as PaymentIntentResultDto } from '@/shared/readers/payments/dto/payment-intent.result';
 import { IPaymentRepositorySymbol } from '@/modules/payments/domains/repositories/i.payment.repository';
 import type { IPaymentRepository } from '@/modules/payments/domains/repositories/i.payment.repository';
 
@@ -14,27 +14,27 @@ export class PaymentIntentReader implements IPaymentIntentReader {
 		private readonly paymentRepository: IPaymentRepository,
 	) {}
 
-	async findById(id: string): Promise<PaymentIntentViewDto | null> {
+	async findById(id: string): Promise<PaymentIntentResultDto | null> {
 		const payment = await this.paymentRepository.findById(id);
 		if (!payment) return null;
-		return this.toView(payment);
+		return this.toResult(payment);
 	}
 
-	async findRecent(limit: number): Promise<PaymentIntentViewDto[]> {
+	async findRecent(limit: number): Promise<PaymentIntentResultDto[]> {
 		const safeLimit = Math.min(50, Math.max(1, Number(limit ?? 20)));
 		const payments = await this.paymentRepository.findRecent(safeLimit);
-		return payments.map((p) => this.toView(p));
+		return payments.map((p) => this.toResult(p));
 	}
 
-	private toView(payment: {
+	private toResult(payment: {
 		toPrimitives(): {
 			paymentId: string;
 			orderId: string;
 			amount: number;
 			currency: string;
-			status: PaymentIntentViewDto['status'];
+			status: PaymentIntentResultDto['status'];
 		};
-	}): PaymentIntentViewDto {
+	}): PaymentIntentResultDto {
 		return payment.toPrimitives();
 	}
 }
