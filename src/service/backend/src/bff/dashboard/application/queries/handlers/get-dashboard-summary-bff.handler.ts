@@ -1,16 +1,16 @@
 import { IQueryHandler, QueryBus, QueryHandler } from '@nestjs/cqrs';
 
 import { ListOrdersQuery } from '@/shared/ordering/queries/list-orders.query';
-import type { OrderView } from '@/shared/ordering/readers/order.view';
+import type { OrderResult } from '@/shared/ordering/readers/order.result';
 
 import { ListPaymentIntentsQuery } from '@/shared/payments/queries/list-payment-intents.query';
-import type { PaymentIntentView } from '@/shared/readers/payments/dto/payment-intent.view';
+import type { PaymentIntentResult } from '@/shared/readers/payments/dto/payment-intent.result';
 
 import { ListShipmentsQuery } from '@/shared/shipping/queries/list-shipments.query';
-import type { ShipmentView } from '@/shared/readers/shipping/dto/shipment.view';
+import type { ShipmentResult } from '@/shared/readers/shipping/dto/shipment.result';
 
 import { ListInventoryItemsQuery } from '@/shared/inventory/queries/list-inventory-items.query';
-import type { InventoryItemView } from '@/shared/readers/inventory/dto/inventory-item.view';
+import type { InventoryItemResult } from '@/shared/readers/inventory/dto/inventory-item.result';
 
 import {
 	GetDashboardSummaryBffQuery,
@@ -34,16 +34,16 @@ export class GetDashboardSummaryBffHandler implements IQueryHandler<GetDashboard
 			shipmentsSettled,
 			inventorySettled,
 		] = await Promise.allSettled([
-			this.queryBus.execute<ListOrdersQuery, OrderView[]>(
+			this.queryBus.execute<ListOrdersQuery, OrderResult[]>(
 				new ListOrdersQuery(limit),
 			),
-			this.queryBus.execute<ListPaymentIntentsQuery, PaymentIntentView[]>(
+			this.queryBus.execute<ListPaymentIntentsQuery, PaymentIntentResult[]>(
 				new ListPaymentIntentsQuery(limit),
 			),
-			this.queryBus.execute<ListShipmentsQuery, ShipmentView[]>(
+			this.queryBus.execute<ListShipmentsQuery, ShipmentResult[]>(
 				new ListShipmentsQuery(limit),
 			),
-			this.queryBus.execute<ListInventoryItemsQuery, InventoryItemView[]>(
+			this.queryBus.execute<ListInventoryItemsQuery, InventoryItemResult[]>(
 				new ListInventoryItemsQuery(limit),
 			),
 		]);

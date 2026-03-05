@@ -1,15 +1,15 @@
 import { Query } from '@nestjs/cqrs';
-import type { OrderView } from '@/shared/ordering/readers/order.view';
-import type { PaymentIntentView } from '@/shared/readers/payments/dto/payment-intent.view';
-import type { ShipmentView } from '@/shared/readers/shipping/dto/shipment.view';
-import type { InventoryItemView } from '@/shared/readers/inventory/dto/inventory-item.view';
+import type { OrderResult } from '@/shared/ordering/readers/order.result';
+import type { PaymentIntentResult } from '@/shared/readers/payments/dto/payment-intent.result';
+import type { ShipmentResult } from '@/shared/readers/shipping/dto/shipment.result';
+import type { InventoryItemResult } from '@/shared/readers/inventory/dto/inventory-item.result';
 import { toBoundedInt } from '@/shared/cqrs/input-normalizer';
 
 export type DashboardSummaryBffView = {
-	orders: OrderView[];
-	paymentIntents: PaymentIntentView[];
-	shipments: ShipmentView[];
-	inventoryItems: InventoryItemView[];
+	orders: OrderResult[];
+	paymentIntents: PaymentIntentResult[];
+	shipments: ShipmentResult[];
+	inventoryItems: InventoryItemResult[];
 	partialErrors?: string[];
 };
 
