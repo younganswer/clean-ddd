@@ -10,7 +10,7 @@ export class PaginatedUserProfileResponse {
 	items!: UserProfileResponse[];
 
 	@ApiProperty()
-	page!: number;
+	offset!: number;
 
 	@ApiProperty()
 	limit!: number;
@@ -25,15 +25,15 @@ export class PaginatedUserProfileResponse {
 	hasNext!: boolean;
 
 	static fromPage(
-		page: PaginatedResult<UserProfileResult>,
+		result: PaginatedResult<UserProfileResult>,
 	): PaginatedUserProfileResponse {
 		return {
-			items: UserProfileResponse.fromResults(page.items),
-			page: page.page,
-			limit: page.limit,
-			total: page.total,
-			totalPages: page.totalPages,
-			hasNext: page.hasNext,
+			items: UserProfileResponse.fromResults(result.items),
+			offset: result.offset,
+			limit: result.limit,
+			total: result.total,
+			totalPages: result.totalPages,
+			hasNext: result.hasNext,
 		};
 	}
 }
@@ -43,7 +43,7 @@ export class PaginatedInventoryItemResponse {
 	items!: InventoryItemResponse[];
 
 	@ApiProperty()
-	page!: number;
+	offset!: number;
 
 	@ApiProperty()
 	limit!: number;
@@ -58,15 +58,15 @@ export class PaginatedInventoryItemResponse {
 	hasNext!: boolean;
 
 	static fromPage(
-		page: PaginatedResult<InventoryItemResult>,
+		result: PaginatedResult<InventoryItemResult>,
 	): PaginatedInventoryItemResponse {
 		return {
-			items: InventoryItemResponse.fromResults(page.items),
-			page: page.page,
-			limit: page.limit,
-			total: page.total,
-			totalPages: page.totalPages,
-			hasNext: page.hasNext,
+			items: InventoryItemResponse.fromResults(result.items),
+			offset: result.offset,
+			limit: result.limit,
+			total: result.total,
+			totalPages: result.totalPages,
+			hasNext: result.hasNext,
 		};
 	}
 }

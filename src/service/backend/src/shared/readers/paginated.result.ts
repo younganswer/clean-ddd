@@ -1,7 +1,7 @@
 export interface PaginatedResult<TItem> {
 	items: TItem[];
-	page: number;
 	limit: number;
+	offset: number;
 	total: number;
 	totalPages: number;
 	hasNext: boolean;

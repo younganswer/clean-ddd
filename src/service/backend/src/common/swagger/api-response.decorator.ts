@@ -35,8 +35,8 @@ class PaginatedDataSchema {
 	@ApiProperty({ type: 'array', items: { type: 'object' } })
 	items!: unknown[];
 
-	@ApiProperty({ example: 1 })
-	page!: number;
+	@ApiProperty({ example: 0 })
+	offset!: number;
 
 	@ApiProperty({ example: 20 })
 	limit!: number;
