@@ -12,12 +12,16 @@ BRANCH=$(git branch --show-current)
 #fi
 
 echo "[pre-push] 🔍 Typecheck..."
-pnpm typecheck && echo ""
+pnpm typecheck
+echo ""
 
 echo "[pre-push] 🧪 Running tests..."
-pnpm test && echo ""
+pnpm test
+echo ""
 
 echo "[pre-push] 🔐 Secret scan (commit range)..."
-pnpm secret:log-opts && echo ""
+pnpm secret:log-opts
+echo ""
 
-echo "[pre-push] ✅ Ready to push!" && echo ""
+echo "[pre-push] ✅ Ready to push!"
+echo ""
