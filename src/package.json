@@ -22,11 +22,11 @@
   "lint-staged": {
     "service/frontend/**/*.{js,jsx,ts,tsx}": [
       "prettier --write",
-      "eslint --fix"
+      "eslint --fix --config service/frontend/eslint.config.mjs"
     ],
     "service/backend/**/*.{js,ts}": [
       "prettier --write",
-      "eslint --fix"
+      "eslint --fix --config service/backend/eslint.config.mjs"
     ],
     "**/*.{json,css,md,yml,yaml}": [
       "prettier --write"
