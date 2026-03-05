@@ -10,15 +10,6 @@ export class CreateOrderBffHandler implements ICommandHandler<CreateOrderBffComm
 	async execute(
 		command: CreateOrderBffCommand,
 	): Promise<{ orderId: string }> {
-		const { userId, amount, currency, items } = command.input.body;
-
-		return await this.commandBus.execute<{ orderId: string }>(
-			new CreateOrderCommand({
-				userId,
-				amount,
-				currency,
-				items,
-			}),
-		);
+		return await this.commandBus.execute(new CreateOrderCommand(command));
 	}
 }

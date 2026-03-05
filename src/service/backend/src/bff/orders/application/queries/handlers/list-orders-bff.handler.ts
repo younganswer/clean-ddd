@@ -1,24 +1,17 @@
 import { IQueryHandler, QueryBus, QueryHandler } from '@nestjs/cqrs';
 
-import { ListOrdersQuery } from '@/shared/ordering/queries/list-orders.query';
-import { ListOrdersBffQuery } from '@/bff/orders/application/queries/list-orders-bff.query';
+import { GetOrdersQuery } from '@/shared/ordering/queries/get-orders.query';
+import { GetOrdersBffQuery } from '@/bff/orders/application/queries/get-orders-bff.query';
 import type { OrderResult } from '@/shared/ordering/readers/order.result';
 import type { PaginatedResult } from '@/shared/readers/paginated.result';
 
-@QueryHandler(ListOrdersBffQuery)
-export class ListOrdersBffHandler implements IQueryHandler<ListOrdersBffQuery> {
+@QueryHandler(GetOrdersBffQuery)
+export class ListOrdersBffHandler implements IQueryHandler<GetOrdersBffQuery> {
 	constructor(private readonly queryBus: QueryBus) {}
 
 	async execute(
-		query: ListOrdersBffQuery,
+		query: GetOrdersBffQuery,
 	): Promise<PaginatedResult<OrderResult>> {
-		const domainQuery = new ListOrdersQuery(
-			query.input.limit,
-			query.input.page,
-		);
-		return await this.queryBus.execute<
-			ListOrdersQuery,
-			PaginatedResult<OrderResult>
-		>(domainQuery);
+		return await this.queryBus.execute(new GetOrdersQuery(query));
 	}
 }

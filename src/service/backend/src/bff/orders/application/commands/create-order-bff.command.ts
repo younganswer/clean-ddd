@@ -1,19 +1,26 @@
 import { Command } from '@nestjs/cqrs';
 
-export type CreateOrderBffItemInput = {
+type CreateOrderBffItemInput = {
 	sku: string;
 	quantity: number;
 };
 
-export type CreateOrderBffBodyInput = {
-	userId: string;
-	amount: number;
-	currency: string;
-	items?: CreateOrderBffItemInput[];
-};
-
 export class CreateOrderBffCommand extends Command<{ orderId: string }> {
-	constructor(public readonly input: { body: CreateOrderBffBodyInput }) {
+	public readonly userId: string;
+	public readonly amount: number;
+	public readonly currency: string;
+	public readonly items?: CreateOrderBffItemInput[];
+
+	constructor(input: {
+		userId: string;
+		amount: number;
+		currency: string;
+		items?: CreateOrderBffItemInput[];
+	}) {
 		super();
+		this.userId = input.userId;
+		this.amount = input.amount;
+		this.currency = input.currency;
+		this.items = input.items;
 	}
 }

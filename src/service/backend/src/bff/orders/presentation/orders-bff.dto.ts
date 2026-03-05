@@ -41,17 +41,3 @@ export class CreateOrderBffBodyDto {
 	@Type(() => BffOrderItemDto)
 	items?: BffOrderItemDto[];
 }
-
-export class ListOrdersBffQueryDto {
-	@IsOptional()
-	@Type(() => Number)
-	@IsInt()
-	@Min(1)
-	limit?: number;
-
-	@IsOptional()
-	@Type(() => Number)
-	@IsInt()
-	@Min(1)
-	page?: number;
-}

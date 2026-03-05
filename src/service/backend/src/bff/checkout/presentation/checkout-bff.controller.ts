@@ -5,10 +5,7 @@ import { ApiDataResponse, ApiErrorEnvelopeResponse } from '@/common/swagger';
 import { CreateCheckoutBffResponse } from '@/bff/checkout/presentation/swagger';
 
 import { CreateCheckoutBffBodyDto } from '@/bff/checkout/presentation/checkout-bff.dto';
-import {
-	CreateCheckoutBffCommand,
-	type CreateCheckoutBffResult,
-} from '@/bff/checkout/application/commands/create-checkout-bff.command';
+import { CreateCheckoutBffCommand } from '@/bff/checkout/application/commands/create-checkout-bff.command';
 
 @Controller('bff/checkout')
 export class CheckoutBffController {
@@ -20,12 +17,11 @@ export class CheckoutBffController {
 	async create(
 		@Body() body: CreateCheckoutBffBodyDto,
 	): Promise<DataEnvelope<CreateCheckoutBffResponse>> {
-		const result = await this.commandBus.execute<
-			CreateCheckoutBffCommand,
-			CreateCheckoutBffResult
-		>(new CreateCheckoutBffCommand({ body }));
-		return ResponseHelper.data(
-			CreateCheckoutBffResponse.fromResult(result),
+		const result = await this.commandBus.execute(
+			new CreateCheckoutBffCommand(body),
 		);
+		const response = CreateCheckoutBffResponse.fromResult(result);
+
+		return ResponseHelper.data(response);
 	}
 }

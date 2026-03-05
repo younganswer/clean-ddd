@@ -1,10 +1,7 @@
 import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
 import { CreateOrderCommand } from '@/shared/ordering/commands/create-order.command';
-import {
-	CreatePaymentIntentCommand,
-	type CreatePaymentIntentResult,
-} from '@/shared/payments/commands/create-payment-intent.command';
+import { CreatePaymentIntentCommand } from '@/shared/payments/commands/create-payment-intent.command';
 
 import {
 	CreateCheckoutBffCommand,
@@ -25,9 +22,9 @@ export class CreateCheckoutBffHandler implements ICommandHandler<CreateCheckoutB
 			items,
 			simulateOutcome,
 			simulateDelaySeconds,
-		} = command.input.body;
+		} = command;
 
-		const { orderId } = await this.commandBus.execute<{ orderId: string }>(
+		const { orderId } = await this.commandBus.execute(
 			new CreateOrderCommand({
 				userId,
 				amount,
@@ -36,14 +33,13 @@ export class CreateCheckoutBffHandler implements ICommandHandler<CreateCheckoutB
 			}),
 		);
 
-		const payment =
-			await this.commandBus.execute<CreatePaymentIntentResult>(
-				new CreatePaymentIntentCommand({
-					orderId,
-					simulateOutcome,
-					simulateDelaySeconds,
-				}),
-			);
+		const payment = await this.commandBus.execute(
+			new CreatePaymentIntentCommand({
+				orderId,
+				simulateOutcome,
+				simulateDelaySeconds,
+			}),
+		);
 
 		return { orderId, payment };
 	}
