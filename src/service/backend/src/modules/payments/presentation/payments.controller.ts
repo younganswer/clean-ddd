@@ -1,8 +1,8 @@
 import { Body, Controller, Param, Post } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
-import { DataResponse } from '@/common/responses';
+import { DataEnvelope, ResponseHelper } from '@/common/responses';
 import { ApiDataResponse, ApiErrorEnvelopeResponse } from '@/common/swagger';
-import { CreatePaymentIntentResultResponseDto } from '@/modules/payments/presentation/swagger';
+import { CreatePaymentIntentResponse } from '@/modules/payments/presentation/swagger';
 import {
 	CreatePaymentIntentCommand,
 	type CreatePaymentIntentResult,
@@ -14,15 +14,12 @@ export class PaymentsController {
 	constructor(private readonly commandBus: CommandBus) {}
 
 	@Post('intents')
-	@ApiDataResponse(
-		{ model: CreatePaymentIntentResultResponseDto },
-		{ status: 201 },
-	)
+	@ApiDataResponse({ model: CreatePaymentIntentResponse }, { status: 201 })
 	@ApiErrorEnvelopeResponse({ status: 400 })
 	async createIntent(
 		@Param('orderId') orderId: string,
 		@Body() body: CreatePaymentIntentRequest,
-	): Promise<DataResponse<CreatePaymentIntentResult>> {
+	): Promise<DataEnvelope<CreatePaymentIntentResponse>> {
 		const result = await this.commandBus.execute<
 			CreatePaymentIntentCommand,
 			CreatePaymentIntentResult
@@ -36,6 +33,8 @@ export class PaymentsController {
 						: undefined,
 			}),
 		);
-		return DataResponse.of(result);
+		return ResponseHelper.data(
+			CreatePaymentIntentResponse.fromResult(result),
+		);
 	}
 }

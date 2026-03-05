@@ -7,13 +7,13 @@ import {
 	Query,
 } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
-import { DataResponse, ListResponse } from '@/common/responses';
+import { DataEnvelope, ListEnvelope, ResponseHelper } from '@/common/responses';
 import {
 	ApiDataResponse,
 	ApiErrorEnvelopeResponse,
 	ApiListResponse,
 } from '@/common/swagger';
-import { PaymentIntentResponseDto } from '@/modules/payments/presentation/swagger';
+import { PaymentIntentResponse } from '@/modules/payments/presentation/swagger';
 import {
 	GetPaymentIntentQuery,
 	ListPaymentIntentsQuery,
@@ -40,11 +40,11 @@ export class PaymentIntentsController {
 	constructor(private readonly queryBus: QueryBus) {}
 
 	@Get()
-	@ApiListResponse({ model: PaymentIntentResponseDto })
+	@ApiListResponse({ model: PaymentIntentResponse })
 	@ApiErrorEnvelopeResponse({ status: 500 })
 	async list(
 		@Query('limit') limitRaw?: string,
-	): Promise<ListResponse<PaymentIntentResult>> {
+	): Promise<ListEnvelope<PaymentIntentResponse>> {
 		const result = await this.queryBus.execute<
 			ListPaymentIntentsQuery,
 			PaymentIntentResult[]
@@ -54,15 +54,15 @@ export class PaymentIntentsController {
 			throw new InternalServerErrorException('invalid payments result');
 		}
 
-		return ListResponse.from(result);
+		return ResponseHelper.list(PaymentIntentResponse.fromResults(result));
 	}
 
 	@Get(':paymentId')
-	@ApiDataResponse({ model: PaymentIntentResponseDto })
+	@ApiDataResponse({ model: PaymentIntentResponse })
 	@ApiErrorEnvelopeResponse({ status: 404 })
 	async get(
 		@Param('paymentId') paymentId: string,
-	): Promise<DataResponse<PaymentIntentResult>> {
+	): Promise<DataEnvelope<PaymentIntentResponse>> {
 		const result = await this.queryBus.execute<PaymentIntentResult | null>(
 			new GetPaymentIntentQuery(paymentId),
 		);
@@ -77,6 +77,6 @@ export class PaymentIntentsController {
 			);
 		}
 
-		return DataResponse.of(result);
+		return ResponseHelper.data(PaymentIntentResponse.fromResult(result));
 	}
 }

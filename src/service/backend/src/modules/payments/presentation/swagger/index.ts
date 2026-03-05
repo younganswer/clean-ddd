@@ -1,1 +1,1 @@
-export * from '@/modules/payments/presentation/swagger/payments.response.dto';
+export * from '@/modules/payments/presentation/swagger/payments.response';
