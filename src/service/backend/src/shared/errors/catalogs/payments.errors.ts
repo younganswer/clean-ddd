@@ -20,6 +20,16 @@ export const PAYMENTS_APPLICATION_ERRORS = {
 		message: 'orderId is required',
 		status: HttpStatus.BAD_REQUEST,
 	},
+	PAYMENTS_RESULT_INVALID: {
+		code: 'PAYMENTS_RESULT_INVALID',
+		message: 'invalid payments result',
+		status: HttpStatus.INTERNAL_SERVER_ERROR,
+	},
+	PAYMENT_INTENT_RESULT_INVALID: {
+		code: 'PAYMENT_INTENT_RESULT_INVALID',
+		message: 'invalid payment intent result',
+		status: HttpStatus.INTERNAL_SERVER_ERROR,
+	},
 	PAYMENT_WEBHOOK_PAYLOAD_INVALID: {
 		code: 'PAYMENT_WEBHOOK_PAYLOAD_INVALID',
 		message: 'invalid webhook payload',

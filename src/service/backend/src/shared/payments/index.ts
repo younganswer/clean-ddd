@@ -8,4 +8,4 @@ export * from '@/shared/payments/views/payment-intent.result';
 export * from '@/shared/payments/readers/i.payment-intent.reader';
 
 export * from '@/shared/payments/queries/get-payment-intent.query';
-export * from '@/shared/payments/queries/list-payment-intents.query';
+export * from '@/shared/payments/queries/get-payment-intents.query';

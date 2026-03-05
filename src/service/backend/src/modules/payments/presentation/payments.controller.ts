@@ -3,10 +3,7 @@ import { CommandBus } from '@nestjs/cqrs';
 import { DataEnvelope, ResponseHelper } from '@/common/responses';
 import { ApiDataResponse, ApiErrorEnvelopeResponse } from '@/common/swagger';
 import { CreatePaymentIntentResponse } from '@/modules/payments/presentation/swagger';
-import {
-	CreatePaymentIntentCommand,
-	type CreatePaymentIntentResult,
-} from '@/shared/payments';
+import { CreatePaymentIntentCommand } from '@/shared/payments';
 import { CreatePaymentIntentRequest } from '@/modules/payments/presentation/dto/create-payment-intent.request';
 
 @Controller('orders/:orderId/payments')
@@ -20,10 +17,7 @@ export class PaymentsController {
 		@Param('orderId') orderId: string,
 		@Body() body: CreatePaymentIntentRequest,
 	): Promise<DataEnvelope<CreatePaymentIntentResponse>> {
-		const result = await this.commandBus.execute<
-			CreatePaymentIntentCommand,
-			CreatePaymentIntentResult
-		>(
+		const result = await this.commandBus.execute(
 			new CreatePaymentIntentCommand({
 				orderId,
 				simulateOutcome: body.simulateOutcome,

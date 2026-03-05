@@ -37,15 +37,13 @@ export class CreatePaymentIntentHandler implements ICommandHandler<CreatePayment
 		command: CreatePaymentIntentCommand,
 	): Promise<CreatePaymentIntentResult> {
 		return this.uow.transaction(async () => {
-			const { orderId } = command.input;
-
 			const order = await this.queryBus.execute(
-				new GetOrderQuery(orderId),
+				new GetOrderQuery(command),
 			);
 			assertOrderResult(order);
 
 			const payment = PaymentIntent.create({
-				orderId,
+				orderId: command.orderId,
 				amount: order.amount,
 				currency: order.currency,
 			});
@@ -53,22 +51,28 @@ export class CreatePaymentIntentHandler implements ICommandHandler<CreatePayment
 
 			await this.commandBus.execute(
 				new AttachPaymentToOrderCommand({
-					orderId,
+					orderId: command.orderId,
 					paymentId: payment.id,
 				}),
 			);
 
-			const outcome = command.input.simulateOutcome ?? 'SUCCEEDED';
-			const delaySeconds = command.input.simulateDelaySeconds;
+			const outcome = command.simulateOutcome ?? 'SUCCEEDED';
+			const delaySeconds = command.simulateDelaySeconds;
 
 			const event =
 				outcome === 'SUCCEEDED'
-					? new PaymentWebhookSucceededEvent(orderId, payment.id)
-					: new PaymentWebhookFailedEvent(orderId, payment.id);
+					? new PaymentWebhookSucceededEvent({
+							orderId: command.orderId,
+							paymentId: payment.id,
+						})
+					: new PaymentWebhookFailedEvent({
+							orderId: command.orderId,
+							paymentId: payment.id,
+						});
 
 			const outboxId = await this.outboxProducer.publish(event, {
 				delaySeconds,
-				messageGroupId: orderId,
+				messageGroupId: command.orderId,
 			});
 
 			const eventType =

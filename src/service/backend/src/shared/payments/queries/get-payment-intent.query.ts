@@ -6,10 +6,10 @@ import { requireTrimmedString } from '@/shared/cqrs/input-normalizer';
 export class GetPaymentIntentQuery extends Query<PaymentIntentResult | null> {
 	public readonly paymentId: string;
 
-	constructor(paymentId: string) {
+	constructor(input: { paymentId: string }) {
 		super();
 		this.paymentId = requireTrimmedString(
-			paymentId,
+			input.paymentId,
 			PAYMENTS_APPLICATION_ERRORS.PAYMENT_ORDER_ID_REQUIRED,
 			{ reason: 'paymentId' },
 		);

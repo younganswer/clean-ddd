@@ -9,19 +9,17 @@ import {
 
 export class PaymentWebhookSucceededEvent {
 	static readonly eventType = PAYMENT_WEBHOOK_SUCCEEDED_EVENT_TYPE;
-
 	public readonly orderId: string;
-
 	public readonly paymentId: string;
 
-	constructor(orderId: string, paymentId: string) {
+	constructor(input: { orderId: string; paymentId: string }) {
 		this.orderId = requireTrimmedString(
-			orderId,
+			input.orderId,
 			PAYMENTS_APPLICATION_ERRORS.PAYMENT_WEBHOOK_PAYLOAD_INVALID,
 			{ reason: 'orderId' },
 		);
 		this.paymentId = requireTrimmedString(
-			paymentId,
+			input.paymentId,
 			PAYMENTS_APPLICATION_ERRORS.PAYMENT_WEBHOOK_PAYLOAD_INVALID,
 			{ reason: 'paymentId' },
 		);
@@ -33,6 +31,6 @@ export class PaymentWebhookSucceededEvent {
 		const orderId = toTrimmedString(payload.orderId);
 		const paymentId = toTrimmedString(payload.paymentId);
 		if (!orderId || !paymentId) return null;
-		return new PaymentWebhookSucceededEvent(orderId, paymentId);
+		return new PaymentWebhookSucceededEvent({ orderId, paymentId });
 	}
 }

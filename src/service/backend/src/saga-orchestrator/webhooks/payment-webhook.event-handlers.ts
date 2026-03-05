@@ -45,11 +45,13 @@ export class PaymentWebhookSucceededHandler implements IEventHandler<PaymentWebh
 			await this.paymentRepository.persist(payment);
 
 			const order = await this.queryBus.execute(
-				new GetOrderQuery(orderId),
+				new GetOrderQuery({ orderId }),
 			);
 			assertOrderResult(order);
 
-			await this.commandBus.execute(new MarkOrderPaidCommand(orderId));
+			await this.commandBus.execute(
+				new MarkOrderPaidCommand({ orderId }),
+			);
 
 			const items: InventoryOrderItemPayload[] = order.items.length
 				? order.items.map(({ sku, quantity }) => ({
@@ -66,12 +68,12 @@ export class PaymentWebhookSucceededHandler implements IEventHandler<PaymentWebh
 			}
 
 			await this.outboxProducer.publish(
-				new ReserveInventoryForOrderRequestedEvent(orderId, items),
+				new ReserveInventoryForOrderRequestedEvent({ orderId, items }),
 				{ messageGroupId: orderId },
 			);
 
 			await this.outboxProducer.publish(
-				new CreateShipmentForOrderRequestedEvent(orderId),
+				new CreateShipmentForOrderRequestedEvent({ orderId }),
 				{ messageGroupId: orderId },
 			);
 		});

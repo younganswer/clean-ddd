@@ -1,11 +1,4 @@
-import {
-	Controller,
-	Get,
-	InternalServerErrorException,
-	NotFoundException,
-	Param,
-	Query,
-} from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 import { DataEnvelope, ListEnvelope, ResponseHelper } from '@/common/responses';
 import {
@@ -16,9 +9,11 @@ import {
 import { PaymentIntentResponse } from '@/modules/payments/presentation/swagger';
 import {
 	GetPaymentIntentQuery,
-	ListPaymentIntentsQuery,
+	GetPaymentIntentsQuery,
 	type PaymentIntentResult,
 } from '@/shared/payments';
+import { PAYMENTS_APPLICATION_ERRORS } from '@/shared/errors';
+import { ApplicationErrorFactory } from '@/shared/errors/base.error-factory';
 
 const isPaymentIntentResult = (
 	value: unknown,
@@ -43,18 +38,21 @@ export class PaymentIntentsController {
 	@ApiListResponse({ model: PaymentIntentResponse })
 	@ApiErrorEnvelopeResponse({ status: 500 })
 	async list(
-		@Query('limit') limitRaw?: string,
+		@Query('limit') limit?: string,
 	): Promise<ListEnvelope<PaymentIntentResponse>> {
-		const result = await this.queryBus.execute<
-			ListPaymentIntentsQuery,
-			PaymentIntentResult[]
-		>(new ListPaymentIntentsQuery(Number(limitRaw)));
-
+		const result = await this.queryBus.execute(
+			new GetPaymentIntentsQuery({
+				limit: limit ? Number.parseInt(limit, 10) : undefined,
+			}),
+		);
 		if (!Array.isArray(result) || !result.every(isPaymentIntentResult)) {
-			throw new InternalServerErrorException('invalid payments result');
+			throw ApplicationErrorFactory.create(
+				PAYMENTS_APPLICATION_ERRORS.PAYMENTS_RESULT_INVALID,
+			);
 		}
+		const response = PaymentIntentResponse.fromResults(result);
 
-		return ResponseHelper.list(PaymentIntentResponse.fromResults(result));
+		return ResponseHelper.list(response);
 	}
 
 	@Get(':paymentId')
@@ -63,17 +61,20 @@ export class PaymentIntentsController {
 	async get(
 		@Param('paymentId') paymentId: string,
 	): Promise<DataEnvelope<PaymentIntentResponse>> {
-		const result = await this.queryBus.execute<PaymentIntentResult | null>(
-			new GetPaymentIntentQuery(paymentId),
+		const result = await this.queryBus.execute(
+			new GetPaymentIntentQuery({ paymentId }),
 		);
 
 		if (result === null || result === undefined) {
-			throw new NotFoundException('payment intent not found');
+			throw ApplicationErrorFactory.create(
+				PAYMENTS_APPLICATION_ERRORS.PAYMENT_NOT_FOUND,
+				{ message: 'payment intent not found' },
+			);
 		}
 
 		if (!isPaymentIntentResult(result)) {
-			throw new InternalServerErrorException(
-				'invalid payment intent result',
+			throw ApplicationErrorFactory.create(
+				PAYMENTS_APPLICATION_ERRORS.PAYMENT_INTENT_RESULT_INVALID,
 			);
 		}
 
