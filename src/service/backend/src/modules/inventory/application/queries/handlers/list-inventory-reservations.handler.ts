@@ -4,7 +4,7 @@ import { IInventoryReservationRepositorySymbol } from '@/modules/inventory/domai
 import type { IInventoryReservationRepository } from '@/modules/inventory/domains/repositories/i.inventory-reservation.repository';
 import {
 	ListInventoryReservationsQuery,
-	type InventoryReservationView,
+	type InventoryReservationResult,
 } from '@/shared/inventory';
 
 @QueryHandler(ListInventoryReservationsQuery)
@@ -16,7 +16,7 @@ export class ListInventoryReservationsHandler implements IQueryHandler<ListInven
 
 	async execute(
 		query: ListInventoryReservationsQuery,
-	): Promise<InventoryReservationView[]> {
+	): Promise<InventoryReservationResult[]> {
 		const rows =
 			await this.inventoryReservationRepository.findReservationsByOrderId(
 				query.orderId,

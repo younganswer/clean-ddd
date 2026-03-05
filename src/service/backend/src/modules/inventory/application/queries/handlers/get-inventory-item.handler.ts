@@ -4,7 +4,7 @@ import { IInventoryItemRepositorySymbol } from '@/modules/inventory/domains/repo
 import type { IInventoryItemRepository } from '@/modules/inventory/domains/repositories/i.inventory-item.repository';
 import {
 	GetInventoryItemQuery,
-	type InventoryItemView,
+	type InventoryItemResult,
 } from '@/shared/inventory';
 
 @QueryHandler(GetInventoryItemQuery)
@@ -16,7 +16,7 @@ export class GetInventoryItemHandler implements IQueryHandler<GetInventoryItemQu
 
 	async execute(
 		query: GetInventoryItemQuery,
-	): Promise<InventoryItemView | null> {
+	): Promise<InventoryItemResult | null> {
 		await this.inventoryItemRepository.seedIfEmpty();
 		const inventoryItem = await this.inventoryItemRepository.findBySku(
 			query.sku,

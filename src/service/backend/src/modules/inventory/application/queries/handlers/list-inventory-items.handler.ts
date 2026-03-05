@@ -4,9 +4,9 @@ import { IInventoryItemRepositorySymbol } from '@/modules/inventory/domains/repo
 import type { IInventoryItemRepository } from '@/modules/inventory/domains/repositories/i.inventory-item.repository';
 import {
 	ListInventoryItemsQuery,
-	type InventoryItemView,
+	type InventoryItemResult,
 } from '@/shared/inventory';
-import type { PaginatedView } from '@/shared/readers/paginated.view';
+import type { PaginatedResult } from '@/shared/readers/paginated.result';
 
 @QueryHandler(ListInventoryItemsQuery)
 export class ListInventoryItemsHandler implements IQueryHandler<ListInventoryItemsQuery> {
@@ -17,7 +17,7 @@ export class ListInventoryItemsHandler implements IQueryHandler<ListInventoryIte
 
 	async execute(
 		query: ListInventoryItemsQuery,
-	): Promise<PaginatedView<InventoryItemView>> {
+	): Promise<PaginatedResult<InventoryItemResult>> {
 		const { limit, page } = query;
 		const offset = (page - 1) * limit;
 		await this.inventoryItemRepository.seedIfEmpty();

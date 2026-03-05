@@ -13,12 +13,12 @@ import {
 } from '@/modules/inventory/presentation/swagger';
 import {
 	GetInventoryItemQuery,
-	type InventoryItemView,
+	type InventoryItemResult,
 	ListInventoryItemsQuery,
 	ListInventoryReservationsQuery,
-	type InventoryReservationView,
+	type InventoryReservationResult,
 } from '@/shared/inventory';
-import type { PaginatedView } from '@/shared/readers/paginated.view';
+import type { PaginatedResult } from '@/shared/readers/paginated.result';
 
 @Controller('inventory')
 export class InventoryController {
@@ -30,10 +30,10 @@ export class InventoryController {
 	async listItems(
 		@Query('limit') limitRaw?: string,
 		@Query('page') pageRaw?: string,
-	): Promise<PageResponse<InventoryItemView>> {
+	): Promise<PageResponse<InventoryItemResult>> {
 		const result = await this.queryBus.execute<
 			ListInventoryItemsQuery,
-			PaginatedView<InventoryItemView>
+			PaginatedResult<InventoryItemResult>
 		>(new ListInventoryItemsQuery(Number(limitRaw), Number(pageRaw)));
 		return PageResponse.from(result);
 	}
@@ -43,10 +43,10 @@ export class InventoryController {
 	@ApiErrorEnvelopeResponse({ status: 400 })
 	async getItem(
 		@Param('sku') sku: string,
-	): Promise<DataResponse<InventoryItemView | null>> {
+	): Promise<DataResponse<InventoryItemResult | null>> {
 		const result = await this.queryBus.execute<
 			GetInventoryItemQuery,
-			InventoryItemView | null
+			InventoryItemResult | null
 		>(new GetInventoryItemQuery(sku));
 		return DataResponse.of(result);
 	}
@@ -56,10 +56,10 @@ export class InventoryController {
 	@ApiErrorEnvelopeResponse({ status: 400 })
 	async listReservations(
 		@Query('orderId') orderId?: string,
-	): Promise<ListResponse<InventoryReservationView>> {
+	): Promise<ListResponse<InventoryReservationResult>> {
 		const result = await this.queryBus.execute<
 			ListInventoryReservationsQuery,
-			InventoryReservationView[]
+			InventoryReservationResult[]
 		>(new ListInventoryReservationsQuery(String(orderId)));
 		return ListResponse.from(result);
 	}

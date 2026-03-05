@@ -4,8 +4,8 @@ import {
 	IInventoryReaderSymbol,
 	type IInventoryReader,
 } from '@/shared/readers/inventory/i.inventory.reader';
-import type { InventoryItemView } from '@/shared/readers/inventory/dto/inventory-item.view';
-import type { InventoryReservationView } from '@/shared/readers/inventory/dto/inventory-reservation.view';
+import type { InventoryItemResult } from '@/shared/readers/inventory/dto/inventory-item.result';
+import type { InventoryReservationResult } from '@/shared/readers/inventory/dto/inventory-reservation.result';
 import { IInventoryItemRepositorySymbol } from '@/modules/inventory/domains/repositories/i.inventory-item.repository';
 import type { IInventoryItemRepository } from '@/modules/inventory/domains/repositories/i.inventory-item.repository';
 import { IInventoryReservationRepositorySymbol } from '@/modules/inventory/domains/repositories/i.inventory-reservation.repository';
@@ -20,7 +20,7 @@ export class InventoryReader implements IInventoryReader {
 		private readonly inventoryReservationRepository: IInventoryReservationRepository,
 	) {}
 
-	async findItemBySku(sku: string): Promise<InventoryItemView | null> {
+	async findItemBySku(sku: string): Promise<InventoryItemResult | null> {
 		await this.inventoryItemRepository.seedIfEmpty();
 		const inventoryItem = await this.inventoryItemRepository.findBySku(sku);
 		if (!inventoryItem) return null;
@@ -37,7 +37,7 @@ export class InventoryReader implements IInventoryReader {
 		};
 	}
 
-	async findRecentItems(limit: number): Promise<InventoryItemView[]> {
+	async findRecentItems(limit: number): Promise<InventoryItemResult[]> {
 		await this.inventoryItemRepository.seedIfEmpty();
 		const safeLimit = Math.min(50, Math.max(1, Number(limit ?? 20)));
 		const inventoryItemRepository =
@@ -57,7 +57,7 @@ export class InventoryReader implements IInventoryReader {
 
 	async findReservationsByOrderId(
 		orderId: string,
-	): Promise<InventoryReservationView[]> {
+	): Promise<InventoryReservationResult[]> {
 		const inventoryReservations =
 			await this.inventoryReservationRepository.findReservationsByOrderId(
 				orderId,
