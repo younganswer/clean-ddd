@@ -17,7 +17,7 @@ paths:
                       type: integer
                       default: 10
                       minimum: 1
-                      maximum: 100
+                      maximum: 50
             responses:
                 "200":
                     description: OK
@@ -37,14 +37,21 @@ paths:
                       type: integer
                       default: 20
                       minimum: 1
-                      maximum: 200
+                      maximum: 50
+                - in: query
+                  name: page
+                  required: false
+                  schema:
+                      type: integer
+                      default: 1
+                      minimum: 1
             responses:
                 "200":
                     description: OK
                     content:
                         application/json:
                             schema:
-                                $ref: "#/components/schemas/BffListEnvelope"
+                                $ref: "#/components/schemas/BffPageEnvelope"
         post:
             summary: Create order (BFF)
             requestBody:
@@ -241,3 +248,30 @@ components:
                           items:
                               type: object
                               additionalProperties: true
+
+        BffPageEnvelope:
+            allOf:
+                - $ref: "#/components/schemas/SuccessEnvelope"
+                - type: object
+                  required: [data]
+                  properties:
+                      data:
+                          type: object
+                          required:
+                              [items, page, limit, total, totalPages, hasNext]
+                          properties:
+                              items:
+                                  type: array
+                                  items:
+                                      type: object
+                                      additionalProperties: true
+                              page:
+                                  type: integer
+                              limit:
+                                  type: integer
+                              total:
+                                  type: integer
+                              totalPages:
+                                  type: integer
+                              hasNext:
+                                  type: boolean

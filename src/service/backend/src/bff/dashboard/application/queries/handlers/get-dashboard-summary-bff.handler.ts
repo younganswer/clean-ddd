@@ -2,6 +2,7 @@ import { IQueryHandler, QueryBus, QueryHandler } from '@nestjs/cqrs';
 
 import { ListOrdersQuery } from '@/shared/ordering/queries/list-orders.query';
 import type { OrderResult } from '@/shared/ordering/readers/order.result';
+import type { PaginatedResult } from '@/shared/readers/paginated.result';
 
 import { ListPaymentIntentsQuery } from '@/shared/payments/queries/list-payment-intents.query';
 import type { PaymentIntentResult } from '@/shared/readers/payments/dto/payment-intent.result';
@@ -20,39 +21,38 @@ import {
 @QueryHandler(GetDashboardSummaryBffQuery)
 export class GetDashboardSummaryBffHandler implements IQueryHandler<GetDashboardSummaryBffQuery> {
 	constructor(private readonly queryBus: QueryBus) {}
-
 	async execute(
 		query: GetDashboardSummaryBffQuery,
 	): Promise<DashboardSummaryBffView> {
 		const { limit } = query.input;
-
 		const partialErrors: string[] = [];
-
 		const [
 			ordersSettled,
 			paymentsSettled,
 			shipmentsSettled,
 			inventorySettled,
 		] = await Promise.allSettled([
-			this.queryBus.execute<ListOrdersQuery, OrderResult[]>(
-				new ListOrdersQuery(limit),
-			),
+			this.queryBus.execute<
+				ListOrdersQuery,
+				PaginatedResult<OrderResult>
+			>(new ListOrdersQuery(limit)),
 			this.queryBus.execute<
 				ListPaymentIntentsQuery,
 				PaymentIntentResult[]
 			>(new ListPaymentIntentsQuery(limit)),
-			this.queryBus.execute<ListShipmentsQuery, ShipmentResult[]>(
-				new ListShipmentsQuery(limit),
-			),
+			this.queryBus.execute<
+				ListShipmentsQuery,
+				PaginatedResult<ShipmentResult>
+			>(new ListShipmentsQuery(limit)),
 			this.queryBus.execute<
 				ListInventoryItemsQuery,
-				InventoryItemResult[]
+				PaginatedResult<InventoryItemResult>
 			>(new ListInventoryItemsQuery(limit)),
 		]);
 
 		const orders =
 			ordersSettled.status === 'fulfilled'
-				? ordersSettled.value
+				? ordersSettled.value.items
 				: (partialErrors.push('orders'), []);
 
 		const paymentIntents =
@@ -62,12 +62,12 @@ export class GetDashboardSummaryBffHandler implements IQueryHandler<GetDashboard
 
 		const shipments =
 			shipmentsSettled.status === 'fulfilled'
-				? shipmentsSettled.value
+				? shipmentsSettled.value.items
 				: (partialErrors.push('shipments'), []);
 
 		const inventoryItems =
 			inventorySettled.status === 'fulfilled'
-				? inventorySettled.value
+				? inventorySettled.value.items
 				: (partialErrors.push('inventoryItems'), []);
 
 		return {

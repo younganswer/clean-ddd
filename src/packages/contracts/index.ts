@@ -1,6 +1,8 @@
-import type { components } from "./types.generated";
+import type { components as apiComponents } from "./types.generated";
+import type { components as bffComponents } from "./types.bff.generated";
 
-export type ContractSchemas = components["schemas"];
+export type ContractSchemas = apiComponents["schemas"];
+export type BffContractSchemas = bffComponents["schemas"];
 
 export type Paginated<TItem> = {
 	items: TItem[];

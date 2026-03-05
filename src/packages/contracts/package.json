@@ -8,6 +8,7 @@
 	},
 	"scripts": {
 		"generate:types": "openapi-typescript openapi.yaml -o types.generated.ts",
+		"generate:types:bff": "openapi-typescript openapi.bff.yaml -o types.bff.generated.ts",
 		"typecheck": "tsc -p tsconfig.json --noEmit",
 		"lint": "echo \"(skip)\"",
 		"format": "prettier --write \"*.ts\""

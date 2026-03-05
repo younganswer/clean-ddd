@@ -8,11 +8,11 @@ import {
 	Query,
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { DataEnvelope, ListEnvelope, ResponseHelper } from '@/common/responses';
+import { DataEnvelope, PageEnvelope, ResponseHelper } from '@/common/responses';
 import {
 	ApiDataResponse,
 	ApiErrorEnvelopeResponse,
-	ApiListResponse,
+	ApiPageResponse,
 } from '@/common/swagger';
 import {
 	CreateOrderResponse,
@@ -27,6 +27,7 @@ import { CreateOrderBffCommand } from '@/bff/orders/application/commands/create-
 import { GetOrderBffQuery } from '@/bff/orders/application/queries/get-order-bff.query';
 import { ListOrdersBffQuery } from '@/bff/orders/application/queries/list-orders-bff.query';
 import type { OrderResult } from '@/shared/ordering/readers/order.result';
+import type { PaginatedResult } from '@/shared/readers/paginated.result';
 
 @Controller('bff/orders')
 export class OrdersBffController {
@@ -36,16 +37,19 @@ export class OrdersBffController {
 	) {}
 
 	@Get()
-	@ApiListResponse({ model: OrderResponse })
+	@ApiPageResponse({ model: OrderResponse })
 	@ApiErrorEnvelopeResponse({ status: 400 })
 	async list(
 		@Query() query: ListOrdersBffQueryDto,
-	): Promise<ListEnvelope<OrderResponse>> {
+	): Promise<PageEnvelope<OrderResponse>> {
 		const result = await this.queryBus.execute<
 			ListOrdersBffQuery,
-			OrderResult[]
-		>(new ListOrdersBffQuery({ limit: query.limit }));
-		return ResponseHelper.list(OrderResponse.fromResults(result));
+			PaginatedResult<OrderResult>
+		>(new ListOrdersBffQuery({ limit: query.limit, page: query.page }));
+		return ResponseHelper.page({
+			...result,
+			items: OrderResponse.fromResults(result.items),
+		});
 	}
 
 	@Get(':orderId')
