@@ -35,10 +35,9 @@ export class OrdersBffController {
 		const result = await this.queryBus.execute(
 			new GetOrdersBffQuery(query),
 		);
-		return ResponseHelper.page({
-			...result,
-			items: OrderResponse.fromResults(result.items),
-		});
+		const response = OrderResponse.fromPaginatedResults(result);
+
+		return ResponseHelper.page(response);
 	}
 
 	@Get(':orderId')

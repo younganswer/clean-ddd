@@ -39,10 +39,9 @@ export class InventoryController {
 				offset: query.offset ?? Number.NaN,
 			}),
 		);
-		return ResponseHelper.page({
-			...result,
-			items: InventoryItemResponse.fromResults(result.items),
-		});
+		const response = InventoryItemResponse.fromPaginatedResults(result);
+
+		return ResponseHelper.page(response);
 	}
 
 	@Get('items/:sku')

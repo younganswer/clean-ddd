@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import type { PaginatedResult } from '@/shared/readers/paginated.result';
 import type {
 	OrderItemResult,
 	OrderResult,
@@ -57,6 +58,15 @@ export class OrderResponse {
 
 	static fromResults(results: OrderResult[]): OrderResponse[] {
 		return results.map((result) => OrderResponse.fromResult(result));
+	}
+
+	static fromPaginatedResults(
+		page: PaginatedResult<OrderResult>,
+	): PaginatedResult<OrderResponse> {
+		return {
+			...page,
+			items: OrderResponse.fromResults(page.items),
+		};
 	}
 }
 

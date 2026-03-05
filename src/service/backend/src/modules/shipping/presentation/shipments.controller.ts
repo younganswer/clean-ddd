@@ -30,10 +30,9 @@ export class ShipmentsController {
 				offset: query.offset ?? Number.NaN,
 			}),
 		);
-		return ResponseHelper.page({
-			...result,
-			items: ShipmentResponse.fromResults(result.items),
-		});
+		const response = ShipmentResponse.fromPaginatedResults(result);
+
+		return ResponseHelper.page(response);
 	}
 
 	@Get('by-order/:orderId')

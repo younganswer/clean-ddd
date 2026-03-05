@@ -52,11 +52,9 @@ export class OrdersController {
 				offset: query.offset ?? Number.NaN,
 			}),
 		);
+		const response = OrderResponse.fromPaginatedResults(result);
 
-		return ResponseHelper.page({
-			...result,
-			items: OrderResponse.fromResults(result.items),
-		});
+		return ResponseHelper.page(response);
 	}
 
 	@Get(':id')

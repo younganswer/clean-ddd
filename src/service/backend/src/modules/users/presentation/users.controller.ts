@@ -22,9 +22,8 @@ export class UsersController {
 				offset: query.offset ?? Number.NaN,
 			}),
 		);
-		return ResponseHelper.page({
-			...result,
-			items: UserProfileResponse.fromResults(result.items),
-		});
+		const response = UserProfileResponse.fromPaginatedResults(result);
+
+		return ResponseHelper.page(response);
 	}
 }
