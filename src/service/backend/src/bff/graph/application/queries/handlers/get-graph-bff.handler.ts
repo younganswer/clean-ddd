@@ -286,9 +286,10 @@ export class GetGraphBffHandler implements IQueryHandler<GetGraphBffQuery> {
 		): Promise<OrderResult | null> => {
 			const id = normalizeId(orderId);
 			if (!id) return null;
-			return await this.queryBus.execute<GetOrderQuery, OrderResult | null>(
-				new GetOrderQuery(id),
-			);
+			return await this.queryBus.execute<
+				GetOrderQuery,
+				OrderResult | null
+			>(new GetOrderQuery(id));
 		};
 
 		const fetchShipmentById = async (

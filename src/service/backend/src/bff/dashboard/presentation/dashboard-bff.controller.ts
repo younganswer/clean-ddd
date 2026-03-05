@@ -1,8 +1,8 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
-import { DataResponse } from '@/common/responses';
+import { DataEnvelope, ResponseHelper } from '@/common/responses';
 import { ApiDataResponse, ApiErrorEnvelopeResponse } from '@/common/swagger';
-import { DashboardSummaryBffResponseDto } from '@/bff/dashboard/presentation/swagger';
+import { DashboardSummaryBffResponse } from '@/bff/dashboard/presentation/swagger';
 
 import { GetDashboardSummaryBffQueryDto } from '@/bff/dashboard/presentation/dashboard-bff.dto';
 import {
@@ -15,15 +15,17 @@ export class DashboardBffController {
 	constructor(private readonly queryBus: QueryBus) {}
 
 	@Get('summary')
-	@ApiDataResponse({ model: DashboardSummaryBffResponseDto as never })
+	@ApiDataResponse({ model: DashboardSummaryBffResponse as never })
 	@ApiErrorEnvelopeResponse({ status: 500 })
 	async summary(
 		@Query() query: GetDashboardSummaryBffQueryDto,
-	): Promise<DataResponse<DashboardSummaryBffView>> {
+	): Promise<DataEnvelope<DashboardSummaryBffResponse>> {
 		const result = await this.queryBus.execute<
 			GetDashboardSummaryBffQuery,
 			DashboardSummaryBffView
 		>(new GetDashboardSummaryBffQuery({ limit: query.limit }));
-		return DataResponse.of(result);
+		return ResponseHelper.data(
+			DashboardSummaryBffResponse.fromResult(result),
+		);
 	}
 }

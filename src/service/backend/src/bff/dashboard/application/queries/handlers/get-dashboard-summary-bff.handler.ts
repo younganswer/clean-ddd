@@ -37,15 +37,17 @@ export class GetDashboardSummaryBffHandler implements IQueryHandler<GetDashboard
 			this.queryBus.execute<ListOrdersQuery, OrderResult[]>(
 				new ListOrdersQuery(limit),
 			),
-			this.queryBus.execute<ListPaymentIntentsQuery, PaymentIntentResult[]>(
-				new ListPaymentIntentsQuery(limit),
-			),
+			this.queryBus.execute<
+				ListPaymentIntentsQuery,
+				PaymentIntentResult[]
+			>(new ListPaymentIntentsQuery(limit)),
 			this.queryBus.execute<ListShipmentsQuery, ShipmentResult[]>(
 				new ListShipmentsQuery(limit),
 			),
-			this.queryBus.execute<ListInventoryItemsQuery, InventoryItemResult[]>(
-				new ListInventoryItemsQuery(limit),
-			),
+			this.queryBus.execute<
+				ListInventoryItemsQuery,
+				InventoryItemResult[]
+			>(new ListInventoryItemsQuery(limit)),
 		]);
 
 		const orders =
