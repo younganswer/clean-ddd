@@ -15,39 +15,74 @@ export class OutboxDispatcher {
 	) {}
 
 	async dispatchPending(limit = 10, now = new Date()): Promise<number> {
-		return RequestContext.create(this.orm.em.fork(), async () => {
-			const result = await this.queryBus.execute(
-				new GetPendingOutboxEventsQuery({ limit, now }),
+		const pendingEvents = await RequestContext.create(
+			this.orm.em.fork(),
+			async () => {
+				const result = await this.queryBus.execute(
+					new GetPendingOutboxEventsQuery({ limit, now }),
+				);
+				return result.events.map((event) => ({
+					id: event.id,
+					eventType: event.eventType,
+					payload: event.payload,
+				}));
+			},
+		);
+
+		const getStringValue = (
+			payload: Record<string, unknown>,
+			key: string,
+		): string | undefined => {
+			const value = payload[key];
+			if (typeof value !== 'string') return undefined;
+			const normalized = value.trim();
+			return normalized ? normalized : undefined;
+		};
+
+		const getMessageGroupId = (
+			eventType: string,
+			payload: Record<string, unknown>,
+		): string => {
+			const candidates = [
+				['order', 'orderId'],
+				['payment', 'paymentId'],
+				['shipment', 'shipmentId'],
+				['inventory', 'inventoryItemId'],
+				['inventory', 'sku'],
+			] as const;
+
+			for (const [domain, key] of candidates) {
+				const value = getStringValue(payload, key);
+				if (value) return `${domain}:${value}`;
+			}
+
+			return `event:${eventType}`;
+		};
+
+		let dispatched = 0;
+		for (const event of pendingEvents) {
+			if (!event.id) continue;
+
+			const messageGroupId = getMessageGroupId(
+				event.eventType,
+				event.payload,
 			);
 
-			const getOrderId = (
-				payload: Record<string, unknown>,
-			): string | undefined => {
-				const value = payload['orderId'];
-				return typeof value === 'string' && value.trim()
-					? value.trim()
-					: undefined;
-			};
-
-			let dispatched = 0;
-			for (const event of result.events) {
-				if (!event.id) continue;
-
-				const messageGroupId = getOrderId(event.payload) ?? 'outbox';
+			await RequestContext.create(this.orm.em.fork(), async () => {
 				await this.commandBus.execute(
 					new DispatchOutboxEventCommand({
 						outboxId: event.id,
 						messageGroupId,
 					}),
 				);
-				dispatched += 1;
-			}
+			});
+			dispatched += 1;
+		}
 
-			if (dispatched > 0) {
-				this.logger.log(`dispatched=${dispatched}`);
-			}
+		if (dispatched > 0) {
+			this.logger.log(`dispatched=${dispatched}`);
+		}
 
-			return dispatched;
-		});
+		return dispatched;
 	}
 }
