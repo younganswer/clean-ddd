@@ -14,20 +14,9 @@ import {
 	createRetryAt,
 	resolveErrorMessage,
 } from '@/modules/outbox/application/outbox-error.util';
-import {
-	PaymentWebhookFailedEvent,
-	PaymentWebhookSucceededEvent,
-} from '@/shared/payments';
-import { ReserveInventoryForOrderRequestedEvent } from '@/shared/inventory';
-import { CreateShipmentForOrderRequestedEvent } from '@/shared/shipping';
-import {
-	PaymentWebhookFailedHandler,
-	PaymentWebhookSucceededHandler,
-} from '@/saga-orchestrator/webhooks/payment-webhook.event-handlers';
-import { ReserveInventoryForOrderRequestedHandler } from '@/modules/inventory/application/events/handlers/reserve-inventory-for-order-requested.handler';
-import { CreateShipmentForOrderRequestedHandler } from '@/modules/shipping/application/events/handlers/create-shipment-for-order-requested.handler';
 import { OUTBOX_INFRA_ERRORS } from '@/shared/errors';
 import { InfrastructureErrorFactory } from '@/shared/errors/base.error-factory';
+import { OUTBOX_KNOWN_EVENT_HANDLER_REGISTRY } from '@/modules/outbox/application/outbox-known-event-handler.registry';
 
 @Injectable()
 export class OutboxConsumer {
@@ -47,99 +36,27 @@ export class OutboxConsumer {
 		event: object,
 		eventType: string,
 	): Promise<boolean> {
-		if (eventType === PaymentWebhookSucceededEvent.eventType) {
-			const handler = this.moduleRef.get(PaymentWebhookSucceededHandler, {
-				strict: false,
-			});
-			if (!handler) {
-				throw InfrastructureErrorFactory.create(
-					OUTBOX_INFRA_ERRORS.OUTBOX_HANDLER_PROVIDER_NOT_FOUND,
-					{
-						message:
-							'PaymentWebhookSucceededHandler provider not found',
-						details: {
-							eventType,
-							handler: 'PaymentWebhookSucceededHandler',
-						},
-					},
-				);
-			}
-			await handler.handle(event as PaymentWebhookSucceededEvent);
-			return true;
-		}
+		const registration = OUTBOX_KNOWN_EVENT_HANDLER_REGISTRY[eventType];
+		if (!registration) return false;
 
-		if (eventType === PaymentWebhookFailedEvent.eventType) {
-			const handler = this.moduleRef.get(PaymentWebhookFailedHandler, {
-				strict: false,
-			});
-			if (!handler) {
-				throw InfrastructureErrorFactory.create(
-					OUTBOX_INFRA_ERRORS.OUTBOX_HANDLER_PROVIDER_NOT_FOUND,
-					{
-						message:
-							'PaymentWebhookFailedHandler provider not found',
-						details: {
-							eventType,
-							handler: 'PaymentWebhookFailedHandler',
-						},
-					},
-				);
-			}
-			await handler.handle(event as PaymentWebhookFailedEvent);
-			return true;
-		}
-
-		if (eventType === ReserveInventoryForOrderRequestedEvent.eventType) {
-			const handler = this.moduleRef.get(
-				ReserveInventoryForOrderRequestedHandler,
+		const handler = this.moduleRef.get(registration.token, {
+			strict: false,
+		});
+		if (!handler) {
+			throw InfrastructureErrorFactory.create(
+				OUTBOX_INFRA_ERRORS.OUTBOX_HANDLER_PROVIDER_NOT_FOUND,
 				{
-					strict: false,
+					message: `${registration.handlerName} provider not found`,
+					details: {
+						eventType,
+						handler: registration.handlerName,
+					},
 				},
 			);
-			if (!handler) {
-				throw InfrastructureErrorFactory.create(
-					OUTBOX_INFRA_ERRORS.OUTBOX_HANDLER_PROVIDER_NOT_FOUND,
-					{
-						message:
-							'ReserveInventoryForOrderRequestedHandler provider not found',
-						details: {
-							eventType,
-							handler: 'ReserveInventoryForOrderRequestedHandler',
-						},
-					},
-				);
-			}
-			await handler.handle(
-				event as ReserveInventoryForOrderRequestedEvent,
-			);
-			return true;
 		}
 
-		if (eventType === CreateShipmentForOrderRequestedEvent.eventType) {
-			const handler = this.moduleRef.get(
-				CreateShipmentForOrderRequestedHandler,
-				{
-					strict: false,
-				},
-			);
-			if (!handler) {
-				throw InfrastructureErrorFactory.create(
-					OUTBOX_INFRA_ERRORS.OUTBOX_HANDLER_PROVIDER_NOT_FOUND,
-					{
-						message:
-							'CreateShipmentForOrderRequestedHandler provider not found',
-						details: {
-							eventType,
-							handler: 'CreateShipmentForOrderRequestedHandler',
-						},
-					},
-				);
-			}
-			await handler.handle(event as CreateShipmentForOrderRequestedEvent);
-			return true;
-		}
-
-		return false;
+		await handler.handle(event);
+		return true;
 	}
 
 	async consumeRawMessage(record: Pick<SQSRecord, 'body'>): Promise<void> {
