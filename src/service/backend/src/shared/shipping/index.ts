@@ -8,6 +8,6 @@ export * from '@/shared/shipping/queries/get-shipment.query';
 export * from '@/shared/shipping/queries/get-shipment-by-order.query';
 export * from '@/shared/shipping/queries/list-shipments.query';
 
-export * from '@/shared/shipping/views/shipment.view';
+export * from '@/shared/shipping/views/shipment.result';
 
 export * from '@/shared/shipping/readers/i.shipment.reader';

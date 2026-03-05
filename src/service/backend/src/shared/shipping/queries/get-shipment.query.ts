@@ -1,9 +1,9 @@
 import { Query } from '@nestjs/cqrs';
-import type { ShipmentView } from '@/shared/readers/shipping/dto/shipment.view';
+import type { ShipmentResult } from '@/shared/readers/shipping/dto/shipment.result';
 import { SHIPPING_APPLICATION_ERRORS } from '@/shared/errors';
 import { requireTrimmedString } from '@/shared/cqrs/input-normalizer';
 
-export class GetShipmentQuery extends Query<ShipmentView | null> {
+export class GetShipmentQuery extends Query<ShipmentResult | null> {
 	public readonly shipmentId: string;
 
 	constructor(shipmentId: string) {

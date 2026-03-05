@@ -1,9 +1,9 @@
-import type { ShipmentView } from '@/shared/readers/shipping/dto/shipment.view';
+import type { ShipmentResult } from '@/shared/readers/shipping/dto/shipment.result';
 
 export const IShipmentReaderSymbol = Symbol('IShipmentReader');
 
 export interface IShipmentReader {
-	findById(id: string): Promise<ShipmentView | null>;
-	findByOrderId(orderId: string): Promise<ShipmentView | null>;
-	findRecent(limit: number): Promise<ShipmentView[]>;
+	findById(id: string): Promise<ShipmentResult | null>;
+	findByOrderId(orderId: string): Promise<ShipmentResult | null>;
+	findRecent(limit: number): Promise<ShipmentResult[]>;
 }

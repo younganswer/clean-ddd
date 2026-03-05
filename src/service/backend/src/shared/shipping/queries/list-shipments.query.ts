@@ -1,9 +1,9 @@
 import { Query } from '@nestjs/cqrs';
-import type { PaginatedView } from '@/shared/readers/paginated.view';
-import type { ShipmentView } from '@/shared/readers/shipping/dto/shipment.view';
+import type { PaginatedResult } from '@/shared/readers/paginated.result';
+import type { ShipmentResult } from '@/shared/readers/shipping/dto/shipment.result';
 import { toBoundedInt } from '@/shared/cqrs/input-normalizer';
 
-export class ListShipmentsQuery extends Query<PaginatedView<ShipmentView>> {
+export class ListShipmentsQuery extends Query<PaginatedResult<ShipmentResult>> {
 	public readonly limit: number;
 
 	public readonly page: number;
