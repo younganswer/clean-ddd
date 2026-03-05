@@ -1,4 +1,6 @@
 import {
+	PaymentFulfillmentRequestedEvent,
+	PAYMENT_FULFILLMENT_REQUESTED_EVENT_TYPE,
 	PaymentWebhookFailedEvent,
 	PAYMENT_WEBHOOK_FAILED_EVENT_TYPE,
 	PaymentWebhookSucceededEvent,
@@ -16,12 +18,14 @@ import {
 export type OutboxEventType =
 	| typeof PAYMENT_WEBHOOK_SUCCEEDED_EVENT_TYPE
 	| typeof PAYMENT_WEBHOOK_FAILED_EVENT_TYPE
+	| typeof PAYMENT_FULFILLMENT_REQUESTED_EVENT_TYPE
 	| typeof INVENTORY_RESERVE_FOR_ORDER_REQUESTED_EVENT_TYPE
 	| typeof SHIPPING_CREATE_FOR_ORDER_REQUESTED_EVENT_TYPE;
 
 export type KnownOutboxEvent =
 	| PaymentWebhookSucceededEvent
 	| PaymentWebhookFailedEvent
+	| PaymentFulfillmentRequestedEvent
 	| ReserveInventoryForOrderRequestedEvent
 	| CreateShipmentForOrderRequestedEvent;
 
@@ -54,6 +58,8 @@ export function hydrateEvent(
 			return PaymentWebhookSucceededEvent.fromRaw(payload);
 		case PAYMENT_WEBHOOK_FAILED_EVENT_TYPE:
 			return PaymentWebhookFailedEvent.fromRaw(payload);
+		case PAYMENT_FULFILLMENT_REQUESTED_EVENT_TYPE:
+			return PaymentFulfillmentRequestedEvent.fromRaw(payload);
 		case INVENTORY_RESERVE_FOR_ORDER_REQUESTED_EVENT_TYPE:
 			return ReserveInventoryForOrderRequestedEvent.fromRaw(payload);
 		case SHIPPING_CREATE_FOR_ORDER_REQUESTED_EVENT_TYPE:
