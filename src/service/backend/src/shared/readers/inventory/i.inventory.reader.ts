@@ -1,12 +1,12 @@
-import type { InventoryItemView } from '@/shared/readers/inventory/dto/inventory-item.view';
-import type { InventoryReservationView } from '@/shared/readers/inventory/dto/inventory-reservation.view';
+import type { InventoryItemResult } from '@/shared/readers/inventory/dto/inventory-item.result';
+import type { InventoryReservationResult } from '@/shared/readers/inventory/dto/inventory-reservation.result';
 
 export const IInventoryReaderSymbol = Symbol('IInventoryReader');
 
 export interface IInventoryReader {
-	findItemBySku(sku: string): Promise<InventoryItemView | null>;
-	findRecentItems(limit: number): Promise<InventoryItemView[]>;
+	findItemBySku(sku: string): Promise<InventoryItemResult | null>;
+	findRecentItems(limit: number): Promise<InventoryItemResult[]>;
 	findReservationsByOrderId(
 		orderId: string,
-	): Promise<InventoryReservationView[]>;
+	): Promise<InventoryReservationResult[]>;
 }

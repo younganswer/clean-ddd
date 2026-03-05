@@ -1,4 +1,4 @@
-export type InventoryReservationView = {
+export type InventoryReservationResult = {
 	reservationId: string;
 	orderId: string;
 	sku: string;

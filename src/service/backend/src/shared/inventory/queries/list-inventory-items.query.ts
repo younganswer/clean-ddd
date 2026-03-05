@@ -1,10 +1,10 @@
 import { Query } from '@nestjs/cqrs';
-import type { PaginatedView } from '@/shared/readers/paginated.view';
-import type { InventoryItemView } from '@/shared/readers/inventory/dto/inventory-item.view';
+import type { PaginatedResult } from '@/shared/readers/paginated.result';
+import type { InventoryItemResult } from '@/shared/readers/inventory/dto/inventory-item.result';
 import { toBoundedInt } from '@/shared/cqrs/input-normalizer';
 
 export class ListInventoryItemsQuery extends Query<
-	PaginatedView<InventoryItemView>
+	PaginatedResult<InventoryItemResult>
 > {
 	public readonly limit: number;
 

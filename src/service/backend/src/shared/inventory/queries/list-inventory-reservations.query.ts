@@ -1,10 +1,10 @@
 import { Query } from '@nestjs/cqrs';
-import type { InventoryReservationView } from '@/shared/readers/inventory/dto/inventory-reservation.view';
+import type { InventoryReservationResult } from '@/shared/readers/inventory/dto/inventory-reservation.result';
 import { INVENTORY_APPLICATION_ERRORS } from '@/shared/errors';
 import { requireTrimmedString } from '@/shared/cqrs/input-normalizer';
 
 export class ListInventoryReservationsQuery extends Query<
-	InventoryReservationView[]
+	InventoryReservationResult[]
 > {
 	public readonly orderId: string;
 
