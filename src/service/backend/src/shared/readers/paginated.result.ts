@@ -1,4 +1,4 @@
-export interface PaginatedView<TItem> {
+export interface PaginatedResult<TItem> {
 	items: TItem[];
 	page: number;
 	limit: number;

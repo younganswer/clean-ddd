@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { BaseResponse } from '@/common/responses/base.response';
-import type { PaginatedView } from '@/shared/readers/paginated.view';
+import type { PaginatedResult } from '@/shared/readers/paginated.result';
 
 export class DataResponse<TData> extends BaseResponse<TData> {
 	constructor(data: TData) {
@@ -38,12 +38,12 @@ export class ListResponse<TItem> extends DataResponse<TItem[]> {
 	}
 }
 
-export class PageResponse<TItem> extends DataResponse<PaginatedView<TItem>> {
-	constructor(page: PaginatedView<TItem>) {
+export class PageResponse<TItem> extends DataResponse<PaginatedResult<TItem>> {
+	constructor(page: PaginatedResult<TItem>) {
 		super(page);
 	}
 
-	static from<TItem>(page: PaginatedView<TItem>): PageResponse<TItem> {
+	static from<TItem>(page: PaginatedResult<TItem>): PageResponse<TItem> {
 		return new PageResponse<TItem>(page);
 	}
 }
