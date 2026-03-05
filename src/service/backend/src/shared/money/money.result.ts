@@ -1,4 +1,4 @@
-export type MoneyView = {
+export type MoneyResult = {
 	currency: string;
 	amountMinor: number;
 };

@@ -1,10 +1,10 @@
 import { Query } from '@nestjs/cqrs';
-import type { UserProfileView } from '@/shared/users/readers/user-profile.view';
-import type { PaginatedView } from '@/shared/readers/paginated.view';
+import type { UserProfileResult } from '@/shared/users/readers/user-profile.result';
+import type { PaginatedResult } from '@/shared/readers/paginated.result';
 import { toBoundedInt } from '@/shared/cqrs/input-normalizer';
 
 export class ListUserProfilesQuery extends Query<
-	PaginatedView<UserProfileView>
+	PaginatedResult<UserProfileResult>
 > {
 	public readonly input: {
 		limit: number;

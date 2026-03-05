@@ -1,4 +1,4 @@
-export interface UserProfileView {
+export interface UserProfileResult {
 	userId: string;
 	displayName: string;
 	email: string;
