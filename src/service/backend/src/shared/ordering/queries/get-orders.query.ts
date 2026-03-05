@@ -3,22 +3,21 @@ import { OrderResult } from '@/shared/readers/ordering/dto/order.result';
 import { Query } from '@nestjs/cqrs';
 import { toBoundedInt } from '@/shared/cqrs/input-normalizer';
 
-export class ListOrdersQuery extends Query<PaginatedResult<OrderResult>> {
+export class GetOrdersQuery extends Query<PaginatedResult<OrderResult>> {
 	public readonly limit: number;
+	public readonly offset: number;
 
-	public readonly page: number;
-
-	constructor(limit: number, page: number = 1) {
+	constructor(input: { limit: number; offset?: number }) {
 		super();
-		this.limit = toBoundedInt(limit, {
+		this.limit = toBoundedInt(input.limit, {
 			min: 1,
 			max: 50,
 			fallback: 20,
 		});
-		this.page = toBoundedInt(page, {
-			min: 1,
+		this.offset = toBoundedInt(input.offset, {
+			min: 0,
 			max: Number.MAX_SAFE_INTEGER,
-			fallback: 1,
+			fallback: 0,
 		});
 	}
 }

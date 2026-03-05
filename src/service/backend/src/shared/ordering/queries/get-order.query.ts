@@ -6,10 +6,10 @@ import { requireTrimmedString } from '@/shared/cqrs/input-normalizer';
 export class GetOrderQuery extends Query<OrderResult | null> {
 	public readonly orderId: string;
 
-	constructor(orderId: string) {
+	constructor(input: { orderId: string }) {
 		super();
 		this.orderId = requireTrimmedString(
-			orderId,
+			input.orderId,
 			ORDERING_APPLICATION_ERRORS.ORDER_ID_REQUIRED,
 		);
 	}

@@ -7,25 +7,23 @@ import {
 	toNonNegativeInt,
 } from '@/shared/cqrs/input-normalizer';
 
-export class ListOrdersByUserIdQuery extends Query<OrderResult[]> {
+export class GetOrdersByUserIdQuery extends Query<OrderResult[]> {
 	public readonly userId: string;
-
 	public readonly limit: number;
-
 	public readonly offset: number;
 
-	constructor(userId: string, limit: number = 200, offset: number = 0) {
+	constructor(input: { userId: string; limit?: number; offset?: number }) {
 		super();
 		this.userId = requireTrimmedString(
-			userId,
+			input.userId,
 			USER_APPLICATION_ERRORS.USER_ID_REQUIRED,
 			{ reason: 'userId' },
 		);
-		this.limit = toBoundedInt(limit, {
+		this.limit = toBoundedInt(input.limit, {
 			min: 1,
 			max: 200,
 			fallback: 200,
 		});
-		this.offset = toNonNegativeInt(offset, 0);
+		this.offset = toNonNegativeInt(input.offset, 0);
 	}
 }

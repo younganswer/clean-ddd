@@ -2,7 +2,7 @@ export * from '@/shared/ordering/commands/create-order.command';
 export * from '@/shared/ordering/commands/attach-payment-to-order.command';
 export * from '@/shared/ordering/commands/mark-order-paid.command';
 export * from '@/shared/ordering/queries/get-order.query';
-export * from '@/shared/ordering/queries/list-orders.query';
+export * from '@/shared/ordering/queries/get-orders.query';
 export * from '@/shared/ordering/readers/i.order.reader';
 export * from '@/shared/ordering/readers/order.result';
 export * from '@/shared/ordering/readers/order-result.guard';

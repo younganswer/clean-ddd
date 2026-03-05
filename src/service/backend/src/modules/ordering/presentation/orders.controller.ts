@@ -1,12 +1,4 @@
-import {
-	Body,
-	Controller,
-	Get,
-	NotFoundException,
-	Param,
-	Post,
-	Query,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { DataEnvelope, PageEnvelope, ResponseHelper } from '@/common/responses';
 import {
@@ -16,15 +8,16 @@ import {
 } from '@/common/swagger';
 import { CreateOrderCommand } from '@/shared/ordering/commands/create-order.command';
 import { GetOrderQuery } from '@/shared/ordering/queries/get-order.query';
-import { ListOrdersQuery } from '@/shared/ordering/queries/list-orders.query';
-import type { PaginatedResult } from '@/shared/readers/paginated.result';
-import type { OrderResult } from '@/shared/ordering/readers/order.result';
+import { GetOrdersQuery } from '@/shared/ordering/queries/get-orders.query';
 import { isOrderResult } from '@/shared/ordering/readers/order-result.guard';
 import { CreateOrderRequest } from '@/modules/ordering/presentation/dto/create-order.request';
 import {
 	CreateOrderResponse,
 	OrderResponse,
 } from '@/modules/ordering/presentation/swagger';
+import { PageQueryDto } from '@/shared/cqrs/query-input.dto';
+import { ORDERING_APPLICATION_ERRORS } from '@/shared/errors';
+import { ApplicationErrorFactory } from '@/shared/errors/base.error-factory';
 
 @Controller('orders')
 export class OrdersController {
@@ -39,26 +32,30 @@ export class OrdersController {
 	async create(
 		@Body() body: CreateOrderRequest,
 	): Promise<DataEnvelope<CreateOrderResponse>> {
-		const result = await this.commandBus.execute<{ orderId: string }>(
+		const result = await this.commandBus.execute(
 			new CreateOrderCommand(body),
 		);
-		return ResponseHelper.data(CreateOrderResponse.fromResult(result));
+		const response = CreateOrderResponse.fromResult(result);
+
+		return ResponseHelper.data(response);
 	}
 
 	@Get()
 	@ApiPageResponse({ model: OrderResponse })
 	@ApiErrorEnvelopeResponse({ status: 400 })
 	async list(
-		@Query('limit') limitRaw?: string,
-		@Query('page') pageRaw?: string,
+		@Query() query: PageQueryDto,
 	): Promise<PageEnvelope<OrderResponse>> {
-		const result = await this.queryBus.execute<
-			PaginatedResult<OrderResult>
-		>(new ListOrdersQuery(Number(limitRaw), Number(pageRaw)));
-		const response = OrderResponse.fromResults(result.items);
+		const result = await this.queryBus.execute(
+			new GetOrdersQuery({
+				limit: query.limit ?? Number.NaN,
+				offset: query.offset ?? Number.NaN,
+			}),
+		);
+
 		return ResponseHelper.page({
 			...result,
-			items: response,
+			items: OrderResponse.fromResults(result.items),
 		});
 	}
 
@@ -66,11 +63,15 @@ export class OrdersController {
 	@ApiDataResponse({ model: OrderResponse })
 	@ApiErrorEnvelopeResponse({ status: 404 })
 	async get(@Param('id') id: string): Promise<DataEnvelope<OrderResponse>> {
-		const order = await this.queryBus.execute<OrderResult | null>(
-			new GetOrderQuery(id),
+		const order = await this.queryBus.execute(
+			new GetOrderQuery({ orderId: id }),
 		);
 		if (!isOrderResult(order))
-			throw new NotFoundException('order not found');
-		return ResponseHelper.data(OrderResponse.fromResult(order));
+			throw ApplicationErrorFactory.create(
+				ORDERING_APPLICATION_ERRORS.ORDER_NOT_FOUND,
+			);
+		const response = OrderResponse.fromResult(order);
+
+		return ResponseHelper.data(response);
 	}
 }

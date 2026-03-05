@@ -1,6 +1,6 @@
 import { Inject } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import { ListOrdersQuery } from '@/shared/ordering/queries/list-orders.query';
+import { GetOrdersQuery } from '@/shared/ordering/queries/get-orders.query';
 import {
 	IOrderReaderSymbol,
 	type IOrderReader,
@@ -8,18 +8,17 @@ import {
 import type { PaginatedResult } from '@/shared/readers/paginated.result';
 import type { OrderResult } from '@/shared/ordering/readers/order.result';
 
-@QueryHandler(ListOrdersQuery)
-export class ListOrdersHandler implements IQueryHandler<ListOrdersQuery> {
+@QueryHandler(GetOrdersQuery)
+export class ListOrdersHandler implements IQueryHandler<GetOrdersQuery> {
 	constructor(
 		@Inject(IOrderReaderSymbol)
 		private readonly orderReader: IOrderReader,
 	) {}
 
 	async execute(
-		query: ListOrdersQuery,
+		query: GetOrdersQuery,
 	): Promise<PaginatedResult<OrderResult>> {
-		const { limit, page } = query;
-		const offset = (page - 1) * limit;
+		const { limit, offset } = query;
 
 		const [items, total] = await Promise.all([
 			this.orderReader.findRecent(limit, offset),
@@ -30,7 +29,7 @@ export class ListOrdersHandler implements IQueryHandler<ListOrdersQuery> {
 
 		return {
 			items,
-			page,
+			offset,
 			limit,
 			total,
 			totalPages,
