@@ -1,8 +1,8 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
-import { PageResponse } from '@/common/responses';
+import { PageEnvelope, ResponseHelper } from '@/common/responses';
 import { ApiErrorEnvelopeResponse, ApiPageResponse } from '@/common/swagger';
-import { UserProfileResponseDto } from '@/modules/users/presentation/swagger';
+import { UserProfileResponse } from '@/modules/users/presentation/swagger';
 import { ListUserProfilesQuery } from '@/shared/users/queries/list-user-profiles.query';
 import type { UserProfileResult } from '@/shared/users/readers/user-profile.result';
 import type { PaginatedResult } from '@/shared/readers/paginated.result';
@@ -12,12 +12,12 @@ export class UsersController {
 	constructor(private readonly queryBus: QueryBus) {}
 
 	@Get()
-	@ApiPageResponse({ model: UserProfileResponseDto as never })
+	@ApiPageResponse({ model: UserProfileResponse as never })
 	@ApiErrorEnvelopeResponse({ status: 400 })
 	async list(
 		@Query('limit') limitRaw?: string,
 		@Query('page') pageRaw?: string,
-	): Promise<PageResponse<UserProfileResult>> {
+	): Promise<PageEnvelope<UserProfileResponse>> {
 		const result = await this.queryBus.execute<
 			ListUserProfilesQuery,
 			PaginatedResult<UserProfileResult>
@@ -27,6 +27,9 @@ export class UsersController {
 				page: Number(pageRaw),
 			}),
 		);
-		return PageResponse.from(result);
+		return ResponseHelper.page({
+			...result,
+			items: UserProfileResponse.fromResults(result.items),
+		});
 	}
 }

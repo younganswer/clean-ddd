@@ -1,11 +1,11 @@
 import { Body, Controller, Get, Patch } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { AuthContextAccessor } from '@/common/context/auth-context';
-import { DataResponse } from '@/common/responses';
+import { DataEnvelope, ResponseHelper } from '@/common/responses';
 import { ApiDataResponse, ApiErrorEnvelopeResponse } from '@/common/swagger';
 import {
-	UserProfileResponseDto,
-	UpdateAvatarResultResponseDto,
+	UpdateAvatarResponse,
+	UserProfileResponse,
 } from '@/modules/users/presentation/swagger';
 import { GetUserProfileQuery } from '@/shared/users/queries/get-user-profile.query';
 import { UpdateMyAvatarCommand } from '@/shared/users/commands/update-my-avatar.command';
@@ -21,28 +21,28 @@ export class MeController {
 	) {}
 
 	@Get()
-	@ApiDataResponse({ model: UserProfileResponseDto })
+	@ApiDataResponse({ model: UserProfileResponse })
 	@ApiErrorEnvelopeResponse({ status: 404 })
-	async getMyProfile(): Promise<DataResponse<UserProfileResult>> {
+	async getMyProfile(): Promise<DataEnvelope<UserProfileResponse>> {
 		const userId = this.authContextAccessor.getOrAnonymous().actor.userId;
 		const result = await this.queryBus.execute<
 			GetUserProfileQuery,
 			UserProfileResult
 		>(new GetUserProfileQuery(userId));
-		return DataResponse.of(result);
+		return ResponseHelper.data(UserProfileResponse.fromResult(result));
 	}
 
 	@Patch('avatar')
-	@ApiDataResponse({ model: UpdateAvatarResultResponseDto })
+	@ApiDataResponse({ model: UpdateAvatarResponse })
 	@ApiErrorEnvelopeResponse({ status: 400 })
 	async updateMyAvatar(
 		@Body() body: UpdateMyAvatarRequest,
-	): Promise<DataResponse<{ avatarId: string; avatarUrl: string }>> {
+	): Promise<DataEnvelope<UpdateAvatarResponse>> {
 		const userId = this.authContextAccessor.getOrAnonymous().actor.userId;
 		const result = await this.commandBus.execute<
 			UpdateMyAvatarCommand,
 			{ avatarId: string; avatarUrl: string }
 		>(new UpdateMyAvatarCommand(userId, { avatarUrl: body.avatarUrl }));
-		return DataResponse.of(result);
+		return ResponseHelper.data(UpdateAvatarResponse.fromResult(result));
 	}
 }
