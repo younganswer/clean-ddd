@@ -9,7 +9,7 @@ import {
 } from '@/modules/users/presentation/swagger';
 import { GetUserProfileQuery } from '@/shared/users/queries/get-user-profile.query';
 import { UpdateMyAvatarCommand } from '@/shared/users/commands/update-my-avatar.command';
-import type { UserProfileView } from '@/shared/users/readers/user-profile.view';
+import type { UserProfileResult } from '@/shared/users/readers/user-profile.result';
 import { UpdateMyAvatarRequest } from '@/modules/users/presentation/dto/update-my-avatar.request';
 
 @Controller('me')
@@ -23,11 +23,11 @@ export class MeController {
 	@Get()
 	@ApiDataResponse({ model: UserProfileResponseDto })
 	@ApiErrorEnvelopeResponse({ status: 404 })
-	async getMyProfile(): Promise<DataResponse<UserProfileView>> {
+	async getMyProfile(): Promise<DataResponse<UserProfileResult>> {
 		const userId = this.authContextAccessor.getOrAnonymous().actor.userId;
 		const result = await this.queryBus.execute<
 			GetUserProfileQuery,
-			UserProfileView
+			UserProfileResult
 		>(new GetUserProfileQuery(userId));
 		return DataResponse.of(result);
 	}

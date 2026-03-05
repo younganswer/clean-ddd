@@ -4,8 +4,8 @@ import { PageResponse } from '@/common/responses';
 import { ApiErrorEnvelopeResponse, ApiPageResponse } from '@/common/swagger';
 import { UserProfileResponseDto } from '@/modules/users/presentation/swagger';
 import { ListUserProfilesQuery } from '@/shared/users/queries/list-user-profiles.query';
-import type { UserProfileView } from '@/shared/users/readers/user-profile.view';
-import type { PaginatedView } from '@/shared/readers/paginated.view';
+import type { UserProfileResult } from '@/shared/users/readers/user-profile.result';
+import type { PaginatedResult } from '@/shared/readers/paginated.result';
 
 @Controller('users')
 export class UsersController {
@@ -17,10 +17,10 @@ export class UsersController {
 	async list(
 		@Query('limit') limitRaw?: string,
 		@Query('page') pageRaw?: string,
-	): Promise<PageResponse<UserProfileView>> {
+	): Promise<PageResponse<UserProfileResult>> {
 		const result = await this.queryBus.execute<
 			ListUserProfilesQuery,
-			PaginatedView<UserProfileView>
+			PaginatedResult<UserProfileResult>
 		>(
 			new ListUserProfilesQuery({
 				limit: Number(limitRaw),

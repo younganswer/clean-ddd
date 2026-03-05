@@ -1,8 +1,8 @@
 import { Inject } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { ListUserProfilesQuery } from '@/shared/users/queries/list-user-profiles.query';
-import type { UserProfileView } from '@/shared/users/readers/user-profile.view';
-import type { PaginatedView } from '@/shared/readers/paginated.view';
+import type { UserProfileResult } from '@/shared/users/readers/user-profile.result';
+import type { PaginatedResult } from '@/shared/readers/paginated.result';
 import {
 	IUserRepositorySymbol,
 	type IUserRepository,
@@ -23,7 +23,7 @@ export class ListUserProfilesQueryHandler implements IQueryHandler<ListUserProfi
 
 	async execute(
 		query: ListUserProfilesQuery,
-	): Promise<PaginatedView<UserProfileView>> {
+	): Promise<PaginatedResult<UserProfileResult>> {
 		const { limit, page } = query.input;
 		const offset = (page - 1) * limit;
 
@@ -32,7 +32,7 @@ export class ListUserProfilesQueryHandler implements IQueryHandler<ListUserProfi
 			this.userRepository.countAll(),
 		]);
 
-		const profiles: UserProfileView[] = items.map((user) => ({
+		const profiles: UserProfileResult[] = items.map((user) => ({
 			userId: user.id,
 			displayName: user.displayName,
 			email: user.email,

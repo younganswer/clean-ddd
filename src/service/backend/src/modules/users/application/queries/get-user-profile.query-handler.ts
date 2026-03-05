@@ -1,7 +1,7 @@
 import { Inject } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { GetUserProfileQuery } from '@/shared/users/queries/get-user-profile.query';
-import type { UserProfileView } from '@/shared/users/readers/user-profile.view';
+import type { UserProfileResult } from '@/shared/users/readers/user-profile.result';
 import {
 	IUserRepositorySymbol,
 	type IUserRepository,
@@ -20,10 +20,10 @@ export class GetUserProfileQueryHandler implements IQueryHandler<GetUserProfileQ
 		private readonly userAvatarRepository: IUserAvatarRepository,
 	) {}
 
-	async execute(query: GetUserProfileQuery): Promise<UserProfileView> {
+	async execute(query: GetUserProfileQuery): Promise<UserProfileResult> {
 		const user = await this.userRepository.getById(query.userId);
 
-		const profile: UserProfileView = {
+		const profile: UserProfileResult = {
 			userId: user.id,
 			displayName: user.displayName,
 			email: user.email,
