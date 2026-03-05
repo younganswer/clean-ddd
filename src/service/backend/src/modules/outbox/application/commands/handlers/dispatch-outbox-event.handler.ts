@@ -4,9 +4,10 @@ import { UnitOfWork } from '@/lib/database/unit-of-work';
 import { DispatchOutboxEventCommand } from '@/shared/outbox/commands/dispatch-outbox-event.command';
 import {
 	IOutboxRepositorySymbol,
+	IOutboxQueuePortSymbol,
 	type IOutboxRepository,
+	type IOutboxQueuePort,
 } from '@/shared/outbox';
-import { OutboxQueue } from '@/modules/outbox/infrastructure/queue/outbox.queue';
 import {
 	createRetryAt,
 	resolveErrorMessage,
@@ -17,7 +18,8 @@ export class DispatchOutboxEventHandler implements ICommandHandler<DispatchOutbo
 	constructor(
 		@Inject(IOutboxRepositorySymbol)
 		private readonly outboxRepository: IOutboxRepository,
-		private readonly outboxQueue: OutboxQueue,
+		@Inject(IOutboxQueuePortSymbol)
+		private readonly outboxQueue: IOutboxQueuePort,
 		private readonly uow: UnitOfWork,
 	) {}
 

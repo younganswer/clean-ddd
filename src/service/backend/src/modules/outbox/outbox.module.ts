@@ -5,12 +5,14 @@ import { ProcessedEventMapper } from '@/shared/idempotency/infrastructure/proces
 import { ProcessedEventRepository } from '@/shared/idempotency/infrastructure/processed-event.repository';
 import { IdempotencyService } from '@/shared/idempotency/idempotency.service';
 import { IProcessedEventRepositorySymbol } from '@/shared/idempotency/domain/i.processed-event.repository';
-import { IOutboxRepositorySymbol } from '@/shared/outbox';
+import {
+	IOutboxQueuePortSymbol,
+	IOutboxRepositorySymbol,
+} from '@/shared/outbox';
 import { OutboxCommandHandlers } from '@/modules/outbox/application/commands';
 import { OutboxProducer } from '@/modules/outbox/application/outbox.producer';
 import { OutboxDispatcher } from '@/modules/outbox/application/outbox.dispatcher';
 import { OutboxQueryHandlers } from '@/modules/outbox/application/queries';
-import { OutboxSweeper } from '@/modules/outbox/application/outbox.sweeper';
 import { OutboxRepository } from '@/modules/outbox/infrastructure/persistence/outbox.repository';
 import { OutboxQueue } from '@/modules/outbox/infrastructure/queue/outbox.queue';
 import { OutboxMapper } from '@/modules/outbox/infrastructure/mappers/outbox.mapper';
@@ -26,9 +28,12 @@ import { OutboxMapper } from '@/modules/outbox/infrastructure/mappers/outbox.map
 		},
 		IdempotencyService,
 		OutboxQueue,
+		{
+			provide: IOutboxQueuePortSymbol,
+			useExisting: OutboxQueue,
+		},
 		OutboxProducer,
 		OutboxDispatcher,
-		OutboxSweeper,
 		OutboxRepository,
 		OutboxMapper,
 		...OutboxCommandHandlers,
@@ -42,8 +47,8 @@ import { OutboxMapper } from '@/modules/outbox/infrastructure/mappers/outbox.map
 		OutboxQueue,
 		OutboxProducer,
 		OutboxDispatcher,
-		OutboxSweeper,
 		IdempotencyService,
+		IOutboxQueuePortSymbol,
 		IOutboxRepositorySymbol,
 	],
 })
