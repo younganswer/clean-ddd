@@ -1,9 +1,10 @@
-import { readdirSync, readFileSync, statSync } from "node:fs";
+import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
 
 const contractsDir = process.cwd();
 const backendBffDir = resolve(contractsDir, "../../service/backend/src/bff");
-const specPath = resolve(contractsDir, "openapi.bff.yaml");
+const specPathsIndexPath = resolve(contractsDir, "specs/bff/paths.yaml");
+const specPathsDir = resolve(contractsDir, "specs/bff/paths");
 
 function walk(dir) {
 	const entries = readdirSync(dir);
@@ -54,13 +55,14 @@ function extractBackendRoutes(filePath) {
 	return routes;
 }
 
-function extractSpecRoutes(filePath) {
-	const source = readFileSync(filePath, "utf8");
+function extractSpecRoutes(pathsIndexFilePath, pathsDirectoryPath) {
+	const source = readFileSync(pathsIndexFilePath, "utf8");
 	const lines = source.split("\n");
 	const routes = [];
+
 	let currentPath = null;
 	for (const line of lines) {
-		const pathMatch = line.match(/^\s{4}(\/bff\/[^:]+):\s*$/);
+		const pathMatch = line.match(/^\s*"?(\/bff\/[^"']+)"?:\s*$/);
 		if (pathMatch) {
 			currentPath = pathMatch[1];
 			continue;
@@ -68,13 +70,26 @@ function extractSpecRoutes(filePath) {
 		if (!currentPath) {
 			continue;
 		}
-		const methodMatch = line.match(
-			/^\s{8}(get|post|put|patch|delete):\s*$/,
-		);
-		if (methodMatch) {
-			routes.push(`${methodMatch[1].toUpperCase()} ${currentPath}`);
+
+		const refMatch = line.match(/^\s*\$ref:\s*"\.\/paths\/([^"]+)"\s*$/);
+		if (!refMatch) {
+			continue;
 		}
+
+		const pathFilePath = resolve(pathsDirectoryPath, refMatch[1]);
+		const pathFileSource = readFileSync(pathFilePath, "utf8");
+		for (const pathLine of pathFileSource.split("\n")) {
+			const methodMatch = pathLine.match(
+				/^\s*(get|post|put|patch|delete):\s*$/,
+			);
+			if (methodMatch) {
+				routes.push(`${methodMatch[1].toUpperCase()} ${currentPath}`);
+			}
+		}
+
+		currentPath = null;
 	}
+
 	return routes;
 }
 
@@ -82,7 +97,7 @@ const backendFiles = walk(backendBffDir);
 const backendRoutes = new Set(
 	backendFiles.flatMap((filePath) => extractBackendRoutes(filePath)),
 );
-const specRoutes = new Set(extractSpecRoutes(specPath));
+const specRoutes = new Set(extractSpecRoutes(specPathsIndexPath, specPathsDir));
 
 const missingInSpec = [...backendRoutes]
 	.filter((route) => !specRoutes.has(route))
@@ -98,7 +113,7 @@ if (missingInSpec.length === 0 && missingInBackend.length === 0) {
 
 console.error("BFF route drift detected.");
 if (missingInSpec.length > 0) {
-	console.error("\nMissing in openapi.bff.yaml:");
+	console.error("\nMissing in specs/bff/paths.yaml:");
 	for (const route of missingInSpec) {
 		console.error(`- ${route}`);
 	}
