@@ -1,0 +1,21 @@
+post:
+    summary: Create payment intent (simulator)
+    parameters:
+        - in: path
+          name: orderId
+          required: true
+          schema:
+              type: string
+    requestBody:
+        required: false
+        content:
+            application/json:
+                schema:
+                    $ref: "../components.yaml#/schemas/CreatePaymentIntentRequest"
+    responses:
+        "201":
+            description: Created
+            content:
+                application/json:
+                    schema:
+                        $ref: "../components.yaml#/schemas/CreatePaymentIntentResponseEnvelope"

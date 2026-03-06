@@ -1,0 +1,15 @@
+patch:
+    summary: Update my avatar
+    requestBody:
+        required: true
+        content:
+            application/json:
+                schema:
+                    $ref: "../components.yaml#/schemas/UpdateMyAvatarRequest"
+    responses:
+        "200":
+            description: OK
+            content:
+                application/json:
+                    schema:
+                        $ref: "../components.yaml#/schemas/UpdateMyAvatarResponseEnvelope"

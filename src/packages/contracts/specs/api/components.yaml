@@ -1,0 +1,71 @@
+schemas:
+    SuccessEnvelope:
+        $ref: "./components/schemas/SuccessEnvelope.yaml"
+    MessageEnvelope:
+        $ref: "./components/schemas/MessageEnvelope.yaml"
+    PaginatedMeta:
+        $ref: "./components/schemas/PaginatedMeta.yaml"
+    UserProfile:
+        $ref: "./components/schemas/UserProfile.yaml"
+    UpdateMyAvatarRequest:
+        $ref: "./components/schemas/UpdateMyAvatarRequest.yaml"
+    UpdateMyAvatarResponse:
+        $ref: "./components/schemas/UpdateMyAvatarResponse.yaml"
+    UserProfileEnvelope:
+        $ref: "./components/schemas/UserProfileEnvelope.yaml"
+    UpdateMyAvatarResponseEnvelope:
+        $ref: "./components/schemas/UpdateMyAvatarResponseEnvelope.yaml"
+    PaginatedUserProfiles:
+        $ref: "./components/schemas/PaginatedUserProfiles.yaml"
+    PaginatedUserProfilesEnvelope:
+        $ref: "./components/schemas/PaginatedUserProfilesEnvelope.yaml"
+    OrderItem:
+        $ref: "./components/schemas/OrderItem.yaml"
+    CreateOrderRequest:
+        $ref: "./components/schemas/CreateOrderRequest.yaml"
+    CreateOrderResponse:
+        $ref: "./components/schemas/CreateOrderResponse.yaml"
+    CreateOrderResponseEnvelope:
+        $ref: "./components/schemas/CreateOrderResponseEnvelope.yaml"
+    OrderSummary:
+        $ref: "./components/schemas/OrderSummary.yaml"
+    PaginatedOrders:
+        $ref: "./components/schemas/PaginatedOrders.yaml"
+    PaginatedOrdersEnvelope:
+        $ref: "./components/schemas/PaginatedOrdersEnvelope.yaml"
+    OrderSummaryEnvelope:
+        $ref: "./components/schemas/OrderSummaryEnvelope.yaml"
+    CreatePaymentIntentRequest:
+        $ref: "./components/schemas/CreatePaymentIntentRequest.yaml"
+    CreatePaymentIntentResponse:
+        $ref: "./components/schemas/CreatePaymentIntentResponse.yaml"
+    CreatePaymentIntentResponseEnvelope:
+        $ref: "./components/schemas/CreatePaymentIntentResponseEnvelope.yaml"
+    PaymentIntent:
+        $ref: "./components/schemas/PaymentIntent.yaml"
+    PaymentIntentEnvelope:
+        $ref: "./components/schemas/PaymentIntentEnvelope.yaml"
+    PaymentIntentListEnvelope:
+        $ref: "./components/schemas/PaymentIntentListEnvelope.yaml"
+    ShipmentSummary:
+        $ref: "./components/schemas/ShipmentSummary.yaml"
+    PaginatedShipments:
+        $ref: "./components/schemas/PaginatedShipments.yaml"
+    PaginatedShipmentsEnvelope:
+        $ref: "./components/schemas/PaginatedShipmentsEnvelope.yaml"
+    ShipmentSummaryNullableEnvelope:
+        $ref: "./components/schemas/ShipmentSummaryNullableEnvelope.yaml"
+    Money:
+        $ref: "./components/schemas/Money.yaml"
+    InventoryItem:
+        $ref: "./components/schemas/InventoryItem.yaml"
+    InventoryReservation:
+        $ref: "./components/schemas/InventoryReservation.yaml"
+    PaginatedInventoryItems:
+        $ref: "./components/schemas/PaginatedInventoryItems.yaml"
+    PaginatedInventoryItemsEnvelope:
+        $ref: "./components/schemas/PaginatedInventoryItemsEnvelope.yaml"
+    InventoryItemNullableEnvelope:
+        $ref: "./components/schemas/InventoryItemNullableEnvelope.yaml"
+    InventoryReservationListEnvelope:
+        $ref: "./components/schemas/InventoryReservationListEnvelope.yaml"

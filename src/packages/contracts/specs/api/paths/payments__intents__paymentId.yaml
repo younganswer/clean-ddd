@@ -1,0 +1,15 @@
+get:
+    summary: Get payment intent
+    parameters:
+        - in: path
+          name: paymentId
+          required: true
+          schema:
+              type: string
+    responses:
+        "200":
+            description: OK
+            content:
+                application/json:
+                    schema:
+                        $ref: "../components.yaml#/schemas/PaymentIntentEnvelope"

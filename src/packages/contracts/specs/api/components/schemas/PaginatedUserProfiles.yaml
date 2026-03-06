@@ -1,0 +1,9 @@
+allOf:
+    - $ref: "../../components.yaml#/schemas/PaginatedMeta"
+    - type: object
+      required: [items]
+      properties:
+          items:
+              type: array
+              items:
+                  $ref: "../../components.yaml#/schemas/UserProfile"

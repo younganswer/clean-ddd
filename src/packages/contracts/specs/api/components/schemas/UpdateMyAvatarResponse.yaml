@@ -1,0 +1,8 @@
+type: object
+required: [avatarId, avatarUrl]
+properties:
+    avatarId:
+        type: string
+    avatarUrl:
+        type: string
+        format: uri

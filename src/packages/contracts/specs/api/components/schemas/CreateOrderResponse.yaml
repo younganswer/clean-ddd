@@ -1,0 +1,5 @@
+type: object
+required: [orderId]
+properties:
+    orderId:
+        type: string

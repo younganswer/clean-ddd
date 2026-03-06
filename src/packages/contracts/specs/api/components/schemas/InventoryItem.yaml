@@ -1,0 +1,30 @@
+type: object
+required:
+    [
+        itemId,
+        sku,
+        price,
+        availableQuantity,
+        reservedQuantity,
+        createdAt,
+        updatedAt,
+    ]
+properties:
+    itemId:
+        type: string
+    sku:
+        type: string
+    price:
+        $ref: "../../components.yaml#/schemas/Money"
+    availableQuantity:
+        type: integer
+        minimum: 0
+    reservedQuantity:
+        type: integer
+        minimum: 0
+    createdAt:
+        type: string
+        format: date-time
+    updatedAt:
+        type: string
+        format: date-time

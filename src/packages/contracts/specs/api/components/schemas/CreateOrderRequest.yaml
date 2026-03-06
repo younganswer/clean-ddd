@@ -1,0 +1,15 @@
+type: object
+required: [userId, amount, currency]
+properties:
+    userId:
+        type: string
+    amount:
+        type: integer
+        minimum: 1
+    currency:
+        type: string
+        enum: [KRW, USD]
+    items:
+        type: array
+        items:
+            $ref: "../../components.yaml#/schemas/OrderItem"

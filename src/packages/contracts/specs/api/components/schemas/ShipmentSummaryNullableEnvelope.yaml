@@ -1,0 +1,9 @@
+allOf:
+    - $ref: "../../components.yaml#/schemas/SuccessEnvelope"
+    - type: object
+      required: [data]
+      properties:
+          data:
+              allOf:
+                  - $ref: "../../components.yaml#/schemas/ShipmentSummary"
+              nullable: true

@@ -1,0 +1,16 @@
+get:
+    summary: Get my profile
+    parameters:
+        - in: header
+          name: x-user-id
+          required: false
+          schema:
+              type: string
+          description: Optional actor id used by sample AuthGuard
+    responses:
+        "200":
+            description: OK
+            content:
+                application/json:
+                    schema:
+                        $ref: "../components.yaml#/schemas/UserProfileEnvelope"

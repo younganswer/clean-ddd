@@ -1,0 +1,7 @@
+type: object
+properties:
+    simulateOutcome:
+        type: string
+        enum: [SUCCEEDED, FAILED]
+    simulateDelaySeconds:
+        type: string

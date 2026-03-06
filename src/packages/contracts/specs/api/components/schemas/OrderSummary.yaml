@@ -1,0 +1,39 @@
+type: object
+required:
+    [
+        orderId,
+        userId,
+        status,
+        amount,
+        currency,
+        items,
+        paymentId,
+        createdAt,
+        updatedAt,
+    ]
+properties:
+    orderId:
+        type: string
+    userId:
+        type: string
+    status:
+        type: string
+        enum: [PENDING_PAYMENT, PAID, CANCELLED]
+    amount:
+        type: integer
+    currency:
+        type: string
+        enum: [KRW, USD]
+    items:
+        type: array
+        items:
+            $ref: "../../components.yaml#/schemas/OrderItem"
+    paymentId:
+        type: string
+        nullable: true
+    createdAt:
+        type: string
+        format: date-time
+    updatedAt:
+        type: string
+        format: date-time

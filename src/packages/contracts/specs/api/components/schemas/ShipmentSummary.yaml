@@ -1,0 +1,16 @@
+type: object
+required: [shipmentId, orderId, status, createdAt, updatedAt]
+properties:
+    shipmentId:
+        type: string
+    orderId:
+        type: string
+    status:
+        type: string
+        enum: [PENDING, SHIPPED, DELIVERED]
+    createdAt:
+        type: string
+        format: date-time
+    updatedAt:
+        type: string
+        format: date-time

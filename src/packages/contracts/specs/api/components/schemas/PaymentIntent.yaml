@@ -1,0 +1,21 @@
+type: object
+required: [paymentId, orderId, amount, currency, status, createdAt, updatedAt]
+properties:
+    paymentId:
+        type: string
+    orderId:
+        type: string
+    amount:
+        type: integer
+    currency:
+        type: string
+        enum: [KRW, USD]
+    status:
+        type: string
+        enum: [PENDING, SUCCEEDED, FAILED]
+    createdAt:
+        type: string
+        format: date-time
+    updatedAt:
+        type: string
+        format: date-time

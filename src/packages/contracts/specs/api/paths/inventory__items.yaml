@@ -1,0 +1,23 @@
+get:
+    summary: List inventory items
+    parameters:
+        - in: query
+          name: limit
+          schema:
+              type: integer
+              default: 50
+              minimum: 1
+              maximum: 200
+        - in: query
+          name: page
+          schema:
+              type: integer
+              default: 1
+              minimum: 1
+    responses:
+        "200":
+            description: OK
+            content:
+                application/json:
+                    schema:
+                        $ref: "../components.yaml#/schemas/PaginatedInventoryItemsEnvelope"

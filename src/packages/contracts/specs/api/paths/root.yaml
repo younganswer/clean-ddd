@@ -1,0 +1,9 @@
+get:
+    summary: Get service hello message
+    responses:
+        "200":
+            description: OK
+            content:
+                application/json:
+                    schema:
+                        $ref: "../components.yaml#/schemas/MessageEnvelope"

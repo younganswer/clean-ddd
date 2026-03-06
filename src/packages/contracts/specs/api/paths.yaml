@@ -1,0 +1,32 @@
+"/":
+    $ref: "./paths/root.yaml"
+"/app/health-check":
+    $ref: "./paths/app__health-check.yaml"
+"/me":
+    $ref: "./paths/me.yaml"
+"/me/avatar":
+    $ref: "./paths/me__avatar.yaml"
+"/users":
+    $ref: "./paths/users.yaml"
+"/orders":
+    $ref: "./paths/orders.yaml"
+"/orders/{id}":
+    $ref: "./paths/orders__id.yaml"
+"/orders/{orderId}/payments/intents":
+    $ref: "./paths/orders__orderId__payments__intents.yaml"
+"/payments/intents":
+    $ref: "./paths/payments__intents.yaml"
+"/payments/intents/{paymentId}":
+    $ref: "./paths/payments__intents__paymentId.yaml"
+"/shipments":
+    $ref: "./paths/shipments.yaml"
+"/shipments/by-order/{orderId}":
+    $ref: "./paths/shipments__by-order__orderId.yaml"
+"/shipments/{id}":
+    $ref: "./paths/shipments__id.yaml"
+"/inventory/items":
+    $ref: "./paths/inventory__items.yaml"
+"/inventory/items/{sku}":
+    $ref: "./paths/inventory__items__sku.yaml"
+"/inventory/reservations":
+    $ref: "./paths/inventory__reservations.yaml"

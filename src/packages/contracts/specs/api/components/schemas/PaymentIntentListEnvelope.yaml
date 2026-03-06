@@ -1,0 +1,9 @@
+allOf:
+    - $ref: "../../components.yaml#/schemas/SuccessEnvelope"
+    - type: object
+      required: [data]
+      properties:
+          data:
+              type: array
+              items:
+                  $ref: "../../components.yaml#/schemas/PaymentIntent"

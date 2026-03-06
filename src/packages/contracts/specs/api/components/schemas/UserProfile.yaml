@@ -1,0 +1,13 @@
+type: object
+required: [userId, displayName, email]
+properties:
+    userId:
+        type: string
+    displayName:
+        type: string
+    email:
+        type: string
+    avatarId:
+        type: string
+    avatarUrl:
+        type: string

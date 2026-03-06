@@ -1,0 +1,15 @@
+type: object
+required: [reservationId, orderId, sku, quantity, createdAt]
+properties:
+    reservationId:
+        type: string
+    orderId:
+        type: string
+    sku:
+        type: string
+    quantity:
+        type: integer
+        minimum: 1
+    createdAt:
+        type: string
+        format: date-time

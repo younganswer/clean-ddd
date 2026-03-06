@@ -1,0 +1,15 @@
+get:
+    summary: Get inventory item by sku
+    parameters:
+        - in: path
+          name: sku
+          required: true
+          schema:
+              type: string
+    responses:
+        "200":
+            description: OK
+            content:
+                application/json:
+                    schema:
+                        $ref: "../components.yaml#/schemas/InventoryItemNullableEnvelope"

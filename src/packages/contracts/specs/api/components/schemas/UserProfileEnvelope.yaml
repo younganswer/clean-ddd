@@ -1,0 +1,7 @@
+allOf:
+    - $ref: "../../components.yaml#/schemas/SuccessEnvelope"
+    - type: object
+      required: [data]
+      properties:
+          data:
+              $ref: "../../components.yaml#/schemas/UserProfile"
