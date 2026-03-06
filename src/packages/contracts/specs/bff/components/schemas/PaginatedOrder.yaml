@@ -1,0 +1,17 @@
+type: object
+required: [items, page, limit, total, totalPages, hasNext]
+properties:
+    items:
+        type: array
+        items:
+            $ref: "../../components.yaml#/schemas/Order"
+    page:
+        type: integer
+    limit:
+        type: integer
+    total:
+        type: integer
+    totalPages:
+        type: integer
+    hasNext:
+        type: boolean

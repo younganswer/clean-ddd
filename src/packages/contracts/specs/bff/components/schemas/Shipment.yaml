@@ -1,0 +1,9 @@
+type: object
+required: [shipmentId, orderId, status]
+properties:
+    shipmentId:
+        type: string
+    orderId:
+        type: string
+    status:
+        type: string

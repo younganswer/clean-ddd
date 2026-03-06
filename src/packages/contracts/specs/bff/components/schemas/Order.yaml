@@ -1,0 +1,20 @@
+type: object
+required: [orderId, userId, status, amount, currency, items, paymentId]
+properties:
+    orderId:
+        type: string
+    userId:
+        type: string
+    status:
+        type: string
+    amount:
+        type: number
+    currency:
+        type: string
+    items:
+        type: array
+        items:
+            $ref: "../../components.yaml#/schemas/OrderItem"
+    paymentId:
+        type: string
+        nullable: true

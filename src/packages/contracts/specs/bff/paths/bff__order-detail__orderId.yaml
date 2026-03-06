@@ -1,0 +1,36 @@
+get:
+    summary: Get order detail aggregate (BFF)
+    parameters:
+        - in: path
+          name: orderId
+          required: true
+          schema:
+              type: string
+        - in: query
+          name: includePayment
+          required: false
+          schema:
+              type: boolean
+        - in: query
+          name: includeShipment
+          required: false
+          schema:
+              type: boolean
+        - in: query
+          name: includeReservations
+          required: false
+          schema:
+              type: boolean
+    responses:
+        "200":
+            description: OK
+            content:
+                application/json:
+                    schema:
+                        $ref: "../components.yaml#/schemas/OrderDetailEnvelope"
+        "404":
+            description: Not Found
+            content:
+                application/json:
+                    schema:
+                        $ref: "../components.yaml#/schemas/ErrorEnvelope"

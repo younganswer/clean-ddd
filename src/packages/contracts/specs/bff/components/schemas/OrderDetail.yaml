@@ -1,0 +1,19 @@
+type: object
+required: [order, paymentIntent, shipment, reservations]
+properties:
+    order:
+        $ref: "../../components.yaml#/schemas/Order"
+    paymentIntent:
+        $ref: "../../components.yaml#/schemas/PaymentIntent"
+        nullable: true
+    shipment:
+        $ref: "../../components.yaml#/schemas/Shipment"
+        nullable: true
+    reservations:
+        type: array
+        items:
+            $ref: "../../components.yaml#/schemas/InventoryReservation"
+    partialErrors:
+        type: array
+        items:
+            type: string

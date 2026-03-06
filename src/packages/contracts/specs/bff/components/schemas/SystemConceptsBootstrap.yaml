@@ -1,0 +1,7 @@
+type: object
+required: [users, inventoryItems]
+properties:
+    users:
+        $ref: "../../components.yaml#/schemas/PaginatedUserProfile"
+    inventoryItems:
+        $ref: "../../components.yaml#/schemas/PaginatedInventoryItem"

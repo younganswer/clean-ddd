@@ -1,0 +1,14 @@
+"/bff/dashboard/summary":
+    $ref: "./paths/bff__dashboard__summary.yaml"
+"/bff/orders":
+    $ref: "./paths/bff__orders.yaml"
+"/bff/orders/{orderId}":
+    $ref: "./paths/bff__orders__orderId.yaml"
+"/bff/order-detail/{orderId}":
+    $ref: "./paths/bff__order-detail__orderId.yaml"
+"/bff/checkout":
+    $ref: "./paths/bff__checkout.yaml"
+"/bff/graph":
+    $ref: "./paths/bff__graph.yaml"
+"/bff/system-concepts/bootstrap":
+    $ref: "./paths/bff__system-concepts__bootstrap.yaml"

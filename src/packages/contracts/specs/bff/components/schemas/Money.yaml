@@ -1,0 +1,7 @@
+type: object
+required: [currency, amountMinor]
+properties:
+    currency:
+        type: string
+    amountMinor:
+        type: integer

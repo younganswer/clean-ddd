@@ -1,0 +1,9 @@
+type: object
+required: [paymentId, status, scheduled]
+properties:
+    paymentId:
+        type: string
+    status:
+        type: string
+    scheduled:
+        $ref: "../../components.yaml#/schemas/ScheduledPaymentEvent"

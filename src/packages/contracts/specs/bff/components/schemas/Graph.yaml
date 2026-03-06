@@ -1,0 +1,15 @@
+type: object
+required: [rootNodeId, nodes, edges]
+properties:
+    rootNodeId:
+        type: string
+    nodes:
+        type: array
+        items:
+            $ref: "../../components.yaml#/schemas/GraphNode"
+    edges:
+        type: array
+        items:
+            $ref: "../../components.yaml#/schemas/GraphEdge"
+    truncated:
+        type: boolean

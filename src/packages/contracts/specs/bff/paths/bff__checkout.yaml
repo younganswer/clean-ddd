@@ -1,0 +1,21 @@
+post:
+    summary: Create checkout flow (BFF)
+    requestBody:
+        required: true
+        content:
+            application/json:
+                schema:
+                    $ref: "../components.yaml#/schemas/CreateCheckoutBffRequest"
+    responses:
+        "201":
+            description: Created
+            content:
+                application/json:
+                    schema:
+                        $ref: "../components.yaml#/schemas/CreateCheckoutEnvelope"
+        "400":
+            description: Bad Request
+            content:
+                application/json:
+                    schema:
+                        $ref: "../components.yaml#/schemas/ErrorEnvelope"

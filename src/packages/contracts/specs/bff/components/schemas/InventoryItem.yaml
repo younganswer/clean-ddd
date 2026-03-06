@@ -1,0 +1,13 @@
+type: object
+required: [itemId, sku, price, availableQuantity, reservedQuantity]
+properties:
+    itemId:
+        type: string
+    sku:
+        type: string
+    price:
+        $ref: "../../components.yaml#/schemas/Money"
+    availableQuantity:
+        type: integer
+    reservedQuantity:
+        type: integer

@@ -1,0 +1,12 @@
+type: object
+required: [id, type, label]
+properties:
+    id:
+        type: string
+    type:
+        type: string
+    label:
+        type: string
+    data:
+        type: object
+        additionalProperties: true

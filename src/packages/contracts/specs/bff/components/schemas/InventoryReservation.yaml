@@ -1,0 +1,11 @@
+type: object
+required: [reservationId, orderId, sku, quantity]
+properties:
+    reservationId:
+        type: string
+    orderId:
+        type: string
+    sku:
+        type: string
+    quantity:
+        type: integer

@@ -1,0 +1,7 @@
+type: object
+required: [orderId, payment]
+properties:
+    orderId:
+        type: string
+    payment:
+        $ref: "../../components.yaml#/schemas/CreatePaymentIntentResponse"

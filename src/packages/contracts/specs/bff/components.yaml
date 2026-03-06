@@ -1,0 +1,67 @@
+schemas:
+    SuccessEnvelope:
+        $ref: "./components/schemas/SuccessEnvelope.yaml"
+    ErrorEnvelope:
+        $ref: "./components/schemas/ErrorEnvelope.yaml"
+    OrderItem:
+        $ref: "./components/schemas/OrderItem.yaml"
+    Order:
+        $ref: "./components/schemas/Order.yaml"
+    CreateOrderBffRequest:
+        $ref: "./components/schemas/CreateOrderBffRequest.yaml"
+    CreateOrderResponse:
+        $ref: "./components/schemas/CreateOrderResponse.yaml"
+    Money:
+        $ref: "./components/schemas/Money.yaml"
+    InventoryItem:
+        $ref: "./components/schemas/InventoryItem.yaml"
+    InventoryReservation:
+        $ref: "./components/schemas/InventoryReservation.yaml"
+    PaymentIntent:
+        $ref: "./components/schemas/PaymentIntent.yaml"
+    ScheduledPaymentEvent:
+        $ref: "./components/schemas/ScheduledPaymentEvent.yaml"
+    CreatePaymentIntentResponse:
+        $ref: "./components/schemas/CreatePaymentIntentResponse.yaml"
+    Shipment:
+        $ref: "./components/schemas/Shipment.yaml"
+    UserProfile:
+        $ref: "./components/schemas/UserProfile.yaml"
+    OrderDetail:
+        $ref: "./components/schemas/OrderDetail.yaml"
+    DashboardSummary:
+        $ref: "./components/schemas/DashboardSummary.yaml"
+    CreateCheckoutBffRequest:
+        $ref: "./components/schemas/CreateCheckoutBffRequest.yaml"
+    CreateCheckoutResponse:
+        $ref: "./components/schemas/CreateCheckoutResponse.yaml"
+    GraphNode:
+        $ref: "./components/schemas/GraphNode.yaml"
+    GraphEdge:
+        $ref: "./components/schemas/GraphEdge.yaml"
+    Graph:
+        $ref: "./components/schemas/Graph.yaml"
+    PaginatedOrder:
+        $ref: "./components/schemas/PaginatedOrder.yaml"
+    PaginatedUserProfile:
+        $ref: "./components/schemas/PaginatedUserProfile.yaml"
+    PaginatedInventoryItem:
+        $ref: "./components/schemas/PaginatedInventoryItem.yaml"
+    SystemConceptsBootstrap:
+        $ref: "./components/schemas/SystemConceptsBootstrap.yaml"
+    DashboardSummaryEnvelope:
+        $ref: "./components/schemas/DashboardSummaryEnvelope.yaml"
+    OrderPageEnvelope:
+        $ref: "./components/schemas/OrderPageEnvelope.yaml"
+    CreateOrderEnvelope:
+        $ref: "./components/schemas/CreateOrderEnvelope.yaml"
+    OrderEnvelope:
+        $ref: "./components/schemas/OrderEnvelope.yaml"
+    OrderDetailEnvelope:
+        $ref: "./components/schemas/OrderDetailEnvelope.yaml"
+    CreateCheckoutEnvelope:
+        $ref: "./components/schemas/CreateCheckoutEnvelope.yaml"
+    GraphEnvelope:
+        $ref: "./components/schemas/GraphEnvelope.yaml"
+    SystemConceptsBootstrapEnvelope:
+        $ref: "./components/schemas/SystemConceptsBootstrapEnvelope.yaml"

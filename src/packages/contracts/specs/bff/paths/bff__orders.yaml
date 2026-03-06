@@ -1,0 +1,52 @@
+get:
+    summary: List orders (BFF)
+    parameters:
+        - in: query
+          name: limit
+          required: false
+          schema:
+              type: integer
+              default: 20
+              minimum: 1
+              maximum: 50
+        - in: query
+          name: page
+          required: false
+          schema:
+              type: integer
+              default: 1
+              minimum: 1
+    responses:
+        "200":
+            description: OK
+            content:
+                application/json:
+                    schema:
+                        $ref: "../components.yaml#/schemas/OrderPageEnvelope"
+        "400":
+            description: Bad Request
+            content:
+                application/json:
+                    schema:
+                        $ref: "../components.yaml#/schemas/ErrorEnvelope"
+post:
+    summary: Create order (BFF)
+    requestBody:
+        required: true
+        content:
+            application/json:
+                schema:
+                    $ref: "../components.yaml#/schemas/CreateOrderBffRequest"
+    responses:
+        "201":
+            description: Created
+            content:
+                application/json:
+                    schema:
+                        $ref: "../components.yaml#/schemas/CreateOrderEnvelope"
+        "400":
+            description: Bad Request
+            content:
+                application/json:
+                    schema:
+                        $ref: "../components.yaml#/schemas/ErrorEnvelope"

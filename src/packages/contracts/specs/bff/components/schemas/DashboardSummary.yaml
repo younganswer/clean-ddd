@@ -1,0 +1,23 @@
+type: object
+required: [orders, paymentIntents, shipments, inventoryItems]
+properties:
+    orders:
+        type: array
+        items:
+            $ref: "../../components.yaml#/schemas/Order"
+    paymentIntents:
+        type: array
+        items:
+            $ref: "../../components.yaml#/schemas/PaymentIntent"
+    shipments:
+        type: array
+        items:
+            $ref: "../../components.yaml#/schemas/Shipment"
+    inventoryItems:
+        type: array
+        items:
+            $ref: "../../components.yaml#/schemas/InventoryItem"
+    partialErrors:
+        type: array
+        items:
+            type: string
