@@ -1,5 +1,5 @@
-import type { components as apiComponents } from "./types.generated";
-import type { components as bffComponents } from "./types.bff.generated";
+import type { components as apiComponents } from "./generated/api/types.generated";
+import type { components as bffComponents } from "./generated/bff/types.bff.generated";
 
 export type ContractSchemas = apiComponents["schemas"];
 export type BffContractSchemas = bffComponents["schemas"];

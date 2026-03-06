@@ -42,7 +42,11 @@ const isExcludedPath = (filePath: string): boolean => {
 	if (normalized.includes('/out/')) return true;
 	if (normalized.endsWith('.d.ts')) return true;
 	if (normalized.endsWith('.generated.ts')) return true;
-	if (normalized.endsWith('/packages/contracts/types.generated.ts'))
+	if (
+		normalized.endsWith(
+			'/packages/contracts/generated/api/types.generated.ts',
+		)
+	)
 		return true;
 	return false;
 };

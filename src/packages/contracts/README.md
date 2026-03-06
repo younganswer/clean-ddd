@@ -13,6 +13,13 @@
 
 ## 이 저장소에서의 형태
 
-- 도메인 API OpenAPI: `src/packages/contracts/openapi.yaml`
-- BFF API OpenAPI: `src/packages/contracts/openapi.bff.yaml`
+- 도메인 API OpenAPI: `src/packages/contracts/specs/openapi.yaml`
+- BFF API OpenAPI: `src/packages/contracts/specs/openapi.bff.yaml`
+- 생성 타입 엔트리: `src/packages/contracts/generated/api/types.generated.ts`
+- 생성 BFF 타입 엔트리: `src/packages/contracts/generated/bff/types.bff.generated.ts`
+- 생성 타입 sections: `src/packages/contracts/generated/api/sections/*.ts`
+- 생성 BFF 타입 sections: `src/packages/contracts/generated/bff/sections/*.ts`
+- 컴포넌트 sections: `src/packages/contracts/generated/*/sections/components/index.ts` + `core.ts` + `schemas/*.ts`
+- 패스 sections: `src/packages/contracts/generated/*/sections/paths.ts` + `paths/model.ts` + `paths/routes/*.ts`
+- 통합 generated 엔트리: `src/packages/contracts/generated/index.ts`
 - 타입 진입점: `src/packages/contracts/index.ts`
