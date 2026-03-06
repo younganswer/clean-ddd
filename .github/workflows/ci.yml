@@ -9,7 +9,15 @@ permissions:
     contents: read
 
 jobs:
+    contracts-sync:
+        uses: ./.github/workflows/reusable-node-ci-task.yml
+        with:
+            run_script: |
+                pnpm --filter @clean-ddd/contracts check:generated:bff
+                pnpm --filter @clean-ddd/contracts check:bff:route-drift
+
     backend-lint:
+        needs: contracts-sync
         uses: ./.github/workflows/reusable-node-ci-task.yml
         with:
             run_script: |
@@ -32,6 +40,7 @@ jobs:
                 pnpm --filter api test
 
     frontend-lint:
+        needs: contracts-sync
         uses: ./.github/workflows/reusable-node-ci-task.yml
         with:
             run_script: |

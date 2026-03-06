@@ -9,6 +9,8 @@
 	"scripts": {
 		"generate:types": "openapi-typescript openapi.yaml -o types.generated.ts",
 		"generate:types:bff": "openapi-typescript openapi.bff.yaml -o types.bff.generated.ts",
+		"check:generated:bff": "pnpm generate:types:bff && git diff --exit-code -- types.bff.generated.ts",
+		"check:bff:route-drift": "node ./scripts/check-bff-route-drift.mjs",
 		"typecheck": "tsc -p tsconfig.json --noEmit",
 		"lint": "echo \"(skip)\"",
 		"format": "prettier --write \"*.ts\""
