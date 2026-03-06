@@ -1,4 +1,5 @@
 import { EventBus } from '@nestjs/cqrs';
+import { OutboxConsumeStateMachine } from '@/modules/outbox/application/outbox-consume.state-machine';
 import { OutboxConsumer } from '@/modules/outbox/application/outbox.consumer';
 import { OutboxKnownHandlerRegistryService } from '@/modules/outbox/application/outbox-known-handler.registry.service';
 import { OutboxEvent } from '@/shared/outbox/domain/entities/outbox-event.entity';
@@ -62,6 +63,7 @@ describe('OutboxConsumer (registry dispatch)', () => {
 			eventBus,
 			uow as UnitOfWork,
 			knownHandlerRegistry,
+			new OutboxConsumeStateMachine(),
 		);
 
 		await consumer.consumeRawMessage({
@@ -124,6 +126,7 @@ describe('OutboxConsumer (registry dispatch)', () => {
 			eventBus,
 			uow as UnitOfWork,
 			knownHandlerRegistry,
+			new OutboxConsumeStateMachine(),
 		);
 
 		await consumer.consumeRawMessage({

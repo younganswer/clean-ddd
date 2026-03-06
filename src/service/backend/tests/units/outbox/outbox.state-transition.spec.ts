@@ -1,5 +1,6 @@
 import { RequestContext } from '@mikro-orm/core';
 import { CommandBus, EventBus, QueryBus } from '@nestjs/cqrs';
+import { OutboxConsumeStateMachine } from '@/modules/outbox/application/outbox-consume.state-machine';
 import { OutboxDispatcher } from '@/modules/outbox/application/outbox.dispatcher';
 import { DispatchOutboxEventHandler } from '@/modules/outbox/application/commands/handlers/dispatch-outbox-event.handler';
 import { OutboxConsumer } from '@/modules/outbox/application/outbox.consumer';
@@ -210,6 +211,7 @@ describe('Outbox flow state transition', () => {
 			eventBus,
 			uow as UnitOfWork,
 			knownHandlerRegistry,
+			new OutboxConsumeStateMachine(),
 		);
 
 		await consumer.consumeRawMessage({

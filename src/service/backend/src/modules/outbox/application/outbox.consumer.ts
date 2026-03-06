@@ -7,18 +7,16 @@ import {
 	IOutboxRepositorySymbol,
 	type IOutboxRepository,
 } from '@/shared/outbox';
-import { OutboxEventStatus } from '@/shared/outbox';
 import { hydrateEvent } from '@/lib/outbox/event-registry';
-import {
-	createRetryAt,
-	resolveErrorMessage,
-} from '@/modules/outbox/application/outbox-error.util';
+import { resolveErrorMessage } from '@/modules/outbox/application/outbox-error.util';
 import { OutboxKnownHandlerRegistryService } from '@/modules/outbox/application/outbox-known-handler.registry.service';
+import { OutboxConsumeStateMachine } from '@/modules/outbox/application/outbox-consume.state-machine';
 
 @Injectable()
 export class OutboxConsumer {
 	private readonly logger = new Logger(OutboxConsumer.name);
 	private readonly consumerName = 'OutboxConsumer';
+	private static readonly LOCK_TIMEOUT_MS = 120_000;
 
 	constructor(
 		@Inject(IOutboxRepositorySymbol)
@@ -27,6 +25,7 @@ export class OutboxConsumer {
 		private readonly eventBus: EventBus,
 		private readonly uow: UnitOfWork,
 		private readonly knownHandlerRegistry: OutboxKnownHandlerRegistryService,
+		private readonly consumeStateMachine: OutboxConsumeStateMachine,
 	) {}
 
 	private async dispatchKnownEvent(
@@ -39,18 +38,172 @@ export class OutboxConsumer {
 		return true;
 	}
 
-	async consumeRawMessage(record: Pick<SQSRecord, 'body'>): Promise<void> {
-		let outboxId: string | undefined;
+	private parseOutboxId(record: Pick<SQSRecord, 'body'>): string | null {
 		try {
 			const parsed = JSON.parse(record.body) as { outboxId?: string };
-			outboxId = parsed.outboxId;
+			if (!parsed.outboxId) {
+				this.logger.warn('invalid message body (missing outboxId)');
+				return null;
+			}
+			return parsed.outboxId;
 		} catch {
 			this.logger.warn('invalid message body (not json)');
-			return;
+			return null;
+		}
+	}
+
+	private async tryLockOutbox(outboxId: string): Promise<boolean> {
+		const locked = await this.outboxRepository.lock(
+			outboxId,
+			new Date(Date.now() + OutboxConsumer.LOCK_TIMEOUT_MS),
+		);
+		if (!locked) {
+			this.logger.log(
+				JSON.stringify({
+					step: 'outbox_lock_skipped',
+					outboxId,
+				}),
+			);
+			return false;
 		}
 
+		this.logger.log(
+			JSON.stringify({
+				step: 'outbox_locked',
+				outboxId,
+			}),
+		);
+		return true;
+	}
+
+	private async unlockWithTransaction(outboxId: string): Promise<void> {
+		await this.uow.transaction(async () => {
+			await this.outboxRepository.unlock(outboxId);
+		});
+	}
+
+	private async consumeLockedOutboxWithTransaction(
+		outboxId: string,
+	): Promise<void> {
+		await this.uow.transaction(async () => {
+			const outboxEvent = await this.outboxRepository.findById(outboxId);
+			if (!outboxEvent) {
+				this.logger.warn(
+					JSON.stringify({
+						step: 'outbox_event_missing',
+						outboxId,
+					}),
+				);
+				await this.outboxRepository.unlock(outboxId);
+				return;
+			}
+
+			if (!this.consumeStateMachine.isDispatchable(outboxEvent)) {
+				this.logger.log(
+					JSON.stringify({
+						step: 'outbox_status_not_dispatchable',
+						outboxId,
+						status: outboxEvent.status,
+					}),
+				);
+				await this.outboxRepository.unlock(outboxId);
+				return;
+			}
+
+			const claimed = await this.idempotencyService.claim(
+				this.consumerName,
+				outboxId,
+			);
+			if (!claimed) {
+				this.logger.log(
+					JSON.stringify({
+						step: 'outbox_duplicate_claim',
+						outboxId,
+						eventType: outboxEvent.eventType,
+					}),
+				);
+				this.consumeStateMachine.markDuplicateClaimConsumed(
+					outboxEvent,
+				);
+				await this.outboxRepository.persist(outboxEvent);
+				return;
+			}
+
+			try {
+				const event = hydrateEvent(
+					outboxEvent.eventType,
+					outboxEvent.payload,
+				);
+				if (!event) {
+					this.logger.warn(
+						JSON.stringify({
+							step: 'outbox_unknown_event_type',
+							outboxId,
+							eventType: outboxEvent.eventType,
+						}),
+					);
+					this.consumeStateMachine.markUnknownEventTypeFailure(
+						outboxEvent,
+					);
+					await this.outboxRepository.persist(outboxEvent);
+					return;
+				}
+
+				const dispatched = await this.dispatchKnownEvent(
+					event,
+					outboxEvent.eventType,
+				);
+				this.logger.log(
+					JSON.stringify({
+						step: 'outbox_event_dispatched',
+						outboxId,
+						eventType: outboxEvent.eventType,
+						mode: dispatched ? 'known-handler' : 'event-bus',
+					}),
+				);
+				if (!dispatched) {
+					this.eventBus.publish(event);
+				}
+				this.consumeStateMachine.markConsumed(outboxEvent);
+				await this.outboxRepository.persist(outboxEvent);
+				this.logger.log(
+					JSON.stringify({
+						step: 'outbox_marked_consumed',
+						outboxId,
+						eventType: outboxEvent.eventType,
+					}),
+				);
+			} catch (error: unknown) {
+				const message = resolveErrorMessage(error);
+				this.consumeStateMachine.markDispatchFailure(
+					outboxEvent,
+					message,
+				);
+				await this.outboxRepository.persist(outboxEvent);
+				this.logger.error(
+					JSON.stringify({
+						step: 'outbox_consume_failed',
+						outboxId,
+						eventType: outboxEvent.eventType,
+						error: message,
+					}),
+				);
+				try {
+					await this.idempotencyService.release(
+						this.consumerName,
+						outboxId,
+					);
+				} catch {
+					// ignore release failure and keep original error flow
+				}
+				throw error;
+			}
+		});
+	}
+
+	async consumeRawMessage(record: Pick<SQSRecord, 'body'>): Promise<void> {
+		const outboxId = this.parseOutboxId(record);
 		if (!outboxId) {
-			this.logger.warn('invalid message body (missing outboxId)');
 			return;
 		}
 
@@ -61,145 +214,16 @@ export class OutboxConsumer {
 			}),
 		);
 
-		const locked = await this.outboxRepository.lock(
-			outboxId,
-			new Date(Date.now() + 120_000),
-		);
+		const locked = await this.tryLockOutbox(outboxId);
 		if (!locked) {
-			this.logger.log(
-				JSON.stringify({
-					step: 'outbox_lock_skipped',
-					outboxId,
-				}),
-			);
 			return;
 		}
-		this.logger.log(
-			JSON.stringify({
-				step: 'outbox_locked',
-				outboxId,
-			}),
-		);
 
 		try {
-			await this.uow.transaction(async () => {
-				const outboxEvent =
-					await this.outboxRepository.findById(outboxId);
-				if (!outboxEvent) {
-					this.logger.warn(
-						JSON.stringify({
-							step: 'outbox_event_missing',
-							outboxId,
-						}),
-					);
-					await this.outboxRepository.unlock(outboxId);
-					return;
-				}
-				if (
-					outboxEvent.status !== OutboxEventStatus.PUBLISHED &&
-					outboxEvent.status !== OutboxEventStatus.FAILED &&
-					outboxEvent.status !== OutboxEventStatus.PENDING
-				) {
-					this.logger.log(
-						JSON.stringify({
-							step: 'outbox_status_not_dispatchable',
-							outboxId,
-							status: outboxEvent.status,
-						}),
-					);
-					await this.outboxRepository.unlock(outboxId);
-					return;
-				}
-
-				const claimed = await this.idempotencyService.claim(
-					this.consumerName,
-					outboxId,
-				);
-				if (!claimed) {
-					this.logger.log(
-						JSON.stringify({
-							step: 'outbox_duplicate_claim',
-							outboxId,
-							eventType: outboxEvent.eventType,
-						}),
-					);
-					outboxEvent.markConsumed();
-					await this.outboxRepository.persist(outboxEvent);
-					return;
-				}
-
-				try {
-					const event = hydrateEvent(
-						outboxEvent.eventType,
-						outboxEvent.payload,
-					);
-					if (!event) {
-						this.logger.warn(
-							JSON.stringify({
-								step: 'outbox_unknown_event_type',
-								outboxId,
-								eventType: outboxEvent.eventType,
-							}),
-						);
-						outboxEvent.recordFailure(
-							`unknown eventType=${outboxEvent.eventType}`,
-							createRetryAt(60_000),
-						);
-						await this.outboxRepository.persist(outboxEvent);
-						return;
-					}
-
-					const dispatched = await this.dispatchKnownEvent(
-						event,
-						outboxEvent.eventType,
-					);
-					this.logger.log(
-						JSON.stringify({
-							step: 'outbox_event_dispatched',
-							outboxId,
-							eventType: outboxEvent.eventType,
-							mode: dispatched ? 'known-handler' : 'event-bus',
-						}),
-					);
-					if (!dispatched) {
-						this.eventBus.publish(event);
-					}
-					outboxEvent.markConsumed();
-					await this.outboxRepository.persist(outboxEvent);
-					this.logger.log(
-						JSON.stringify({
-							step: 'outbox_marked_consumed',
-							outboxId,
-							eventType: outboxEvent.eventType,
-						}),
-					);
-				} catch (error: unknown) {
-					const message = resolveErrorMessage(error);
-					outboxEvent.recordFailure(message, createRetryAt(60_000));
-					this.logger.error(
-						JSON.stringify({
-							step: 'outbox_consume_failed',
-							outboxId,
-							eventType: outboxEvent.eventType,
-							error: message,
-						}),
-					);
-					try {
-						await this.idempotencyService.release(
-							this.consumerName,
-							outboxId,
-						);
-					} catch {
-						// ignore release failure and keep original error flow
-					}
-					throw error;
-				}
-			});
+			await this.consumeLockedOutboxWithTransaction(outboxId);
 		} catch (error) {
 			try {
-				await this.uow.transaction(async () => {
-					await this.outboxRepository.unlock(outboxId);
-				});
+				await this.unlockWithTransaction(outboxId);
 				this.logger.log(
 					JSON.stringify({
 						step: 'outbox_unlocked_after_failure',
