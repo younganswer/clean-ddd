@@ -1,0 +1,11 @@
+openapi: 3.0.3
+info:
+    title: clean-ddd BFF API
+    version: 0.0.1
+servers:
+    - url: /api/v1
+
+paths:
+    $ref: "./bff/paths.yaml"
+components:
+    $ref: "./bff/components.yaml"

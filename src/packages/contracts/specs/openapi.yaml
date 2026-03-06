@@ -1,0 +1,11 @@
+openapi: 3.0.3
+info:
+    title: clean-ddd API
+    version: 0.0.1
+servers:
+    - url: /api/v1
+
+paths:
+    $ref: "./api/paths.yaml"
+components:
+    $ref: "./api/components.yaml"
