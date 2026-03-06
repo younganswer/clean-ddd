@@ -24,7 +24,13 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: "#/components/schemas/BffDataEnvelope"
+                                $ref: "#/components/schemas/DashboardSummaryEnvelope"
+                "500":
+                    description: Internal Server Error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorEnvelope"
 
     /bff/orders:
         get:
@@ -51,7 +57,13 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: "#/components/schemas/BffPageEnvelope"
+                                $ref: "#/components/schemas/OrderPageEnvelope"
+                "400":
+                    description: Bad Request
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorEnvelope"
         post:
             summary: Create order (BFF)
             requestBody:
@@ -59,15 +71,20 @@ paths:
                 content:
                     application/json:
                         schema:
-                            type: object
-                            additionalProperties: true
+                            $ref: "#/components/schemas/CreateOrderBffRequest"
             responses:
                 "201":
                     description: Created
                     content:
                         application/json:
                             schema:
-                                $ref: "#/components/schemas/BffDataEnvelope"
+                                $ref: "#/components/schemas/CreateOrderEnvelope"
+                "400":
+                    description: Bad Request
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorEnvelope"
 
     /bff/orders/{orderId}:
         get:
@@ -84,9 +101,13 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: "#/components/schemas/BffDataEnvelope"
+                                $ref: "#/components/schemas/OrderEnvelope"
                 "404":
                     description: Not Found
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorEnvelope"
 
     /bff/order-detail/{orderId}:
         get:
@@ -118,9 +139,13 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: "#/components/schemas/BffDataEnvelope"
+                                $ref: "#/components/schemas/OrderDetailEnvelope"
                 "404":
                     description: Not Found
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorEnvelope"
 
     /bff/checkout:
         post:
@@ -130,15 +155,20 @@ paths:
                 content:
                     application/json:
                         schema:
-                            type: object
-                            additionalProperties: true
+                            $ref: "#/components/schemas/CreateCheckoutBffRequest"
             responses:
                 "201":
                     description: Created
                     content:
                         application/json:
                             schema:
-                                $ref: "#/components/schemas/BffDataEnvelope"
+                                $ref: "#/components/schemas/CreateCheckoutEnvelope"
+                "400":
+                    description: Bad Request
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorEnvelope"
 
     /bff/graph:
         get:
@@ -187,9 +217,13 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: "#/components/schemas/BffDataEnvelope"
+                                $ref: "#/components/schemas/GraphEnvelope"
                 "404":
                     description: Not Found
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorEnvelope"
 
     /bff/system-concepts/bootstrap:
         get:
@@ -216,7 +250,13 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: "#/components/schemas/BffDataEnvelope"
+                                $ref: "#/components/schemas/SystemConceptsBootstrapEnvelope"
+                "400":
+                    description: Bad Request
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorEnvelope"
 
 components:
     schemas:
@@ -227,51 +267,441 @@ components:
                 success:
                     type: boolean
 
-        BffDataEnvelope:
+        ErrorEnvelope:
             allOf:
                 - $ref: "#/components/schemas/SuccessEnvelope"
                 - type: object
-                  required: [data]
+                  required: [error]
                   properties:
-                      data:
+                      error:
                           type: object
-                          additionalProperties: true
-
-        BffListEnvelope:
-            allOf:
-                - $ref: "#/components/schemas/SuccessEnvelope"
-                - type: object
-                  required: [data]
-                  properties:
-                      data:
-                          type: array
-                          items:
-                              type: object
-                              additionalProperties: true
-
-        BffPageEnvelope:
-            allOf:
-                - $ref: "#/components/schemas/SuccessEnvelope"
-                - type: object
-                  required: [data]
-                  properties:
-                      data:
-                          type: object
-                          required:
-                              [items, page, limit, total, totalPages, hasNext]
+                          required: [code, message]
                           properties:
-                              items:
-                                  type: array
-                                  items:
-                                      type: object
-                                      additionalProperties: true
-                              page:
-                                  type: integer
-                              limit:
-                                  type: integer
-                              total:
-                                  type: integer
-                              totalPages:
-                                  type: integer
-                              hasNext:
-                                  type: boolean
+                              code:
+                                  type: string
+                              message:
+                                  type: string
+                              details:
+                                  type: object
+                                  additionalProperties: true
+
+        OrderItem:
+            type: object
+            required: [sku, quantity]
+            properties:
+                sku:
+                    type: string
+                quantity:
+                    type: integer
+                    minimum: 1
+
+        Order:
+            type: object
+            required:
+                [orderId, userId, status, amount, currency, items, paymentId]
+            properties:
+                orderId:
+                    type: string
+                userId:
+                    type: string
+                status:
+                    type: string
+                amount:
+                    type: number
+                currency:
+                    type: string
+                items:
+                    type: array
+                    items:
+                        $ref: "#/components/schemas/OrderItem"
+                paymentId:
+                    type: string
+                    nullable: true
+
+        CreateOrderBffRequest:
+            type: object
+            required: [userId, amount, currency]
+            properties:
+                userId:
+                    type: string
+                    format: uuid
+                amount:
+                    type: number
+                    exclusiveMinimum: 0
+                currency:
+                    type: string
+                items:
+                    type: array
+                    items:
+                        $ref: "#/components/schemas/OrderItem"
+
+        CreateOrderResponse:
+            type: object
+            required: [orderId]
+            properties:
+                orderId:
+                    type: string
+
+        Money:
+            type: object
+            required: [currency, amountMinor]
+            properties:
+                currency:
+                    type: string
+                amountMinor:
+                    type: integer
+
+        InventoryItem:
+            type: object
+            required: [itemId, sku, price, availableQuantity, reservedQuantity]
+            properties:
+                itemId:
+                    type: string
+                sku:
+                    type: string
+                price:
+                    $ref: "#/components/schemas/Money"
+                availableQuantity:
+                    type: integer
+                reservedQuantity:
+                    type: integer
+
+        InventoryReservation:
+            type: object
+            required: [reservationId, orderId, sku, quantity]
+            properties:
+                reservationId:
+                    type: string
+                orderId:
+                    type: string
+                sku:
+                    type: string
+                quantity:
+                    type: integer
+
+        PaymentIntent:
+            type: object
+            required: [paymentId, orderId, amount, currency, status]
+            properties:
+                paymentId:
+                    type: string
+                orderId:
+                    type: string
+                amount:
+                    type: number
+                currency:
+                    type: string
+                status:
+                    type: string
+
+        ScheduledPaymentEvent:
+            type: object
+            required: [eventType, delaySeconds, outboxId]
+            properties:
+                eventType:
+                    type: string
+                delaySeconds:
+                    type: integer
+                    minimum: 0
+                outboxId:
+                    type: string
+
+        CreatePaymentIntentResponse:
+            type: object
+            required: [paymentId, status, scheduled]
+            properties:
+                paymentId:
+                    type: string
+                status:
+                    type: string
+                scheduled:
+                    $ref: "#/components/schemas/ScheduledPaymentEvent"
+
+        Shipment:
+            type: object
+            required: [shipmentId, orderId, status]
+            properties:
+                shipmentId:
+                    type: string
+                orderId:
+                    type: string
+                status:
+                    type: string
+
+        UserProfile:
+            type: object
+            required: [userId, displayName, email]
+            properties:
+                userId:
+                    type: string
+                displayName:
+                    type: string
+                email:
+                    type: string
+                    format: email
+                avatarId:
+                    type: string
+                avatarUrl:
+                    type: string
+
+        OrderDetail:
+            type: object
+            required: [order, paymentIntent, shipment, reservations]
+            properties:
+                order:
+                    $ref: "#/components/schemas/Order"
+                paymentIntent:
+                    $ref: "#/components/schemas/PaymentIntent"
+                    nullable: true
+                shipment:
+                    $ref: "#/components/schemas/Shipment"
+                    nullable: true
+                reservations:
+                    type: array
+                    items:
+                        $ref: "#/components/schemas/InventoryReservation"
+                partialErrors:
+                    type: array
+                    items:
+                        type: string
+
+        DashboardSummary:
+            type: object
+            required: [orders, paymentIntents, shipments, inventoryItems]
+            properties:
+                orders:
+                    type: array
+                    items:
+                        $ref: "#/components/schemas/Order"
+                paymentIntents:
+                    type: array
+                    items:
+                        $ref: "#/components/schemas/PaymentIntent"
+                shipments:
+                    type: array
+                    items:
+                        $ref: "#/components/schemas/Shipment"
+                inventoryItems:
+                    type: array
+                    items:
+                        $ref: "#/components/schemas/InventoryItem"
+                partialErrors:
+                    type: array
+                    items:
+                        type: string
+
+        CreateCheckoutBffRequest:
+            type: object
+            required: [userId, amount, currency]
+            properties:
+                userId:
+                    type: string
+                    format: uuid
+                amount:
+                    type: number
+                    exclusiveMinimum: 0
+                currency:
+                    type: string
+                items:
+                    type: array
+                    items:
+                        $ref: "#/components/schemas/OrderItem"
+                simulateOutcome:
+                    type: string
+                    enum: [SUCCEEDED, FAILED]
+                simulateDelaySeconds:
+                    type: integer
+                    minimum: 0
+
+        CreateCheckoutResponse:
+            type: object
+            required: [orderId, payment]
+            properties:
+                orderId:
+                    type: string
+                payment:
+                    $ref: "#/components/schemas/CreatePaymentIntentResponse"
+
+        GraphNode:
+            type: object
+            required: [id, type, label]
+            properties:
+                id:
+                    type: string
+                type:
+                    type: string
+                label:
+                    type: string
+                data:
+                    type: object
+                    additionalProperties: true
+
+        GraphEdge:
+            type: object
+            required: [id, from, to, type]
+            properties:
+                id:
+                    type: string
+                from:
+                    type: string
+                to:
+                    type: string
+                type:
+                    type: string
+                label:
+                    type: string
+
+        Graph:
+            type: object
+            required: [rootNodeId, nodes, edges]
+            properties:
+                rootNodeId:
+                    type: string
+                nodes:
+                    type: array
+                    items:
+                        $ref: "#/components/schemas/GraphNode"
+                edges:
+                    type: array
+                    items:
+                        $ref: "#/components/schemas/GraphEdge"
+                truncated:
+                    type: boolean
+
+        PaginatedOrder:
+            type: object
+            required: [items, page, limit, total, totalPages, hasNext]
+            properties:
+                items:
+                    type: array
+                    items:
+                        $ref: "#/components/schemas/Order"
+                page:
+                    type: integer
+                limit:
+                    type: integer
+                total:
+                    type: integer
+                totalPages:
+                    type: integer
+                hasNext:
+                    type: boolean
+
+        PaginatedUserProfile:
+            type: object
+            required: [items, offset, limit, total, totalPages, hasNext]
+            properties:
+                items:
+                    type: array
+                    items:
+                        $ref: "#/components/schemas/UserProfile"
+                offset:
+                    type: integer
+                limit:
+                    type: integer
+                total:
+                    type: integer
+                totalPages:
+                    type: integer
+                hasNext:
+                    type: boolean
+
+        PaginatedInventoryItem:
+            type: object
+            required: [items, offset, limit, total, totalPages, hasNext]
+            properties:
+                items:
+                    type: array
+                    items:
+                        $ref: "#/components/schemas/InventoryItem"
+                offset:
+                    type: integer
+                limit:
+                    type: integer
+                total:
+                    type: integer
+                totalPages:
+                    type: integer
+                hasNext:
+                    type: boolean
+
+        SystemConceptsBootstrap:
+            type: object
+            required: [users, inventoryItems]
+            properties:
+                users:
+                    $ref: "#/components/schemas/PaginatedUserProfile"
+                inventoryItems:
+                    $ref: "#/components/schemas/PaginatedInventoryItem"
+
+        DashboardSummaryEnvelope:
+            allOf:
+                - $ref: "#/components/schemas/SuccessEnvelope"
+                - type: object
+                  required: [data]
+                  properties:
+                      data:
+                          $ref: "#/components/schemas/DashboardSummary"
+
+        OrderPageEnvelope:
+            allOf:
+                - $ref: "#/components/schemas/SuccessEnvelope"
+                - type: object
+                  required: [data]
+                  properties:
+                      data:
+                          $ref: "#/components/schemas/PaginatedOrder"
+
+        CreateOrderEnvelope:
+            allOf:
+                - $ref: "#/components/schemas/SuccessEnvelope"
+                - type: object
+                  required: [data]
+                  properties:
+                      data:
+                          $ref: "#/components/schemas/CreateOrderResponse"
+
+        OrderEnvelope:
+            allOf:
+                - $ref: "#/components/schemas/SuccessEnvelope"
+                - type: object
+                  required: [data]
+                  properties:
+                      data:
+                          $ref: "#/components/schemas/Order"
+
+        OrderDetailEnvelope:
+            allOf:
+                - $ref: "#/components/schemas/SuccessEnvelope"
+                - type: object
+                  required: [data]
+                  properties:
+                      data:
+                          $ref: "#/components/schemas/OrderDetail"
+
+        CreateCheckoutEnvelope:
+            allOf:
+                - $ref: "#/components/schemas/SuccessEnvelope"
+                - type: object
+                  required: [data]
+                  properties:
+                      data:
+                          $ref: "#/components/schemas/CreateCheckoutResponse"
+
+        GraphEnvelope:
+            allOf:
+                - $ref: "#/components/schemas/SuccessEnvelope"
+                - type: object
+                  required: [data]
+                  properties:
+                      data:
+                          $ref: "#/components/schemas/Graph"
+
+        SystemConceptsBootstrapEnvelope:
+            allOf:
+                - $ref: "#/components/schemas/SuccessEnvelope"
+                - type: object
+                  required: [data]
+                  properties:
+                      data:
+                          $ref: "#/components/schemas/SystemConceptsBootstrap"
