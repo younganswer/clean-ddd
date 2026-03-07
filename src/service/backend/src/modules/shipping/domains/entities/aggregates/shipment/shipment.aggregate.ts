@@ -1,4 +1,4 @@
-import { ShipmentStatus } from '@/shared/shipping';
+import { ShipmentStatus } from '@/modules/shipping/domains/enums/shipment-status.enum';
 import { BaseEntity } from '@/common/domain/base.entity';
 import { randomUUID } from 'node:crypto';
 

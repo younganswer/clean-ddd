@@ -1,5 +1,5 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { CreateShipmentForOrderCommand } from '@/shared/shipping';
+import { CreateShipmentForOrderCommand } from '@/modules/shipping/application/commands/create-shipment-for-order.command';
 import { UnitOfWork } from '@/lib/database/unit-of-work';
 import { ShipmentCreationDomainService } from '@/modules/shipping/domains/services/shipment-creation.domain-service';
 

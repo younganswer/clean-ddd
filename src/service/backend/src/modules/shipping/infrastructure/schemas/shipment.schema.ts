@@ -1,5 +1,5 @@
 import { Entity, Index, Property, Unique } from '@mikro-orm/core';
-import { ShipmentStatus } from '@/shared/shipping';
+import { ShipmentStatus } from '@/modules/shipping/domains/enums/shipment-status.enum';
 import { BaseSchema } from '@/common/persistence/mikro-orm/base.schema';
 
 @Entity({ tableName: 'shipments' })

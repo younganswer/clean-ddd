@@ -1,4 +1,4 @@
-import type { ShipmentStatus } from '@/shared/shipping/enums/shipment-status.enum';
+import type { ShipmentStatus } from '@/modules/shipping/domains/enums/shipment-status.enum';
 
 type ShipmentSchema = {
 	uuid: string;

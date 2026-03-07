@@ -5,8 +5,8 @@ import { Injectable } from '@nestjs/common';
 import {
 	IShipmentReaderSymbol,
 	type IShipmentReader,
-} from '@/shared/shipping/readers/i.shipment.reader';
-import { ShipmentResult } from '@/shared/shipping/readers/dto/shipment.result';
+} from '@/modules/shipping/domains/readers/i.shipment.reader';
+import { ShipmentResult } from '@/modules/shipping/domains/readers/shipment.result';
 import { ShipmentSchema } from '@/modules/shipping/infrastructure/schemas/shipment.schema';
 
 @Injectable()

@@ -1,5 +1,5 @@
 import { Query } from '@nestjs/cqrs';
-import type { ShipmentResult } from '@/shared/shipping/readers/dto/shipment.result';
+import type { ShipmentResult } from '@/modules/shipping/domains/readers/shipment.result';
 import { SHIPPING_APPLICATION_ERRORS } from '@/shared/errors';
 import { requireTrimmedString } from '@/common/cqrs/input-normalizer';
 

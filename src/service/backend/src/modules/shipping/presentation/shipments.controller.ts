@@ -7,11 +7,9 @@ import {
 	ApiPageResponse,
 } from '@/common/swagger';
 import { ShipmentResponse } from '@/modules/shipping/presentation/swagger';
-import {
-	GetShipmentByOrderQuery,
-	GetShipmentQuery,
-	GetShipmentsQuery,
-} from '@/shared/shipping';
+import { GetShipmentByOrderQuery } from '@/modules/shipping/application/queries/get-shipment-by-order.query';
+import { GetShipmentQuery } from '@/modules/shipping/application/queries/get-shipment.query';
+import { GetShipmentsQuery } from '@/modules/shipping/application/queries/get-shipments.query';
 import { PageQueryDto } from '@/common/cqrs/query-input.dto';
 
 @Controller('shipments')

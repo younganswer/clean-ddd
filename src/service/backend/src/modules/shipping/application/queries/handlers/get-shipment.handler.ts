@@ -1,10 +1,11 @@
 import { Inject } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import { GetShipmentQuery, type ShipmentResult } from '@/shared/shipping';
+import { GetShipmentQuery } from '@/modules/shipping/application/queries/get-shipment.query';
+import type { ShipmentResult } from '@/modules/shipping/domains/readers/shipment.result';
 import {
 	IShipmentReaderSymbol,
 	type IShipmentReader,
-} from '@/shared/shipping/readers/i.shipment.reader';
+} from '@/modules/shipping/domains/readers/i.shipment.reader';
 
 @QueryHandler(GetShipmentQuery)
 export class GetShipmentHandler implements IQueryHandler<GetShipmentQuery> {
