@@ -34,6 +34,13 @@
 5. Query Handler에서 조회 흐름/에러를 정리합니다.
 6. Controller/BFF 응답 DTO를 분리합니다.
 
+### Query/Reader 강제 규칙
+
+- Query Handler는 Reader만 의존하고 Repository를 직접 참조하지 않습니다.
+- Reader는 Repository를 참조하지 않고 인프라에서 `EntityManager`로 직접 조회합니다.
+- Reader에서 상태 변경 로직(쓰기/seed/flush)은 금지합니다.
+- Reader Result 매핑은 `Result.fromSchema(...)` 정적 팩토리로 통일합니다.
+
 <br/>
 <br/>
 
@@ -41,6 +48,7 @@
 
 - Query 경로에서 상태 변경이 발생하지 않는가?
 - Reader 계약이 도메인 엔티티를 노출하지 않는가?
+- Reader 구현이 Repository를 우회해서 직접 조회하고, `Result.fromSchema(...)`만으로 반환하는가?
 - BFF가 도메인 규칙을 소유하지 않는가?
 - Queue/Cron 경로가 내부 구현 우회 없이 Command/Query 경계를 지키는가?
 

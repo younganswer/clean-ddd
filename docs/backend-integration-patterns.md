@@ -35,6 +35,14 @@ Reader는 단순한 조회 편의가 아니라 도메인 경계를 보호하는 
 - 반환 모델은 Entity 전체가 아니라 "타 도메인에 필요한 최소 DTO"로 제한합니다.
 - 테스트에서는 Reader를 mock 하여 도메인 규칙을 독립 검증합니다.
 
+Reader 구현 강제 규칙:
+
+- Query Handler는 Reader 포트에만 의존하고 Repository를 직접 주입하지 않습니다.
+- Reader는 Repository를 참조하지 않습니다.
+- Reader는 `EntityManager` 기반 직접 조회(`find/findOne`, QueryBuilder, raw SQL)를 사용합니다.
+- Reader는 상태를 변경하지 않습니다(쓰기/seed/flush 금지).
+- Reader 반환 Result는 `class`로 정의하고 `static fromSchema(schema: Schema): Result`를 통해서만 매핑합니다.
+
 ### Reader 계약 규칙 (페이지네이션/카운트)
 
 Reader는 타 도메인에서 필요한 조회 요구를 계약으로 고정해야 하므로, 반환 형태를 예측 가능하게 유지합니다.
