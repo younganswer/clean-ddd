@@ -3,10 +3,10 @@ import { CommandBus, EventsHandler, IEventHandler } from '@nestjs/cqrs';
 import {
 	PaymentWebhookFailedEvent,
 	PaymentWebhookSucceededEvent,
-} from '@/shared/payments';
-import { OutboxKnownHandler } from '@/modules/outbox/application/outbox-known-handler.decorator';
-import { HandlePaymentWebhookSucceededCommand } from '@/shared/payments/commands/handle-payment-webhook-succeeded.command';
-import { HandlePaymentWebhookFailedCommand } from '@/shared/payments/commands/handle-payment-webhook-failed.command';
+} from '@/contracts/payments';
+import { OutboxKnownHandler } from '@/common/outbox/outbox-known-handler.decorator';
+import { HandlePaymentWebhookSucceededCommand } from '@/modules/payments/application/commands/handle-payment-webhook-succeeded.command';
+import { HandlePaymentWebhookFailedCommand } from '@/modules/payments/application/commands/handle-payment-webhook-failed.command';
 
 @Injectable()
 @EventsHandler(PaymentWebhookSucceededEvent)

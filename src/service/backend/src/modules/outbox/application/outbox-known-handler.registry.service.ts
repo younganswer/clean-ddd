@@ -3,7 +3,7 @@ import { DiscoveryService, Reflector } from '@nestjs/core';
 import {
 	OUTBOX_KNOWN_HANDLER_EVENT_TYPE_METADATA,
 	type OutboxKnownEventHandler,
-} from '@/modules/outbox/application/outbox-known-handler.decorator';
+} from '@/common/outbox/outbox-known-handler.decorator';
 import { OUTBOX_INFRA_ERRORS } from '@/shared/errors';
 import { InfrastructureErrorFactory } from '@/common/errors/base.error-factory';
 

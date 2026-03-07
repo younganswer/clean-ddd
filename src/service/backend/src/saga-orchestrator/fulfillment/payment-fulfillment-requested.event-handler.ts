@@ -5,17 +5,15 @@ import {
 	IEventHandler,
 	QueryBus,
 } from '@nestjs/cqrs';
-import { assertOrderResult } from '@/shared/ordering/readers/order-result.guard';
-import {
-	ReserveInventoryForOrderCommand,
-	type InventoryOrderItemPayload,
-} from '@/shared/inventory';
-import { CreateShipmentForOrderCommand } from '@/shared/shipping/commands/create-shipment-for-order.command';
+import { assertOrderResult } from '@/modules/ordering/domains/readers/order-result.guard';
+import { type InventoryOrderItemPayload } from '@/contracts/inventory';
+import { ReserveInventoryForOrderCommand } from '@/modules/inventory/application/commands/reserve-inventory-for-order.command';
+import { CreateShipmentForOrderCommand } from '@/modules/shipping/application/commands/create-shipment-for-order.command';
 import { PAYMENTS_APPLICATION_ERRORS } from '@/shared/errors';
 import { ApplicationErrorFactory } from '@/common/errors/base.error-factory';
-import { OutboxKnownHandler } from '@/modules/outbox/application/outbox-known-handler.decorator';
-import { PaymentFulfillmentRequestedEvent } from '@/shared/payments';
-import { GetOrderQuery } from '@/shared/ordering/queries/get-order.query';
+import { OutboxKnownHandler } from '@/common/outbox/outbox-known-handler.decorator';
+import { PaymentFulfillmentRequestedEvent } from '@/contracts/payments';
+import { GetOrderQuery } from '@/modules/ordering/application/queries/get-order.query';
 
 @Injectable()
 @EventsHandler(PaymentFulfillmentRequestedEvent)
