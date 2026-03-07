@@ -1,5 +1,5 @@
-import { ApplicationErrorFactory } from '@/shared/errors/base.error-factory';
-import type { ErrorTemplate } from '@/shared/errors/error-template.type';
+import { ApplicationErrorFactory } from '@/common/errors/base.error-factory';
+import type { ErrorTemplate } from '@/common/errors/error-template.type';
 
 export const toTrimmedString = (value: unknown): string => {
 	if (typeof value === 'string') return value.trim();

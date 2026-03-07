@@ -1,6 +1,6 @@
 import { Query } from '@nestjs/cqrs';
-import type { PaymentIntentResult } from '@/shared/readers/payments/dto/payment-intent.result';
-import { toBoundedInt } from '@/shared/cqrs/input-normalizer';
+import type { PaymentIntentResult } from '@/shared/payments/readers/dto/payment-intent.result';
+import { toBoundedInt } from '@/common/cqrs/input-normalizer';
 
 export class GetPaymentIntentsQuery extends Query<PaymentIntentResult[]> {
 	public readonly limit: number;

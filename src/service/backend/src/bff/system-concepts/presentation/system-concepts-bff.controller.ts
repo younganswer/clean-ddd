@@ -5,7 +5,7 @@ import { ApiDataResponse, ApiErrorEnvelopeResponse } from '@/common/swagger';
 import { SystemConceptsBootstrapResponse } from '@/bff/system-concepts/presentation/swagger';
 import { GetInventoryItemsQuery } from '@/shared/inventory';
 import { GetUserProfilesQuery } from '@/shared/users/queries/get-user-profiles.query';
-import { PageQueryDto } from '@/shared/cqrs/query-input.dto';
+import { PageQueryDto } from '@/common/cqrs/query-input.dto';
 
 @Controller('bff/system-concepts')
 export class SystemConceptsBffController {

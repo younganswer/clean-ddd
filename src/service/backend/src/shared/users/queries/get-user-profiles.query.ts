@@ -1,7 +1,7 @@
 import { Query } from '@nestjs/cqrs';
 import type { UserProfileResult } from '@/shared/users/readers/user-profile.result';
-import type { PaginatedResult } from '@/shared/readers/paginated.result';
-import { toBoundedInt } from '@/shared/cqrs/input-normalizer';
+import type { PaginatedResult } from '@/common/types/paginated.result';
+import { toBoundedInt } from '@/common/cqrs/input-normalizer';
 
 export class GetUserProfilesQuery extends Query<
 	PaginatedResult<UserProfileResult>

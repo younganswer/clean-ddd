@@ -1,7 +1,7 @@
 import { Query } from '@nestjs/cqrs';
 import type { OrderResult } from '@/shared/ordering/readers/order.result';
-import { toBoundedInt } from '@/shared/cqrs/input-normalizer';
-import type { PaginatedResult } from '@/shared/readers/paginated.result';
+import { toBoundedInt } from '@/common/cqrs/input-normalizer';
+import type { PaginatedResult } from '@/common/types/paginated.result';
 
 export class GetOrdersBffQuery extends Query<PaginatedResult<OrderResult>> {
 	public readonly limit: number;

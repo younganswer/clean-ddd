@@ -1,6 +1,6 @@
 import { Command } from '@nestjs/cqrs';
 import { USER_APPLICATION_ERRORS } from '@/shared/errors';
-import { requireTrimmedString } from '@/shared/cqrs/input-normalizer';
+import { requireTrimmedString } from '@/common/cqrs/input-normalizer';
 
 export class UpdateMyAvatarCommand extends Command<{
 	avatarId: string;

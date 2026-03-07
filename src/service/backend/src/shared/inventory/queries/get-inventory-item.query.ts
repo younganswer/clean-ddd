@@ -1,7 +1,7 @@
 import { Query } from '@nestjs/cqrs';
-import type { InventoryItemResult } from '@/shared/readers/inventory/dto/inventory-item.result';
+import type { InventoryItemResult } from '@/shared/inventory/readers/dto/inventory-item.result';
 import { INVENTORY_DOMAIN_ERRORS } from '@/shared/errors';
-import { requireTrimmedString } from '@/shared/cqrs/input-normalizer';
+import { requireTrimmedString } from '@/common/cqrs/input-normalizer';
 
 export class GetInventoryItemQuery extends Query<InventoryItemResult | null> {
 	public readonly sku: string;

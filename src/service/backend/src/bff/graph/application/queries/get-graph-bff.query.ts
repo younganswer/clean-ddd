@@ -4,7 +4,7 @@ import {
 	requireTrimmedString,
 	toBoolean,
 	toBoundedInt,
-} from '@/shared/cqrs/input-normalizer';
+} from '@/common/cqrs/input-normalizer';
 import type { GraphView } from '@/bff/graph/application/views/graph.view';
 
 export type GraphRootType = 'USER' | 'ORDER' | 'SHIPMENT' | 'PAYMENT';

@@ -3,7 +3,7 @@ import { ORDERING_APPLICATION_ERRORS } from '@/shared/errors';
 import {
 	requireTrimmedString,
 	toBoolean,
-} from '@/shared/cqrs/input-normalizer';
+} from '@/common/cqrs/input-normalizer';
 import type { OrderDetailBffView } from '@/bff/order-detail/application/views/order-detail-bff.view';
 
 export class GetOrderDetailBffQuery extends Query<OrderDetailBffView | null> {

@@ -1,5 +1,5 @@
 import { Command } from '@nestjs/cqrs';
-import { toTrimmedString } from '@/shared/cqrs/input-normalizer';
+import { toTrimmedString } from '@/common/cqrs/input-normalizer';
 
 export class DispatchOutboxEventCommand extends Command<void> {
 	readonly outboxId: string;

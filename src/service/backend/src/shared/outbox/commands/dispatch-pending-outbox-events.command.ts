@@ -1,5 +1,5 @@
 import { Command } from '@nestjs/cqrs';
-import { toBoundedInt, toDate } from '@/shared/cqrs/input-normalizer';
+import { toBoundedInt, toDate } from '@/common/cqrs/input-normalizer';
 
 export class DispatchPendingOutboxEventsCommand extends Command<number> {
 	readonly limit: number;

@@ -4,7 +4,7 @@ import { PAYMENTS_APPLICATION_ERRORS } from '@/shared/errors';
 import {
 	requireTrimmedString,
 	toBoundedInt,
-} from '@/shared/cqrs/input-normalizer';
+} from '@/common/cqrs/input-normalizer';
 
 export type CreatePaymentIntentResult = {
 	paymentId: string;

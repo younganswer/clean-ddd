@@ -3,7 +3,7 @@ import { QueryBus } from '@nestjs/cqrs';
 import { PageEnvelope, ResponseHelper } from '@/common/responses';
 import { ApiErrorEnvelopeResponse, ApiPageResponse } from '@/common/swagger';
 import { UserProfileResponse } from '@/modules/users/presentation/swagger';
-import { PageQueryDto } from '@/shared/cqrs/query-input.dto';
+import { PageQueryDto } from '@/common/cqrs/query-input.dto';
 import { GetUserProfilesQuery } from '@/shared/users/queries/get-user-profiles.query';
 
 @Controller('users')

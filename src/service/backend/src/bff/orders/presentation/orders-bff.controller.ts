@@ -16,8 +16,8 @@ import { CreateOrderBffCommand } from '@/bff/orders/application/commands/create-
 import { GetOrderBffQuery } from '@/bff/orders/application/queries/get-order-bff.query';
 import { GetOrdersBffQuery } from '@/bff/orders/application/queries/get-orders-bff.query';
 import { ORDERING_APPLICATION_ERRORS } from '@/shared/errors';
-import { ApplicationErrorFactory } from '@/shared/errors/base.error-factory';
-import { PageQueryDto } from '@/shared/cqrs/query-input.dto';
+import { ApplicationErrorFactory } from '@/common/errors/base.error-factory';
+import { PageQueryDto } from '@/common/cqrs/query-input.dto';
 
 @Controller('bff/orders')
 export class OrdersBffController {

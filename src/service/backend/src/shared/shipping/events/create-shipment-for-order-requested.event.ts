@@ -5,7 +5,7 @@ import { SHIPPING_APPLICATION_ERRORS } from '@/shared/errors';
 import {
 	requireTrimmedString,
 	toTrimmedString,
-} from '@/shared/cqrs/input-normalizer';
+} from '@/common/cqrs/input-normalizer';
 
 export class CreateShipmentForOrderRequestedEvent {
 	static readonly eventType = SHIPPING_CREATE_FOR_ORDER_REQUESTED_EVENT_TYPE;

@@ -8,8 +8,8 @@ import {
 	requireTrimmedString,
 	toBoundedInt,
 	toTrimmedString,
-} from '@/shared/cqrs/input-normalizer';
-import { ApplicationErrorFactory } from '@/shared/errors/base.error-factory';
+} from '@/common/cqrs/input-normalizer';
+import { ApplicationErrorFactory } from '@/common/errors/base.error-factory';
 
 export class ReserveInventoryForOrderRequestedEvent {
 	static readonly eventType =

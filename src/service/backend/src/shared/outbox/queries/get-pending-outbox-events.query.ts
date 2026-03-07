@@ -1,6 +1,6 @@
 import { Query } from '@nestjs/cqrs';
 import type { OutboxEvent } from '@/shared/outbox/domain/entities/outbox-event.entity';
-import { toBoundedInt, toDate } from '@/shared/cqrs/input-normalizer';
+import { toBoundedInt, toDate } from '@/common/cqrs/input-normalizer';
 
 export class GetPendingOutboxEventsQuery extends Query<GetPendingOutboxEventsResult> {
 	readonly limit: number;

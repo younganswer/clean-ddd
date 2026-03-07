@@ -1,5 +1,5 @@
 import { Query } from '@nestjs/cqrs';
-import { toBoundedInt } from '@/shared/cqrs/input-normalizer';
+import { toBoundedInt } from '@/common/cqrs/input-normalizer';
 import { GetRecentOutboxEventsResult } from '@/shared/outbox/queries/get-recent-outbox-events.result';
 
 export class GetRecentOutboxEventsQuery extends Query<GetRecentOutboxEventsResult> {

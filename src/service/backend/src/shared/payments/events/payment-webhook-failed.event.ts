@@ -5,7 +5,7 @@ import { PAYMENTS_APPLICATION_ERRORS } from '@/shared/errors';
 import {
 	requireTrimmedString,
 	toTrimmedString,
-} from '@/shared/cqrs/input-normalizer';
+} from '@/common/cqrs/input-normalizer';
 
 export class PaymentWebhookFailedEvent {
 	static readonly eventType = PAYMENT_WEBHOOK_FAILED_EVENT_TYPE;

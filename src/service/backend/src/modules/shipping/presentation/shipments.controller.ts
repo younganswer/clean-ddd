@@ -12,7 +12,7 @@ import {
 	GetShipmentQuery,
 	GetShipmentsQuery,
 } from '@/shared/shipping';
-import { PageQueryDto } from '@/shared/cqrs/query-input.dto';
+import { PageQueryDto } from '@/common/cqrs/query-input.dto';
 
 @Controller('shipments')
 export class ShipmentsController {

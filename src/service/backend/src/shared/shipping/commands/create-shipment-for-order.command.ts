@@ -1,6 +1,6 @@
 import { Command } from '@nestjs/cqrs';
 import { SHIPPING_APPLICATION_ERRORS } from '@/shared/errors';
-import { requireTrimmedString } from '@/shared/cqrs/input-normalizer';
+import { requireTrimmedString } from '@/common/cqrs/input-normalizer';
 
 export type CreateShipmentForOrderResult = {
 	shipmentId: string;

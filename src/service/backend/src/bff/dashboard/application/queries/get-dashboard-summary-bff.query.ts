@@ -1,5 +1,5 @@
 import { Query } from '@nestjs/cqrs';
-import { toBoundedInt } from '@/shared/cqrs/input-normalizer';
+import { toBoundedInt } from '@/common/cqrs/input-normalizer';
 import type { DashboardSummaryBffView } from '@/bff/dashboard/application/views/dashboard-summary-bff.view';
 
 export class GetDashboardSummaryBffQuery extends Query<DashboardSummaryBffView> {

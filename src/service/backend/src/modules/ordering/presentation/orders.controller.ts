@@ -15,9 +15,9 @@ import {
 	CreateOrderResponse,
 	OrderResponse,
 } from '@/modules/ordering/presentation/swagger';
-import { PageQueryDto } from '@/shared/cqrs/query-input.dto';
+import { PageQueryDto } from '@/common/cqrs/query-input.dto';
 import { ORDERING_APPLICATION_ERRORS } from '@/shared/errors';
-import { ApplicationErrorFactory } from '@/shared/errors/base.error-factory';
+import { ApplicationErrorFactory } from '@/common/errors/base.error-factory';
 
 @Controller('orders')
 export class OrdersController {

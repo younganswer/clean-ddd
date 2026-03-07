@@ -21,7 +21,7 @@ import {
 	GetInventoryItemsQuery,
 	GetInventoryReservationsQuery,
 } from '@/shared/inventory';
-import { PageQueryDto } from '@/shared/cqrs/query-input.dto';
+import { PageQueryDto } from '@/common/cqrs/query-input.dto';
 
 @Controller('inventory')
 export class InventoryController {
