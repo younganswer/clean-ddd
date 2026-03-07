@@ -5,8 +5,12 @@ export const IInventoryReaderSymbol = Symbol('IInventoryReader');
 
 export interface IInventoryReader {
 	findItemBySku(sku: string): Promise<InventoryItemResult | null>;
-	findRecentItems(limit: number): Promise<InventoryItemResult[]>;
+	findRecentItems(
+		limit: number,
+		offset?: number,
+	): Promise<InventoryItemResult[]>;
 	findReservationsByOrderId(
 		orderId: string,
 	): Promise<InventoryReservationResult[]>;
+	countItems(): Promise<number>;
 }
