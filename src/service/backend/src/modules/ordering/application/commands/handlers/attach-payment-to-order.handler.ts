@@ -4,7 +4,7 @@ import {
 	IOrderRepositorySymbol,
 	type IOrderRepository,
 } from '@/modules/ordering/domains/repositories/i.order.repository';
-import { AttachPaymentToOrderCommand } from '@/modules/ordering/application/commands/attach-payment-to-order.command';
+import { AttachPaymentToOrderCommand } from '@/shared/ordering/commands/attach-payment-to-order.command';
 import { UnitOfWork } from '@/lib/database/unit-of-work';
 
 @CommandHandler(AttachPaymentToOrderCommand)
