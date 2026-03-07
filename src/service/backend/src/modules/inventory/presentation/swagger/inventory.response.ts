@@ -1,23 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import type { PaginatedResult } from '@/common/types/paginated.result';
-import type { InventoryItemResult } from '@/shared/inventory/readers/dto/inventory-item.result';
-import type { InventoryReservationResult } from '@/shared/inventory/readers/dto/inventory-reservation.result';
-import type { MoneyResult } from '@/shared/money/money.result';
-
-export class MoneyResponse {
-	@ApiProperty()
-	currency!: string;
-
-	@ApiProperty()
-	amountMinor!: number;
-
-	static fromResult(result: MoneyResult): MoneyResponse {
-		return {
-			currency: result.currency,
-			amountMinor: result.amountMinor,
-		};
-	}
-}
+import type { InventoryItemResult } from '@/modules/inventory/domains/readers/inventory-item.result';
+import type { InventoryReservationResult } from '@/modules/inventory/domains/readers/inventory-reservation.result';
+import { MoneyResponse } from '@/shared/money/presentation/swagger/money.response';
 
 export class InventoryItemResponse {
 	@ApiProperty()

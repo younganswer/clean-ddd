@@ -3,7 +3,8 @@ import type { PaginatedResult } from '@/common/types/paginated.result';
 import type {
 	OrderItemResult,
 	OrderResult,
-} from '@/shared/ordering/readers/order.result';
+} from '@/modules/ordering/domains/readers/order.result';
+import { MoneyResponse } from '@/shared/money/presentation/swagger/money.response';
 
 export class OrderItemResponse {
 	@ApiProperty()
@@ -30,11 +31,8 @@ export class OrderResponse {
 	@ApiProperty()
 	status!: string;
 
-	@ApiProperty()
-	amount!: number;
-
-	@ApiProperty()
-	currency!: string;
+	@ApiProperty({ type: MoneyResponse })
+	money!: MoneyResponse;
 
 	@ApiProperty({ type: [OrderItemResponse] })
 	items!: OrderItemResponse[];
@@ -47,8 +45,10 @@ export class OrderResponse {
 			orderId: result.orderId,
 			userId: result.userId,
 			status: String(result.status),
-			amount: result.amount,
-			currency: result.currency,
+			money: MoneyResponse.fromAmountMinor(
+				result.amount,
+				result.currency,
+			),
 			items: result.items.map((item) =>
 				OrderItemResponse.fromResult(item),
 			),

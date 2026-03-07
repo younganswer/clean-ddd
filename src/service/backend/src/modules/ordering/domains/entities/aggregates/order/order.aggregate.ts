@@ -1,6 +1,6 @@
-import { OrderStatus } from '@/shared/ordering/enums/order-status.enum';
+import { OrderStatus } from '@/modules/ordering/domains/enums/order-status.enum';
 import { BaseEntity } from '@/common/domain/base.entity';
-import { Money } from '@/modules/ordering/domains/value-objects/money.vo';
+import { Money } from '@/shared/money/value-objects/money.vo';
 import { OrderItem } from '@/modules/ordering/domains/value-objects/order-item.vo';
 import { ORDERING_DOMAIN_ERRORS } from '@/shared/errors';
 import { DomainErrorFactory } from '@/common/errors/base.error-factory';

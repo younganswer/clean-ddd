@@ -1,11 +1,11 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { CreateOrderCommand } from '@/shared/ordering/commands/create-order.command';
+import { CreateOrderCommand } from '@/modules/ordering/application/commands/create-order.command';
 import { Inject } from '@nestjs/common';
 import { IOrderRepositorySymbol } from '@/modules/ordering/domains/repositories/i.order.repository';
 import type { IOrderRepository } from '@/modules/ordering/domains/repositories/i.order.repository';
 import { UnitOfWork } from '@/lib/database/unit-of-work';
 import { Order } from '@/modules/ordering/domains/entities/aggregates/order/order.aggregate';
-import { Money } from '@/modules/ordering/domains/value-objects/money.vo';
+import { Money } from '@/shared/money/value-objects/money.vo';
 import { OrderItem } from '@/modules/ordering/domains/value-objects/order-item.vo';
 
 @CommandHandler(CreateOrderCommand)

@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import type { PaymentIntentResult } from '@/shared/payments/readers/dto/payment-intent.result';
-import type { CreatePaymentIntentResult } from '@/shared/payments/commands/create-payment-intent.command';
+import type { PaymentIntentResult } from '@/modules/payments/domains/readers/payment-intent.result';
+import type { CreatePaymentIntentResult } from '@/modules/payments/application/commands/create-payment-intent.command';
+import { MoneyResponse } from '@/shared/money/presentation/swagger/money.response';
 
 export class PaymentIntentResponse {
 	@ApiProperty()
@@ -9,11 +10,8 @@ export class PaymentIntentResponse {
 	@ApiProperty()
 	orderId!: string;
 
-	@ApiProperty()
-	amount!: number;
-
-	@ApiProperty()
-	currency!: string;
+	@ApiProperty({ type: MoneyResponse })
+	money!: MoneyResponse;
 
 	@ApiProperty()
 	status!: string;
@@ -22,8 +20,10 @@ export class PaymentIntentResponse {
 		return {
 			paymentId: result.paymentId,
 			orderId: result.orderId,
-			amount: result.amount,
-			currency: result.currency,
+			money: MoneyResponse.fromAmountMinor(
+				result.amount,
+				result.currency,
+			),
 			status: String(result.status),
 		};
 	}
