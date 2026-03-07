@@ -166,25 +166,44 @@ flowchart TB
 
 ## Shared vs Common 경계
 
-현재 저장소 기준에서 `shared`와 `common` 경계는 다음처럼 구분합니다.
+현재 기준에서 `shared`, `common`, `contracts` 경계는 다음처럼 구분합니다.
 
-- `common`: 기술적 공통 요소(프레임워크 독립 유틸/기초 타입)
-- `shared`: 비즈니스 계약(Command/Query/Event, Reader DTO)
+- `shared`: 도메인/프레임워크/DB와 무관한 순수 공통 코드
+- `common`: 프레임워크/애플리케이션 공통 코드
+- `contracts`: Bounded Context 간 이벤트/메시지 계약
 
-핵심 기준은 **"도메인 문맥이 없으면 이해 가능한가"** 입니다.
+핵심 기준은 다음 질문으로 판단합니다.
 
-- 가능하면 `common`
-- 도메인 언어가 들어가면 `shared`
+- 이 코드가 프레임워크를 아는가? 그렇다면 `common`
+- 이 코드가 타 Context와 통신하는 메시지인가? 그렇다면 `contracts`
+- 위 둘이 아니라 순수 공통인가? 그렇다면 `shared`
 
 ### Shared / Common / Lib 배치 원칙 (Do/Don’t)
 
-`shared`, `common`, `lib`는 재사용 대상이 아니라 **의존성 방향과 도메인 언어 포함 여부**로 구분합니다.
+`shared`, `common`, `contracts`, `lib`는 재사용 대상이 아니라 **의존성 방향과 책임**으로 구분합니다.
 
-| 위치     | 두는 것(Do)                                                 | 두지 말아야 할 것(Don’t)                              |
-| -------- | ----------------------------------------------------------- | ----------------------------------------------------- |
-| `shared` | Command/Query/Event 계약, Reader DTO, 도메인 간 합의된 타입 | ORM Entity, framework provider, 특정 인프라 구현 의존 |
-| `common` | 기술 공통 유틸, base type, 에러 추상화                      | 특정 도메인 용어가 포함된 규칙, 비즈니스 정책         |
-| `lib`    | 런타임 어댑터(outbox/queue/lambda), 실행 경계 wiring        | 도메인 규칙 자체, aggregate 상태 전이 정책            |
+| 위치        | 두는 것(Do)                                                      | 두지 말아야 할 것(Don’t)                        |
+| ----------- | ---------------------------------------------------------------- | ----------------------------------------------- |
+| `shared`    | Money/Email/Nullable/Pagination 같은 순수 공통 타입/VO/유틸      | Command/Query/Event/Reader, framework 의존 코드 |
+| `common`    | Guard/Filter/Interceptor/Decorator, 에러 매핑 등 프레임워크 공통 | 특정 도메인 정책                                |
+| `contracts` | Context 간 통신 이벤트/메시지 스키마                             | Repository/Entity/Handler 구현                  |
+| `lib`       | 런타임 어댑터(outbox/queue/lambda), 실행 경계 wiring             | 도메인 규칙 자체, aggregate 상태 전이 정책      |
+
+### contracts / modules 배치 기준
+
+- Event 계약은 `src/service/backend/src/contracts/*`에 둡니다.
+- Command/Query/Reader 계약 및 구현은 각 `src/service/backend/src/modules/*`에 둡니다.
+- `shared`는 순수 공통 코드만 허용합니다.
+
+### Outbox 경계 기준
+
+- 도메인 모듈/사가는 `modules/outbox/application/*` 구현을 직접 import하지 않습니다.
+- Outbox 메타데이터/포트 계약은 `common/outbox/*`에 두고 구현은 `modules/outbox/*`에 고립합니다.
+
+### shared/errors 기준
+
+- `shared/errors/catalogs/*`는 프레임워크 enum (`HttpStatus`)에 의존하지 않습니다.
+- status는 숫자 코드(예: `400`, `404`, `409`, `500`, `503`)로 유지하고 HTTP 매핑 책임은 common/presentation에 둡니다.
 
 <br/>
 <br/>

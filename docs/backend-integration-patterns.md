@@ -30,7 +30,7 @@ Reader는 도메인 간 조회를 직접 의존 대신 계약으로 끊어내는
 
 Reader는 단순한 조회 편의가 아니라 도메인 경계를 보호하는 계약입니다.
 
-- 인터페이스/DTO 계약은 `shared`에 둡니다.
+- Reader 인터페이스/Result는 `modules/{domain}/domains/readers`에 둡니다. (`domains/repositories`와 같은 레벨)
 - 구현체는 각 도메인의 인프라 레이어가 소유합니다(필요 시 중복 허용).
 - 반환 모델은 Entity 전체가 아니라 "타 도메인에 필요한 최소 DTO"로 제한합니다.
 - 테스트에서는 Reader를 mock 하여 도메인 규칙을 독립 검증합니다.
@@ -42,6 +42,23 @@ Reader 구현 강제 규칙:
 - Reader는 `EntityManager` 기반 직접 조회(`find/findOne`, QueryBuilder, raw SQL)를 사용합니다.
 - Reader는 상태를 변경하지 않습니다(쓰기/seed/flush 금지).
 - Reader 반환 Result는 `class`로 정의하고 `static fromSchema(schema: Schema): Result`를 통해서만 매핑합니다.
+
+### contracts 배치 규칙
+
+- Context 간 비동기 통신 이벤트는 `src/service/backend/src/contracts/*`에 둡니다.
+- Saga/Outbox/Consumer는 `contracts` 이벤트 타입에 의존합니다.
+- Event Handler 구현은 각 `modules/*` 또는 `saga-orchestrator/*`에 둡니다.
+
+### shared 배치 규칙
+
+- `shared`는 순수 공통(Value Object, 공통 타입, 순수 유틸)만 허용합니다.
+- `shared`에 Command/Query/Reader/Event를 신규 추가하지 않습니다.
+
+### Outbox 의존 규칙
+
+- 도메인 모듈/사가는 `modules/outbox/application/*`를 직접 import하지 않습니다.
+- 이벤트 핸들러 메타데이터/발행 포트 계약은 `common/outbox/*`에 둡니다.
+- Outbox 구현체는 `modules/outbox/*` 내부에서만 참조합니다.
 
 ### Reader 계약 규칙 (페이지네이션/카운트)
 
