@@ -1,5 +1,5 @@
 import { DiscoveryService, Reflector } from '@nestjs/core';
-import { OutboxKnownHandler } from '@/modules/outbox/application/outbox-known-handler.decorator';
+import { OutboxKnownHandler } from '@/common/outbox/outbox-known-handler.decorator';
 import { OutboxKnownHandlerRegistryService } from '@/modules/outbox/application/outbox-known-handler.registry.service';
 
 describe('OutboxKnownHandlerRegistryService', () => {

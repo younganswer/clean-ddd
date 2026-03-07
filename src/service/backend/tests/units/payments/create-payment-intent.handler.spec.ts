@@ -1,15 +1,15 @@
-import { CommandBus } from '@nestjs/cqrs';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { CreatePaymentIntentHandler } from '@/modules/payments/application/commands/handlers/create-payment-intent.handler';
 import type { IPaymentRepository } from '@/modules/payments/domains/repositories/i.payment.repository';
-import { OutboxProducer } from '@/modules/outbox/application/outbox.producer';
+import type { IOutboxProducer } from '@/shared/outbox/domain/producers/i.outbox.producer';
 import type { UnitOfWork } from '@/lib/database/unit-of-work';
+import { CreatePaymentIntentCommand } from '@/modules/payments/application/commands/create-payment-intent.command';
 import {
-	CreatePaymentIntentCommand,
 	PaymentWebhookFailedEvent,
 	PaymentWebhookSucceededEvent,
-} from '@/shared/payments';
-import type { IOrderPaymentSnapshotReader } from '@/shared/ordering/readers/i.order-payment-snapshot.reader';
-import { AttachPaymentToOrderCommand } from '@/shared/ordering/commands/attach-payment-to-order.command';
+} from '@/contracts/payments';
+import { AttachPaymentToOrderCommand } from '@/modules/ordering/application/commands/attach-payment-to-order.command';
+import { GetOrderQuery } from '@/modules/ordering/application/queries/get-order.query';
 
 describe('CreatePaymentIntentHandler', () => {
 	it('creates payment using payment snapshot reader and schedules succeeded webhook event', async () => {
@@ -24,17 +24,16 @@ describe('CreatePaymentIntentHandler', () => {
 			findRecent: () => Promise.resolve([]),
 		};
 
-		const getByOrderIdMock = jest.fn(() =>
+		const queryExecuteMock = jest.fn(() =>
 			Promise.resolve({
 				orderId: 'order-1',
 				amount: 1200,
 				currency: 'KRW',
 			}),
 		);
-
-		const orderPaymentSnapshotReader: IOrderPaymentSnapshotReader = {
-			getByOrderId: getByOrderIdMock,
-		};
+		const queryBus = {
+			execute: queryExecuteMock,
+		} as unknown as QueryBus;
 
 		const outboxPublishMock = jest.fn<
 			Promise<string>,
@@ -48,7 +47,7 @@ describe('CreatePaymentIntentHandler', () => {
 		>(() => Promise.resolve('outbox-1'));
 		const outboxProducer = {
 			publish: outboxPublishMock,
-		} as unknown as OutboxProducer;
+		} as unknown as IOutboxProducer;
 
 		const commandExecuteMock = jest.fn<
 			Promise<void>,
@@ -65,10 +64,10 @@ describe('CreatePaymentIntentHandler', () => {
 
 		const handler = new CreatePaymentIntentHandler(
 			paymentRepository,
-			orderPaymentSnapshotReader,
-			uow as UnitOfWork,
 			outboxProducer,
+			uow as UnitOfWork,
 			commandBus,
+			queryBus,
 		);
 
 		const result = await handler.execute(
@@ -79,7 +78,9 @@ describe('CreatePaymentIntentHandler', () => {
 			}),
 		);
 
-		expect(getByOrderIdMock).toHaveBeenCalledWith('order-1');
+		expect(queryExecuteMock).toHaveBeenCalledWith(
+			expect.any(GetOrderQuery),
+		);
 		expect(persisted).toHaveLength(1);
 		expect(commandExecuteMock).toHaveBeenCalledTimes(1);
 		expect(commandExecuteMock).toHaveBeenCalledWith(
@@ -111,15 +112,15 @@ describe('CreatePaymentIntentHandler', () => {
 			findRecent: jest.fn(() => Promise.resolve([])),
 		} as unknown as IPaymentRepository;
 
-		const orderPaymentSnapshotReader = {
-			getByOrderId: jest.fn(() =>
+		const queryBus = {
+			execute: jest.fn(() =>
 				Promise.resolve({
 					orderId: 'order-2',
 					amount: 500,
 					currency: 'KRW',
 				}),
 			),
-		} as unknown as IOrderPaymentSnapshotReader;
+		} as unknown as QueryBus;
 
 		const outboxPublishMock = jest.fn<
 			Promise<string>,
@@ -133,7 +134,7 @@ describe('CreatePaymentIntentHandler', () => {
 		>(() => Promise.resolve('outbox-2'));
 		const outboxProducer = {
 			publish: outboxPublishMock,
-		} as unknown as OutboxProducer;
+		} as unknown as IOutboxProducer;
 		const commandBus = {
 			execute: jest.fn(() => Promise.resolve(undefined)),
 		} as unknown as CommandBus;
@@ -144,10 +145,10 @@ describe('CreatePaymentIntentHandler', () => {
 
 		const handler = new CreatePaymentIntentHandler(
 			paymentRepository,
-			orderPaymentSnapshotReader,
-			uow as UnitOfWork,
 			outboxProducer,
+			uow as UnitOfWork,
 			commandBus,
+			queryBus,
 		);
 
 		const result = await handler.execute(

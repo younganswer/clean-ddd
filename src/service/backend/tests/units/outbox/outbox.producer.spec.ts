@@ -1,6 +1,6 @@
 import { OutboxProducer } from '@/modules/outbox/application/outbox.producer';
-import { OutboxEventStatus } from '@/shared/outbox';
-import type { IOutboxRepository } from '@/shared/outbox/domain/i.outbox.repository';
+import { OutboxEventStatus } from '@/shared/outbox/domain/outbox-event-status.enum';
+import type { IOutboxRepository } from '@/shared/outbox/domain/repositories/i.outbox.repository';
 import type { UnitOfWork } from '@/lib/database/unit-of-work';
 
 class ProducerSpecEvent {

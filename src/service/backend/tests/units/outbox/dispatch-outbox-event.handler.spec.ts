@@ -1,9 +1,9 @@
 import { DispatchOutboxEventHandler } from '@/modules/outbox/application/commands/handlers/dispatch-outbox-event.handler';
-import { DispatchOutboxEventCommand } from '@/shared/outbox/commands/dispatch-outbox-event.command';
+import { DispatchOutboxEventCommand } from '@/modules/outbox/application/commands/dispatch-outbox-event.command';
 import { OutboxEvent } from '@/shared/outbox/domain/entities/outbox-event.entity';
-import { OutboxEventStatus } from '@/shared/outbox';
-import type { IOutboxRepository } from '@/shared/outbox/domain/i.outbox.repository';
-import type { IOutboxQueuePort } from '@/shared/outbox/domain/i.outbox-queue.port';
+import { OutboxEventStatus } from '@/shared/outbox/domain/outbox-event-status.enum';
+import type { IOutboxRepository } from '@/shared/outbox/domain/repositories/i.outbox.repository';
+import type { IOutboxQueue } from '@/shared/outbox/domain/queue/i.outbox.queue';
 import type { UnitOfWork } from '@/lib/database/unit-of-work';
 
 describe('DispatchOutboxEventHandler', () => {
@@ -26,7 +26,7 @@ describe('DispatchOutboxEventHandler', () => {
 			unlock: jest.fn(() => Promise.resolve(undefined)),
 		};
 		const enqueueMock = jest.fn(() => Promise.resolve(undefined));
-		const outboxQueue: IOutboxQueuePort = {
+		const outboxQueue: IOutboxQueue = {
 			enqueue: enqueueMock,
 		};
 		const uow: Pick<UnitOfWork, 'transaction'> = {
@@ -73,7 +73,7 @@ describe('DispatchOutboxEventHandler', () => {
 			lock: jest.fn(() => Promise.resolve(true)),
 			unlock: jest.fn(() => Promise.resolve(undefined)),
 		};
-		const outboxQueue: IOutboxQueuePort = {
+		const outboxQueue: IOutboxQueue = {
 			enqueue: jest.fn(() => {
 				throw new Error('enqueue failed');
 			}),

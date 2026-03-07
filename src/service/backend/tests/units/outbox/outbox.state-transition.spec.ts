@@ -5,19 +5,19 @@ import { OutboxDispatcher } from '@/modules/outbox/application/outbox.dispatcher
 import { DispatchOutboxEventHandler } from '@/modules/outbox/application/commands/handlers/dispatch-outbox-event.handler';
 import { OutboxConsumer } from '@/modules/outbox/application/outbox.consumer';
 import { OutboxKnownHandlerRegistryService } from '@/modules/outbox/application/outbox-known-handler.registry.service';
-import { DispatchOutboxEventCommand } from '@/shared/outbox/commands/dispatch-outbox-event.command';
+import { DispatchOutboxEventCommand } from '@/modules/outbox/application/commands/dispatch-outbox-event.command';
 import {
 	GetPendingOutboxEventsResult,
 	GetPendingOutboxEventsQuery,
-} from '@/shared/outbox/queries/get-pending-outbox-events.query';
-import type { IOutboxRepository } from '@/shared/outbox/domain/i.outbox.repository';
-import type { IOutboxQueuePort } from '@/shared/outbox/domain/i.outbox-queue.port';
+} from '@/modules/outbox/application/queries/get-pending-outbox-events.query';
+import type { IOutboxRepository } from '@/shared/outbox/domain/repositories/i.outbox.repository';
+import type { IOutboxQueue } from '@/shared/outbox/domain/queue/i.outbox.queue';
 import { OutboxEvent } from '@/shared/outbox/domain/entities/outbox-event.entity';
-import { OutboxEventStatus } from '@/shared/outbox';
+import { OutboxEventStatus } from '@/shared/outbox/domain/outbox-event-status.enum';
 import { IdempotencyService } from '@/modules/outbox/idempotency/idempotency.service';
 import type { RepositoryGetByIdOptions } from '@/lib/database/repository-get-options';
 import type { UnitOfWork } from '@/lib/database/unit-of-work';
-import { CreateShipmentForOrderRequestedEvent } from '@/shared/shipping';
+import { CreateShipmentForOrderRequestedEvent } from '@/contracts/shipping';
 
 class InMemoryOutboxRepository implements IOutboxRepository {
 	private readonly events = new Map<string, OutboxEvent>();
@@ -110,7 +110,7 @@ describe('Outbox flow state transition', () => {
 	it('transitions PENDING -> PUBLISHED -> CONSUMED', async () => {
 		const repository = new InMemoryOutboxRepository();
 		const enqueueMock = jest.fn(() => Promise.resolve(undefined));
-		const queue: IOutboxQueuePort = {
+		const queue: IOutboxQueue = {
 			enqueue: enqueueMock,
 		};
 		const uow: Pick<UnitOfWork, 'transaction'> = {

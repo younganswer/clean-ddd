@@ -1,5 +1,6 @@
 import { OutboxConsumeStateMachine } from '@/modules/outbox/application/outbox-consume.state-machine';
-import { OutboxEvent, OutboxEventStatus } from '@/shared/outbox';
+import { OutboxEvent } from '@/shared/outbox/domain/entities/outbox-event.entity';
+import { OutboxEventStatus } from '@/shared/outbox/domain/outbox-event-status.enum';
 
 describe('OutboxConsumeStateMachine', () => {
 	const stateMachine = new OutboxConsumeStateMachine();

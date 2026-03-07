@@ -1,15 +1,18 @@
 import { Test } from '@nestjs/testing';
 import { CqrsModule, CommandBus, EventBus } from '@nestjs/cqrs';
 import { UnitOfWork } from '@/lib/database/unit-of-work';
-import { OutboxProducer } from '@/modules/outbox/application/outbox.producer';
-import { MarkOrderPaidCommand } from '@/shared/ordering/commands/mark-order-paid.command';
-import { HandlePaymentWebhookFailedCommand } from '@/shared/payments/commands/handle-payment-webhook-failed.command';
-import { HandlePaymentWebhookSucceededCommand } from '@/shared/payments/commands/handle-payment-webhook-succeeded.command';
 import {
-	PaymentStatus,
+	IOutboxProducerSymbol,
+	type IOutboxProducer,
+} from '@/shared/outbox/domain/producers/i.outbox.producer';
+import { MarkOrderPaidCommand } from '@/modules/ordering/application/commands/mark-order-paid.command';
+import { HandlePaymentWebhookFailedCommand } from '@/modules/payments/application/commands/handle-payment-webhook-failed.command';
+import { HandlePaymentWebhookSucceededCommand } from '@/modules/payments/application/commands/handle-payment-webhook-succeeded.command';
+import {
 	PaymentWebhookFailedEvent,
 	PaymentWebhookSucceededEvent,
-} from '@/shared/payments';
+} from '@/contracts/payments';
+import { PaymentStatus } from '@/modules/payments/domains/enums/payment-status.enum';
 import { PaymentIntent } from '@/modules/payments/domains/entities/aggregates/payment-intent/payment-intent.aggregate';
 import {
 	IPaymentRepositorySymbol,
@@ -57,7 +60,7 @@ describe('PaymentWebhookEvent multi-handler wiring (integration)', () => {
 		const outboxPublishMock = jest.fn(() => Promise.resolve('outbox-1'));
 		const outboxProducer = {
 			publish: outboxPublishMock,
-		} as unknown as OutboxProducer;
+		} as unknown as IOutboxProducer;
 
 		const uow: Pick<UnitOfWork, 'transaction'> = {
 			transaction: <T>(work: (em: never) => Promise<T>): Promise<T> =>
@@ -76,7 +79,7 @@ describe('PaymentWebhookEvent multi-handler wiring (integration)', () => {
 					provide: IPaymentRepositorySymbol,
 					useValue: paymentRepository,
 				},
-				{ provide: OutboxProducer, useValue: outboxProducer },
+				{ provide: IOutboxProducerSymbol, useValue: outboxProducer },
 				{ provide: UnitOfWork, useValue: uow },
 			],
 		}).compile();
@@ -166,7 +169,7 @@ describe('PaymentWebhookEvent multi-handler wiring (integration)', () => {
 		const outboxPublishMock = jest.fn(() => Promise.resolve('outbox-2'));
 		const outboxProducer = {
 			publish: outboxPublishMock,
-		} as unknown as OutboxProducer;
+		} as unknown as IOutboxProducer;
 
 		const uow: Pick<UnitOfWork, 'transaction'> = {
 			transaction: <T>(work: (em: never) => Promise<T>): Promise<T> =>
@@ -185,7 +188,7 @@ describe('PaymentWebhookEvent multi-handler wiring (integration)', () => {
 					provide: IPaymentRepositorySymbol,
 					useValue: paymentRepository,
 				},
-				{ provide: OutboxProducer, useValue: outboxProducer },
+				{ provide: IOutboxProducerSymbol, useValue: outboxProducer },
 				{ provide: UnitOfWork, useValue: uow },
 			],
 		}).compile();

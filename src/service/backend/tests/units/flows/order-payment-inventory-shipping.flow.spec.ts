@@ -5,23 +5,22 @@ import { MarkOrderPaidOnPaymentWebhookSucceededHandler } from '@/modules/orderin
 import { PaymentFulfillmentRequestedHandler } from '@/saga-orchestrator/fulfillment/payment-fulfillment-requested.event-handler';
 import type { IPaymentRepository } from '@/modules/payments/domains/repositories/i.payment.repository';
 import { PaymentIntent } from '@/modules/payments/domains/entities/aggregates/payment-intent/payment-intent.aggregate';
-import { OutboxProducer } from '@/modules/outbox/application/outbox.producer';
+import type { IOutboxProducer } from '@/shared/outbox/domain/producers/i.outbox.producer';
 import type { UnitOfWork } from '@/lib/database/unit-of-work';
 import {
-	CreatePaymentIntentCommand,
 	PaymentFulfillmentRequestedEvent,
-	PaymentStatus,
 	PaymentWebhookSucceededEvent,
-} from '@/shared/payments';
-import { HandlePaymentWebhookSucceededCommand } from '@/shared/payments/commands/handle-payment-webhook-succeeded.command';
-import { AttachPaymentToOrderCommand } from '@/shared/ordering/commands/attach-payment-to-order.command';
-import { MarkOrderPaidCommand } from '@/shared/ordering/commands/mark-order-paid.command';
-import type { IOrderPaymentSnapshotReader } from '@/shared/ordering/readers/i.order-payment-snapshot.reader';
-import type { OrderResult } from '@/shared/ordering/readers/order.result';
-import { OrderStatus } from '@/shared/ordering/enums/order-status.enum';
-import { GetOrderQuery } from '@/shared/ordering/queries/get-order.query';
-import { ReserveInventoryForOrderCommand } from '@/shared/inventory';
-import { CreateShipmentForOrderCommand } from '@/shared/shipping';
+} from '@/contracts/payments';
+import { CreatePaymentIntentCommand } from '@/modules/payments/application/commands/create-payment-intent.command';
+import { PaymentStatus } from '@/modules/payments/domains/enums/payment-status.enum';
+import { HandlePaymentWebhookSucceededCommand } from '@/modules/payments/application/commands/handle-payment-webhook-succeeded.command';
+import { AttachPaymentToOrderCommand } from '@/modules/ordering/application/commands/attach-payment-to-order.command';
+import { MarkOrderPaidCommand } from '@/modules/ordering/application/commands/mark-order-paid.command';
+import type { OrderResult } from '@/modules/ordering/domains/readers/order.result';
+import { OrderStatus } from '@/modules/ordering/domains/enums/order-status.enum';
+import { GetOrderQuery } from '@/modules/ordering/application/queries/get-order.query';
+import { ReserveInventoryForOrderCommand } from '@/modules/inventory/application/commands/reserve-inventory-for-order.command';
+import { CreateShipmentForOrderCommand } from '@/modules/shipping/application/commands/create-shipment-for-order.command';
 
 describe('Cross module flow (order -> payment -> inventory/shipping)', () => {
 	it('keeps command/event chain stable on payment succeeded flow', async () => {
@@ -68,26 +67,13 @@ describe('Cross module flow (order -> payment -> inventory/shipping)', () => {
 			}),
 		} as unknown as QueryBus;
 
-		const orderPaymentSnapshotReader: IOrderPaymentSnapshotReader = {
-			getByOrderId: (id: string) =>
-				id === order.orderId
-					? Promise.resolve({
-							orderId: order.orderId,
-							amount: order.amount,
-							currency: order.currency,
-						})
-					: Promise.reject(
-							new Error(`order snapshot not found: ${id}`),
-						),
-		};
-
 		const publishedEvents: object[] = [];
 		const outboxProducer = {
 			publish: jest.fn((event: object) => {
 				publishedEvents.push(event);
 				return Promise.resolve(`outbox-${publishedEvents.length}`);
 			}),
-		} as unknown as OutboxProducer;
+		} as unknown as IOutboxProducer;
 
 		const executedCommands: object[] = [];
 		const commandBus = {
@@ -118,10 +104,10 @@ describe('Cross module flow (order -> payment -> inventory/shipping)', () => {
 
 		const createPaymentIntentHandler = new CreatePaymentIntentHandler(
 			paymentRepository,
-			orderPaymentSnapshotReader,
-			uow as UnitOfWork,
 			outboxProducer,
+			uow as UnitOfWork,
 			commandBus,
+			queryBus,
 		);
 
 		const createResult = await createPaymentIntentHandler.execute(

@@ -2,13 +2,13 @@ import { QueryBus } from '@nestjs/cqrs';
 import { GetDashboardSummaryBffHandler } from '@/bff/dashboard/application/queries/handlers/get-dashboard-summary-bff.handler';
 import { GetDashboardSummaryBffQuery } from '@/bff/dashboard/application/queries/get-dashboard-summary-bff.query';
 import type { PaginatedResult } from '@/common/types/paginated.result';
-import type { OrderResult } from '@/shared/ordering/readers/order.result';
-import type { PaymentIntentResult } from '@/shared/payments/readers/dto/payment-intent.result';
-import type { ShipmentResult } from '@/shared/shipping/readers/dto/shipment.result';
-import type { InventoryItemResult } from '@/shared/inventory/readers/dto/inventory-item.result';
-import { OrderStatus } from '@/shared/ordering/enums/order-status.enum';
-import { PaymentStatus } from '@/shared/payments/enums/payment-status.enum';
-import { ShipmentStatus } from '@/shared/shipping/enums/shipment-status.enum';
+import type { OrderResult } from '@/modules/ordering/domains/readers/order.result';
+import type { PaymentIntentResult } from '@/modules/payments/domains/readers/payment-intent.result';
+import type { ShipmentResult } from '@/modules/shipping/domains/readers/shipment.result';
+import type { InventoryItemResult } from '@/modules/inventory/domains/readers/inventory-item.result';
+import { OrderStatus } from '@/modules/ordering/domains/enums/order-status.enum';
+import { PaymentStatus } from '@/modules/payments/domains/enums/payment-status.enum';
+import { ShipmentStatus } from '@/modules/shipping/domains/enums/shipment-status.enum';
 
 describe('GetDashboardSummaryBffHandler', () => {
 	it('unwraps paginated query results and returns aggregated view', async () => {

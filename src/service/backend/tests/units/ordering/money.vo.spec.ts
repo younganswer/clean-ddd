@@ -1,5 +1,5 @@
 import { given, then, when } from 'test-utils/gwt.template.spec';
-import { Money } from '@/modules/ordering/domains/value-objects/money.vo';
+import { Money } from '@/shared/money/value-objects/money.vo';
 
 describe('Money', () => {
 	given('유효한 금액과 통화가 주어지면', () => {
