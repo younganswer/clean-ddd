@@ -7,8 +7,8 @@ import {
 	ApiPageResponse,
 } from '@/common/swagger';
 import { CreateOrderCommand } from '@/shared/ordering/commands/create-order.command';
-import { GetOrderQuery } from '@/modules/ordering/application/queries/get-order.query';
-import { GetOrdersQuery } from '@/modules/ordering/application/queries/get-orders.query';
+import { GetOrderQuery } from '@/shared/ordering/queries/get-order.query';
+import { GetOrdersQuery } from '@/shared/ordering/queries/get-orders.query';
 import { isOrderResult } from '@/shared/ordering/readers/order-result.guard';
 import { CreateOrderRequest } from '@/modules/ordering/presentation/dto/create-order.request';
 import {

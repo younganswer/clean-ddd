@@ -1,12 +1,11 @@
 import { Inject } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-
-import { GetOrdersByUserIdQuery } from '@/modules/ordering/application/queries/get-orders-by-user-subject-id.query';
+import { GetOrdersByUserIdQuery } from '@/shared/ordering/queries/get-orders-by-user-subject-id.query';
 import {
 	IOrderReaderSymbol,
 	type IOrderReader,
-} from '@/modules/ordering/application/readers/i.order.reader';
-import type { OrderResult } from '@/modules/ordering/application/readers/order.result';
+} from '@/shared/ordering/readers/i.order.reader';
+import type { OrderResult } from '@/shared/ordering/readers/order.result';
 
 @QueryHandler(GetOrdersByUserIdQuery)
 export class ListOrdersByUserSubjectIdHandler implements IQueryHandler<GetOrdersByUserIdQuery> {
