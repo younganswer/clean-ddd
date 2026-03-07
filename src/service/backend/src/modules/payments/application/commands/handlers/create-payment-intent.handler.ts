@@ -9,11 +9,10 @@ import {
 	PaymentWebhookFailedEvent,
 	PaymentWebhookSucceededEvent,
 } from '@/shared/payments';
-import { assertOrderResult } from '@/shared/ordering/readers/order-result.guard';
 import {
-	IOrderReaderSymbol,
-	type IOrderReader,
-} from '@/shared/ordering/readers/i.order.reader';
+	type IOrderPaymentSnapshotReader,
+	IOrderPaymentSnapshotReaderSymbol,
+} from '@/shared/ordering/readers/i.order-payment-snapshot.reader';
 import {
 	CreatePaymentIntentCommand,
 	type CreatePaymentIntentResult,
@@ -25,8 +24,8 @@ export class CreatePaymentIntentHandler implements ICommandHandler<CreatePayment
 	constructor(
 		@Inject(IPaymentRepositorySymbol)
 		private readonly paymentRepository: IPaymentRepository,
-		@Inject(IOrderReaderSymbol)
-		private readonly orderReader: IOrderReader,
+		@Inject(IOrderPaymentSnapshotReaderSymbol)
+		private readonly orderPaymentSnapshotReader: IOrderPaymentSnapshotReader,
 		private readonly uow: UnitOfWork,
 		private readonly outboxProducer: OutboxProducer,
 		private readonly commandBus: CommandBus,
@@ -36,13 +35,15 @@ export class CreatePaymentIntentHandler implements ICommandHandler<CreatePayment
 		command: CreatePaymentIntentCommand,
 	): Promise<CreatePaymentIntentResult> {
 		return this.uow.transaction(async () => {
-			const order = await this.orderReader.findById(command.orderId);
-			assertOrderResult(order);
+			const orderSnapshot =
+				await this.orderPaymentSnapshotReader.getByOrderId(
+					command.orderId,
+				);
 
 			const payment = PaymentIntent.create({
 				orderId: command.orderId,
-				amount: order.amount,
-				currency: order.currency,
+				amount: orderSnapshot.amount,
+				currency: orderSnapshot.currency,
 			});
 			await this.paymentRepository.persist(payment);
 
