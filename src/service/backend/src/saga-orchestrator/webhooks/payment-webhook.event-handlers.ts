@@ -1,15 +1,12 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
-import { EventsHandler, IEventHandler } from '@nestjs/cqrs';
+import { Injectable, Logger } from '@nestjs/common';
+import { CommandBus, EventsHandler, IEventHandler } from '@nestjs/cqrs';
 import {
-	PaymentFulfillmentRequestedEvent,
 	PaymentWebhookFailedEvent,
 	PaymentWebhookSucceededEvent,
 } from '@/shared/payments';
-import { IPaymentRepositorySymbol } from '@/modules/payments/domains/repositories/i.payment.repository';
-import type { IPaymentRepository } from '@/modules/payments/domains/repositories/i.payment.repository';
-import { OutboxProducer } from '@/modules/outbox/application/outbox.producer';
-import { UnitOfWork } from '@/lib/database/unit-of-work';
 import { OutboxKnownHandler } from '@/modules/outbox/application/outbox-known-handler.decorator';
+import { HandlePaymentWebhookSucceededCommand } from '@/shared/payments/commands/handle-payment-webhook-succeeded.command';
+import { HandlePaymentWebhookFailedCommand } from '@/shared/payments/commands/handle-payment-webhook-failed.command';
 
 @Injectable()
 @EventsHandler(PaymentWebhookSucceededEvent)
@@ -17,12 +14,7 @@ import { OutboxKnownHandler } from '@/modules/outbox/application/outbox-known-ha
 export class PaymentWebhookSucceededHandler implements IEventHandler<PaymentWebhookSucceededEvent> {
 	private readonly logger = new Logger(PaymentWebhookSucceededHandler.name);
 
-	constructor(
-		@Inject(IPaymentRepositorySymbol)
-		private readonly paymentRepository: IPaymentRepository,
-		private readonly uow: UnitOfWork,
-		private readonly outboxProducer: OutboxProducer,
-	) {}
+	constructor(private readonly commandBus: CommandBus) {}
 
 	async handle(event: PaymentWebhookSucceededEvent): Promise<void> {
 		this.logger.log(
@@ -33,26 +25,21 @@ export class PaymentWebhookSucceededHandler implements IEventHandler<PaymentWebh
 			}),
 		);
 
-		await this.uow.transaction(async () => {
-			const { orderId, paymentId } = event;
+		const { orderId, paymentId } = event;
+		await this.commandBus.execute(
+			new HandlePaymentWebhookSucceededCommand({
+				orderId,
+				paymentId,
+			}),
+		);
 
-			const payment = await this.paymentRepository.getById(paymentId);
-			payment.markSucceeded();
-			await this.paymentRepository.persist(payment);
-
-			await this.outboxProducer.publish(
-				new PaymentFulfillmentRequestedEvent({ orderId }),
-				{ messageGroupId: orderId },
-			);
-
-			this.logger.log(
-				JSON.stringify({
-					step: 'payment_fulfillment_requested_published',
-					orderId,
-					paymentId,
-				}),
-			);
-		});
+		this.logger.log(
+			JSON.stringify({
+				step: 'payment_webhook_succeeded_handled_via_command_bus',
+				orderId,
+				paymentId,
+			}),
+		);
 	}
 }
 
@@ -62,11 +49,7 @@ export class PaymentWebhookSucceededHandler implements IEventHandler<PaymentWebh
 export class PaymentWebhookFailedHandler implements IEventHandler<PaymentWebhookFailedEvent> {
 	private readonly logger = new Logger(PaymentWebhookFailedHandler.name);
 
-	constructor(
-		@Inject(IPaymentRepositorySymbol)
-		private readonly paymentRepository: IPaymentRepository,
-		private readonly uow: UnitOfWork,
-	) {}
+	constructor(private readonly commandBus: CommandBus) {}
 
 	async handle(event: PaymentWebhookFailedEvent): Promise<void> {
 		this.logger.log(
@@ -77,18 +60,16 @@ export class PaymentWebhookFailedHandler implements IEventHandler<PaymentWebhook
 			}),
 		);
 
-		await this.uow.transaction(async () => {
-			const { paymentId } = event;
-			const payment = await this.paymentRepository.getById(paymentId);
-			payment.markFailed();
-			await this.paymentRepository.persist(payment);
+		const { paymentId } = event;
+		await this.commandBus.execute(
+			new HandlePaymentWebhookFailedCommand({ paymentId }),
+		);
 
-			this.logger.log(
-				JSON.stringify({
-					step: 'payment_marked_failed',
-					paymentId,
-				}),
-			);
-		});
+		this.logger.log(
+			JSON.stringify({
+				step: 'payment_webhook_failed_handled_via_command_bus',
+				paymentId,
+			}),
+		);
 	}
 }
