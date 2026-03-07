@@ -5,7 +5,7 @@ import {
 	IOrderReaderSymbol,
 	type IOrderReader,
 } from '@/modules/ordering/application/readers/i.order.reader';
-import type { PaginatedResult } from '@/shared/readers/paginated.result';
+import type { PaginatedResult } from '@/common/types/paginated.result';
 import type { OrderResult } from '@/modules/ordering/application/readers/order.result';
 
 @QueryHandler(GetOrdersQuery)

@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import type { PaginatedResult } from '@/shared/readers/paginated.result';
-import type { ShipmentResult } from '@/shared/readers/shipping/dto/shipment.result';
+import type { PaginatedResult } from '@/common/types/paginated.result';
+import type { ShipmentResult } from '@/shared/shipping/readers/dto/shipment.result';
 
 export class ShipmentResponse {
 	@ApiProperty()

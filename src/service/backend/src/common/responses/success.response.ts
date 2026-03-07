@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { BaseEnvelope } from '@/common/responses/base.response';
-import type { PaginatedResult } from '@/shared/readers/paginated.result';
+import type { PaginatedResult } from '@/common/types/paginated.result';
 
 export class DataEnvelope<TData> extends BaseEnvelope<TData> {
 	constructor(data: TData) {

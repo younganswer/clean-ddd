@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import type { PaginatedResult } from '@/shared/readers/paginated.result';
-import type { InventoryItemResult } from '@/shared/readers/inventory/dto/inventory-item.result';
-import type { InventoryReservationResult } from '@/shared/readers/inventory/dto/inventory-reservation.result';
+import type { PaginatedResult } from '@/common/types/paginated.result';
+import type { InventoryItemResult } from '@/shared/inventory/readers/dto/inventory-item.result';
+import type { InventoryReservationResult } from '@/shared/inventory/readers/dto/inventory-reservation.result';
 import type { MoneyResult } from '@/shared/money/money.result';
 
 export class MoneyResponse {

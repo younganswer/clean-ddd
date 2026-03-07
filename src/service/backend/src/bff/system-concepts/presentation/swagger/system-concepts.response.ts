@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import type { PaginatedResult } from '@/shared/readers/paginated.result';
-import type { InventoryItemResult } from '@/shared/readers/inventory/dto/inventory-item.result';
+import type { PaginatedResult } from '@/common/types/paginated.result';
+import type { InventoryItemResult } from '@/shared/inventory/readers/dto/inventory-item.result';
 import type { UserProfileResult } from '@/shared/users/readers/user-profile.result';
 import { InventoryItemResponse } from '@/modules/inventory/presentation/swagger';
 import { UserProfileResponse } from '@/modules/users/presentation/swagger';

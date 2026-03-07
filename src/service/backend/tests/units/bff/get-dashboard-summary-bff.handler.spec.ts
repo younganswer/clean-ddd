@@ -1,11 +1,11 @@
 import { QueryBus } from '@nestjs/cqrs';
 import { GetDashboardSummaryBffHandler } from '@/bff/dashboard/application/queries/handlers/get-dashboard-summary-bff.handler';
 import { GetDashboardSummaryBffQuery } from '@/bff/dashboard/application/queries/get-dashboard-summary-bff.query';
-import type { PaginatedResult } from '@/shared/readers/paginated.result';
+import type { PaginatedResult } from '@/common/types/paginated.result';
 import type { OrderResult } from '@/shared/ordering/readers/order.result';
-import type { PaymentIntentResult } from '@/shared/readers/payments/dto/payment-intent.result';
-import type { ShipmentResult } from '@/shared/readers/shipping/dto/shipment.result';
-import type { InventoryItemResult } from '@/shared/readers/inventory/dto/inventory-item.result';
+import type { PaymentIntentResult } from '@/shared/payments/readers/dto/payment-intent.result';
+import type { ShipmentResult } from '@/shared/shipping/readers/dto/shipment.result';
+import type { InventoryItemResult } from '@/shared/inventory/readers/dto/inventory-item.result';
 import { OrderStatus } from '@/shared/ordering/enums/order-status.enum';
 import { PaymentStatus } from '@/shared/payments/enums/payment-status.enum';
 import { ShipmentStatus } from '@/shared/shipping/enums/shipment-status.enum';

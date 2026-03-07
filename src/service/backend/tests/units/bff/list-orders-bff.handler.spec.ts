@@ -2,7 +2,7 @@ import { QueryBus } from '@nestjs/cqrs';
 import { ListOrdersBffHandler } from '@/bff/orders/application/queries/handlers/list-orders-bff.handler';
 import { GetOrdersBffQuery } from '@/bff/orders/application/queries/get-orders-bff.query';
 import { GetOrdersQuery } from '@/shared/ordering/queries/get-orders.query';
-import type { PaginatedResult } from '@/shared/readers/paginated.result';
+import type { PaginatedResult } from '@/common/types/paginated.result';
 import type { OrderResult } from '@/shared/ordering/readers/order.result';
 import { OrderStatus } from '@/shared/ordering/enums/order-status.enum';
 

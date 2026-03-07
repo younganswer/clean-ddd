@@ -4,11 +4,11 @@ import {
 	GetInventoryItemsQuery,
 	type InventoryItemResult,
 } from '@/shared/inventory';
-import type { PaginatedResult } from '@/shared/readers/paginated.result';
+import type { PaginatedResult } from '@/common/types/paginated.result';
 import {
 	IInventoryReaderSymbol,
 	type IInventoryReader,
-} from '@/shared/readers/inventory/i.inventory.reader';
+} from '@/shared/inventory/readers/i.inventory.reader';
 
 @QueryHandler(GetInventoryItemsQuery)
 export class ListInventoryItemsHandler implements IQueryHandler<GetInventoryItemsQuery> {
