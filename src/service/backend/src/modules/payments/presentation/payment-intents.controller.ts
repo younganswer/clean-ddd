@@ -7,11 +7,9 @@ import {
 	ApiListResponse,
 } from '@/common/swagger';
 import { PaymentIntentResponse } from '@/modules/payments/presentation/swagger';
-import {
-	GetPaymentIntentQuery,
-	GetPaymentIntentsQuery,
-	type PaymentIntentResult,
-} from '@/shared/payments';
+import { GetPaymentIntentQuery } from '@/modules/payments/application/queries/get-payment-intent.query';
+import { GetPaymentIntentsQuery } from '@/modules/payments/application/queries/get-payment-intents.query';
+import type { PaymentIntentResult } from '@/modules/payments/domains/readers/payment-intent.result';
 import { PAYMENTS_APPLICATION_ERRORS } from '@/shared/errors';
 import { ApplicationErrorFactory } from '@/common/errors/base.error-factory';
 

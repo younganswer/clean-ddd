@@ -2,10 +2,10 @@ import { Inject } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import {
 	IPaymentIntentReaderSymbol,
-	GetPaymentIntentsQuery,
 	type IPaymentIntentReader,
-	type PaymentIntentResult,
-} from '@/shared/payments';
+} from '@/modules/payments/domains/readers/i.payment-intent.reader';
+import { GetPaymentIntentsQuery } from '@/modules/payments/application/queries/get-payment-intents.query';
+import type { PaymentIntentResult } from '@/modules/payments/domains/readers/payment-intent.result';
 
 @QueryHandler(GetPaymentIntentsQuery)
 export class ListPaymentIntentsHandler implements IQueryHandler<GetPaymentIntentsQuery> {

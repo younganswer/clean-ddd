@@ -4,8 +4,8 @@ import { Injectable } from '@nestjs/common';
 import {
 	IPaymentIntentReaderSymbol,
 	type IPaymentIntentReader,
-} from '@/shared/payments/readers/i.payment-intent.reader';
-import { PaymentIntentResult } from '@/shared/payments/readers/dto/payment-intent.result';
+} from '@/modules/payments/domains/readers/i.payment-intent.reader';
+import { PaymentIntentResult } from '@/modules/payments/domains/readers/payment-intent.result';
 import { PaymentIntentSchema } from '@/modules/payments/infrastructure/schemas/payment-intent.schema';
 
 @Injectable()

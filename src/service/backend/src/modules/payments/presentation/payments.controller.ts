@@ -3,7 +3,7 @@ import { CommandBus } from '@nestjs/cqrs';
 import { DataEnvelope, ResponseHelper } from '@/common/responses';
 import { ApiDataResponse, ApiErrorEnvelopeResponse } from '@/common/swagger';
 import { CreatePaymentIntentResponse } from '@/modules/payments/presentation/swagger';
-import { CreatePaymentIntentCommand } from '@/shared/payments';
+import { CreatePaymentIntentCommand } from '@/modules/payments/application/commands/create-payment-intent.command';
 import { CreatePaymentIntentRequest } from '@/modules/payments/presentation/dto/create-payment-intent.request';
 
 @Controller('orders/:orderId/payments')

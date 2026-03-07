@@ -1,4 +1,4 @@
-import type { PaymentIntentResult } from '@/shared/payments/readers/dto/payment-intent.result';
+import type { PaymentIntentResult } from '@/modules/payments/domains/readers/payment-intent.result';
 
 export const IPaymentIntentReaderSymbol = Symbol('IPaymentIntentReader');
 

@@ -1,5 +1,5 @@
 import { Command } from '@nestjs/cqrs';
-import type { PaymentStatus } from '@/shared/payments/enums/payment-status.enum';
+import type { PaymentStatus } from '@/modules/payments/domains/enums/payment-status.enum';
 import { PAYMENTS_APPLICATION_ERRORS } from '@/shared/errors';
 import {
 	requireTrimmedString,

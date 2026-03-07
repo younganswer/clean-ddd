@@ -5,7 +5,7 @@ import {
 	IPaymentRepositorySymbol,
 	type IPaymentRepository,
 } from '@/modules/payments/domains/repositories/i.payment.repository';
-import { HandlePaymentWebhookFailedCommand } from '@/shared/payments/commands/handle-payment-webhook-failed.command';
+import { HandlePaymentWebhookFailedCommand } from '@/modules/payments/application/commands/handle-payment-webhook-failed.command';
 
 @CommandHandler(HandlePaymentWebhookFailedCommand)
 export class HandlePaymentWebhookFailedHandler implements ICommandHandler<HandlePaymentWebhookFailedCommand> {

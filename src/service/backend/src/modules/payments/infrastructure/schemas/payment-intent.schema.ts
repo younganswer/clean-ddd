@@ -1,5 +1,5 @@
 import { Entity, Index, Property } from '@mikro-orm/core';
-import { PaymentStatus } from '@/shared/payments';
+import { PaymentStatus } from '@/modules/payments/domains/enums/payment-status.enum';
 import { BaseSchema } from '@/common/persistence/mikro-orm/base.schema';
 
 @Entity({ tableName: 'payment_intents' })

@@ -1,5 +1,5 @@
 import { BaseEntity } from '@/common/domain/base.entity';
-import { PaymentStatus } from '@/shared/payments';
+import { PaymentStatus } from '@/modules/payments/domains/enums/payment-status.enum';
 import { PAYMENTS_DOMAIN_ERRORS } from '@/shared/errors';
 import { DomainErrorFactory } from '@/common/errors/base.error-factory';
 import { randomUUID } from 'node:crypto';

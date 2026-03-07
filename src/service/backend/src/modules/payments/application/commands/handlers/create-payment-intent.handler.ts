@@ -1,44 +1,56 @@
 import { Inject } from '@nestjs/common';
-import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { OutboxProducer } from '@/modules/outbox/application/outbox.producer';
+import {
+	CommandBus,
+	CommandHandler,
+	ICommandHandler,
+	QueryBus,
+} from '@nestjs/cqrs';
+import {
+	IOutboxProducerSymbol,
+	type IOutboxProducer,
+} from '@/shared/outbox/domain/producers/i.outbox.producer';
 import { IPaymentRepositorySymbol } from '@/modules/payments/domains/repositories/i.payment.repository';
 import type { IPaymentRepository } from '@/modules/payments/domains/repositories/i.payment.repository';
 import { PaymentIntent } from '@/modules/payments/domains/entities/aggregates/payment-intent/payment-intent.aggregate';
-import { AttachPaymentToOrderCommand } from '@/shared/ordering/commands/attach-payment-to-order.command';
+import { AttachPaymentToOrderCommand } from '@/modules/ordering/application/commands/attach-payment-to-order.command';
+import { GetOrderQuery } from '@/modules/ordering/application/queries/get-order.query';
 import {
 	PaymentWebhookFailedEvent,
 	PaymentWebhookSucceededEvent,
-} from '@/shared/payments';
-import {
-	type IOrderPaymentSnapshotReader,
-	IOrderPaymentSnapshotReaderSymbol,
-} from '@/shared/ordering/readers/i.order-payment-snapshot.reader';
+} from '@/contracts/payments';
 import {
 	CreatePaymentIntentCommand,
 	type CreatePaymentIntentResult,
-} from '@/shared/payments';
+} from '@/modules/payments/application/commands/create-payment-intent.command';
 import { UnitOfWork } from '@/lib/database/unit-of-work';
+import { ORDERING_APPLICATION_ERRORS } from '@/shared/errors';
+import { ApplicationErrorFactory } from '@/common/errors/base.error-factory';
 
 @CommandHandler(CreatePaymentIntentCommand)
 export class CreatePaymentIntentHandler implements ICommandHandler<CreatePaymentIntentCommand> {
 	constructor(
 		@Inject(IPaymentRepositorySymbol)
 		private readonly paymentRepository: IPaymentRepository,
-		@Inject(IOrderPaymentSnapshotReaderSymbol)
-		private readonly orderPaymentSnapshotReader: IOrderPaymentSnapshotReader,
+		@Inject(IOutboxProducerSymbol)
+		private readonly outboxProducer: IOutboxProducer,
 		private readonly uow: UnitOfWork,
-		private readonly outboxProducer: OutboxProducer,
 		private readonly commandBus: CommandBus,
+		private readonly queryBus: QueryBus,
 	) {}
 
 	async execute(
 		command: CreatePaymentIntentCommand,
 	): Promise<CreatePaymentIntentResult> {
 		return this.uow.transaction(async () => {
-			const orderSnapshot =
-				await this.orderPaymentSnapshotReader.getByOrderId(
-					command.orderId,
+			const orderSnapshot = await this.queryBus.execute(
+				new GetOrderQuery({ orderId: command.orderId }),
+			);
+			if (!orderSnapshot) {
+				throw ApplicationErrorFactory.create(
+					ORDERING_APPLICATION_ERRORS.ORDER_NOT_FOUND,
+					{ details: { id: command.orderId } },
 				);
+			}
 
 			const payment = PaymentIntent.create({
 				orderId: command.orderId,

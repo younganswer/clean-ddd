@@ -1,4 +1,4 @@
-import type { PaymentStatus } from '@/shared/payments/enums/payment-status.enum';
+import type { PaymentStatus } from '@/modules/payments/domains/enums/payment-status.enum';
 
 type PaymentIntentSchema = {
 	uuid: string;
