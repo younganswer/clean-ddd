@@ -3,6 +3,8 @@ import { CqrsModule } from '@nestjs/cqrs';
 import { OutboxModule } from '@/modules/outbox/outbox.module';
 import { OrderingModule } from '@/modules/ordering/ordering.module';
 import { CreatePaymentIntentHandler } from '@/modules/payments/application/commands/handlers/create-payment-intent.handler';
+import { HandlePaymentWebhookSucceededHandler } from '@/modules/payments/application/commands/handlers/handle-payment-webhook-succeeded.handler';
+import { HandlePaymentWebhookFailedHandler } from '@/modules/payments/application/commands/handlers/handle-payment-webhook-failed.handler';
 import { GetPaymentIntentHandler } from '@/modules/payments/application/queries/handlers/get-payment-intent.handler';
 import { ListPaymentIntentsHandler } from '@/modules/payments/application/queries/handlers/list-payment-intents.handler';
 import { IPaymentRepositorySymbol } from '@/modules/payments/domains/repositories/i.payment.repository';
@@ -26,9 +28,10 @@ import { OrderPaymentSnapshotReaderProvider } from '@/modules/payments/infrastru
 		PaymentIntentReaderProvider,
 		OrderPaymentSnapshotReaderProvider,
 		CreatePaymentIntentHandler,
+		HandlePaymentWebhookSucceededHandler,
+		HandlePaymentWebhookFailedHandler,
 		GetPaymentIntentHandler,
 		ListPaymentIntentsHandler,
 	],
-	exports: [IPaymentRepositorySymbol],
 })
 export class PaymentsModule {}
