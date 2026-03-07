@@ -7,7 +7,11 @@ import { Order } from '@/modules/ordering/domains/entities/aggregates/order/orde
 import { OrderMapper } from '@/modules/ordering/infrastructure/mappers/order.mapper';
 import { OrderSchema } from '@/modules/ordering/infrastructure/schemas/order.schema';
 import { ORDERING_APPLICATION_ERRORS } from '@/shared/errors';
-import { ApplicationErrorFactory } from '@/shared/errors/base.error-factory';
+import { SYSTEM_INFRA_ERRORS } from '@/shared/errors/catalogs/system.errors';
+import {
+	ApplicationErrorFactory,
+	InfrastructureErrorFactory,
+} from '@/shared/errors/base.error-factory';
 
 @Injectable()
 export class OrderRepository implements IOrderRepository {
@@ -23,8 +27,26 @@ export class OrderRepository implements IOrderRepository {
 		);
 	}
 
+	private transactionalEmForWrite(): EntityManager {
+		const em = RequestContext.getEntityManager() as
+			| EntityManager
+			| undefined;
+		if (!em) {
+			throw InfrastructureErrorFactory.create(
+				SYSTEM_INFRA_ERRORS.REQUEST_CONTEXT_TRANSACTION_REQUIRED,
+				{
+					details: {
+						repository: OrderRepository.name,
+						method: 'persist',
+					},
+				},
+			);
+		}
+		return em;
+	}
+
 	async persist(order: Order): Promise<void> {
-		const em = this.emForContext();
+		const em = this.transactionalEmForWrite();
 		const schema = this.mapper.toSchema(order);
 		const exists = await em.findOne(OrderSchema, { uuid: schema.uuid });
 

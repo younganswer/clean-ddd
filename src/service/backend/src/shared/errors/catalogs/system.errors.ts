@@ -22,6 +22,11 @@ export const SYSTEM_INFRA_ERRORS = {
 		message: 'DATABASE_URL_POOLED (or DATABASE_URL) is required',
 		status: HttpStatus.SERVICE_UNAVAILABLE,
 	},
+	REQUEST_CONTEXT_TRANSACTION_REQUIRED: {
+		code: 'REQUEST_CONTEXT_TRANSACTION_REQUIRED',
+		message: 'An active RequestContext transaction is required',
+		status: HttpStatus.INTERNAL_SERVER_ERROR,
+	},
 } as const satisfies Record<string, ErrorTemplate>;
 
 export const IDEMPOTENCY_DOMAIN_ERRORS = {
