@@ -12,6 +12,10 @@ import { DynamoDbUserAvatarRepository } from '@/modules/users/infrastructure/rep
 import { AvatarMapper } from '@/modules/users/infrastructure/mappers/avatar.mapper';
 import { UserMapper } from '@/modules/users/infrastructure/mappers/user.mapper';
 import { optionalEnv } from '@/env';
+import { UserReaderProvider } from '@/modules/users/infrastructure/readers/user.reader';
+import { MongoUserAvatarReader } from '@/modules/users/infrastructure/readers/mongo-user-avatar.reader';
+import { DynamoDbUserAvatarReader } from '@/modules/users/infrastructure/readers/dynamodb-user-avatar.reader';
+import { IUserAvatarReaderSymbol } from '@/shared/readers/users/i.user-avatar.reader';
 
 @Module({
 	imports: [CqrsModule],
@@ -22,6 +26,9 @@ import { optionalEnv } from '@/env';
 		SqlUserRepository,
 		MongoUserAvatarRepository,
 		DynamoDbUserAvatarRepository,
+		UserReaderProvider,
+		MongoUserAvatarReader,
+		DynamoDbUserAvatarReader,
 		{
 			provide: IUserRepositorySymbol,
 			useExisting: SqlUserRepository,
@@ -43,6 +50,24 @@ import { optionalEnv } from '@/env';
 					: mongoUserAvatarRepository;
 			},
 			inject: [MongoUserAvatarRepository, DynamoDbUserAvatarRepository],
+		},
+		{
+			provide: IUserAvatarReaderSymbol,
+			useFactory: (
+				mongoUserAvatarReader: MongoUserAvatarReader,
+				dynamoDbUserAvatarReader: DynamoDbUserAvatarReader,
+			) => {
+				const nodeEnv = (
+					optionalEnv('NODE_ENV') ?? 'development'
+				).toLowerCase();
+				const backend =
+					optionalEnv('AVATAR_REPOSITORY_BACKEND') ??
+					(nodeEnv === 'production' ? 'dynamodb' : 'mongo');
+				return backend === 'dynamodb'
+					? dynamoDbUserAvatarReader
+					: mongoUserAvatarReader;
+			},
+			inject: [MongoUserAvatarReader, DynamoDbUserAvatarReader],
 		},
 		...CommandHandlers,
 		...QueryHandlers,

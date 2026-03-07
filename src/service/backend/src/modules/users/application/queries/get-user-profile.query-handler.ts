@@ -1,45 +1,38 @@
 import { Inject } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { GetUserProfileQuery } from '@/shared/users/queries/get-user-profile.query';
-import type { UserProfileResult } from '@/shared/users/readers/user-profile.result';
+import { UserProfileResult } from '@/shared/readers/users/user-profile.result';
 import {
-	IUserRepositorySymbol,
-	type IUserRepository,
-} from '@/modules/users/domains/repositories/i.user.repository';
+	IUserReaderSymbol,
+	type IUserReader,
+} from '@/shared/readers/users/i.user.reader';
 import {
-	IUserAvatarRepositorySymbol,
-	type IUserAvatarRepository,
-} from '@/modules/users/domains/repositories/i.user-avatar.repository';
+	IUserAvatarReaderSymbol,
+	type IUserAvatarReader,
+} from '@/shared/readers/users/i.user-avatar.reader';
 
 @QueryHandler(GetUserProfileQuery)
 export class GetUserProfileQueryHandler implements IQueryHandler<GetUserProfileQuery> {
 	constructor(
-		@Inject(IUserRepositorySymbol)
-		private readonly userRepository: IUserRepository,
-		@Inject(IUserAvatarRepositorySymbol)
-		private readonly userAvatarRepository: IUserAvatarRepository,
+		@Inject(IUserReaderSymbol)
+		private readonly userReader: IUserReader,
+		@Inject(IUserAvatarReaderSymbol)
+		private readonly userAvatarReader: IUserAvatarReader,
 	) {}
 
 	async execute(query: GetUserProfileQuery): Promise<UserProfileResult> {
-		const user = await this.userRepository.getById(query.userId);
+		const profile = await this.userReader.getById(query.userId);
+		if (!profile.avatarId) return profile;
 
-		const profile: UserProfileResult = {
-			userId: user.id,
-			displayName: user.displayName,
-			email: user.email,
-			avatarId: user.avatarId ?? undefined,
-		};
-
-		if (!profile.avatarId) {
-			return { ...profile, avatarUrl: undefined };
-		}
-
-		const avatar = await this.userAvatarRepository.findByAvatarId(
+		const avatar = await this.userAvatarReader.findByAvatarId(
 			profile.avatarId,
 		);
-		return {
-			...profile,
-			avatarUrl: avatar?.imageUrl,
-		};
+		return new UserProfileResult(
+			profile.userId,
+			profile.displayName,
+			profile.email,
+			profile.avatarId,
+			avatar?.imageUrl,
+		);
 	}
 }
