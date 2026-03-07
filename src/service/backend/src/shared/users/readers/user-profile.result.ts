@@ -1,7 +1,1 @@
-export interface UserProfileResult {
-	userId: string;
-	displayName: string;
-	email: string;
-	avatarId?: string;
-	avatarUrl?: string;
-}
+export { UserProfileResult } from '@/shared/readers/users/user-profile.result';
