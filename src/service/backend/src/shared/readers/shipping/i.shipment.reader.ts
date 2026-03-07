@@ -5,5 +5,6 @@ export const IShipmentReaderSymbol = Symbol('IShipmentReader');
 export interface IShipmentReader {
 	findById(id: string): Promise<ShipmentResult | null>;
 	findByOrderId(orderId: string): Promise<ShipmentResult | null>;
-	findRecent(limit: number): Promise<ShipmentResult[]>;
+	findRecent(limit: number, offset?: number): Promise<ShipmentResult[]>;
+	countAll(): Promise<number>;
 }

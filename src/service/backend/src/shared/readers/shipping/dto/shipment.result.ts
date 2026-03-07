@@ -1,7 +1,19 @@
 import type { ShipmentStatus } from '@/shared/shipping/enums/shipment-status.enum';
 
-export type ShipmentResult = {
-	shipmentId: string;
+type ShipmentSchema = {
+	uuid: string;
 	orderId: string;
 	status: ShipmentStatus;
 };
+
+export class ShipmentResult {
+	constructor(
+		public readonly shipmentId: string,
+		public readonly orderId: string,
+		public readonly status: ShipmentStatus,
+	) {}
+
+	static fromSchema(schema: ShipmentSchema): ShipmentResult {
+		return new ShipmentResult(schema.uuid, schema.orderId, schema.status);
+	}
+}

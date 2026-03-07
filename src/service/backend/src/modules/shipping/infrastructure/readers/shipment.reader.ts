@@ -1,48 +1,61 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { RequestContext } from '@mikro-orm/core';
+import { EntityManager } from '@mikro-orm/postgresql';
+import { Injectable } from '@nestjs/common';
 
 import {
 	IShipmentReaderSymbol,
 	type IShipmentReader,
 } from '@/shared/readers/shipping/i.shipment.reader';
-import type { ShipmentResult } from '@/shared/readers/shipping/dto/shipment.result';
-import { IShipmentRepositorySymbol } from '@/modules/shipping/domains/repositories/i.shipment.repository';
-import type { IShipmentRepository } from '@/modules/shipping/domains/repositories/i.shipment.repository';
+import { ShipmentResult } from '@/shared/readers/shipping/dto/shipment.result';
+import { ShipmentSchema } from '@/modules/shipping/infrastructure/schemas/shipment.schema';
 
 @Injectable()
 export class ShipmentReader implements IShipmentReader {
-	constructor(
-		@Inject(IShipmentRepositorySymbol)
-		private readonly shipmentRepository: IShipmentRepository,
-	) {}
+	constructor(private readonly em: EntityManager) {}
+
+	private emForContext(): EntityManager {
+		return (
+			(RequestContext.getEntityManager() as EntityManager | undefined) ??
+			this.em
+		);
+	}
 
 	async findById(id: string): Promise<ShipmentResult | null> {
-		const s = await this.shipmentRepository.findById(id);
+		const s = await this.emForContext().findOne(ShipmentSchema, {
+			uuid: id,
+		});
 		if (!s) return null;
-		return this.toResult(s);
+		return ShipmentResult.fromSchema(s);
 	}
 
 	async findByOrderId(orderId: string): Promise<ShipmentResult | null> {
-		const s = await this.shipmentRepository.findByOrderId(orderId);
+		const s = await this.emForContext().findOne(ShipmentSchema, {
+			orderId,
+		});
 		if (!s) return null;
-		return this.toResult(s);
+		return ShipmentResult.fromSchema(s);
 	}
 
-	async findRecent(limit: number): Promise<ShipmentResult[]> {
+	async findRecent(
+		limit: number,
+		offset: number = 0,
+	): Promise<ShipmentResult[]> {
 		const safeLimit = Math.min(50, Math.max(1, Number(limit ?? 20)));
-		const list = await this.shipmentRepository.findRecent(safeLimit);
-		return list.map((s) => this.toResult(s));
+		const safeOffset = Math.max(0, Number(offset ?? 0) || 0);
+		const list = await this.emForContext().find(
+			ShipmentSchema,
+			{},
+			{
+				limit: safeLimit,
+				offset: safeOffset,
+				orderBy: { id: 'asc' },
+			},
+		);
+		return list.map((shipment) => ShipmentResult.fromSchema(shipment));
 	}
 
-	private toResult(shipment: {
-		id: string;
-		orderId: string;
-		status: ShipmentResult['status'];
-	}): ShipmentResult {
-		return {
-			shipmentId: shipment.id,
-			orderId: shipment.orderId,
-			status: shipment.status,
-		};
+	async countAll(): Promise<number> {
+		return await this.emForContext().count(ShipmentSchema, {});
 	}
 }
 
