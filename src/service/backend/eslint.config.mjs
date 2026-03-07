@@ -85,9 +85,9 @@ export default tseslint.config(
 				'error',
 				{
 					patterns: [
-						'**/application/**',
-						'**/presentation/**',
-						'**/infrastructure/**',
+						'@/modules/*/application/**',
+						'@/modules/*/presentation/**',
+						'@/modules/*/infrastructure/**',
 					],
 				},
 			],
