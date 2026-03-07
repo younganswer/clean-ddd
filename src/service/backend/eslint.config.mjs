@@ -104,4 +104,35 @@ export default tseslint.config(
 			],
 		},
 	},
+	{
+		files: [
+			'src/modules/{ordering,inventory,payments,shipping,users}/application/queries/**/*.ts',
+			'src/bff/**/application/queries/**/*.ts',
+		],
+		rules: {
+			'no-restricted-imports': [
+				'error',
+				{
+					patterns: [
+						'**/domains/repositories/**',
+						'**/infrastructure/repositories/**',
+					],
+				},
+			],
+		},
+	},
+	{
+		files: ['src/modules/*/infrastructure/readers/**/*.ts'],
+		rules: {
+			'no-restricted-imports': [
+				'error',
+				{
+					patterns: [
+						'**/domains/repositories/**',
+						'**/infrastructure/repositories/**',
+					],
+				},
+			],
+		},
+	},
 );
