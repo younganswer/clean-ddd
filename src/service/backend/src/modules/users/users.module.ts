@@ -72,6 +72,5 @@ import { IUserAvatarReaderSymbol } from '@/shared/users/readers/i.user-avatar.re
 		...CommandHandlers,
 		...QueryHandlers,
 	],
-	exports: [IUserRepositorySymbol, IUserAvatarRepositorySymbol],
 })
 export class UsersModule {}
