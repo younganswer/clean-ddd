@@ -7,7 +7,7 @@ import {
 } from '@/shared/ordering/readers/i.order-payment-snapshot.reader';
 import { OrderSchema } from '@/modules/ordering/infrastructure/schemas/order.schema';
 import { ORDERING_APPLICATION_ERRORS } from '@/shared/errors';
-import { ApplicationErrorFactory } from '@/shared/errors/base.error-factory';
+import { ApplicationErrorFactory } from '@/common/errors/base.error-factory';
 import { OrderPaymentSnapshotResult } from '@/shared/ordering/readers/order-payment-snapshot.result';
 
 @Injectable()

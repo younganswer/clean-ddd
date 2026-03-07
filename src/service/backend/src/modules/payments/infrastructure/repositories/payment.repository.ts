@@ -7,7 +7,7 @@ import { PaymentIntent } from '@/modules/payments/domains/entities/aggregates/pa
 import { PaymentIntentMapper } from '@/modules/payments/infrastructure/mappers/payment-intent.mapper';
 import { PaymentIntentSchema } from '@/modules/payments/infrastructure/schemas/payment-intent.schema';
 import { PAYMENTS_APPLICATION_ERRORS } from '@/shared/errors';
-import { ApplicationErrorFactory } from '@/shared/errors/base.error-factory';
+import { ApplicationErrorFactory } from '@/common/errors/base.error-factory';
 
 @Injectable()
 export class PaymentRepository implements IPaymentRepository {

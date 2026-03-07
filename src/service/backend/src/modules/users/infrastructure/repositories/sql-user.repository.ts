@@ -7,7 +7,7 @@ import type { IUserRepository } from '@/modules/users/domains/repositories/i.use
 import { UserMapper } from '@/modules/users/infrastructure/mappers/user.mapper';
 import { UserSchema } from '@/modules/users/infrastructure/schemas/user.schema';
 import { USER_APPLICATION_ERRORS } from '@/shared/errors';
-import { ApplicationErrorFactory } from '@/shared/errors/base.error-factory';
+import { ApplicationErrorFactory } from '@/common/errors/base.error-factory';
 
 @Injectable()
 export class SqlUserRepository implements IUserRepository {

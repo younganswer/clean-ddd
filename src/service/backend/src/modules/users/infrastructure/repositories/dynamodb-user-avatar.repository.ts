@@ -12,7 +12,7 @@ import { AvatarDocument } from '@/modules/users/infrastructure/documents/avatar.
 import { AvatarMapper } from '@/modules/users/infrastructure/mappers/avatar.mapper';
 import { optionalEnv } from '@/env';
 import { USER_INFRA_ERRORS } from '@/shared/errors';
-import { InfrastructureErrorFactory } from '@/shared/errors/base.error-factory';
+import { InfrastructureErrorFactory } from '@/common/errors/base.error-factory';
 
 @Injectable()
 export class DynamoDbUserAvatarRepository implements IUserAvatarRepository {

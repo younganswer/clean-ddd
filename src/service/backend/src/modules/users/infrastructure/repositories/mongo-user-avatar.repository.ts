@@ -6,7 +6,7 @@ import { Avatar } from '@/modules/users/domains/entities/avatar.entity';
 import { AvatarMapper } from '@/modules/users/infrastructure/mappers/avatar.mapper';
 import { AvatarDocument } from '@/modules/users/infrastructure/documents/avatar.document';
 import { USER_INFRA_ERRORS } from '@/shared/errors';
-import { InfrastructureErrorFactory } from '@/shared/errors/base.error-factory';
+import { InfrastructureErrorFactory } from '@/common/errors/base.error-factory';
 
 @Injectable()
 export class MongoUserAvatarRepository

@@ -4,7 +4,7 @@ import { defineConfig } from '@mikro-orm/postgresql';
 import fs from 'node:fs';
 import path from 'node:path';
 import { SYSTEM_INFRA_ERRORS } from '@/shared/errors';
-import { InfrastructureErrorFactory } from '@/shared/errors/base.error-factory';
+import { InfrastructureErrorFactory } from '@/common/errors/base.error-factory';
 
 function findBackendRoot(): string {
 	const candidates = [process.cwd(), __dirname];

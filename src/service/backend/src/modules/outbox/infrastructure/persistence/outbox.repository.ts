@@ -8,7 +8,7 @@ import { OutboxEventStatus } from '@/shared/outbox';
 import { OutboxMapper } from '@/modules/outbox/infrastructure/mappers/outbox.mapper';
 import { OutboxEventSchema } from '@/modules/outbox/infrastructure/persistence/outbox.schema';
 import { OUTBOX_INFRA_ERRORS } from '@/shared/errors';
-import { InfrastructureErrorFactory } from '@/shared/errors/base.error-factory';
+import { InfrastructureErrorFactory } from '@/common/errors/base.error-factory';
 
 @Injectable()
 export class OutboxRepository implements IOutboxRepository {

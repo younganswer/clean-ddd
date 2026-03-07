@@ -5,7 +5,7 @@ import {
 	type OutboxKnownEventHandler,
 } from '@/modules/outbox/application/outbox-known-handler.decorator';
 import { OUTBOX_INFRA_ERRORS } from '@/shared/errors';
-import { InfrastructureErrorFactory } from '@/shared/errors/base.error-factory';
+import { InfrastructureErrorFactory } from '@/common/errors/base.error-factory';
 
 type OutboxKnownHandlerEntry = {
 	eventType: string;

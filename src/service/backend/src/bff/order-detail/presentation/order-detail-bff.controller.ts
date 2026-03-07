@@ -7,7 +7,7 @@ import { OrderDetailBffResponse } from '@/bff/order-detail/presentation/swagger'
 import { GetOrderDetailBffQuery } from '@/bff/order-detail/application/queries/get-order-detail-bff.query';
 import { GetOrderDetailBffQueryDto } from '@/bff/order-detail/presentation/order-detail-bff.dto';
 import { ORDERING_APPLICATION_ERRORS } from '@/shared/errors';
-import { ApplicationErrorFactory } from '@/shared/errors/base.error-factory';
+import { ApplicationErrorFactory } from '@/common/errors/base.error-factory';
 
 @Controller('bff/order-detail')
 export class OrderDetailBffController {

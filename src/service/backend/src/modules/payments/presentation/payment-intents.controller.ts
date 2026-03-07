@@ -13,7 +13,7 @@ import {
 	type PaymentIntentResult,
 } from '@/shared/payments';
 import { PAYMENTS_APPLICATION_ERRORS } from '@/shared/errors';
-import { ApplicationErrorFactory } from '@/shared/errors/base.error-factory';
+import { ApplicationErrorFactory } from '@/common/errors/base.error-factory';
 
 const isPaymentIntentResult = (
 	value: unknown,

@@ -7,7 +7,7 @@ import { ShipmentSchema } from '@/modules/shipping/infrastructure/schemas/shipme
 import { Shipment } from '@/modules/shipping/domains/entities/aggregates/shipment/shipment.aggregate';
 import { ShipmentMapper } from '@/modules/shipping/infrastructure/mappers/shipment.mapper';
 import { SHIPPING_APPLICATION_ERRORS } from '@/shared/errors';
-import { ApplicationErrorFactory } from '@/shared/errors/base.error-factory';
+import { ApplicationErrorFactory } from '@/common/errors/base.error-factory';
 
 @Injectable()
 export class ShipmentRepository implements IShipmentRepository {

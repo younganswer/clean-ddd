@@ -9,7 +9,7 @@ import { OrderResult } from '@/modules/ordering/application/readers/order.result
 import { OrderSchema } from '@/modules/ordering/infrastructure/schemas/order.schema';
 import { RepositoryGetByIdOptions } from '@/lib/database/repository-get-options';
 import { ORDERING_APPLICATION_ERRORS } from '@/shared/errors';
-import { ApplicationErrorFactory } from '@/shared/errors/base.error-factory';
+import { ApplicationErrorFactory } from '@/common/errors/base.error-factory';
 
 @Injectable()
 export class OrderReader implements IOrderReader {

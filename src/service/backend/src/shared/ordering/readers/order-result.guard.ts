@@ -1,6 +1,6 @@
 import type { OrderResult } from '@/shared/ordering/readers/order.result';
 import { ORDERING_APPLICATION_ERRORS } from '@/shared/errors';
-import { ApplicationErrorFactory } from '@/shared/errors/base.error-factory';
+import { ApplicationErrorFactory } from '@/common/errors/base.error-factory';
 
 export const isOrderResult = (value: unknown): value is OrderResult => {
 	if (!value || typeof value !== 'object') return false;

@@ -11,7 +11,7 @@ import { SYSTEM_INFRA_ERRORS } from '@/shared/errors/catalogs/system.errors';
 import {
 	ApplicationErrorFactory,
 	InfrastructureErrorFactory,
-} from '@/shared/errors/base.error-factory';
+} from '@/common/errors/base.error-factory';
 
 @Injectable()
 export class OrderRepository implements IOrderRepository {

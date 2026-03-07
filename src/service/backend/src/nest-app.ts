@@ -2,7 +2,7 @@ import { INestApplication } from '@nestjs/common';
 import { NestApplicationContext } from '@nestjs/core';
 import { Type } from '@nestjs/common/interfaces/type.interface';
 import { SYSTEM_INFRA_ERRORS } from '@/shared/errors';
-import { InfrastructureErrorFactory } from '@/shared/errors/base.error-factory';
+import { InfrastructureErrorFactory } from '@/common/errors/base.error-factory';
 
 export class NestApp {
 	private static app: INestApplication | NestApplicationContext | null = null;

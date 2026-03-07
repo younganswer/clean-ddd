@@ -9,7 +9,7 @@ import {
 } from '@/modules/inventory/domains/repositories/i.inventory-reservation.repository';
 import { InventoryReservation } from '@/modules/inventory/domains/entities/inventory-reservation.entity';
 import { INVENTORY_DOMAIN_ERRORS } from '@/shared/errors';
-import { DomainErrorFactory } from '@/shared/errors/base.error-factory';
+import { DomainErrorFactory } from '@/common/errors/base.error-factory';
 
 @Injectable()
 export class InventoryReservationDomainService {

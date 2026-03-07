@@ -1,5 +1,5 @@
 import { SYSTEM_INFRA_ERRORS } from '@/shared/errors';
-import { InfrastructureErrorFactory } from '@/shared/errors/base.error-factory';
+import { InfrastructureErrorFactory } from '@/common/errors/base.error-factory';
 
 export function requireEnv(name: string): string {
 	const value = process.env[name];

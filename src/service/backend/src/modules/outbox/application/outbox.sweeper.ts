@@ -13,7 +13,7 @@ import {
 	resolveErrorMessage,
 } from '@/modules/outbox/application/outbox-error.util';
 import { OUTBOX_INFRA_ERRORS } from '@/shared/errors';
-import { InfrastructureErrorFactory } from '@/shared/errors/base.error-factory';
+import { InfrastructureErrorFactory } from '@/common/errors/base.error-factory';
 
 @Injectable()
 export class OutboxSweeper {

@@ -7,7 +7,7 @@ import { GraphResponse } from '@/bff/graph/presentation/swagger';
 import { GetGraphBffQuery } from '@/bff/graph/application/queries/get-graph-bff.query';
 import { GetGraphBffQueryDto } from '@/bff/graph/presentation/graph-bff.dto';
 import { SYSTEM_APPLICATION_ERRORS } from '@/shared/errors';
-import { ApplicationErrorFactory } from '@/shared/errors/base.error-factory';
+import { ApplicationErrorFactory } from '@/common/errors/base.error-factory';
 
 @Controller('bff/graph')
 export class GraphBffController {

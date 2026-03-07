@@ -1,5 +1,5 @@
 import { ORDERING_DOMAIN_ERRORS } from '@/shared/errors';
-import { DomainErrorFactory } from '@/shared/errors/base.error-factory';
+import { DomainErrorFactory } from '@/common/errors/base.error-factory';
 
 export class Money {
 	private constructor(
