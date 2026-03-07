@@ -1,4 +1,4 @@
-import type { UserAvatarResult } from '@/shared/users/readers/user-avatar.result';
+import type { UserAvatarResult } from '@/modules/users/domains/readers/user-avatar.result';
 
 export const IUserAvatarReaderSymbol = Symbol('IUserAvatarReader');
 

@@ -1,7 +1,7 @@
 import { Inject } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UnitOfWork } from '@/lib/database/unit-of-work';
-import { UpdateMyAvatarCommand } from '@/shared/users/commands/update-my-avatar.command';
+import { UpdateMyAvatarCommand } from '@/modules/users/application/commands/update-my-avatar.command';
 import {
 	IUserAvatarRepositorySymbol,
 	type IUserAvatarRepository,

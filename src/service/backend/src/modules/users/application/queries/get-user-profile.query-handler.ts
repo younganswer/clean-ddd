@@ -1,15 +1,15 @@
 import { Inject } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import { GetUserProfileQuery } from '@/shared/users/queries/get-user-profile.query';
-import { UserProfileResult } from '@/shared/users/readers/user-profile.result';
+import { GetUserProfileQuery } from '@/modules/users/application/queries/get-user-profile.query';
+import { UserProfileResult } from '@/modules/users/domains/readers/user-profile.result';
 import {
 	IUserReaderSymbol,
 	type IUserReader,
-} from '@/shared/users/readers/i.user.reader';
+} from '@/modules/users/domains/readers/i.user.reader';
 import {
 	IUserAvatarReaderSymbol,
 	type IUserAvatarReader,
-} from '@/shared/users/readers/i.user-avatar.reader';
+} from '@/modules/users/domains/readers/i.user-avatar.reader';
 
 @QueryHandler(GetUserProfileQuery)
 export class GetUserProfileQueryHandler implements IQueryHandler<GetUserProfileQuery> {

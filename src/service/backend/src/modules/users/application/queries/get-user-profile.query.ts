@@ -1,5 +1,5 @@
 import { Query } from '@nestjs/cqrs';
-import type { UserProfileResult } from '@/shared/users/readers/user-profile.result';
+import type { UserProfileResult } from '@/modules/users/domains/readers/user-profile.result';
 import { USER_APPLICATION_ERRORS } from '@/shared/errors';
 import { requireTrimmedString } from '@/common/cqrs/input-normalizer';
 

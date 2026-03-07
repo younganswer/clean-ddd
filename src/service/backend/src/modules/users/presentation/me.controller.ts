@@ -7,8 +7,8 @@ import {
 	UpdateAvatarResponse,
 	UserProfileResponse,
 } from '@/modules/users/presentation/swagger';
-import { GetUserProfileQuery } from '@/shared/users/queries/get-user-profile.query';
-import { UpdateMyAvatarCommand } from '@/shared/users/commands/update-my-avatar.command';
+import { GetUserProfileQuery } from '@/modules/users/application/queries/get-user-profile.query';
+import { UpdateMyAvatarCommand } from '@/modules/users/application/commands/update-my-avatar.command';
 import { UpdateMyAvatarRequest } from '@/modules/users/presentation/dto/update-my-avatar.request';
 
 @Controller('me')

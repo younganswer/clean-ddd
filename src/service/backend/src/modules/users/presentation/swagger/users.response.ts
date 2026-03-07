@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import type { PaginatedResult } from '@/common/types/paginated.result';
-import type { UserProfileResult } from '@/shared/users/readers/user-profile.result';
+import type { UserProfileResult } from '@/modules/users/domains/readers/user-profile.result';
 
 export class UserProfileResponse {
 	@ApiProperty()

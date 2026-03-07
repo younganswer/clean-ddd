@@ -1,16 +1,16 @@
 import { Inject } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import { GetUserProfilesQuery } from '@/shared/users/queries/get-user-profiles.query';
-import { UserProfileResult } from '@/shared/users/readers/user-profile.result';
+import { GetUserProfilesQuery } from '@/modules/users/application/queries/get-user-profiles.query';
+import { UserProfileResult } from '@/modules/users/domains/readers/user-profile.result';
 import type { PaginatedResult } from '@/common/types/paginated.result';
 import {
 	IUserReaderSymbol,
 	type IUserReader,
-} from '@/shared/users/readers/i.user.reader';
+} from '@/modules/users/domains/readers/i.user.reader';
 import {
 	IUserAvatarReaderSymbol,
 	type IUserAvatarReader,
-} from '@/shared/users/readers/i.user-avatar.reader';
+} from '@/modules/users/domains/readers/i.user-avatar.reader';
 
 @QueryHandler(GetUserProfilesQuery)
 export class GetUserProfilesQueryHandler implements IQueryHandler<GetUserProfilesQuery> {
