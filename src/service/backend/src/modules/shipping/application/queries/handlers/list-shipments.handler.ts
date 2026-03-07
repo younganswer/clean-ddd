@@ -1,15 +1,17 @@
 import { Inject } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import { IShipmentRepositorySymbol } from '@/modules/shipping/domains/repositories/i.shipment.repository';
-import type { IShipmentRepository } from '@/modules/shipping/domains/repositories/i.shipment.repository';
 import { GetShipmentsQuery, type ShipmentResult } from '@/shared/shipping';
 import type { PaginatedResult } from '@/shared/readers/paginated.result';
+import {
+	IShipmentReaderSymbol,
+	type IShipmentReader,
+} from '@/shared/readers/shipping/i.shipment.reader';
 
 @QueryHandler(GetShipmentsQuery)
 export class ListShipmentsHandler implements IQueryHandler<GetShipmentsQuery> {
 	constructor(
-		@Inject(IShipmentRepositorySymbol)
-		private readonly shipmentRepository: IShipmentRepository,
+		@Inject(IShipmentReaderSymbol)
+		private readonly shipmentReader: IShipmentReader,
 	) {}
 
 	async execute(
@@ -17,15 +19,10 @@ export class ListShipmentsHandler implements IQueryHandler<GetShipmentsQuery> {
 	): Promise<PaginatedResult<ShipmentResult>> {
 		const { limit, offset } = query;
 		const [shipments, total] = await Promise.all([
-			this.shipmentRepository.findRecent(limit, offset),
-			this.shipmentRepository.countAll(),
+			this.shipmentReader.findRecent(limit, offset),
+			this.shipmentReader.countAll(),
 		]);
-
-		const items = shipments.map((shipment) => ({
-			shipmentId: shipment.id,
-			orderId: shipment.orderId,
-			status: shipment.status,
-		}));
+		const items = shipments;
 
 		const totalPages = Math.max(1, Math.ceil(total / limit));
 
