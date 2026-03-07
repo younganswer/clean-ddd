@@ -4,7 +4,7 @@ export * from '@/shared/payments/events/payment-fulfillment-requested.event';
 export * from '@/shared/payments/enums/payment-status.enum';
 export * from '@/shared/payments/commands/create-payment-intent.command';
 
-export * from '@/shared/payments/views/payment-intent.result';
+export * from '@/shared/payments/readers/dto/payment-intent.result';
 
 export * from '@/shared/payments/readers/i.payment-intent.reader';
 

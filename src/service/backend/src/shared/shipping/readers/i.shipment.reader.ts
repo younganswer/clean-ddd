@@ -1,4 +1,10 @@
-export {
-	IShipmentReaderSymbol,
-	type IShipmentReader,
-} from '@/shared/readers/shipping/i.shipment.reader';
+import type { ShipmentResult } from '@/shared/shipping/readers/dto/shipment.result';
+
+export const IShipmentReaderSymbol = Symbol('IShipmentReader');
+
+export interface IShipmentReader {
+	findById(id: string): Promise<ShipmentResult | null>;
+	findByOrderId(orderId: string): Promise<ShipmentResult | null>;
+	findRecent(limit: number, offset?: number): Promise<ShipmentResult[]>;
+	countAll(): Promise<number>;
+}

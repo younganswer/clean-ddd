@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import type { PaymentIntentResult } from '@/shared/readers/payments/dto/payment-intent.result';
+import type { PaymentIntentResult } from '@/shared/payments/readers/dto/payment-intent.result';
 import type { CreatePaymentIntentResult } from '@/shared/payments/commands/create-payment-intent.command';
 
 export class PaymentIntentResponse {

@@ -8,7 +8,7 @@ export * from '@/shared/inventory/queries/get-inventory-item.query';
 export * from '@/shared/inventory/queries/get-inventory-items.query';
 export * from '@/shared/inventory/queries/get-inventory-reservations.query';
 
-export * from '@/shared/inventory/views/inventory-item.result';
-export * from '@/shared/inventory/views/inventory-reservation.result';
+export * from '@/shared/inventory/readers/dto/inventory-item.result';
+export * from '@/shared/inventory/readers/dto/inventory-reservation.result';
 
 export * from '@/shared/inventory/readers/i.inventory.reader';

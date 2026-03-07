@@ -6,11 +6,11 @@ import type { OrderResult } from '@/shared/ordering/readers/order.result';
 import { GetOrdersByUserIdQuery } from '@/shared/ordering/queries/get-orders-by-user-subject-id.query';
 
 import { GetShipmentQuery } from '@/shared/shipping/queries/get-shipment.query';
-import type { ShipmentResult } from '@/shared/readers/shipping/dto/shipment.result';
+import type { ShipmentResult } from '@/shared/shipping/readers/dto/shipment.result';
 import { GetShipmentByOrderQuery } from '@/shared/shipping/queries/get-shipment-by-order.query';
 
 import { GetPaymentIntentQuery } from '@/shared/payments/queries/get-payment-intent.query';
-import type { PaymentIntentResult } from '@/shared/readers/payments/dto/payment-intent.result';
+import type { PaymentIntentResult } from '@/shared/payments/readers/dto/payment-intent.result';
 
 import { GetUserProfileQuery } from '@/shared/users/queries/get-user-profile.query';
 import type { UserProfileResult } from '@/shared/users/readers/user-profile.result';
