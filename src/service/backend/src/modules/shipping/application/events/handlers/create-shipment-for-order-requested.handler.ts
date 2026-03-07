@@ -1,6 +1,6 @@
 import { CommandBus, EventsHandler, IEventHandler } from '@nestjs/cqrs';
 import { CreateShipmentForOrderRequestedEvent } from '@/shared/shipping';
-import { CreateShipmentForOrderCommand } from '@/modules/shipping/application/commands/create-shipment-for-order.command';
+import { CreateShipmentForOrderCommand } from '@/shared/shipping/commands/create-shipment-for-order.command';
 import { OutboxKnownHandler } from '@/modules/outbox/application/outbox-known-handler.decorator';
 
 @EventsHandler(CreateShipmentForOrderRequestedEvent)
