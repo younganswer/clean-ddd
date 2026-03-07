@@ -1,8 +1,11 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { EventsHandler, IEventHandler, QueryBus } from '@nestjs/cqrs';
-import { GetOrderQuery } from '@/shared/ordering/queries/get-order.query';
+import { Inject, Injectable, Logger } from '@nestjs/common';
+import { EventsHandler, IEventHandler } from '@nestjs/cqrs';
 import { assertOrderResult } from '@/shared/ordering/readers/order-result.guard';
 import { OutboxProducer } from '@/modules/outbox/application/outbox.producer';
+import {
+	IOrderReaderSymbol,
+	type IOrderReader,
+} from '@/shared/ordering/readers/i.order.reader';
 import {
 	ReserveInventoryForOrderRequestedEvent,
 	type InventoryOrderItemPayload,
@@ -22,7 +25,8 @@ export class PaymentFulfillmentRequestedHandler implements IEventHandler<Payment
 	);
 
 	constructor(
-		private readonly queryBus: QueryBus,
+		@Inject(IOrderReaderSymbol)
+		private readonly orderReader: IOrderReader,
 		private readonly outboxProducer: OutboxProducer,
 	) {}
 
@@ -34,9 +38,7 @@ export class PaymentFulfillmentRequestedHandler implements IEventHandler<Payment
 			}),
 		);
 
-		const order = await this.queryBus.execute(
-			new GetOrderQuery({ orderId: event.orderId }),
-		);
+		const order = await this.orderReader.findById(event.orderId);
 		assertOrderResult(order);
 
 		const items: InventoryOrderItemPayload[] = order.items.length
