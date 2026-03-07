@@ -8,12 +8,11 @@ import {
 	PaymentWebhookFailedEvent,
 	PaymentWebhookSucceededEvent,
 } from '@/shared/payments';
-import type { IOrderReader } from '@/shared/ordering/readers/i.order.reader';
+import type { IOrderPaymentSnapshotReader } from '@/shared/ordering/readers/i.order-payment-snapshot.reader';
 import { AttachPaymentToOrderCommand } from '@/shared/ordering/commands/attach-payment-to-order.command';
-import { OrderStatus } from '@/shared/ordering/enums/order-status.enum';
 
 describe('CreatePaymentIntentHandler', () => {
-	it('creates payment using IOrderReader and schedules succeeded webhook event', async () => {
+	it('creates payment using payment snapshot reader and schedules succeeded webhook event', async () => {
 		const persisted: Array<{ id: string; orderId: string }> = [];
 		const paymentRepository: IPaymentRepository = {
 			persist: (payment) => {
@@ -25,23 +24,16 @@ describe('CreatePaymentIntentHandler', () => {
 			findRecent: () => Promise.resolve([]),
 		};
 
-		const findOrderByIdMock = jest.fn(() =>
+		const getByOrderIdMock = jest.fn(() =>
 			Promise.resolve({
 				orderId: 'order-1',
-				userId: 'user-1',
-				status: OrderStatus.PENDING_PAYMENT,
 				amount: 1200,
 				currency: 'KRW',
-				items: [{ sku: 'sku-1', quantity: 2 }],
-				paymentId: null,
 			}),
 		);
 
-		const orderReader: IOrderReader = {
-			findById: findOrderByIdMock,
-			findRecent: () => Promise.resolve([]),
-			findByUserId: () => Promise.resolve([]),
-			countAll: () => Promise.resolve(0),
+		const orderPaymentSnapshotReader: IOrderPaymentSnapshotReader = {
+			getByOrderId: getByOrderIdMock,
 		};
 
 		const outboxPublishMock = jest.fn<
@@ -73,7 +65,7 @@ describe('CreatePaymentIntentHandler', () => {
 
 		const handler = new CreatePaymentIntentHandler(
 			paymentRepository,
-			orderReader,
+			orderPaymentSnapshotReader,
 			uow as UnitOfWork,
 			outboxProducer,
 			commandBus,
@@ -87,7 +79,7 @@ describe('CreatePaymentIntentHandler', () => {
 			}),
 		);
 
-		expect(findOrderByIdMock).toHaveBeenCalledWith('order-1');
+		expect(getByOrderIdMock).toHaveBeenCalledWith('order-1');
 		expect(persisted).toHaveLength(1);
 		expect(commandExecuteMock).toHaveBeenCalledTimes(1);
 		expect(commandExecuteMock).toHaveBeenCalledWith(
@@ -119,22 +111,15 @@ describe('CreatePaymentIntentHandler', () => {
 			findRecent: jest.fn(() => Promise.resolve([])),
 		} as unknown as IPaymentRepository;
 
-		const orderReader = {
-			findById: jest.fn(() =>
+		const orderPaymentSnapshotReader = {
+			getByOrderId: jest.fn(() =>
 				Promise.resolve({
 					orderId: 'order-2',
-					userId: 'user-2',
-					status: OrderStatus.PENDING_PAYMENT,
 					amount: 500,
 					currency: 'KRW',
-					items: [{ sku: 'sku-2', quantity: 1 }],
-					paymentId: null,
 				}),
 			),
-			findRecent: jest.fn(() => Promise.resolve([])),
-			findByUserId: jest.fn(() => Promise.resolve([])),
-			countAll: jest.fn(() => Promise.resolve(0)),
-		} as unknown as IOrderReader;
+		} as unknown as IOrderPaymentSnapshotReader;
 
 		const outboxPublishMock = jest.fn<
 			Promise<string>,
@@ -159,7 +144,7 @@ describe('CreatePaymentIntentHandler', () => {
 
 		const handler = new CreatePaymentIntentHandler(
 			paymentRepository,
-			orderReader,
+			orderPaymentSnapshotReader,
 			uow as UnitOfWork,
 			outboxProducer,
 			commandBus,

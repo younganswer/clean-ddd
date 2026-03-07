@@ -1,6 +1,7 @@
-import { CommandBus, QueryBus } from '@nestjs/cqrs';
+import { CommandBus } from '@nestjs/cqrs';
 import { CreatePaymentIntentHandler } from '@/modules/payments/application/commands/handlers/create-payment-intent.handler';
 import { PaymentWebhookSucceededHandler } from '@/saga-orchestrator/webhooks/payment-webhook.event-handlers';
+import { MarkOrderPaidOnPaymentWebhookSucceededHandler } from '@/modules/ordering/application/events/handlers/mark-order-paid-on-payment-webhook-succeeded.handler';
 import { PaymentFulfillmentRequestedHandler } from '@/saga-orchestrator/fulfillment/payment-fulfillment-requested.event-handler';
 import { ReserveInventoryForOrderRequestedHandler } from '@/modules/inventory/application/events/handlers/reserve-inventory-for-order-requested.handler';
 import { CreateShipmentForOrderRequestedHandler } from '@/modules/shipping/application/events/handlers/create-shipment-for-order-requested.handler';
@@ -17,6 +18,7 @@ import {
 import { AttachPaymentToOrderCommand } from '@/shared/ordering/commands/attach-payment-to-order.command';
 import { MarkOrderPaidCommand } from '@/shared/ordering/commands/mark-order-paid.command';
 import type { IOrderReader } from '@/shared/ordering/readers/i.order.reader';
+import type { IOrderPaymentSnapshotReader } from '@/shared/ordering/readers/i.order-payment-snapshot.reader';
 import type { OrderResult } from '@/shared/ordering/readers/order.result';
 import { OrderStatus } from '@/shared/ordering/enums/order-status.enum';
 import {
@@ -67,9 +69,27 @@ describe('Cross module flow (order -> payment -> inventory/shipping)', () => {
 		);
 		const orderReader: IOrderReader = {
 			findById: findOrderByIdMock,
+			getById: jest.fn((id: string) => {
+				if (id !== order.orderId) {
+					return Promise.reject(new Error(`order not found: ${id}`));
+				}
+				return Promise.resolve(order);
+			}),
 			findRecent: () => Promise.resolve([order]),
 			findByUserId: () => Promise.resolve([order]),
 			countAll: () => Promise.resolve(1),
+		};
+		const orderPaymentSnapshotReader: IOrderPaymentSnapshotReader = {
+			getByOrderId: (id: string) =>
+				id === order.orderId
+					? Promise.resolve({
+							orderId: order.orderId,
+							amount: order.amount,
+							currency: order.currency,
+						})
+					: Promise.reject(
+							new Error(`order snapshot not found: ${id}`),
+						),
 		};
 
 		const publishedEvents: object[] = [];
@@ -88,10 +108,6 @@ describe('Cross module flow (order -> payment -> inventory/shipping)', () => {
 			}),
 		} as unknown as CommandBus;
 
-		const queryBus = {
-			execute: jest.fn(() => Promise.resolve(order)),
-		} as unknown as QueryBus;
-
 		const uow: Pick<UnitOfWork, 'transaction'> = {
 			transaction: <T>(work: (em: never) => Promise<T>): Promise<T> =>
 				work(undefined as never),
@@ -99,7 +115,7 @@ describe('Cross module flow (order -> payment -> inventory/shipping)', () => {
 
 		const createPaymentIntentHandler = new CreatePaymentIntentHandler(
 			paymentRepository,
-			orderReader,
+			orderPaymentSnapshotReader,
 			uow as UnitOfWork,
 			outboxProducer,
 			commandBus,
@@ -124,10 +140,15 @@ describe('Cross module flow (order -> payment -> inventory/shipping)', () => {
 			new PaymentWebhookSucceededHandler(
 				paymentRepository,
 				uow as UnitOfWork,
-				commandBus,
 				outboxProducer,
 			);
 		await paymentWebhookSucceededHandler.handle(
+			webhookEvent as PaymentWebhookSucceededEvent,
+		);
+
+		const markOrderPaidOnPaymentWebhookSucceededHandler =
+			new MarkOrderPaidOnPaymentWebhookSucceededHandler(commandBus);
+		await markOrderPaidOnPaymentWebhookSucceededHandler.handle(
 			webhookEvent as PaymentWebhookSucceededEvent,
 		);
 
@@ -147,7 +168,7 @@ describe('Cross module flow (order -> payment -> inventory/shipping)', () => {
 		);
 
 		const paymentFulfillmentRequestedHandler =
-			new PaymentFulfillmentRequestedHandler(queryBus, outboxProducer);
+			new PaymentFulfillmentRequestedHandler(orderReader, outboxProducer);
 		await paymentFulfillmentRequestedHandler.handle(
 			fulfillmentRequestedEvent as PaymentFulfillmentRequestedEvent,
 		);
