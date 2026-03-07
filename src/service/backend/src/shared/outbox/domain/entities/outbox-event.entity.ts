@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { OutboxEventStatus } from '@/shared/outbox/domain/outbox-event-status';
+import { OutboxEventStatus } from '@/shared/outbox/domain/outbox-event-status.enum';
 import { BaseEntity } from '@/common/domain/base.entity';
 
 export class OutboxEvent extends BaseEntity {

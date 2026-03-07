@@ -6,10 +6,7 @@ import { ProcessedEventMapper } from '@/modules/outbox/idempotency/infrastructur
 import { ProcessedEventRepository } from '@/modules/outbox/idempotency/infrastructure/processed-event.repository';
 import { IdempotencyService } from '@/modules/outbox/idempotency/idempotency.service';
 import { IProcessedEventRepositorySymbol } from '@/modules/outbox/idempotency/domain/i.processed-event.repository';
-import {
-	IOutboxQueuePortSymbol,
-	IOutboxRepositorySymbol,
-} from '@/shared/outbox';
+import { IOutboxQueueSymbol, IOutboxRepositorySymbol } from '@/shared/outbox';
 import { OutboxCommandHandlers } from '@/modules/outbox/application/commands';
 import { OutboxProducer } from '@/modules/outbox/application/outbox.producer';
 import { OutboxDispatcher } from '@/modules/outbox/application/outbox.dispatcher';
@@ -18,6 +15,7 @@ import { OutboxRepository } from '@/modules/outbox/infrastructure/persistence/ou
 import { OutboxQueue } from '@/modules/outbox/infrastructure/queue/outbox.queue';
 import { OutboxMapper } from '@/modules/outbox/infrastructure/mappers/outbox.mapper';
 import { OutboxKnownHandlerRegistryService } from '@/modules/outbox/application/outbox-known-handler.registry.service';
+import { IOutboxProducerSymbol } from '@/shared/outbox/domain/producers/i.outbox.producer';
 
 @Module({
 	imports: [CqrsModule, DiscoveryModule, SqsModule],
@@ -31,10 +29,14 @@ import { OutboxKnownHandlerRegistryService } from '@/modules/outbox/application/
 		IdempotencyService,
 		OutboxQueue,
 		{
-			provide: IOutboxQueuePortSymbol,
+			provide: IOutboxQueueSymbol,
 			useExisting: OutboxQueue,
 		},
 		OutboxProducer,
+		{
+			provide: IOutboxProducerSymbol,
+			useExisting: OutboxProducer,
+		},
 		OutboxDispatcher,
 		OutboxKnownHandlerRegistryService,
 		OutboxRepository,
@@ -49,10 +51,11 @@ import { OutboxKnownHandlerRegistryService } from '@/modules/outbox/application/
 	exports: [
 		OutboxQueue,
 		OutboxProducer,
+		IOutboxProducerSymbol,
 		OutboxDispatcher,
 		OutboxKnownHandlerRegistryService,
 		IdempotencyService,
-		IOutboxQueuePortSymbol,
+		IOutboxQueueSymbol,
 		IOutboxRepositorySymbol,
 	],
 })

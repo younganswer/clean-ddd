@@ -1,12 +1,12 @@
 import { Inject } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UnitOfWork } from '@/lib/database/unit-of-work';
-import { DispatchOutboxEventCommand } from '@/shared/outbox/commands/dispatch-outbox-event.command';
+import { DispatchOutboxEventCommand } from '@/modules/outbox/application/commands/dispatch-outbox-event.command';
 import {
 	IOutboxRepositorySymbol,
-	IOutboxQueuePortSymbol,
+	IOutboxQueueSymbol,
 	type IOutboxRepository,
-	type IOutboxQueuePort,
+	type IOutboxQueue,
 } from '@/shared/outbox';
 import {
 	createRetryAt,
@@ -18,8 +18,8 @@ export class DispatchOutboxEventHandler implements ICommandHandler<DispatchOutbo
 	constructor(
 		@Inject(IOutboxRepositorySymbol)
 		private readonly outboxRepository: IOutboxRepository,
-		@Inject(IOutboxQueuePortSymbol)
-		private readonly outboxQueue: IOutboxQueuePort,
+		@Inject(IOutboxQueueSymbol)
+		private readonly outboxQueue: IOutboxQueue,
 		private readonly uow: UnitOfWork,
 	) {}
 

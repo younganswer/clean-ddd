@@ -1,5 +1,5 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { DispatchPendingOutboxEventsCommand } from '@/shared/outbox';
+import { DispatchPendingOutboxEventsCommand } from '@/modules/outbox/application/commands/dispatch-pending-outbox-events.command';
 import { OutboxDispatcher } from '@/modules/outbox/application/outbox.dispatcher';
 
 @CommandHandler(DispatchPendingOutboxEventsCommand)

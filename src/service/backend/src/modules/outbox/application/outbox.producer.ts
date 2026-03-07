@@ -1,12 +1,13 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { UnitOfWork } from '@/lib/database/unit-of-work';
-import { IOutboxRepositorySymbol } from '@/shared/outbox/domain/i.outbox.repository';
-import type { IOutboxRepository } from '@/shared/outbox/domain/i.outbox.repository';
+import { IOutboxRepositorySymbol } from '@/shared/outbox/domain/repositories/i.outbox.repository';
+import type { IOutboxRepository } from '@/shared/outbox/domain/repositories/i.outbox.repository';
 import { OutboxEvent } from '@/shared/outbox/domain/entities/outbox-event.entity';
 import { getEventType, toPayload } from '@/lib/outbox/event-registry';
+import type { IOutboxProducer } from '@/shared/outbox/domain/producers/i.outbox.producer';
 
 @Injectable()
-export class OutboxProducer {
+export class OutboxProducer implements IOutboxProducer {
 	constructor(
 		@Inject(IOutboxRepositorySymbol)
 		private readonly outboxRepository: IOutboxRepository,

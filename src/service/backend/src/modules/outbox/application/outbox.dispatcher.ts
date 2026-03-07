@@ -1,8 +1,8 @@
 import { MikroORM, RequestContext } from '@mikro-orm/core';
 import { Injectable, Logger } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { DispatchOutboxEventCommand } from '@/shared/outbox/commands/dispatch-outbox-event.command';
-import { GetPendingOutboxEventsQuery } from '@/shared/outbox/queries/get-pending-outbox-events.query';
+import { DispatchOutboxEventCommand } from '@/modules/outbox/application/commands/dispatch-outbox-event.command';
+import { GetPendingOutboxEventsQuery } from '@/modules/outbox/application/queries/get-pending-outbox-events.query';
 
 @Injectable()
 export class OutboxDispatcher {

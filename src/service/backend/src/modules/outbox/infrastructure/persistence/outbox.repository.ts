@@ -2,7 +2,7 @@ import { RequestContext } from '@mikro-orm/core';
 import { EntityManager } from '@mikro-orm/postgresql';
 import { Injectable } from '@nestjs/common';
 import type { RepositoryGetByIdOptions } from '@/lib/database/repository-get-options';
-import type { IOutboxRepository } from '@/shared/outbox/domain/i.outbox.repository';
+import type { IOutboxRepository } from '@/shared/outbox/domain/repositories/i.outbox.repository';
 import { OutboxEvent } from '@/shared/outbox/domain/entities/outbox-event.entity';
 import { OutboxEventStatus } from '@/shared/outbox';
 import { OutboxMapper } from '@/modules/outbox/infrastructure/mappers/outbox.mapper';

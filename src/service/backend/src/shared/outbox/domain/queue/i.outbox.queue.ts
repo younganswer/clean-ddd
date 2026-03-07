@@ -1,8 +1,8 @@
-export interface IOutboxQueuePort {
+export interface IOutboxQueue {
 	enqueue(
 		outboxId: string,
 		options?: { delaySeconds?: number; messageGroupId?: string },
 	): Promise<void>;
 }
 
-export const IOutboxQueuePortSymbol = Symbol('I_OUTBOX_QUEUE_PORT');
+export const IOutboxQueueSymbol = Symbol('I_OUTBOX_QUEUE_PORT');

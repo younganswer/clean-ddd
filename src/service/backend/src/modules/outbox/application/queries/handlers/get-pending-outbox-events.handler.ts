@@ -3,7 +3,7 @@ import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import {
 	GetPendingOutboxEventsQuery,
 	GetPendingOutboxEventsResult,
-} from '@/shared/outbox/queries/get-pending-outbox-events.query';
+} from '@/modules/outbox/application/queries/get-pending-outbox-events.query';
 import {
 	IOutboxRepositorySymbol,
 	type IOutboxRepository,

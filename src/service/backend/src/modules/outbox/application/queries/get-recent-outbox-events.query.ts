@@ -1,6 +1,6 @@
 import { Query } from '@nestjs/cqrs';
 import { toBoundedInt } from '@/common/cqrs/input-normalizer';
-import { GetRecentOutboxEventsResult } from '@/shared/outbox/queries/get-recent-outbox-events.result';
+import { GetRecentOutboxEventsResult } from '@/modules/outbox/application/queries/get-recent-outbox-events.result';
 
 export class GetRecentOutboxEventsQuery extends Query<GetRecentOutboxEventsResult> {
 	readonly limit: number;

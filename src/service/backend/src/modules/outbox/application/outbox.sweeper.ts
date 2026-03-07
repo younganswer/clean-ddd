@@ -3,9 +3,9 @@ import { ModuleRef } from '@nestjs/core';
 import { UnitOfWork } from '@/lib/database/unit-of-work';
 import {
 	IOutboxRepositorySymbol,
-	IOutboxQueuePortSymbol,
+	IOutboxQueueSymbol,
 	type IOutboxRepository,
-	type IOutboxQueuePort,
+	type IOutboxQueue,
 } from '@/shared/outbox';
 import { OutboxConsumer } from '@/modules/outbox/application/outbox.consumer';
 import {
@@ -23,8 +23,8 @@ export class OutboxSweeper {
 		private readonly moduleRef: ModuleRef,
 		@Inject(IOutboxRepositorySymbol)
 		private readonly outboxRepository: IOutboxRepository,
-		@Inject(IOutboxQueuePortSymbol)
-		private readonly outboxQueue: IOutboxQueuePort,
+		@Inject(IOutboxQueueSymbol)
+		private readonly outboxQueue: IOutboxQueue,
 		private readonly uow: UnitOfWork,
 	) {}
 
