@@ -1,7 +1,1 @@
-import { HttpStatus } from '@nestjs/common';
-
-export type ErrorTemplate = {
-	code: string;
-	message: string;
-	status: HttpStatus;
-};
+export * from '@/common/errors/error-template.type';

@@ -1,5 +1,5 @@
 import { HttpStatus } from '@nestjs/common';
-import { ErrorTemplate } from '@/shared/errors/error-template.type';
+import { ErrorTemplate } from '@/common/errors/error-template.type';
 
 export const INVENTORY_DOMAIN_ERRORS = {
 	INVENTORY_QUANTITY_INVALID: {

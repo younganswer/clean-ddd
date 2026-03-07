@@ -1,6 +1,1 @@
-export enum ErrorScope {
-	DOMAIN = 'domain',
-	APPLICATION = 'application',
-	INFRASTRUCTURE = 'infrastructure',
-	UNEXPECTED = 'unexpected',
-}
+export * from '@/common/errors/error-scope.enum';

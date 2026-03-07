@@ -1,5 +1,5 @@
 import { HttpStatus } from '@nestjs/common';
-import { ErrorTemplate } from '@/shared/errors/error-template.type';
+import { ErrorTemplate } from '@/common/errors/error-template.type';
 
 export const OUTBOX_INFRA_ERRORS = {
 	OUTBOX_EVENT_NOT_FOUND: {
