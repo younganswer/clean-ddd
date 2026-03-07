@@ -1,6 +1,6 @@
 import { Entity, Index, Property, Unique } from '@mikro-orm/core';
 import { ShipmentStatus } from '@/shared/shipping';
-import { BaseSchema } from '@/shared/persistence/mikro-orm/base.schema';
+import { BaseSchema } from '@/common/persistence/mikro-orm/base.schema';
 
 @Entity({ tableName: 'shipments' })
 @Unique({ properties: ['orderId'] })

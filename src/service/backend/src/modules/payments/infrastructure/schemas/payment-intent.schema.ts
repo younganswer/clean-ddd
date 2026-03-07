@@ -1,6 +1,6 @@
 import { Entity, Index, Property } from '@mikro-orm/core';
 import { PaymentStatus } from '@/shared/payments';
-import { BaseSchema } from '@/shared/persistence/mikro-orm/base.schema';
+import { BaseSchema } from '@/common/persistence/mikro-orm/base.schema';
 
 @Entity({ tableName: 'payment_intents' })
 @Index({ properties: ['orderId', 'createdAt'] })

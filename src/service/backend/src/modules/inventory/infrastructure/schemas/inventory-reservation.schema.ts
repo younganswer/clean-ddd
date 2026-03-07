@@ -1,5 +1,5 @@
 import { Entity, Index, Property, Unique } from '@mikro-orm/core';
-import { BaseSchema } from '@/shared/persistence/mikro-orm/base.schema';
+import { BaseSchema } from '@/common/persistence/mikro-orm/base.schema';
 
 @Entity({ tableName: 'inventory_reservations' })
 @Unique({ properties: ['orderId', 'sku'] })

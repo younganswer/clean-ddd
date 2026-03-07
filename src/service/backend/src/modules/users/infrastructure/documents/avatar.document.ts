@@ -1,4 +1,4 @@
-import { BaseDocument } from '@/shared/persistence/no-sql/base.document';
+import { BaseDocument } from '@/common/persistence/no-sql/base.document';
 
 export class AvatarDocument extends BaseDocument {
 	constructor(

@@ -1,6 +1,6 @@
 import { Entity, Index, Property } from '@mikro-orm/core';
 import { OutboxEventStatus } from '@/shared/outbox';
-import { BaseSchema } from '@/shared/persistence/mikro-orm/base.schema';
+import { BaseSchema } from '@/common/persistence/mikro-orm/base.schema';
 
 @Entity({ tableName: 'outbox_events' })
 @Index({ properties: ['status', 'nextAttemptAt'] })
