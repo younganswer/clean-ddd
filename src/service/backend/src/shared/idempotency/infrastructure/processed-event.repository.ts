@@ -20,6 +20,26 @@ export class ProcessedEventRepository implements IProcessedEventRepository {
 		);
 	}
 
+	async find(
+		consumerName: string,
+		eventId: string,
+	): Promise<ProcessedEvent | null> {
+		const normalizedConsumerName = String(consumerName ?? '').trim();
+		const normalizedEventId = String(eventId ?? '').trim();
+
+		if (!normalizedConsumerName || !normalizedEventId) {
+			return null;
+		}
+
+		const em = this.emForContext();
+		const found = await em.findOne(ProcessedEventSchema, {
+			consumerName: normalizedConsumerName,
+			eventId: normalizedEventId,
+		});
+
+		return found ? this.mapper.toDomain(found) : null;
+	}
+
 	async persist(event: ProcessedEvent): Promise<void> {
 		const em = this.emForContext();
 		const schema = this.mapper.toSchema(event);

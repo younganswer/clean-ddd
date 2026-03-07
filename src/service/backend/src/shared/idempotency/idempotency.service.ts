@@ -13,6 +13,14 @@ export class IdempotencyService {
 	) {}
 
 	async claim(consumerName: string, eventId: string): Promise<boolean> {
+		const found = await this.processedEventRepository.find(
+			consumerName,
+			eventId,
+		);
+		if (found) {
+			return false;
+		}
+
 		const claimEvent = ProcessedEvent.create({
 			consumerName,
 			eventId,
