@@ -3,6 +3,8 @@ import { CqrsModule, CommandBus, EventBus } from '@nestjs/cqrs';
 import { UnitOfWork } from '@/lib/database/unit-of-work';
 import { OutboxProducer } from '@/modules/outbox/application/outbox.producer';
 import { MarkOrderPaidCommand } from '@/shared/ordering/commands/mark-order-paid.command';
+import { HandlePaymentWebhookFailedCommand } from '@/shared/payments/commands/handle-payment-webhook-failed.command';
+import { HandlePaymentWebhookSucceededCommand } from '@/shared/payments/commands/handle-payment-webhook-succeeded.command';
 import {
 	PaymentStatus,
 	PaymentWebhookFailedEvent,
@@ -18,6 +20,8 @@ import {
 	PaymentWebhookSucceededHandler,
 } from '@/saga-orchestrator/webhooks/payment-webhook.event-handlers';
 import { MarkOrderPaidOnPaymentWebhookSucceededHandler } from '@/modules/ordering/application/events/handlers/mark-order-paid-on-payment-webhook-succeeded.handler';
+import { HandlePaymentWebhookFailedHandler } from '@/modules/payments/application/commands/handlers/handle-payment-webhook-failed.handler';
+import { HandlePaymentWebhookSucceededHandler } from '@/modules/payments/application/commands/handlers/handle-payment-webhook-succeeded.handler';
 
 describe('PaymentWebhookEvent multi-handler wiring (integration)', () => {
 	it('dispatches both saga and ordering handlers on succeeded event publish', async () => {
@@ -65,6 +69,8 @@ describe('PaymentWebhookEvent multi-handler wiring (integration)', () => {
 			providers: [
 				PaymentWebhookSucceededHandler,
 				PaymentWebhookFailedHandler,
+				HandlePaymentWebhookSucceededHandler,
+				HandlePaymentWebhookFailedHandler,
 				MarkOrderPaidOnPaymentWebhookSucceededHandler,
 				{
 					provide: IPaymentRepositorySymbol,
@@ -78,9 +84,25 @@ describe('PaymentWebhookEvent multi-handler wiring (integration)', () => {
 		await moduleRef.init();
 
 		const commandBus = moduleRef.get(CommandBus);
+		const succeededHandler = moduleRef.get(
+			HandlePaymentWebhookSucceededHandler,
+		);
+		const failedHandler = moduleRef.get(HandlePaymentWebhookFailedHandler);
 		const commandExecuteSpy = jest
 			.spyOn(commandBus, 'execute')
-			.mockResolvedValue(undefined);
+			.mockImplementation(async (command: object) => {
+				if (command instanceof HandlePaymentWebhookSucceededCommand) {
+					await succeededHandler.execute(command);
+					return;
+				}
+				if (command instanceof HandlePaymentWebhookFailedCommand) {
+					await failedHandler.execute(command);
+					return;
+				}
+				if (command instanceof MarkOrderPaidCommand) {
+					return;
+				}
+			});
 		const eventBus = moduleRef.get(EventBus);
 
 		await eventBus.publish(
@@ -103,6 +125,9 @@ describe('PaymentWebhookEvent multi-handler wiring (integration)', () => {
 
 		expect(paymentPersistMock).toHaveBeenCalledTimes(1);
 		expect(outboxPublishMock).toHaveBeenCalledTimes(1);
+		expect(commandExecuteSpy).toHaveBeenCalledWith(
+			expect.any(HandlePaymentWebhookSucceededCommand),
+		);
 		expect(commandExecuteSpy).toHaveBeenCalledWith(
 			expect.any(MarkOrderPaidCommand),
 		);
@@ -153,6 +178,8 @@ describe('PaymentWebhookEvent multi-handler wiring (integration)', () => {
 			providers: [
 				PaymentWebhookSucceededHandler,
 				PaymentWebhookFailedHandler,
+				HandlePaymentWebhookSucceededHandler,
+				HandlePaymentWebhookFailedHandler,
 				MarkOrderPaidOnPaymentWebhookSucceededHandler,
 				{
 					provide: IPaymentRepositorySymbol,
@@ -166,9 +193,25 @@ describe('PaymentWebhookEvent multi-handler wiring (integration)', () => {
 		await moduleRef.init();
 
 		const commandBus = moduleRef.get(CommandBus);
+		const succeededHandler = moduleRef.get(
+			HandlePaymentWebhookSucceededHandler,
+		);
+		const failedHandler = moduleRef.get(HandlePaymentWebhookFailedHandler);
 		const commandExecuteSpy = jest
 			.spyOn(commandBus, 'execute')
-			.mockResolvedValue(undefined);
+			.mockImplementation(async (command: object) => {
+				if (command instanceof HandlePaymentWebhookSucceededCommand) {
+					await succeededHandler.execute(command);
+					return;
+				}
+				if (command instanceof HandlePaymentWebhookFailedCommand) {
+					await failedHandler.execute(command);
+					return;
+				}
+				if (command instanceof MarkOrderPaidCommand) {
+					return;
+				}
+			});
 		const eventBus = moduleRef.get(EventBus);
 
 		await eventBus.publish(
@@ -187,7 +230,12 @@ describe('PaymentWebhookEvent multi-handler wiring (integration)', () => {
 
 		expect(paymentPersistMock).toHaveBeenCalledTimes(1);
 		expect(outboxPublishMock).toHaveBeenCalledTimes(0);
-		expect(commandExecuteSpy).toHaveBeenCalledTimes(0);
+		expect(commandExecuteSpy).toHaveBeenCalledWith(
+			expect.any(HandlePaymentWebhookFailedCommand),
+		);
+		expect(commandExecuteSpy).not.toHaveBeenCalledWith(
+			expect.any(MarkOrderPaidCommand),
+		);
 
 		const updated = await paymentRepository.getById(payment.id);
 		expect(updated.status).toBe(PaymentStatus.FAILED);
