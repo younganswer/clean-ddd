@@ -1,37 +1,24 @@
 import { Inject } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import { IInventoryItemRepositorySymbol } from '@/modules/inventory/domains/repositories/i.inventory-item.repository';
-import type { IInventoryItemRepository } from '@/modules/inventory/domains/repositories/i.inventory-item.repository';
 import {
 	GetInventoryItemQuery,
 	type InventoryItemResult,
 } from '@/shared/inventory';
+import {
+	IInventoryReaderSymbol,
+	type IInventoryReader,
+} from '@/shared/readers/inventory/i.inventory.reader';
 
 @QueryHandler(GetInventoryItemQuery)
 export class GetInventoryItemHandler implements IQueryHandler<GetInventoryItemQuery> {
 	constructor(
-		@Inject(IInventoryItemRepositorySymbol)
-		private readonly inventoryItemRepository: IInventoryItemRepository,
+		@Inject(IInventoryReaderSymbol)
+		private readonly inventoryReader: IInventoryReader,
 	) {}
 
 	async execute(
 		query: GetInventoryItemQuery,
 	): Promise<InventoryItemResult | null> {
-		await this.inventoryItemRepository.seedIfEmpty();
-		const inventoryItem = await this.inventoryItemRepository.findBySku(
-			query.sku,
-		);
-		if (!inventoryItem) return null;
-
-		return {
-			itemId: inventoryItem.id,
-			sku: inventoryItem.sku,
-			price: {
-				currency: inventoryItem.priceCurrency,
-				amountMinor: inventoryItem.priceAmountMinor,
-			},
-			availableQuantity: inventoryItem.availableQuantity,
-			reservedQuantity: inventoryItem.reservedQuantity,
-		};
+		return await this.inventoryReader.findItemBySku(query.sku);
 	}
 }

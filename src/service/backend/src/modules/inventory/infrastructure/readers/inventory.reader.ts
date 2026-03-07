@@ -1,74 +1,76 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { RequestContext } from '@mikro-orm/core';
+import { EntityManager } from '@mikro-orm/postgresql';
+import { Injectable } from '@nestjs/common';
 
 import {
 	IInventoryReaderSymbol,
 	type IInventoryReader,
 } from '@/shared/readers/inventory/i.inventory.reader';
-import type { InventoryItemResult } from '@/shared/readers/inventory/dto/inventory-item.result';
-import type { InventoryReservationResult } from '@/shared/readers/inventory/dto/inventory-reservation.result';
-import { IInventoryItemRepositorySymbol } from '@/modules/inventory/domains/repositories/i.inventory-item.repository';
-import type { IInventoryItemRepository } from '@/modules/inventory/domains/repositories/i.inventory-item.repository';
-import { IInventoryReservationRepositorySymbol } from '@/modules/inventory/domains/repositories/i.inventory-reservation.repository';
-import type { IInventoryReservationRepository } from '@/modules/inventory/domains/repositories/i.inventory-reservation.repository';
+import { InventoryItemResult } from '@/shared/readers/inventory/dto/inventory-item.result';
+import { InventoryReservationResult } from '@/shared/readers/inventory/dto/inventory-reservation.result';
+import { InventoryItemSchema } from '@/modules/inventory/infrastructure/schemas/inventory-item.schema';
+import { InventoryReservationSchema } from '@/modules/inventory/infrastructure/schemas/inventory-reservation.schema';
 
 @Injectable()
 export class InventoryReader implements IInventoryReader {
-	constructor(
-		@Inject(IInventoryItemRepositorySymbol)
-		private readonly inventoryItemRepository: IInventoryItemRepository,
-		@Inject(IInventoryReservationRepositorySymbol)
-		private readonly inventoryReservationRepository: IInventoryReservationRepository,
-	) {}
+	constructor(private readonly em: EntityManager) {}
 
-	async findItemBySku(sku: string): Promise<InventoryItemResult | null> {
-		await this.inventoryItemRepository.seedIfEmpty();
-		const inventoryItem = await this.inventoryItemRepository.findBySku(sku);
-		if (!inventoryItem) return null;
-
-		return {
-			itemId: inventoryItem.id,
-			sku: inventoryItem.sku,
-			price: {
-				currency: inventoryItem.priceCurrency,
-				amountMinor: inventoryItem.priceAmountMinor,
-			},
-			availableQuantity: inventoryItem.availableQuantity,
-			reservedQuantity: inventoryItem.reservedQuantity,
-		};
+	private emForContext(): EntityManager {
+		return (
+			(RequestContext.getEntityManager() as EntityManager | undefined) ??
+			this.em
+		);
 	}
 
-	async findRecentItems(limit: number): Promise<InventoryItemResult[]> {
-		await this.inventoryItemRepository.seedIfEmpty();
-		const safeLimit = Math.min(50, Math.max(1, Number(limit ?? 20)));
-		const inventoryItemRepository =
-			await this.inventoryItemRepository.findAll(safeLimit);
+	async findItemBySku(sku: string): Promise<InventoryItemResult | null> {
+		const inventoryItem = await this.emForContext().findOne(
+			InventoryItemSchema,
+			{ sku },
+		);
+		if (!inventoryItem) return null;
 
-		return inventoryItemRepository.map((inventoryItem) => ({
-			itemId: inventoryItem.id,
-			sku: inventoryItem.sku,
-			price: {
-				currency: inventoryItem.priceCurrency,
-				amountMinor: inventoryItem.priceAmountMinor,
+		return InventoryItemResult.fromSchema(inventoryItem);
+	}
+
+	async findRecentItems(
+		limit: number,
+		offset: number = 0,
+	): Promise<InventoryItemResult[]> {
+		const safeLimit = Math.min(50, Math.max(1, Number(limit ?? 20)));
+		const safeOffset = Math.max(0, Number(offset ?? 0) || 0);
+		const items = await this.emForContext().find(
+			InventoryItemSchema,
+			{},
+			{
+				limit: safeLimit,
+				offset: safeOffset,
+				orderBy: { id: 'asc' },
 			},
-			availableQuantity: inventoryItem.availableQuantity,
-			reservedQuantity: inventoryItem.reservedQuantity,
-		}));
+		);
+
+		return items.map((inventoryItem) =>
+			InventoryItemResult.fromSchema(inventoryItem),
+		);
 	}
 
 	async findReservationsByOrderId(
 		orderId: string,
 	): Promise<InventoryReservationResult[]> {
-		const inventoryReservations =
-			await this.inventoryReservationRepository.findReservationsByOrderId(
-				orderId,
-			);
+		const reservations = await this.emForContext().find(
+			InventoryReservationSchema,
+			{ orderId },
+			{
+				orderBy: { id: 'asc' },
+			},
+		);
 
-		return inventoryReservations.map((inventoryReservation) => ({
-			reservationId: inventoryReservation.id,
-			orderId: inventoryReservation.orderId,
-			sku: inventoryReservation.sku,
-			quantity: inventoryReservation.quantity,
-		}));
+		return reservations.map((reservation) =>
+			InventoryReservationResult.fromSchema(reservation),
+		);
+	}
+
+	async countItems(): Promise<number> {
+		return await this.emForContext().count(InventoryItemSchema, {});
 	}
 }
 
