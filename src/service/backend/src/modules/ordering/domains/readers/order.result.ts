@@ -1,4 +1,4 @@
-import type { OrderStatus } from '@/shared/ordering/enums/order-status.enum';
+import type { OrderStatus } from '@/modules/ordering/domains/enums/order-status.enum';
 
 type OrderItemSchema = {
 	sku: string;

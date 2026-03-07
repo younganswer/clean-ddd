@@ -1,5 +1,5 @@
 import { Query } from '@nestjs/cqrs';
-import { OrderResult } from '@/shared/ordering/readers/order.result';
+import { OrderResult } from '@/modules/ordering/domains/readers/order.result';
 import { ORDERING_APPLICATION_ERRORS } from '@/shared/errors';
 import { requireTrimmedString } from '@/common/cqrs/input-normalizer';
 

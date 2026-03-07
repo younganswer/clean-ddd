@@ -1,4 +1,4 @@
-import type { OrderResult } from '@/shared/ordering/readers/order.result';
+import type { OrderResult } from '@/modules/ordering/domains/readers/order.result';
 import { ORDERING_APPLICATION_ERRORS } from '@/shared/errors';
 import { ApplicationErrorFactory } from '@/common/errors/base.error-factory';
 

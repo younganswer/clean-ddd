@@ -6,10 +6,10 @@ import {
 	ApiErrorEnvelopeResponse,
 	ApiPageResponse,
 } from '@/common/swagger';
-import { CreateOrderCommand } from '@/shared/ordering/commands/create-order.command';
-import { GetOrderQuery } from '@/shared/ordering/queries/get-order.query';
-import { GetOrdersQuery } from '@/shared/ordering/queries/get-orders.query';
-import { isOrderResult } from '@/shared/ordering/readers/order-result.guard';
+import { CreateOrderCommand } from '@/modules/ordering/application/commands/create-order.command';
+import { GetOrderQuery } from '@/modules/ordering/application/queries/get-order.query';
+import { GetOrdersQuery } from '@/modules/ordering/application/queries/get-orders.query';
+import { isOrderResult } from '@/modules/ordering/domains/readers/order-result.guard';
 import { CreateOrderRequest } from '@/modules/ordering/presentation/dto/create-order.request';
 import {
 	CreateOrderResponse,
