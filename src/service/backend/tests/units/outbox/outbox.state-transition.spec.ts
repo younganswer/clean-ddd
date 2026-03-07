@@ -14,7 +14,7 @@ import type { IOutboxRepository } from '@/shared/outbox/domain/i.outbox.reposito
 import type { IOutboxQueuePort } from '@/shared/outbox/domain/i.outbox-queue.port';
 import { OutboxEvent } from '@/shared/outbox/domain/entities/outbox-event.entity';
 import { OutboxEventStatus } from '@/shared/outbox';
-import { IdempotencyService } from '@/shared/idempotency/idempotency.service';
+import { IdempotencyService } from '@/modules/outbox/idempotency/idempotency.service';
 import type { RepositoryGetByIdOptions } from '@/lib/database/repository-get-options';
 import type { UnitOfWork } from '@/lib/database/unit-of-work';
 import { CreateShipmentForOrderRequestedEvent } from '@/shared/shipping';

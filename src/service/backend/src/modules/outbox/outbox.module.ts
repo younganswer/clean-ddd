@@ -2,10 +2,10 @@ import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { DiscoveryModule } from '@nestjs/core';
 import { SqsModule } from '@/lib/queue/sqs.module';
-import { ProcessedEventMapper } from '@/shared/idempotency/infrastructure/processed-event.mapper';
-import { ProcessedEventRepository } from '@/shared/idempotency/infrastructure/processed-event.repository';
-import { IdempotencyService } from '@/shared/idempotency/idempotency.service';
-import { IProcessedEventRepositorySymbol } from '@/shared/idempotency/domain/i.processed-event.repository';
+import { ProcessedEventMapper } from '@/modules/outbox/idempotency/infrastructure/processed-event.mapper';
+import { ProcessedEventRepository } from '@/modules/outbox/idempotency/infrastructure/processed-event.repository';
+import { IdempotencyService } from '@/modules/outbox/idempotency/idempotency.service';
+import { IProcessedEventRepositorySymbol } from '@/modules/outbox/idempotency/domain/i.processed-event.repository';
 import {
 	IOutboxQueuePortSymbol,
 	IOutboxRepositorySymbol,

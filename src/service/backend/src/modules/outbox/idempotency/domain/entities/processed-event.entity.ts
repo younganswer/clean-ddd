@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
-import { BaseEntity } from '@/shared/domain/base.entity';
+import { BaseEntity } from '@/common/domain/base.entity';
 import { IDEMPOTENCY_DOMAIN_ERRORS } from '@/shared/errors';
-import { DomainErrorFactory } from '@/shared/errors/base.error-factory';
+import { DomainErrorFactory } from '@/common/errors/base.error-factory';
 
 export class ProcessedEvent extends BaseEntity {
 	private constructor(

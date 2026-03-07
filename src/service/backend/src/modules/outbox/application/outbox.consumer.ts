@@ -2,7 +2,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { EventBus } from '@nestjs/cqrs';
 import type { SQSRecord } from 'aws-lambda';
 import { UnitOfWork } from '@/lib/database/unit-of-work';
-import { IdempotencyService } from '@/shared/idempotency/idempotency.service';
+import { IdempotencyService } from '@/modules/outbox/idempotency/idempotency.service';
 import {
 	IOutboxRepositorySymbol,
 	type IOutboxRepository,

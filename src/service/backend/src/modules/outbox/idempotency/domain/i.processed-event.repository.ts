@@ -1,4 +1,4 @@
-import { ProcessedEvent } from '@/shared/idempotency/domain/entities/processed-event.entity';
+import { ProcessedEvent } from '@/modules/outbox/idempotency/domain/entities/processed-event.entity';
 
 export interface IProcessedEventRepository {
 	find(consumerName: string, eventId: string): Promise<ProcessedEvent | null>;

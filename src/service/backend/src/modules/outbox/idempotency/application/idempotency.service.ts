@@ -1,9 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { ProcessedEvent } from '@/shared/idempotency/domain/entities/processed-event.entity';
+import { ProcessedEvent } from '@/modules/outbox/idempotency/domain/entities/processed-event.entity';
 import {
 	IProcessedEventRepositorySymbol,
 	type IProcessedEventRepository,
-} from '@/shared/idempotency/domain/i.processed-event.repository';
+} from '@/modules/outbox/idempotency/domain/i.processed-event.repository';
 
 @Injectable()
 export class IdempotencyService {

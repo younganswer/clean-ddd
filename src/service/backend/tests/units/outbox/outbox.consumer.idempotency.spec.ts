@@ -4,7 +4,7 @@ import { OutboxConsumer } from '@/modules/outbox/application/outbox.consumer';
 import { OutboxKnownHandlerRegistryService } from '@/modules/outbox/application/outbox-known-handler.registry.service';
 import { OutboxEvent } from '@/shared/outbox/domain/entities/outbox-event.entity';
 import { OutboxEventStatus } from '@/shared/outbox';
-import { IdempotencyService } from '@/shared/idempotency/idempotency.service';
+import { IdempotencyService } from '@/modules/outbox/idempotency/idempotency.service';
 import type { IOutboxRepository } from '@/shared/outbox/domain/i.outbox.repository';
 import type { UnitOfWork } from '@/lib/database/unit-of-work';
 import { PaymentWebhookSucceededEvent } from '@/shared/payments';

@@ -1,10 +1,10 @@
 import { RequestContext } from '@mikro-orm/core';
 import { EntityManager } from '@mikro-orm/postgresql';
 import { Injectable } from '@nestjs/common';
-import { ProcessedEvent } from '@/shared/idempotency/domain/entities/processed-event.entity';
-import type { IProcessedEventRepository } from '@/shared/idempotency/domain/i.processed-event.repository';
-import { ProcessedEventMapper } from '@/shared/idempotency/infrastructure/processed-event.mapper';
-import { ProcessedEventSchema } from '@/shared/idempotency/processed-event.schema';
+import { ProcessedEvent } from '@/modules/outbox/idempotency/domain/entities/processed-event.entity';
+import type { IProcessedEventRepository } from '@/modules/outbox/idempotency/domain/i.processed-event.repository';
+import { ProcessedEventMapper } from '@/modules/outbox/idempotency/infrastructure/processed-event.mapper';
+import { ProcessedEventSchema } from '@/modules/outbox/idempotency/infrastructure/processed-event.schema';
 
 @Injectable()
 export class ProcessedEventRepository implements IProcessedEventRepository {

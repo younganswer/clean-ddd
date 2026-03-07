@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { ProcessedEvent } from '@/shared/idempotency/domain/entities/processed-event.entity';
-import { ProcessedEventSchema } from '@/shared/idempotency/processed-event.schema';
+import { ProcessedEvent } from '@/modules/outbox/idempotency/domain/entities/processed-event.entity';
+import { ProcessedEventSchema } from '@/modules/outbox/idempotency/infrastructure/processed-event.schema';
 
 @Injectable()
 export class ProcessedEventMapper {
