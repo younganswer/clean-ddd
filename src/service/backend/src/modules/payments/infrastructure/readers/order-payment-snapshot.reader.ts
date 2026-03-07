@@ -1,30 +1,40 @@
+import { RequestContext } from '@mikro-orm/core';
+import { EntityManager } from '@mikro-orm/postgresql';
 import { Injectable } from '@nestjs/common';
-import { Inject } from '@nestjs/common';
-import {
-	IOrderReaderSymbol,
-	type IOrderReader,
-} from '@/shared/ordering/readers/i.order.reader';
 import {
 	IOrderPaymentSnapshotReaderSymbol,
 	type IOrderPaymentSnapshotReader,
 } from '@/shared/ordering/readers/i.order-payment-snapshot.reader';
-import type { OrderPaymentSnapshotResult } from '@/shared/ordering/readers/order-payment-snapshot.result';
+import { OrderSchema } from '@/modules/ordering/infrastructure/schemas/order.schema';
+import { ORDERING_APPLICATION_ERRORS } from '@/shared/errors';
+import { ApplicationErrorFactory } from '@/shared/errors/base.error-factory';
+import { OrderPaymentSnapshotResult } from '@/shared/ordering/readers/order-payment-snapshot.result';
 
 @Injectable()
 export class OrderPaymentSnapshotReader implements IOrderPaymentSnapshotReader {
-	constructor(
-		@Inject(IOrderReaderSymbol)
-		private readonly orderReader: IOrderReader,
-	) {}
+	constructor(private readonly em: EntityManager) {}
+
+	private emForContext(): EntityManager {
+		return (
+			(RequestContext.getEntityManager() as EntityManager | undefined) ??
+			this.em
+		);
+	}
 
 	async getByOrderId(orderId: string): Promise<OrderPaymentSnapshotResult> {
-		const order = await this.orderReader.getById(orderId);
+		const order = await this.emForContext().findOneOrFail(
+			OrderSchema,
+			{ uuid: orderId },
+			{
+				failHandler: () =>
+					ApplicationErrorFactory.create(
+						ORDERING_APPLICATION_ERRORS.ORDER_NOT_FOUND,
+						{ details: { id: orderId } },
+					),
+			},
+		);
 
-		return {
-			orderId: order.orderId,
-			amount: order.amount,
-			currency: order.currency,
-		};
+		return OrderPaymentSnapshotResult.fromSchema(order);
 	}
 }
 

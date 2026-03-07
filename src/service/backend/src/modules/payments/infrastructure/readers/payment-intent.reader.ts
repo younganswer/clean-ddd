@@ -1,41 +1,45 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { RequestContext } from '@mikro-orm/core';
+import { EntityManager } from '@mikro-orm/postgresql';
+import { Injectable } from '@nestjs/common';
 import {
 	IPaymentIntentReaderSymbol,
 	type IPaymentIntentReader,
 } from '@/shared/readers/payments/i.payment-intent.reader';
-import type { PaymentIntentResult as PaymentIntentResultDto } from '@/shared/readers/payments/dto/payment-intent.result';
-import { IPaymentRepositorySymbol } from '@/modules/payments/domains/repositories/i.payment.repository';
-import type { IPaymentRepository } from '@/modules/payments/domains/repositories/i.payment.repository';
+import { PaymentIntentResult } from '@/shared/readers/payments/dto/payment-intent.result';
+import { PaymentIntentSchema } from '@/modules/payments/infrastructure/schemas/payment-intent.schema';
 
 @Injectable()
 export class PaymentIntentReader implements IPaymentIntentReader {
-	constructor(
-		@Inject(IPaymentRepositorySymbol)
-		private readonly paymentRepository: IPaymentRepository,
-	) {}
+	constructor(private readonly em: EntityManager) {}
 
-	async findById(id: string): Promise<PaymentIntentResultDto | null> {
-		const payment = await this.paymentRepository.findById(id);
+	private emForContext(): EntityManager {
+		return (
+			(RequestContext.getEntityManager() as EntityManager | undefined) ??
+			this.em
+		);
+	}
+
+	async findById(id: string): Promise<PaymentIntentResult | null> {
+		const payment = await this.emForContext().findOne(PaymentIntentSchema, {
+			uuid: id,
+		});
 		if (!payment) return null;
-		return this.toResult(payment);
+		return PaymentIntentResult.fromSchema(payment);
 	}
 
-	async findRecent(limit: number): Promise<PaymentIntentResultDto[]> {
+	async findRecent(limit: number): Promise<PaymentIntentResult[]> {
 		const safeLimit = Math.min(50, Math.max(1, Number(limit ?? 20)));
-		const payments = await this.paymentRepository.findRecent(safeLimit);
-		return payments.map((p) => this.toResult(p));
-	}
-
-	private toResult(payment: {
-		toPrimitives(): {
-			paymentId: string;
-			orderId: string;
-			amount: number;
-			currency: string;
-			status: PaymentIntentResultDto['status'];
-		};
-	}): PaymentIntentResultDto {
-		return payment.toPrimitives();
+		const payments = await this.emForContext().find(
+			PaymentIntentSchema,
+			{},
+			{
+				orderBy: { id: 'asc' },
+				limit: safeLimit,
+			},
+		);
+		return payments.map((payment) =>
+			PaymentIntentResult.fromSchema(payment),
+		);
 	}
 }
 
