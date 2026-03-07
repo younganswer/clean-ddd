@@ -1,10 +1,8 @@
-import { CommandBus } from '@nestjs/cqrs';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { CreatePaymentIntentHandler } from '@/modules/payments/application/commands/handlers/create-payment-intent.handler';
 import { PaymentWebhookSucceededHandler } from '@/saga-orchestrator/webhooks/payment-webhook.event-handlers';
 import { MarkOrderPaidOnPaymentWebhookSucceededHandler } from '@/modules/ordering/application/events/handlers/mark-order-paid-on-payment-webhook-succeeded.handler';
 import { PaymentFulfillmentRequestedHandler } from '@/saga-orchestrator/fulfillment/payment-fulfillment-requested.event-handler';
-import { ReserveInventoryForOrderRequestedHandler } from '@/modules/inventory/application/events/handlers/reserve-inventory-for-order-requested.handler';
-import { CreateShipmentForOrderRequestedHandler } from '@/modules/shipping/application/events/handlers/create-shipment-for-order-requested.handler';
 import type { IPaymentRepository } from '@/modules/payments/domains/repositories/i.payment.repository';
 import { PaymentIntent } from '@/modules/payments/domains/entities/aggregates/payment-intent/payment-intent.aggregate';
 import { OutboxProducer } from '@/modules/outbox/application/outbox.producer';
@@ -15,20 +13,15 @@ import {
 	PaymentStatus,
 	PaymentWebhookSucceededEvent,
 } from '@/shared/payments';
+import { HandlePaymentWebhookSucceededCommand } from '@/shared/payments/commands/handle-payment-webhook-succeeded.command';
 import { AttachPaymentToOrderCommand } from '@/shared/ordering/commands/attach-payment-to-order.command';
 import { MarkOrderPaidCommand } from '@/shared/ordering/commands/mark-order-paid.command';
-import type { IOrderReader } from '@/shared/ordering/readers/i.order.reader';
 import type { IOrderPaymentSnapshotReader } from '@/shared/ordering/readers/i.order-payment-snapshot.reader';
 import type { OrderResult } from '@/shared/ordering/readers/order.result';
 import { OrderStatus } from '@/shared/ordering/enums/order-status.enum';
-import {
-	ReserveInventoryForOrderCommand,
-	ReserveInventoryForOrderRequestedEvent,
-} from '@/shared/inventory';
-import {
-	CreateShipmentForOrderCommand,
-	CreateShipmentForOrderRequestedEvent,
-} from '@/shared/shipping';
+import { GetOrderQuery } from '@/shared/ordering/queries/get-order.query';
+import { ReserveInventoryForOrderCommand } from '@/shared/inventory';
+import { CreateShipmentForOrderCommand } from '@/shared/shipping';
 
 describe('Cross module flow (order -> payment -> inventory/shipping)', () => {
 	it('keeps command/event chain stable on payment succeeded flow', async () => {
@@ -64,21 +57,17 @@ describe('Cross module flow (order -> payment -> inventory/shipping)', () => {
 			findRecent: () => Promise.resolve([]),
 		};
 
-		const findOrderByIdMock = jest.fn((id: string) =>
-			Promise.resolve(id === order.orderId ? order : null),
-		);
-		const orderReader: IOrderReader = {
-			findById: findOrderByIdMock,
-			getById: jest.fn((id: string) => {
-				if (id !== order.orderId) {
-					return Promise.reject(new Error(`order not found: ${id}`));
+		const queryBus = {
+			execute: jest.fn((query: object) => {
+				if (query instanceof GetOrderQuery) {
+					return Promise.resolve(
+						query.orderId === order.orderId ? order : null,
+					);
 				}
-				return Promise.resolve(order);
+				return Promise.resolve(null);
 			}),
-			findRecent: () => Promise.resolve([order]),
-			findByUserId: () => Promise.resolve([order]),
-			countAll: () => Promise.resolve(1),
-		};
+		} as unknown as QueryBus;
+
 		const orderPaymentSnapshotReader: IOrderPaymentSnapshotReader = {
 			getByOrderId: (id: string) =>
 				id === order.orderId
@@ -102,8 +91,22 @@ describe('Cross module flow (order -> payment -> inventory/shipping)', () => {
 
 		const executedCommands: object[] = [];
 		const commandBus = {
-			execute: jest.fn((command: object) => {
+			execute: jest.fn(async (command: object) => {
 				executedCommands.push(command);
+
+				if (command instanceof HandlePaymentWebhookSucceededCommand) {
+					const payment = await paymentRepository.getById(
+						command.paymentId,
+					);
+					payment.markSucceeded();
+					await paymentRepository.persist(payment);
+					await outboxProducer.publish(
+						new PaymentFulfillmentRequestedEvent({
+							orderId: command.orderId,
+						}),
+					);
+				}
+
 				return Promise.resolve(undefined);
 			}),
 		} as unknown as CommandBus;
@@ -137,11 +140,7 @@ describe('Cross module flow (order -> payment -> inventory/shipping)', () => {
 		const webhookEvent = publishedEvents[0];
 		expect(webhookEvent).toBeInstanceOf(PaymentWebhookSucceededEvent);
 		const paymentWebhookSucceededHandler =
-			new PaymentWebhookSucceededHandler(
-				paymentRepository,
-				uow as UnitOfWork,
-				outboxProducer,
-			);
+			new PaymentWebhookSucceededHandler(commandBus);
 		await paymentWebhookSucceededHandler.handle(
 			webhookEvent as PaymentWebhookSucceededEvent,
 		);
@@ -168,34 +167,9 @@ describe('Cross module flow (order -> payment -> inventory/shipping)', () => {
 		);
 
 		const paymentFulfillmentRequestedHandler =
-			new PaymentFulfillmentRequestedHandler(orderReader, outboxProducer);
+			new PaymentFulfillmentRequestedHandler(queryBus, commandBus);
 		await paymentFulfillmentRequestedHandler.handle(
 			fulfillmentRequestedEvent as PaymentFulfillmentRequestedEvent,
-		);
-
-		const inventoryEvent = publishedEvents.find(
-			(event) => event instanceof ReserveInventoryForOrderRequestedEvent,
-		);
-		const shippingEvent = publishedEvents.find(
-			(event) => event instanceof CreateShipmentForOrderRequestedEvent,
-		);
-		expect(inventoryEvent).toBeInstanceOf(
-			ReserveInventoryForOrderRequestedEvent,
-		);
-		expect(shippingEvent).toBeInstanceOf(
-			CreateShipmentForOrderRequestedEvent,
-		);
-
-		const reserveInventoryForOrderRequestedHandler =
-			new ReserveInventoryForOrderRequestedHandler(commandBus);
-		const createShipmentForOrderRequestedHandler =
-			new CreateShipmentForOrderRequestedHandler(commandBus);
-
-		await reserveInventoryForOrderRequestedHandler.handle(
-			inventoryEvent as ReserveInventoryForOrderRequestedEvent,
-		);
-		await createShipmentForOrderRequestedHandler.handle(
-			shippingEvent as CreateShipmentForOrderRequestedEvent,
 		);
 
 		expect(

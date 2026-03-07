@@ -1,20 +1,21 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
-import { EventsHandler, IEventHandler } from '@nestjs/cqrs';
+import { Injectable, Logger } from '@nestjs/common';
+import {
+	CommandBus,
+	EventsHandler,
+	IEventHandler,
+	QueryBus,
+} from '@nestjs/cqrs';
 import { assertOrderResult } from '@/shared/ordering/readers/order-result.guard';
-import { OutboxProducer } from '@/modules/outbox/application/outbox.producer';
 import {
-	IOrderReaderSymbol,
-	type IOrderReader,
-} from '@/shared/ordering/readers/i.order.reader';
-import {
-	ReserveInventoryForOrderRequestedEvent,
+	ReserveInventoryForOrderCommand,
 	type InventoryOrderItemPayload,
 } from '@/shared/inventory';
-import { CreateShipmentForOrderRequestedEvent } from '@/shared/shipping';
+import { CreateShipmentForOrderCommand } from '@/shared/shipping/commands/create-shipment-for-order.command';
 import { PAYMENTS_APPLICATION_ERRORS } from '@/shared/errors';
 import { ApplicationErrorFactory } from '@/common/errors/base.error-factory';
 import { OutboxKnownHandler } from '@/modules/outbox/application/outbox-known-handler.decorator';
 import { PaymentFulfillmentRequestedEvent } from '@/shared/payments';
+import { GetOrderQuery } from '@/shared/ordering/queries/get-order.query';
 
 @Injectable()
 @EventsHandler(PaymentFulfillmentRequestedEvent)
@@ -25,9 +26,8 @@ export class PaymentFulfillmentRequestedHandler implements IEventHandler<Payment
 	);
 
 	constructor(
-		@Inject(IOrderReaderSymbol)
-		private readonly orderReader: IOrderReader,
-		private readonly outboxProducer: OutboxProducer,
+		private readonly queryBus: QueryBus,
+		private readonly commandBus: CommandBus,
 	) {}
 
 	async handle(event: PaymentFulfillmentRequestedEvent): Promise<void> {
@@ -38,7 +38,9 @@ export class PaymentFulfillmentRequestedHandler implements IEventHandler<Payment
 			}),
 		);
 
-		const order = await this.orderReader.findById(event.orderId);
+		const order = await this.queryBus.execute(
+			new GetOrderQuery({ orderId: event.orderId }),
+		);
 		assertOrderResult(order);
 
 		const items: InventoryOrderItemPayload[] = order.items.length
@@ -55,30 +57,28 @@ export class PaymentFulfillmentRequestedHandler implements IEventHandler<Payment
 			throw ApplicationErrorFactory.create(template, options);
 		}
 
-		await this.outboxProducer.publish(
-			new ReserveInventoryForOrderRequestedEvent({
+		await this.commandBus.execute(
+			new ReserveInventoryForOrderCommand({
 				orderId: event.orderId,
 				items,
 			}),
-			{ messageGroupId: event.orderId },
 		);
 		this.logger.log(
 			JSON.stringify({
-				step: 'inventory_reservation_requested_published',
+				step: 'inventory_reservation_requested_via_command_bus',
 				orderId: event.orderId,
 				itemCount: items.length,
 			}),
 		);
 
-		await this.outboxProducer.publish(
-			new CreateShipmentForOrderRequestedEvent({
+		await this.commandBus.execute(
+			new CreateShipmentForOrderCommand({
 				orderId: event.orderId,
 			}),
-			{ messageGroupId: event.orderId },
 		);
 		this.logger.log(
 			JSON.stringify({
-				step: 'shipment_creation_requested_published',
+				step: 'shipment_creation_requested_via_command_bus',
 				orderId: event.orderId,
 			}),
 		);
