@@ -1,5 +1,5 @@
 import { Command } from '@nestjs/cqrs';
-import type { InventoryOrderItemDto } from '@/shared/inventory/dto/inventory-order-item.dto';
+import type { InventoryOrderItemPayload } from '@/contracts/inventory';
 import { INVENTORY_APPLICATION_ERRORS } from '@/shared/errors';
 import {
 	requireTrimmedString,
@@ -10,9 +10,12 @@ import { ApplicationErrorFactory } from '@/common/errors/base.error-factory';
 
 export class ReserveInventoryForOrderCommand extends Command<void> {
 	public readonly orderId: string;
-	public readonly items: InventoryOrderItemDto[];
+	public readonly items: InventoryOrderItemPayload[];
 
-	constructor(input: { orderId: string; items: InventoryOrderItemDto[] }) {
+	constructor(input: {
+		orderId: string;
+		items: InventoryOrderItemPayload[];
+	}) {
 		super();
 
 		const normalizedItems = Array.isArray(input.items)

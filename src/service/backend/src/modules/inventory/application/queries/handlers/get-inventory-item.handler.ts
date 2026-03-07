@@ -1,13 +1,11 @@
 import { Inject } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import {
-	GetInventoryItemQuery,
-	type InventoryItemResult,
-} from '@/shared/inventory';
+import { GetInventoryItemQuery } from '@/modules/inventory/application/queries/get-inventory-item.query';
+import type { InventoryItemResult } from '@/modules/inventory/domains/readers/inventory-item.result';
 import {
 	IInventoryReaderSymbol,
 	type IInventoryReader,
-} from '@/shared/inventory/readers/i.inventory.reader';
+} from '@/modules/inventory/domains/readers/i.inventory.reader';
 
 @QueryHandler(GetInventoryItemQuery)
 export class GetInventoryItemHandler implements IQueryHandler<GetInventoryItemQuery> {

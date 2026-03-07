@@ -1,5 +1,5 @@
-import type { InventoryItemResult } from '@/shared/inventory/readers/dto/inventory-item.result';
-import type { InventoryReservationResult } from '@/shared/inventory/readers/dto/inventory-reservation.result';
+import type { InventoryItemResult } from '@/modules/inventory/domains/readers/inventory-item.result';
+import type { InventoryReservationResult } from '@/modules/inventory/domains/readers/inventory-reservation.result';
 
 export const IInventoryReaderSymbol = Symbol('IInventoryReader');
 

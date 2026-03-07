@@ -16,11 +16,9 @@ import {
 	InventoryItemResponse,
 	InventoryReservationResponse,
 } from '@/modules/inventory/presentation/swagger';
-import {
-	GetInventoryItemQuery,
-	GetInventoryItemsQuery,
-	GetInventoryReservationsQuery,
-} from '@/shared/inventory';
+import { GetInventoryItemQuery } from '@/modules/inventory/application/queries/get-inventory-item.query';
+import { GetInventoryItemsQuery } from '@/modules/inventory/application/queries/get-inventory-items.query';
+import { GetInventoryReservationsQuery } from '@/modules/inventory/application/queries/get-inventory-reservations.query';
 import { PageQueryDto } from '@/common/cqrs/query-input.dto';
 
 @Controller('inventory')

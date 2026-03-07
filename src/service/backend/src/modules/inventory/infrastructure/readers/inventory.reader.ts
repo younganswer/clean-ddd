@@ -5,9 +5,9 @@ import { Injectable } from '@nestjs/common';
 import {
 	IInventoryReaderSymbol,
 	type IInventoryReader,
-} from '@/shared/inventory/readers/i.inventory.reader';
-import { InventoryItemResult } from '@/shared/inventory/readers/dto/inventory-item.result';
-import { InventoryReservationResult } from '@/shared/inventory/readers/dto/inventory-reservation.result';
+} from '@/modules/inventory/domains/readers/i.inventory.reader';
+import { InventoryItemResult } from '@/modules/inventory/domains/readers/inventory-item.result';
+import { InventoryReservationResult } from '@/modules/inventory/domains/readers/inventory-reservation.result';
 import { InventoryItemSchema } from '@/modules/inventory/infrastructure/schemas/inventory-item.schema';
 import { InventoryReservationSchema } from '@/modules/inventory/infrastructure/schemas/inventory-reservation.schema';
 
