@@ -4,8 +4,8 @@ import { Injectable } from '@nestjs/common';
 import {
 	IOrderReaderSymbol,
 	type IOrderReader,
-} from '@/modules/ordering/application/readers/i.order.reader';
-import { OrderResult } from '@/modules/ordering/application/readers/order.result';
+} from '@/shared/ordering/readers/i.order.reader';
+import { OrderResult } from '@/shared/ordering/readers/order.result';
 import { OrderSchema } from '@/modules/ordering/infrastructure/schemas/order.schema';
 import { RepositoryGetByIdOptions } from '@/lib/database/repository-get-options';
 import { ORDERING_APPLICATION_ERRORS } from '@/shared/errors';
