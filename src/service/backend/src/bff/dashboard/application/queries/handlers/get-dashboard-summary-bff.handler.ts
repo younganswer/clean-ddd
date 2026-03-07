@@ -1,12 +1,12 @@
 import { IQueryHandler, QueryBus, QueryHandler } from '@nestjs/cqrs';
 
-import { GetOrdersQuery } from '@/shared/ordering/queries/get-orders.query';
+import { GetOrdersQuery } from '@/modules/ordering/application/queries/get-orders.query';
 
-import { GetPaymentIntentsQuery } from '@/shared/payments/queries/get-payment-intents.query';
+import { GetPaymentIntentsQuery } from '@/modules/payments/application/queries/get-payment-intents.query';
 
-import { GetShipmentsQuery } from '@/shared/shipping/queries/get-shipments.query';
+import { GetShipmentsQuery } from '@/modules/shipping/application/queries/get-shipments.query';
 
-import { GetInventoryItemsQuery } from '@/shared/inventory/queries/get-inventory-items.query';
+import { GetInventoryItemsQuery } from '@/modules/inventory/application/queries/get-inventory-items.query';
 
 import { GetDashboardSummaryBffQuery } from '@/bff/dashboard/application/queries/get-dashboard-summary-bff.query';
 import type { DashboardSummaryBffView } from '@/bff/dashboard/application/views/dashboard-summary-bff.view';

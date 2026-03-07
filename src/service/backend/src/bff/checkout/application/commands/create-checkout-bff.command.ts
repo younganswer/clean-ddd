@@ -1,5 +1,5 @@
 import { Command } from '@nestjs/cqrs';
-import type { CreatePaymentIntentResult } from '@/shared/payments/commands/create-payment-intent.command';
+import type { CreatePaymentIntentResult } from '@/modules/payments/application/commands/create-payment-intent.command';
 
 export type CreateCheckoutBffResult = {
 	orderId: string;

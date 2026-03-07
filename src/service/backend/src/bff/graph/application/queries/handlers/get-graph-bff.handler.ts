@@ -1,20 +1,20 @@
 import { Injectable } from '@nestjs/common';
 import { IQueryHandler, QueryBus, QueryHandler } from '@nestjs/cqrs';
 
-import { GetOrderQuery } from '@/shared/ordering/queries/get-order.query';
-import type { OrderResult } from '@/shared/ordering/readers/order.result';
-import { GetOrdersByUserIdQuery } from '@/shared/ordering/queries/get-orders-by-user-subject-id.query';
+import { GetOrderQuery } from '@/modules/ordering/application/queries/get-order.query';
+import type { OrderResult } from '@/modules/ordering/domains/readers/order.result';
+import { GetOrdersByUserIdQuery } from '@/modules/ordering/application/queries/get-orders-by-user-subject-id.query';
 
-import { GetShipmentQuery } from '@/shared/shipping/queries/get-shipment.query';
-import type { ShipmentResult } from '@/shared/shipping/readers/dto/shipment.result';
-import { GetShipmentByOrderQuery } from '@/shared/shipping/queries/get-shipment-by-order.query';
+import { GetShipmentQuery } from '@/modules/shipping/application/queries/get-shipment.query';
+import type { ShipmentResult } from '@/modules/shipping/domains/readers/shipment.result';
+import { GetShipmentByOrderQuery } from '@/modules/shipping/application/queries/get-shipment-by-order.query';
 
-import { GetPaymentIntentQuery } from '@/shared/payments/queries/get-payment-intent.query';
-import type { PaymentIntentResult } from '@/shared/payments/readers/dto/payment-intent.result';
+import { GetPaymentIntentQuery } from '@/modules/payments/application/queries/get-payment-intent.query';
+import type { PaymentIntentResult } from '@/modules/payments/domains/readers/payment-intent.result';
 
-import { GetUserProfileQuery } from '@/shared/users/queries/get-user-profile.query';
-import type { UserProfileResult } from '@/shared/users/readers/user-profile.result';
-import { GetRecentOutboxEventsQuery } from '@/shared/outbox';
+import { GetUserProfileQuery } from '@/modules/users/application/queries/get-user-profile.query';
+import type { UserProfileResult } from '@/modules/users/domains/readers/user-profile.result';
+import { GetRecentOutboxEventsQuery } from '@/modules/outbox/application/queries/get-recent-outbox-events.query';
 
 import {
 	GetGraphBffQuery,

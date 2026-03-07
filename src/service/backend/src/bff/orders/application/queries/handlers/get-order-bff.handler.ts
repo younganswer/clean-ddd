@@ -1,6 +1,6 @@
 import { IQueryHandler, QueryBus, QueryHandler } from '@nestjs/cqrs';
 
-import { GetOrderQuery } from '@/shared/ordering/queries/get-order.query';
+import { GetOrderQuery } from '@/modules/ordering/application/queries/get-order.query';
 import { GetOrderBffQuery } from '@/bff/orders/application/queries/get-order-bff.query';
 
 @QueryHandler(GetOrderBffQuery)

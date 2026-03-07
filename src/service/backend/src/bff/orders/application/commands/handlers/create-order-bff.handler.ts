@@ -1,6 +1,6 @@
 import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
-import { CreateOrderCommand } from '@/shared/ordering/commands/create-order.command';
+import { CreateOrderCommand } from '@/modules/ordering/application/commands/create-order.command';
 import { CreateOrderBffCommand } from '@/bff/orders/application/commands/create-order-bff.command';
 
 @CommandHandler(CreateOrderBffCommand)

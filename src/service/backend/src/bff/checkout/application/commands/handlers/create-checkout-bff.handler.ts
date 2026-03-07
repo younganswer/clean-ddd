@@ -1,7 +1,7 @@
 import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
-import { CreateOrderCommand } from '@/shared/ordering/commands/create-order.command';
-import { CreatePaymentIntentCommand } from '@/shared/payments/commands/create-payment-intent.command';
+import { CreateOrderCommand } from '@/modules/ordering/application/commands/create-order.command';
+import { CreatePaymentIntentCommand } from '@/modules/payments/application/commands/create-payment-intent.command';
 
 import {
 	CreateCheckoutBffCommand,

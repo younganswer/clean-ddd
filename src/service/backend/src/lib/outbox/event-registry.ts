@@ -5,15 +5,15 @@ import {
 	PAYMENT_WEBHOOK_FAILED_EVENT_TYPE,
 	PaymentWebhookSucceededEvent,
 	PAYMENT_WEBHOOK_SUCCEEDED_EVENT_TYPE,
-} from '@/shared/payments';
+} from '@/contracts/payments';
 import {
 	ReserveInventoryForOrderRequestedEvent,
 	INVENTORY_RESERVE_FOR_ORDER_REQUESTED_EVENT_TYPE,
-} from '@/shared/inventory';
+} from '@/contracts/inventory';
 import {
 	CreateShipmentForOrderRequestedEvent,
 	SHIPPING_CREATE_FOR_ORDER_REQUESTED_EVENT_TYPE,
-} from '@/shared/shipping';
+} from '@/contracts/shipping';
 
 export type OutboxEventType =
 	| typeof PAYMENT_WEBHOOK_SUCCEEDED_EVENT_TYPE

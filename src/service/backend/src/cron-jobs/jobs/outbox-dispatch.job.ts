@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { isOutboxCronEnabled } from '@/runtime-role';
-import { DispatchPendingOutboxEventsCommand } from '@/shared/outbox';
+import { DispatchPendingOutboxEventsCommand } from '@/modules/outbox/application/commands/dispatch-pending-outbox-events.command';
 
 @Injectable()
 export class OutboxDispatchJob {
