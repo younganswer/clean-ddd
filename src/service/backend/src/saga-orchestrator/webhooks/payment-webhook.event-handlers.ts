@@ -1,5 +1,5 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { CommandBus, EventsHandler, IEventHandler } from '@nestjs/cqrs';
+import { EventsHandler, IEventHandler } from '@nestjs/cqrs';
 import {
 	PaymentFulfillmentRequestedEvent,
 	PaymentWebhookFailedEvent,
@@ -7,7 +7,6 @@ import {
 } from '@/shared/payments';
 import { IPaymentRepositorySymbol } from '@/modules/payments/domains/repositories/i.payment.repository';
 import type { IPaymentRepository } from '@/modules/payments/domains/repositories/i.payment.repository';
-import { MarkOrderPaidCommand } from '@/shared/ordering/commands/mark-order-paid.command';
 import { OutboxProducer } from '@/modules/outbox/application/outbox.producer';
 import { UnitOfWork } from '@/lib/database/unit-of-work';
 import { OutboxKnownHandler } from '@/modules/outbox/application/outbox-known-handler.decorator';
@@ -22,7 +21,6 @@ export class PaymentWebhookSucceededHandler implements IEventHandler<PaymentWebh
 		@Inject(IPaymentRepositorySymbol)
 		private readonly paymentRepository: IPaymentRepository,
 		private readonly uow: UnitOfWork,
-		private readonly commandBus: CommandBus,
 		private readonly outboxProducer: OutboxProducer,
 	) {}
 
@@ -41,10 +39,6 @@ export class PaymentWebhookSucceededHandler implements IEventHandler<PaymentWebh
 			const payment = await this.paymentRepository.getById(paymentId);
 			payment.markSucceeded();
 			await this.paymentRepository.persist(payment);
-
-			await this.commandBus.execute(
-				new MarkOrderPaidCommand({ orderId }),
-			);
 
 			await this.outboxProducer.publish(
 				new PaymentFulfillmentRequestedEvent({ orderId }),
