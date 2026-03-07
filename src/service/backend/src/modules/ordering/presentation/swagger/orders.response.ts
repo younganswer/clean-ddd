@@ -3,7 +3,7 @@ import type { PaginatedResult } from '@/shared/readers/paginated.result';
 import type {
 	OrderItemResult,
 	OrderResult,
-} from '@/shared/ordering/readers/order.result';
+} from '@/modules/ordering/application/readers/order.result';
 
 export class OrderItemResponse {
 	@ApiProperty()

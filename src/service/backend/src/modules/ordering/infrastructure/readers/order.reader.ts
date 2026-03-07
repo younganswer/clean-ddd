@@ -2,10 +2,11 @@ import { Inject, Injectable } from '@nestjs/common';
 import {
 	IOrderReaderSymbol,
 	type IOrderReader,
-} from '@/shared/ordering/readers/i.order.reader';
-import type { OrderResult } from '@/shared/ordering/readers/order.result';
+} from '@/modules/ordering/application/readers/i.order.reader';
+import type { OrderResult } from '@/modules/ordering/application/readers/order.result';
 import { IOrderRepositorySymbol } from '@/modules/ordering/domains/repositories/i.order.repository';
 import type { IOrderRepository } from '@/modules/ordering/domains/repositories/i.order.repository';
+import { RepositoryGetByIdOptions } from '@/lib/database/repository-get-options';
 
 @Injectable()
 export class OrderReader implements IOrderReader {
@@ -17,6 +18,15 @@ export class OrderReader implements IOrderReader {
 	async findById(id: string): Promise<OrderResult | null> {
 		const order = await this.orderRepository.findById(id);
 		if (!order) return null;
+
+		return this.toResult(order);
+	}
+
+	async getById(
+		id: string,
+		options?: RepositoryGetByIdOptions,
+	): Promise<OrderResult> {
+		const order = await this.orderRepository.getById(id, options);
 
 		return this.toResult(order);
 	}
