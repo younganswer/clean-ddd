@@ -7,7 +7,7 @@ import {
 import {
 	IInventoryReaderSymbol,
 	type IInventoryReader,
-} from '@/shared/readers/inventory/i.inventory.reader';
+} from '@/shared/inventory/readers/i.inventory.reader';
 
 @QueryHandler(GetInventoryItemQuery)
 export class GetInventoryItemHandler implements IQueryHandler<GetInventoryItemQuery> {

@@ -4,11 +4,11 @@ import { Injectable } from '@nestjs/common';
 import {
 	IUserReaderSymbol,
 	type IUserReader,
-} from '@/shared/readers/users/i.user.reader';
+} from '@/shared/users/readers/i.user.reader';
 import { UserSchema } from '@/modules/users/infrastructure/schemas/user.schema';
 import { USER_APPLICATION_ERRORS } from '@/shared/errors';
-import { ApplicationErrorFactory } from '@/shared/errors/base.error-factory';
-import { UserProfileResult } from '@/shared/readers/users/user-profile.result';
+import { ApplicationErrorFactory } from '@/common/errors/base.error-factory';
+import { UserProfileResult } from '@/shared/users/readers/user-profile.result';
 
 @Injectable()
 export class UserReader implements IUserReader {

@@ -15,7 +15,7 @@ import { optionalEnv } from '@/env';
 import { UserReaderProvider } from '@/modules/users/infrastructure/readers/user.reader';
 import { MongoUserAvatarReader } from '@/modules/users/infrastructure/readers/mongo-user-avatar.reader';
 import { DynamoDbUserAvatarReader } from '@/modules/users/infrastructure/readers/dynamodb-user-avatar.reader';
-import { IUserAvatarReaderSymbol } from '@/shared/readers/users/i.user-avatar.reader';
+import { IUserAvatarReaderSymbol } from '@/shared/users/readers/i.user-avatar.reader';
 
 @Module({
 	imports: [CqrsModule],

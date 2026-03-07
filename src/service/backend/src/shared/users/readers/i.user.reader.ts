@@ -1,4 +1,4 @@
-import type { UserProfileResult } from '@/shared/readers/users/user-profile.result';
+import type { UserProfileResult } from '@/shared/users/readers/user-profile.result';
 
 export const IUserReaderSymbol = Symbol('IUserReader');
 

@@ -7,7 +7,7 @@ import {
 import {
 	IShipmentReaderSymbol,
 	type IShipmentReader,
-} from '@/shared/readers/shipping/i.shipment.reader';
+} from '@/shared/shipping/readers/i.shipment.reader';
 
 @QueryHandler(GetShipmentByOrderQuery)
 export class GetShipmentByOrderHandler implements IQueryHandler<GetShipmentByOrderQuery> {
