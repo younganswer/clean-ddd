@@ -1,5 +1,5 @@
 import { ShipmentStatus } from '@/shared/shipping';
-import { BaseEntity } from '@/shared/domain/base.entity';
+import { BaseEntity } from '@/common/domain/base.entity';
 import { randomUUID } from 'node:crypto';
 
 export class Shipment extends BaseEntity {

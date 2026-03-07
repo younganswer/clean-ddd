@@ -1,7 +1,7 @@
-import { BaseEntity } from '@/shared/domain/base.entity';
+import { BaseEntity } from '@/common/domain/base.entity';
 import { PaymentStatus } from '@/shared/payments';
 import { PAYMENTS_DOMAIN_ERRORS } from '@/shared/errors';
-import { DomainErrorFactory } from '@/shared/errors/base.error-factory';
+import { DomainErrorFactory } from '@/common/errors/base.error-factory';
 import { randomUUID } from 'node:crypto';
 
 export class PaymentIntent extends BaseEntity {
