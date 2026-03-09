@@ -3,160 +3,164 @@ Transform: AWS::Serverless-2016-10-31
 Description: clean-ddd nested serverless stack
 
 Parameters:
-    ProjectName:
-        Type: String
-        Default: clean-ddd
-    EnvironmentName:
-        Type: String
-        Default: dev
-    DatabaseUrlPooled:
-        Type: String
-        NoEcho: true
-    DatabaseUrlDirect:
-        Type: String
-        NoEcho: true
-    AvatarRepositoryBackend:
-        Type: String
-        Default: dynamodb
-        AllowedValues:
-            - mongo
-            - dynamodb
-    DynamoDbAvatarTable:
-        Type: String
-        Default: clean-ddd-avatar
-    OutboxDispatchScheduleExpression:
-        Type: String
-        Default: rate(1 minute)
-    PublicApiThrottleBurst:
-        Type: Number
-        Default: 50
-    PublicApiThrottleRate:
-        Type: Number
-        Default: 25
-    ApiFunctionReservedConcurrency:
-        Type: Number
-        Default: 10
-    OutboxConsumerReservedConcurrency:
-        Type: Number
-        Default: 5
-    OutboxDispatchReservedConcurrency:
-        Type: Number
-        Default: 2
-    EdgeOriginVerifyHeaderName:
-        Type: String
-        Default: x-origin-verify
-    EdgeOriginVerifyHeaderValue:
-        Type: String
-        NoEcho: true
-        Default: change-me
-    MitigationThrottleRate:
-        Type: Number
-        Default: 5
-    MitigationThrottleBurst:
-        Type: Number
-        Default: 10
-    MitigationApiReservedConcurrency:
-        Type: Number
-        Default: 3
-    MitigationConsumerReservedConcurrency:
-        Type: Number
-        Default: 1
-    MitigationDispatchReservedConcurrency:
-        Type: Number
-        Default: 1
-    MitigationBlockedPaths:
-        Type: CommaDelimitedList
-        Default: /api/v1/users/search:GET,/api/v1/users/list:GET
-    S3DailyBudgetUsd:
-        Type: Number
-        Default: 0.1
-    OtherServiceDailyBudgetUsd:
-        Type: Number
-        Default: 0.01
+  ProjectName:
+    Type: String
+    Default: clean-ddd
+  EnvironmentName:
+    Type: String
+    Default: dev
+  DatabaseUrlPooled:
+    Type: String
+    NoEcho: true
+  DatabaseUrlDirect:
+    Type: String
+    NoEcho: true
+  AvatarRepositoryBackend:
+    Type: String
+    Default: dynamodb
+    AllowedValues:
+      - mongo
+      - dynamodb
+  DynamoDbAvatarTable:
+    Type: String
+    Default: clean-ddd-avatar
+  OutboxDispatchScheduleExpression:
+    Type: String
+    Default: rate(1 minute)
+  PublicApiThrottleBurst:
+    Type: Number
+    Default: 50
+  PublicApiThrottleRate:
+    Type: Number
+    Default: 25
+  ApiFunctionReservedConcurrency:
+    Type: Number
+    Default: 10
+  OutboxConsumerReservedConcurrency:
+    Type: Number
+    Default: 5
+  OutboxConsumerLockTimeoutMs:
+    Type: Number
+    Default: 120000
+  OutboxDispatchReservedConcurrency:
+    Type: Number
+    Default: 2
+  EdgeOriginVerifyHeaderName:
+    Type: String
+    Default: x-origin-verify
+  EdgeOriginVerifyHeaderValue:
+    Type: String
+    NoEcho: true
+    Default: change-me
+  MitigationThrottleRate:
+    Type: Number
+    Default: 5
+  MitigationThrottleBurst:
+    Type: Number
+    Default: 10
+  MitigationApiReservedConcurrency:
+    Type: Number
+    Default: 3
+  MitigationConsumerReservedConcurrency:
+    Type: Number
+    Default: 1
+  MitigationDispatchReservedConcurrency:
+    Type: Number
+    Default: 1
+  MitigationBlockedPaths:
+    Type: CommaDelimitedList
+    Default: /api/v1/users/search:GET,/api/v1/users/list:GET
+  S3DailyBudgetUsd:
+    Type: Number
+    Default: 0.1
+  OtherServiceDailyBudgetUsd:
+    Type: Number
+    Default: 0.01
 
 Resources:
-    QueueStack:
-        Type: AWS::Serverless::Application
-        Properties:
-            Location: stacks/queue-stack.yaml
-            Parameters:
-                ProjectName: !Ref ProjectName
-                EnvironmentName: !Ref EnvironmentName
+  QueueStack:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: stacks/queue-stack.yaml
+      Parameters:
+        ProjectName: !Ref ProjectName
+        EnvironmentName: !Ref EnvironmentName
 
-    ApiStack:
-        Type: AWS::Serverless::Application
-        Properties:
-            Location: stacks/api-stack.yaml
-            Parameters:
-                ProjectName: !Ref ProjectName
-                EnvironmentName: !Ref EnvironmentName
-                DatabaseUrlPooled: !Ref DatabaseUrlPooled
-                DatabaseUrlDirect: !Ref DatabaseUrlDirect
-                AvatarRepositoryBackend: !Ref AvatarRepositoryBackend
-                DynamoDbAvatarTable: !Ref DynamoDbAvatarTable
-                OutboxQueueName: !GetAtt QueueStack.Outputs.OutboxQueueName
-                OutboxQueueUrl: !GetAtt QueueStack.Outputs.OutboxQueueUrl
-                PublicApiThrottleBurst: !Ref PublicApiThrottleBurst
-                PublicApiThrottleRate: !Ref PublicApiThrottleRate
-                ApiFunctionReservedConcurrency: !Ref ApiFunctionReservedConcurrency
-                EdgeOriginVerifyHeaderName: !Ref EdgeOriginVerifyHeaderName
-                EdgeOriginVerifyHeaderValue: !Ref EdgeOriginVerifyHeaderValue
+  ApiStack:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: stacks/api-stack.yaml
+      Parameters:
+        ProjectName: !Ref ProjectName
+        EnvironmentName: !Ref EnvironmentName
+        DatabaseUrlPooled: !Ref DatabaseUrlPooled
+        DatabaseUrlDirect: !Ref DatabaseUrlDirect
+        AvatarRepositoryBackend: !Ref AvatarRepositoryBackend
+        DynamoDbAvatarTable: !Ref DynamoDbAvatarTable
+        OutboxQueueName: !GetAtt QueueStack.Outputs.OutboxQueueName
+        OutboxQueueUrl: !GetAtt QueueStack.Outputs.OutboxQueueUrl
+        PublicApiThrottleBurst: !Ref PublicApiThrottleBurst
+        PublicApiThrottleRate: !Ref PublicApiThrottleRate
+        ApiFunctionReservedConcurrency: !Ref ApiFunctionReservedConcurrency
+        EdgeOriginVerifyHeaderName: !Ref EdgeOriginVerifyHeaderName
+        EdgeOriginVerifyHeaderValue: !Ref EdgeOriginVerifyHeaderValue
 
-    WorkerStack:
-        Type: AWS::Serverless::Application
-        Properties:
-            Location: stacks/worker-stack.yaml
-            Parameters:
-                ProjectName: !Ref ProjectName
-                EnvironmentName: !Ref EnvironmentName
-                DatabaseUrlPooled: !Ref DatabaseUrlPooled
-                DatabaseUrlDirect: !Ref DatabaseUrlDirect
-                AvatarRepositoryBackend: !Ref AvatarRepositoryBackend
-                DynamoDbAvatarTable: !Ref DynamoDbAvatarTable
-                OutboxQueueArn: !GetAtt QueueStack.Outputs.OutboxQueueArn
-                OutboxQueueName: !GetAtt QueueStack.Outputs.OutboxQueueName
-                OutboxQueueUrl: !GetAtt QueueStack.Outputs.OutboxQueueUrl
-                OutboxDispatchScheduleExpression: !Ref OutboxDispatchScheduleExpression
-                OutboxConsumerReservedConcurrency: !Ref OutboxConsumerReservedConcurrency
-                OutboxDispatchReservedConcurrency: !Ref OutboxDispatchReservedConcurrency
+  WorkerStack:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: stacks/worker-stack.yaml
+      Parameters:
+        ProjectName: !Ref ProjectName
+        EnvironmentName: !Ref EnvironmentName
+        DatabaseUrlPooled: !Ref DatabaseUrlPooled
+        DatabaseUrlDirect: !Ref DatabaseUrlDirect
+        AvatarRepositoryBackend: !Ref AvatarRepositoryBackend
+        DynamoDbAvatarTable: !Ref DynamoDbAvatarTable
+        OutboxQueueArn: !GetAtt QueueStack.Outputs.OutboxQueueArn
+        OutboxQueueName: !GetAtt QueueStack.Outputs.OutboxQueueName
+        OutboxQueueUrl: !GetAtt QueueStack.Outputs.OutboxQueueUrl
+        OutboxDispatchScheduleExpression: !Ref OutboxDispatchScheduleExpression
+        OutboxConsumerReservedConcurrency: !Ref OutboxConsumerReservedConcurrency
+        OutboxConsumerLockTimeoutMs: !Ref OutboxConsumerLockTimeoutMs
+        OutboxDispatchReservedConcurrency: !Ref OutboxDispatchReservedConcurrency
 
-    MonitoringStack:
-        Type: AWS::Serverless::Application
-        Properties:
-            Location: stacks/monitoring-stack.yaml
-            Parameters:
-                ProjectName: !Ref ProjectName
-                EnvironmentName: !Ref EnvironmentName
-                PublicApiId: !GetAtt ApiStack.Outputs.PublicApiId
-                PublicApiStageName: !GetAtt ApiStack.Outputs.PublicApiStageName
-                ApiFunctionName: !GetAtt ApiStack.Outputs.ApiFunctionName
-                OutboxConsumerFunctionName: !GetAtt WorkerStack.Outputs.OutboxConsumerFunctionName
-                OutboxDispatchSchedulerFunctionName: !GetAtt WorkerStack.Outputs.OutboxDispatchSchedulerFunctionName
-                OutboxQueueName: !GetAtt QueueStack.Outputs.OutboxQueueName
-                MitigationThrottleRate: !Ref MitigationThrottleRate
-                MitigationThrottleBurst: !Ref MitigationThrottleBurst
-                MitigationApiReservedConcurrency: !Ref MitigationApiReservedConcurrency
-                MitigationConsumerReservedConcurrency: !Ref MitigationConsumerReservedConcurrency
-                MitigationDispatchReservedConcurrency: !Ref MitigationDispatchReservedConcurrency
-                MitigationBlockedPaths: !Join [",", !Ref MitigationBlockedPaths]
+  MonitoringStack:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: stacks/monitoring-stack.yaml
+      Parameters:
+        ProjectName: !Ref ProjectName
+        EnvironmentName: !Ref EnvironmentName
+        PublicApiId: !GetAtt ApiStack.Outputs.PublicApiId
+        PublicApiStageName: !GetAtt ApiStack.Outputs.PublicApiStageName
+        ApiFunctionName: !GetAtt ApiStack.Outputs.ApiFunctionName
+        OutboxConsumerFunctionName: !GetAtt WorkerStack.Outputs.OutboxConsumerFunctionName
+        OutboxDispatchSchedulerFunctionName: !GetAtt WorkerStack.Outputs.OutboxDispatchSchedulerFunctionName
+        OutboxQueueName: !GetAtt QueueStack.Outputs.OutboxQueueName
+        MitigationThrottleRate: !Ref MitigationThrottleRate
+        MitigationThrottleBurst: !Ref MitigationThrottleBurst
+        MitigationApiReservedConcurrency: !Ref MitigationApiReservedConcurrency
+        MitigationConsumerReservedConcurrency: !Ref MitigationConsumerReservedConcurrency
+        MitigationDispatchReservedConcurrency: !Ref MitigationDispatchReservedConcurrency
+        MitigationBlockedPaths: !Join [",", !Ref MitigationBlockedPaths]
 
-    CostGuardrailsStack:
-        Type: AWS::Serverless::Application
-        Properties:
-            Location: stacks/cost-guardrails-stack.yaml
-            Parameters:
-                ProjectName: !Ref ProjectName
-                EnvironmentName: !Ref EnvironmentName
-                AlertTopicArn: !GetAtt MonitoringStack.Outputs.SecurityAlertsTopicArn
-                S3DailyBudgetUsd: !Ref S3DailyBudgetUsd
-                OtherServiceDailyBudgetUsd: !Ref OtherServiceDailyBudgetUsd
+  CostGuardrailsStack:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: stacks/cost-guardrails-stack.yaml
+      Parameters:
+        ProjectName: !Ref ProjectName
+        EnvironmentName: !Ref EnvironmentName
+        AlertTopicArn: !GetAtt MonitoringStack.Outputs.SecurityAlertsTopicArn
+        S3DailyBudgetUsd: !Ref S3DailyBudgetUsd
+        OtherServiceDailyBudgetUsd: !Ref OtherServiceDailyBudgetUsd
 
 Outputs:
-    ApiUrl:
-        Value: !GetAtt ApiStack.Outputs.ApiUrl
-    SecurityAlertsTopicArn:
-        Value: !GetAtt MonitoringStack.Outputs.SecurityAlertsTopicArn
-    OutboxQueueUrl:
-        Value: !GetAtt QueueStack.Outputs.OutboxQueueUrl
-    AvatarTableName:
-        Value: !Ref DynamoDbAvatarTable
+  ApiUrl:
+    Value: !GetAtt ApiStack.Outputs.ApiUrl
+  SecurityAlertsTopicArn:
+    Value: !GetAtt MonitoringStack.Outputs.SecurityAlertsTopicArn
+  OutboxQueueUrl:
+    Value: !GetAtt QueueStack.Outputs.OutboxQueueUrl
+  AvatarTableName:
+    Value: !Ref DynamoDbAvatarTable

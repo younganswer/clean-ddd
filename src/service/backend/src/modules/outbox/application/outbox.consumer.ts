@@ -16,7 +16,8 @@ import { OutboxConsumeStateMachine } from '@/modules/outbox/application/outbox-c
 export class OutboxConsumer {
 	private readonly logger = new Logger(OutboxConsumer.name);
 	private readonly consumerName = 'OutboxConsumer';
-	private static readonly LOCK_TIMEOUT_MS = 120_000;
+	private static readonly DEFAULT_LOCK_TIMEOUT_MS = 120_000;
+	private readonly lockTimeoutMs: number;
 
 	constructor(
 		@Inject(IOutboxRepositorySymbol)
@@ -26,7 +27,24 @@ export class OutboxConsumer {
 		private readonly uow: UnitOfWork,
 		private readonly knownHandlerRegistry: OutboxKnownHandlerRegistryService,
 		private readonly consumeStateMachine: OutboxConsumeStateMachine,
-	) {}
+	) {
+		this.lockTimeoutMs = this.resolveLockTimeoutMs();
+	}
+
+	private resolveLockTimeoutMs(): number {
+		const raw = process.env.OUTBOX_CONSUMER_LOCK_TIMEOUT_MS;
+		if (!raw) return OutboxConsumer.DEFAULT_LOCK_TIMEOUT_MS;
+
+		const parsed = Number(raw);
+		if (!Number.isFinite(parsed) || parsed <= 0) {
+			this.logger.warn(
+				`invalid OUTBOX_CONSUMER_LOCK_TIMEOUT_MS=${raw}; using default ${OutboxConsumer.DEFAULT_LOCK_TIMEOUT_MS}`,
+			);
+			return OutboxConsumer.DEFAULT_LOCK_TIMEOUT_MS;
+		}
+
+		return Math.floor(parsed);
+	}
 
 	private async dispatchKnownEvent(
 		event: object,
@@ -55,7 +73,7 @@ export class OutboxConsumer {
 	private async tryLockOutbox(outboxId: string): Promise<boolean> {
 		const locked = await this.outboxRepository.lock(
 			outboxId,
-			new Date(Date.now() + OutboxConsumer.LOCK_TIMEOUT_MS),
+			new Date(Date.now() + this.lockTimeoutMs),
 		);
 		if (!locked) {
 			this.logger.log(

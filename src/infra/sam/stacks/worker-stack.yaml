@@ -51,6 +51,9 @@ Parameters:
   OutboxConsumerReservedConcurrency:
     Type: Number
     Default: 5
+  OutboxConsumerLockTimeoutMs:
+    Type: Number
+    Default: 120000
   OutboxDispatchReservedConcurrency:
     Type: Number
     Default: 2
@@ -76,6 +79,7 @@ Resources:
         Variables:
           OUTBOX_CRON_ENABLED: false
           OUTBOX_ENQUEUE_STRICT: true
+          OUTBOX_CONSUMER_LOCK_TIMEOUT_MS: !Ref OutboxConsumerLockTimeoutMs
       Policies:
         - SQSPollerPolicy:
             QueueName: !Ref OutboxQueueName
