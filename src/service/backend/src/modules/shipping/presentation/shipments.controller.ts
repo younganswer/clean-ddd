@@ -24,8 +24,8 @@ export class ShipmentsController {
 	): Promise<PageEnvelope<ShipmentResponse>> {
 		const result = await this.queryBus.execute(
 			new GetShipmentsQuery({
-				limit: query.limit ?? Number.NaN,
-				offset: query.offset ?? Number.NaN,
+				limit: query.limit,
+				offset: query.offset,
 			}),
 		);
 		const response = ShipmentResponse.fromPaginatedResults(result);

@@ -9,7 +9,7 @@ export class GetUserProfilesQuery extends Query<
 	public readonly limit: number;
 	public readonly offset: number;
 
-	constructor(input: { limit: number; offset: number }) {
+	constructor(input: { limit?: number; offset?: number }) {
 		super();
 		this.limit = toBoundedInt(input.limit, {
 			min: 1,

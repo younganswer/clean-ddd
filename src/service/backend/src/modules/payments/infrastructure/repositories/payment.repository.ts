@@ -7,7 +7,9 @@ import { PaymentIntent } from '@/modules/payments/domains/entities/aggregates/pa
 import { PaymentIntentMapper } from '@/modules/payments/infrastructure/mappers/payment-intent.mapper';
 import { PaymentIntentSchema } from '@/modules/payments/infrastructure/schemas/payment-intent.schema';
 import { PAYMENTS_APPLICATION_ERRORS } from '@/shared/errors';
+import { SYSTEM_INFRA_ERRORS } from '@/shared/errors/catalogs/system.errors';
 import { ApplicationErrorFactory } from '@/common/errors/base.error-factory';
+import { InfrastructureErrorFactory } from '@/common/errors/base.error-factory';
 
 @Injectable()
 export class PaymentRepository implements IPaymentRepository {
@@ -23,8 +25,26 @@ export class PaymentRepository implements IPaymentRepository {
 		);
 	}
 
+	private transactionalEmForWrite(): EntityManager {
+		const em = RequestContext.getEntityManager() as
+			| EntityManager
+			| undefined;
+		if (!em) {
+			throw InfrastructureErrorFactory.create(
+				SYSTEM_INFRA_ERRORS.REQUEST_CONTEXT_TRANSACTION_REQUIRED,
+				{
+					details: {
+						repository: PaymentRepository.name,
+						method: 'persist',
+					},
+				},
+			);
+		}
+		return em;
+	}
+
 	async persist(payment: PaymentIntent): Promise<void> {
-		const em = this.emForContext();
+		const em = this.transactionalEmForWrite();
 		const schema = this.mapper.toSchema(payment);
 		const exists = await em.findOne(PaymentIntentSchema, {
 			uuid: schema.uuid,
@@ -71,13 +91,12 @@ export class PaymentRepository implements IPaymentRepository {
 
 	async findRecent(limit: number): Promise<PaymentIntent[]> {
 		const em = this.emForContext();
-		const safeLimit = Math.min(50, Math.max(1, Number(limit ?? 20)));
 		const found = await em.find(
 			PaymentIntentSchema,
 			{},
 			{
 				orderBy: { id: 'asc' },
-				limit: safeLimit,
+				limit,
 			},
 		);
 		return found.map((p) => this.mapper.toDomain(p));

@@ -1,5 +1,4 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { ProcessedEvent } from '@/modules/outbox/idempotency/domain/entities/processed-event.entity';
 import {
 	IProcessedEventRepositorySymbol,
 	type IProcessedEventRepository,
@@ -13,45 +12,7 @@ export class IdempotencyService {
 	) {}
 
 	async claim(consumerName: string, eventId: string): Promise<boolean> {
-		const found = await this.processedEventRepository.find(
-			consumerName,
-			eventId,
-		);
-		if (found) {
-			return false;
-		}
-
-		const claimEvent = ProcessedEvent.create({
-			consumerName,
-			eventId,
-		});
-
-		try {
-			await this.processedEventRepository.persist(claimEvent);
-
-			return true;
-		} catch (error: unknown) {
-			// unique constraint violation -> already processed
-			const maybeError =
-				typeof error === 'object' && error !== null
-					? (error as Record<string, unknown>)
-					: undefined;
-			const rawCode = maybeError?.code;
-			const rawMessage = maybeError?.message;
-			const code =
-				typeof rawCode === 'string' || typeof rawCode === 'number'
-					? String(rawCode)
-					: '';
-			const message = typeof rawMessage === 'string' ? rawMessage : '';
-			if (
-				code === '23505' ||
-				message.toLowerCase().includes('unique') ||
-				message.toLowerCase().includes('duplicate')
-			) {
-				return false;
-			}
-			throw error;
-		}
+		return await this.processedEventRepository.claim(consumerName, eventId);
 	}
 
 	async release(consumerName: string, eventId: string): Promise<void> {

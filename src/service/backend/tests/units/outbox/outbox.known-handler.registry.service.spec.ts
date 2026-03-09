@@ -1,10 +1,14 @@
 import { DiscoveryService, Reflector } from '@nestjs/core';
 import { OutboxKnownHandler } from '@/common/outbox/outbox-known-handler.decorator';
 import { OutboxKnownHandlerRegistryService } from '@/modules/outbox/application/outbox-known-handler.registry.service';
+import {
+	PAYMENT_WEBHOOK_FAILED_EVENT_TYPE,
+	PAYMENT_WEBHOOK_SUCCEEDED_EVENT_TYPE,
+} from '@/contracts/payments';
 
 describe('OutboxKnownHandlerRegistryService', () => {
 	it('registers handlers discovered via metadata', () => {
-		@OutboxKnownHandler('event.alpha')
+		@OutboxKnownHandler(PAYMENT_WEBHOOK_SUCCEEDED_EVENT_TYPE)
 		class AlphaHandler {
 			handle(): Promise<void> {
 				return Promise.resolve();
@@ -24,20 +28,20 @@ describe('OutboxKnownHandlerRegistryService', () => {
 
 		registry.onModuleInit();
 
-		const found = registry.find('event.alpha');
+		const found = registry.find(PAYMENT_WEBHOOK_SUCCEEDED_EVENT_TYPE);
 		expect(found?.handlerName).toBe('AlphaHandler');
 		expect(found?.handler).toBe(alpha);
 	});
 
 	it('fails fast when eventType has duplicate handlers', () => {
-		@OutboxKnownHandler('event.duplicate')
+		@OutboxKnownHandler(PAYMENT_WEBHOOK_FAILED_EVENT_TYPE)
 		class FirstHandler {
 			handle(): Promise<void> {
 				return Promise.resolve();
 			}
 		}
 
-		@OutboxKnownHandler('event.duplicate')
+		@OutboxKnownHandler(PAYMENT_WEBHOOK_FAILED_EVENT_TYPE)
 		class SecondHandler {
 			handle(): Promise<void> {
 				return Promise.resolve();

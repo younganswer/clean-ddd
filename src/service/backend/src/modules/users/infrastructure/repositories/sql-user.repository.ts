@@ -7,7 +7,9 @@ import type { IUserRepository } from '@/modules/users/domains/repositories/i.use
 import { UserMapper } from '@/modules/users/infrastructure/mappers/user.mapper';
 import { UserSchema } from '@/modules/users/infrastructure/schemas/user.schema';
 import { USER_APPLICATION_ERRORS } from '@/shared/errors';
+import { SYSTEM_INFRA_ERRORS } from '@/shared/errors/catalogs/system.errors';
 import { ApplicationErrorFactory } from '@/common/errors/base.error-factory';
+import { InfrastructureErrorFactory } from '@/common/errors/base.error-factory';
 
 @Injectable()
 export class SqlUserRepository implements IUserRepository {
@@ -23,8 +25,26 @@ export class SqlUserRepository implements IUserRepository {
 		);
 	}
 
+	private transactionalEmForWrite(): EntityManager {
+		const em = RequestContext.getEntityManager() as
+			| EntityManager
+			| undefined;
+		if (!em) {
+			throw InfrastructureErrorFactory.create(
+				SYSTEM_INFRA_ERRORS.REQUEST_CONTEXT_TRANSACTION_REQUIRED,
+				{
+					details: {
+						repository: SqlUserRepository.name,
+						method: 'persist',
+					},
+				},
+			);
+		}
+		return em;
+	}
+
 	async persist(user: User): Promise<void> {
-		const em = this.emForContext();
+		const em = this.transactionalEmForWrite();
 		const schema = this.mapper.toSchema(user);
 		const exists = await em.findOne(UserSchema, { uuid: user.id });
 
@@ -66,18 +86,13 @@ export class SqlUserRepository implements IUserRepository {
 	}
 
 	async findAll(input: { limit: number; offset: number }): Promise<User[]> {
-		const limit = Math.min(
-			200,
-			Math.max(1, Number(input.limit ?? 20) || 20),
-		);
-		const offset = Math.max(0, Number(input.offset ?? 0) || 0);
 		const em = this.emForContext();
 		const rows = await em.find(
 			UserSchema,
 			{},
 			{
-				limit,
-				offset,
+				limit: input.limit,
+				offset: input.offset,
 				orderBy: { id: 'asc' },
 			},
 		);

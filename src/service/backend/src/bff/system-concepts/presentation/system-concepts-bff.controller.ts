@@ -20,14 +20,14 @@ export class SystemConceptsBffController {
 		const [users, inventoryItems] = await Promise.all([
 			this.queryBus.execute(
 				new GetUserProfilesQuery({
-					limit: query.limit ?? Number.NaN,
-					offset: query.offset ?? Number.NaN,
+					limit: query.limit,
+					offset: query.offset,
 				}),
 			),
 			this.queryBus.execute(
 				new GetInventoryItemsQuery({
-					limit: query.limit ?? Number.NaN,
-					offset: query.offset ?? Number.NaN,
+					limit: query.limit,
+					offset: query.offset,
 				}),
 			),
 		]);

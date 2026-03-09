@@ -18,8 +18,8 @@ export class UsersController {
 	): Promise<PageEnvelope<UserProfileResponse>> {
 		const result = await this.queryBus.execute(
 			new GetUserProfilesQuery({
-				limit: query.limit ?? Number.NaN,
-				offset: query.offset ?? Number.NaN,
+				limit: query.limit,
+				offset: query.offset,
 			}),
 		);
 		const response = UserProfileResponse.fromPaginatedResults(result);

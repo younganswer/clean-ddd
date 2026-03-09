@@ -94,7 +94,7 @@ export class OrderRepository implements IOrderRepository {
 			{},
 			{
 				limit,
-				offset: Math.max(0, Number(offset ?? 0) || 0),
+				offset,
 				orderBy: { id: 'asc' },
 			},
 		);
@@ -111,14 +111,12 @@ export class OrderRepository implements IOrderRepository {
 		if (!normalized) return [];
 
 		const em = this.emForContext();
-		const safeLimit = Math.min(200, Math.max(1, Number(limit ?? 50) || 50));
-		const safeOffset = Math.max(0, Number(offset ?? 0) || 0);
 		const found = await em.find(
 			OrderSchema,
 			{ userId: normalized },
 			{
-				limit: safeLimit,
-				offset: safeOffset,
+				limit,
+				offset,
 				orderBy: { id: 'asc' },
 			},
 		);

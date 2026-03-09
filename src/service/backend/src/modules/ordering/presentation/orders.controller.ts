@@ -48,8 +48,8 @@ export class OrdersController {
 	): Promise<PageEnvelope<OrderResponse>> {
 		const result = await this.queryBus.execute(
 			new GetOrdersQuery({
-				limit: query.limit ?? Number.NaN,
-				offset: query.offset ?? Number.NaN,
+				limit: query.limit,
+				offset: query.offset,
 			}),
 		);
 		const response = OrderResponse.fromPaginatedResults(result);

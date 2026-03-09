@@ -7,7 +7,9 @@ import { ShipmentSchema } from '@/modules/shipping/infrastructure/schemas/shipme
 import { Shipment } from '@/modules/shipping/domains/entities/aggregates/shipment/shipment.aggregate';
 import { ShipmentMapper } from '@/modules/shipping/infrastructure/mappers/shipment.mapper';
 import { SHIPPING_APPLICATION_ERRORS } from '@/shared/errors';
+import { SYSTEM_INFRA_ERRORS } from '@/shared/errors/catalogs/system.errors';
 import { ApplicationErrorFactory } from '@/common/errors/base.error-factory';
+import { InfrastructureErrorFactory } from '@/common/errors/base.error-factory';
 
 @Injectable()
 export class ShipmentRepository implements IShipmentRepository {
@@ -23,8 +25,26 @@ export class ShipmentRepository implements IShipmentRepository {
 		);
 	}
 
+	private transactionalEmForWrite(): EntityManager {
+		const em = RequestContext.getEntityManager() as
+			| EntityManager
+			| undefined;
+		if (!em) {
+			throw InfrastructureErrorFactory.create(
+				SYSTEM_INFRA_ERRORS.REQUEST_CONTEXT_TRANSACTION_REQUIRED,
+				{
+					details: {
+						repository: ShipmentRepository.name,
+						method: 'persist',
+					},
+				},
+			);
+		}
+		return em;
+	}
+
 	async persist(shipment: Shipment): Promise<void> {
-		const em = this.emForContext();
+		const em = this.transactionalEmForWrite();
 		const schema = this.mapper.toSchema(shipment);
 		const exists = await em.findOne(ShipmentSchema, {
 			uuid: schema.uuid,
@@ -80,7 +100,7 @@ export class ShipmentRepository implements IShipmentRepository {
 			{},
 			{
 				limit,
-				offset: Math.max(0, Number(offset ?? 0) || 0),
+				offset,
 				orderBy: { id: 'asc' },
 			},
 		);

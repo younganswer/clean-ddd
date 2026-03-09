@@ -5,6 +5,8 @@ import type { IInventoryReservationRepository } from '@/modules/inventory/domain
 import { InventoryReservation } from '@/modules/inventory/domains/entities/inventory-reservation.entity';
 import { InventoryReservationMapper } from '@/modules/inventory/infrastructure/mappers/inventory-reservation.mapper';
 import { InventoryReservationSchema } from '@/modules/inventory/infrastructure/schemas/inventory-reservation.schema';
+import { SYSTEM_INFRA_ERRORS } from '@/shared/errors/catalogs/system.errors';
+import { InfrastructureErrorFactory } from '@/common/errors/base.error-factory';
 
 @Injectable()
 export class InventoryReservationRepository implements IInventoryReservationRepository {
@@ -20,8 +22,26 @@ export class InventoryReservationRepository implements IInventoryReservationRepo
 		);
 	}
 
+	private transactionalEmForWrite(): EntityManager {
+		const em = RequestContext.getEntityManager() as
+			| EntityManager
+			| undefined;
+		if (!em) {
+			throw InfrastructureErrorFactory.create(
+				SYSTEM_INFRA_ERRORS.REQUEST_CONTEXT_TRANSACTION_REQUIRED,
+				{
+					details: {
+						repository: InventoryReservationRepository.name,
+						method: 'persist',
+					},
+				},
+			);
+		}
+		return em;
+	}
+
 	async persist(reservation: InventoryReservation): Promise<void> {
-		const em = this.emForContext();
+		const em = this.transactionalEmForWrite();
 		const schema = this.mapper.toSchema(reservation);
 		const exists = await em.findOne(InventoryReservationSchema, {
 			uuid: schema.uuid,

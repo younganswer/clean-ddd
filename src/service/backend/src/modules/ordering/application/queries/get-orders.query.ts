@@ -7,7 +7,7 @@ export class GetOrdersQuery extends Query<PaginatedResult<OrderResult>> {
 	public readonly limit: number;
 	public readonly offset: number;
 
-	constructor(input: { limit: number; offset?: number }) {
+	constructor(input: { limit?: number; offset?: number }) {
 		super();
 		this.limit = toBoundedInt(input.limit, {
 			min: 1,

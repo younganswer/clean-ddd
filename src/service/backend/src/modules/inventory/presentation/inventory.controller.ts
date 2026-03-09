@@ -33,8 +33,8 @@ export class InventoryController {
 	): Promise<PageEnvelope<InventoryItemResponse>> {
 		const result = await this.queryBus.execute(
 			new GetInventoryItemsQuery({
-				limit: query.limit ?? Number.NaN,
-				offset: query.offset ?? Number.NaN,
+				limit: query.limit,
+				offset: query.offset,
 			}),
 		);
 		const response = InventoryItemResponse.fromPaginatedResults(result);

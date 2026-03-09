@@ -1,6 +1,7 @@
 import { RequestContext } from '@mikro-orm/core';
 import { EntityManager } from '@mikro-orm/postgresql';
 import { Injectable } from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
 import { ProcessedEvent } from '@/modules/outbox/idempotency/domain/entities/processed-event.entity';
 import type { IProcessedEventRepository } from '@/modules/outbox/idempotency/domain/i.processed-event.repository';
 import { ProcessedEventMapper } from '@/modules/outbox/idempotency/infrastructure/processed-event.mapper';
@@ -55,6 +56,47 @@ export class ProcessedEventRepository implements IProcessedEventRepository {
 			});
 		} else {
 			em.create(ProcessedEventSchema, schema);
+		}
+	}
+
+	async claim(consumerName: string, eventId: string): Promise<boolean> {
+		const normalizedConsumerName = String(consumerName ?? '').trim();
+		const normalizedEventId = String(eventId ?? '').trim();
+
+		if (!normalizedConsumerName || !normalizedEventId) {
+			return false;
+		}
+
+		const em = this.emForContext();
+		try {
+			await em.insert(ProcessedEventSchema, {
+				uuid: randomUUID(),
+				consumerName: normalizedConsumerName,
+				eventId: normalizedEventId,
+			});
+			return true;
+		} catch (error: unknown) {
+			const maybeError =
+				typeof error === 'object' && error !== null
+					? (error as Record<string, unknown>)
+					: undefined;
+			const rawCode = maybeError?.code;
+			const rawMessage = maybeError?.message;
+			const code =
+				typeof rawCode === 'string' || typeof rawCode === 'number'
+					? String(rawCode)
+					: '';
+			const message = typeof rawMessage === 'string' ? rawMessage : '';
+
+			if (
+				code === '23505' ||
+				message.toLowerCase().includes('unique') ||
+				message.toLowerCase().includes('duplicate')
+			) {
+				return false;
+			}
+
+			throw error;
 		}
 	}
 

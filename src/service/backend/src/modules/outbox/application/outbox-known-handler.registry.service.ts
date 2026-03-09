@@ -4,11 +4,15 @@ import {
 	OUTBOX_KNOWN_HANDLER_EVENT_TYPE_METADATA,
 	type OutboxKnownEventHandler,
 } from '@/common/outbox/outbox-known-handler.decorator';
+import {
+	type OutboxEventType,
+	isKnownOutboxEventType,
+} from '@/lib/outbox/event-registry';
 import { OUTBOX_INFRA_ERRORS } from '@/shared/errors';
 import { InfrastructureErrorFactory } from '@/common/errors/base.error-factory';
 
 type OutboxKnownHandlerEntry = {
-	eventType: string;
+	eventType: OutboxEventType;
 	handlerName: string;
 	handler: OutboxKnownEventHandler;
 };
@@ -43,6 +47,15 @@ export class OutboxKnownHandlerRegistryService implements OnModuleInit {
 			}
 			const eventType = eventTypeValue.trim();
 			if (!eventType) continue;
+			if (!isKnownOutboxEventType(eventType)) {
+				throw InfrastructureErrorFactory.create(
+					OUTBOX_INFRA_ERRORS.OUTBOX_HANDLER_INVALID,
+					{
+						message: `unknown outbox eventType=${eventType}`,
+						details: { eventType, handler: metatype.name },
+					},
+				);
+			}
 
 			if (
 				typeof (provider.instance as { handle?: unknown }).handle !==
@@ -87,6 +100,10 @@ export class OutboxKnownHandlerRegistryService implements OnModuleInit {
 	}
 
 	find(eventType: string): OutboxKnownHandlerEntry | undefined {
+		if (!isKnownOutboxEventType(eventType)) {
+			return undefined;
+		}
+
 		return this.handlersByEventType.get(eventType);
 	}
 }

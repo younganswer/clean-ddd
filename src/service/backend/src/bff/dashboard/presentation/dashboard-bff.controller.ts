@@ -17,7 +17,7 @@ export class DashboardBffController {
 	): Promise<DataEnvelope<DashboardSummaryBffResponse>> {
 		const result = await this.queryBus.execute(
 			new GetDashboardSummaryBffQuery({
-				limit: limit ? parseInt(limit, 10) : Number.NaN,
+				limit: limit ? parseInt(limit, 10) : undefined,
 			}),
 		);
 		const response = DashboardSummaryBffResponse.fromResult(result);

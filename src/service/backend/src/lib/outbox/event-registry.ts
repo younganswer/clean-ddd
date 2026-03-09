@@ -29,7 +29,42 @@ export type KnownOutboxEvent =
 	| ReserveInventoryForOrderRequestedEvent
 	| CreateShipmentForOrderRequestedEvent;
 
+type OutboxEventByType = {
+	[PAYMENT_WEBHOOK_SUCCEEDED_EVENT_TYPE]: PaymentWebhookSucceededEvent;
+	[PAYMENT_WEBHOOK_FAILED_EVENT_TYPE]: PaymentWebhookFailedEvent;
+	[PAYMENT_FULFILLMENT_REQUESTED_EVENT_TYPE]: PaymentFulfillmentRequestedEvent;
+	[INVENTORY_RESERVE_FOR_ORDER_REQUESTED_EVENT_TYPE]: ReserveInventoryForOrderRequestedEvent;
+	[SHIPPING_CREATE_FOR_ORDER_REQUESTED_EVENT_TYPE]: CreateShipmentForOrderRequestedEvent;
+};
+
 export type UnknownOutboxEventPayload = Record<string, unknown>;
+
+const OUTBOX_EVENT_HYDRATORS: {
+	[K in OutboxEventType]: (
+		payload: UnknownOutboxEventPayload,
+	) => OutboxEventByType[K] | null;
+} = {
+	[PAYMENT_WEBHOOK_SUCCEEDED_EVENT_TYPE]: (payload) =>
+		PaymentWebhookSucceededEvent.fromRaw(payload),
+	[PAYMENT_WEBHOOK_FAILED_EVENT_TYPE]: (payload) =>
+		PaymentWebhookFailedEvent.fromRaw(payload),
+	[PAYMENT_FULFILLMENT_REQUESTED_EVENT_TYPE]: (payload) =>
+		PaymentFulfillmentRequestedEvent.fromRaw(payload),
+	[INVENTORY_RESERVE_FOR_ORDER_REQUESTED_EVENT_TYPE]: (payload) =>
+		ReserveInventoryForOrderRequestedEvent.fromRaw(payload),
+	[SHIPPING_CREATE_FOR_ORDER_REQUESTED_EVENT_TYPE]: (payload) =>
+		CreateShipmentForOrderRequestedEvent.fromRaw(payload),
+};
+
+export const KNOWN_OUTBOX_EVENT_TYPES = Object.freeze(
+	Object.keys(OUTBOX_EVENT_HYDRATORS) as OutboxEventType[],
+);
+
+export function isKnownOutboxEventType(
+	value: string,
+): value is OutboxEventType {
+	return (KNOWN_OUTBOX_EVENT_TYPES as readonly string[]).includes(value);
+}
 
 export function getEventType(event: object): string {
 	const ctor = (event as { constructor?: unknown }).constructor as
@@ -53,18 +88,9 @@ export function hydrateEvent(
 	eventType: string,
 	payload: UnknownOutboxEventPayload,
 ): KnownOutboxEvent | null {
-	switch (eventType) {
-		case PAYMENT_WEBHOOK_SUCCEEDED_EVENT_TYPE:
-			return PaymentWebhookSucceededEvent.fromRaw(payload);
-		case PAYMENT_WEBHOOK_FAILED_EVENT_TYPE:
-			return PaymentWebhookFailedEvent.fromRaw(payload);
-		case PAYMENT_FULFILLMENT_REQUESTED_EVENT_TYPE:
-			return PaymentFulfillmentRequestedEvent.fromRaw(payload);
-		case INVENTORY_RESERVE_FOR_ORDER_REQUESTED_EVENT_TYPE:
-			return ReserveInventoryForOrderRequestedEvent.fromRaw(payload);
-		case SHIPPING_CREATE_FOR_ORDER_REQUESTED_EVENT_TYPE:
-			return CreateShipmentForOrderRequestedEvent.fromRaw(payload);
-		default:
-			return null;
+	if (!isKnownOutboxEventType(eventType)) {
+		return null;
 	}
+
+	return OUTBOX_EVENT_HYDRATORS[eventType](payload);
 }

@@ -18,15 +18,48 @@ import { SQS_CLIENT, SQS_OUTBOX_QUEUE_URL } from '@/lib/queue/sqs.module';
 @Injectable()
 export class OutboxSqsPoller implements OnModuleInit, OnModuleDestroy {
 	private readonly logger = new Logger(OutboxSqsPoller.name);
+	private static readonly DEFAULT_VISIBILITY_TIMEOUT_SECONDS = 30;
 	private stopped = false;
 	private inFlight: Promise<void> | null = null;
+	private readonly visibilityTimeoutSeconds: number;
 
 	constructor(
 		@Inject(SQS_CLIENT) private readonly sqs: SQSClient,
 		@Inject(SQS_OUTBOX_QUEUE_URL) private readonly queueUrl: string,
 		private readonly consumer: OutboxConsumer,
 		private readonly orm: MikroORM,
-	) {}
+	) {
+		this.visibilityTimeoutSeconds = this.resolveVisibilityTimeoutSeconds();
+	}
+
+	private resolveVisibilityTimeoutSeconds(): number {
+		const explicit = process.env.OUTBOX_SQS_VISIBILITY_TIMEOUT_SECONDS;
+		if (explicit) {
+			const parsed = Number(explicit);
+			if (Number.isFinite(parsed) && parsed > 0) {
+				return Math.floor(parsed);
+			}
+			this.logger.warn(
+				`invalid OUTBOX_SQS_VISIBILITY_TIMEOUT_SECONDS=${explicit}; using default ${OutboxSqsPoller.DEFAULT_VISIBILITY_TIMEOUT_SECONDS}`,
+			);
+			return OutboxSqsPoller.DEFAULT_VISIBILITY_TIMEOUT_SECONDS;
+		}
+
+		const lockTimeoutRaw = process.env.OUTBOX_CONSUMER_LOCK_TIMEOUT_MS;
+		if (!lockTimeoutRaw) {
+			return OutboxSqsPoller.DEFAULT_VISIBILITY_TIMEOUT_SECONDS;
+		}
+
+		const lockTimeoutMs = Number(lockTimeoutRaw);
+		if (!Number.isFinite(lockTimeoutMs) || lockTimeoutMs <= 0) {
+			this.logger.warn(
+				`invalid OUTBOX_CONSUMER_LOCK_TIMEOUT_MS=${lockTimeoutRaw}; using default ${OutboxSqsPoller.DEFAULT_VISIBILITY_TIMEOUT_SECONDS}`,
+			);
+			return OutboxSqsPoller.DEFAULT_VISIBILITY_TIMEOUT_SECONDS;
+		}
+
+		return Math.max(1, Math.floor(lockTimeoutMs / 1000));
+	}
 
 	onModuleInit() {
 		const enabled = isOutboxPollingEnabled();
@@ -49,7 +82,7 @@ export class OutboxSqsPoller implements OnModuleInit, OnModuleDestroy {
 						QueueUrl: this.queueUrl,
 						MaxNumberOfMessages: 1,
 						WaitTimeSeconds: 10,
-						VisibilityTimeout: 30,
+						VisibilityTimeout: this.visibilityTimeoutSeconds,
 					}),
 				);
 

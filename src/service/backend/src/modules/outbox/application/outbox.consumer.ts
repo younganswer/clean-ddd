@@ -33,17 +33,33 @@ export class OutboxConsumer {
 
 	private resolveLockTimeoutMs(): number {
 		const raw = process.env.OUTBOX_CONSUMER_LOCK_TIMEOUT_MS;
-		if (!raw) return OutboxConsumer.DEFAULT_LOCK_TIMEOUT_MS;
+		if (raw) {
+			const parsed = Number(raw);
+			if (!Number.isFinite(parsed) || parsed <= 0) {
+				this.logger.warn(
+					`invalid OUTBOX_CONSUMER_LOCK_TIMEOUT_MS=${raw}; using default ${OutboxConsumer.DEFAULT_LOCK_TIMEOUT_MS}`,
+				);
+				return OutboxConsumer.DEFAULT_LOCK_TIMEOUT_MS;
+			}
 
-		const parsed = Number(raw);
-		if (!Number.isFinite(parsed) || parsed <= 0) {
+			return Math.floor(parsed);
+		}
+
+		const visibilitySecondsRaw =
+			process.env.OUTBOX_SQS_VISIBILITY_TIMEOUT_SECONDS;
+		if (!visibilitySecondsRaw) {
+			return OutboxConsumer.DEFAULT_LOCK_TIMEOUT_MS;
+		}
+
+		const visibilitySeconds = Number(visibilitySecondsRaw);
+		if (!Number.isFinite(visibilitySeconds) || visibilitySeconds <= 0) {
 			this.logger.warn(
-				`invalid OUTBOX_CONSUMER_LOCK_TIMEOUT_MS=${raw}; using default ${OutboxConsumer.DEFAULT_LOCK_TIMEOUT_MS}`,
+				`invalid OUTBOX_SQS_VISIBILITY_TIMEOUT_SECONDS=${visibilitySecondsRaw}; using default ${OutboxConsumer.DEFAULT_LOCK_TIMEOUT_MS}`,
 			);
 			return OutboxConsumer.DEFAULT_LOCK_TIMEOUT_MS;
 		}
 
-		return Math.floor(parsed);
+		return Math.floor(visibilitySeconds * 1000);
 	}
 
 	private async dispatchKnownEvent(

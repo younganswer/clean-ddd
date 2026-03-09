@@ -6,6 +6,8 @@ import type { IInventoryItemRepository } from '@/modules/inventory/domains/repos
 import { InventoryItem } from '@/modules/inventory/domains/entities/inventory-item.entity';
 import { InventoryItemMapper } from '@/modules/inventory/infrastructure/mappers/inventory-item.mapper';
 import { InventoryItemSchema } from '@/modules/inventory/infrastructure/schemas/inventory-item.schema';
+import { SYSTEM_INFRA_ERRORS } from '@/shared/errors/catalogs/system.errors';
+import { InfrastructureErrorFactory } from '@/common/errors/base.error-factory';
 
 @Injectable()
 export class InventoryItemRepository implements IInventoryItemRepository {
@@ -21,8 +23,26 @@ export class InventoryItemRepository implements IInventoryItemRepository {
 		);
 	}
 
+	private transactionalEmForWrite(method: string): EntityManager {
+		const em = RequestContext.getEntityManager() as
+			| EntityManager
+			| undefined;
+		if (!em) {
+			throw InfrastructureErrorFactory.create(
+				SYSTEM_INFRA_ERRORS.REQUEST_CONTEXT_TRANSACTION_REQUIRED,
+				{
+					details: {
+						repository: InventoryItemRepository.name,
+						method,
+					},
+				},
+			);
+		}
+		return em;
+	}
+
 	async seedIfEmpty(): Promise<void> {
-		const em = this.emForContext();
+		const em = this.transactionalEmForWrite('seedIfEmpty');
 		const count = await em.count(InventoryItemSchema, {});
 		if (count > 0) return;
 
@@ -51,7 +71,7 @@ export class InventoryItemRepository implements IInventoryItemRepository {
 			{},
 			{
 				limit,
-				offset: Math.max(0, Number(offset ?? 0) || 0),
+				offset,
 				orderBy: { id: 'asc' },
 			},
 		);
@@ -71,7 +91,7 @@ export class InventoryItemRepository implements IInventoryItemRepository {
 	}
 
 	async persist(item: InventoryItem): Promise<void> {
-		const em = this.emForContext();
+		const em = this.transactionalEmForWrite('persist');
 		const schema = this.mapper.toSchema(item);
 		const exists = await em.findOne(InventoryItemSchema, {
 			sku: schema.sku,
