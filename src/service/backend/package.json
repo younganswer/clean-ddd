@@ -15,8 +15,6 @@
 		"start:prod": "node dist/main",
 		"lint": "eslint \"{src,apps,libs,tests,test-utils}/**/*.ts\" --fix",
 		"test": "jest",
-		"test:fast": "jest --testPathIgnorePatterns=/tests/db/",
-		"test:db": "RUN_DB_TESTS=1 node --env-file=.env ./node_modules/jest/bin/jest.js --testPathPatterns=tests/db",
 		"test:watch": "jest --watch",
 		"test:cov": "jest --coverage",
 		"test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
@@ -68,6 +66,7 @@
 		"@types/pg": "^8.11.10",
 		"@types/supertest": "^6.0.2",
 		"@types/swagger-ui-express": "^4.1.8",
+		"dotenv": "^16.6.1",
 		"eslint": "^9.18.0",
 		"eslint-config-prettier": "^10.0.1",
 		"eslint-import-resolver-typescript": "^4.4.4",
@@ -86,32 +85,6 @@
 		"tsx": "^4.20.5",
 		"typescript": "^5.7.3",
 		"typescript-eslint": "^8.20.0"
-	},
-	"jest": {
-		"moduleFileExtensions": [
-			"js",
-			"json",
-			"ts"
-		],
-		"moduleNameMapper": {
-			"^@/scripts/(.*)$": "<rootDir>/scripts/$1",
-			"^@/tests/(.*)$": "<rootDir>/tests/$1",
-			"^@/test-utils/(.*)$": "<rootDir>/test-utils/$1",
-			"^@/(.*)$": "<rootDir>/src/$1",
-			"^src/(.*)$": "<rootDir>/src/$1",
-			"^tests/(.*)$": "<rootDir>/tests/$1",
-			"^test-utils/(.*)$": "<rootDir>/test-utils/$1"
-		},
-		"rootDir": ".",
-		"testRegex": "tests/.*\\.spec\\.ts$",
-		"transform": {
-			"^.+\\.(t|j)s$": "ts-jest"
-		},
-		"collectCoverageFrom": [
-			"**/*.(t|j)s"
-		],
-		"coverageDirectory": "../coverage",
-		"testEnvironment": "node"
 	},
 	"packageManager": "pnpm@9.15.5+sha512.845196026aab1cc3f098a0474b64dfbab2afe7a1b4e91dd86895d8e4aa32a7a6d03049e2d0ad770bbe4de023a7122fb68c1a1d6e0d033c7076085f9d5d4800d4"
 }

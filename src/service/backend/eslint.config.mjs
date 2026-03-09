@@ -17,7 +17,20 @@ const ignoreExports = [
 
 export default tseslint.config(
 	{
-		ignores: ['eslint.config.mjs'],
+		ignores: [
+			'eslint.config.mjs',
+			'**/jest.config.js',
+			'**/tests/jest.base.js',
+			'**/tests/db/setup-env.js',
+			'jest.config.js',
+			'tests/**/jest.config.js',
+			'tests/jest.base.js',
+			'tests/db/setup-env.js',
+			'service/backend/jest.config.js',
+			'service/backend/tests/**/jest.config.js',
+			'service/backend/tests/jest.base.js',
+			'service/backend/tests/db/setup-env.js',
+		],
 	},
 	eslint.configs.recommended,
 	...tseslint.configs.recommendedTypeChecked,

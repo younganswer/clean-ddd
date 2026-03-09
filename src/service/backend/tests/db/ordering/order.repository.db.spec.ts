@@ -8,14 +8,14 @@ import { OrderStatus } from '@/modules/ordering/domains/enums/order-status.enum'
 import { Order } from '@/modules/ordering/domains/entities/aggregates/order/order.aggregate';
 import { Money } from '@/shared/money/value-objects/money.vo';
 import { OrderItem } from '@/modules/ordering/domains/value-objects/order-item.vo';
+import { UnitOfWork } from '@/lib/database/unit-of-work';
 
-const describeDb = process.env.RUN_DB_TESTS === '1' ? describe : describe.skip;
-
-describeDb('OrderRepository (DB)', () => {
+describe('OrderRepository (DB)', () => {
 	const userId = '00000000-0000-0000-0000-000000000001';
 
 	let em: EntityManager;
 	let repo: OrderRepository;
+	let uow: UnitOfWork;
 	let closeOrm: (() => Promise<void>) | null = null;
 	let forkForTest: (() => void) | null = null;
 
@@ -30,6 +30,7 @@ describeDb('OrderRepository (DB)', () => {
 		forkForTest = () => {
 			em = rootEm.fork() as unknown as EntityManager;
 			repo = new OrderRepository(em, new OrderMapper());
+			uow = new UnitOfWork(em);
 		};
 		forkForTest();
 	});
@@ -53,10 +54,10 @@ describeDb('OrderRepository (DB)', () => {
 					total: Money.of(100, 'KRW'),
 					items: [OrderItem.of('SKU-001', 1)],
 				});
-				await repo.persist(order);
+				await uow.transaction(async () => {
+					await repo.persist(order);
+				});
 				orderId = order.id;
-
-				await em.flush();
 				em.clear();
 			});
 
@@ -90,8 +91,9 @@ describeDb('OrderRepository (DB)', () => {
 				});
 
 				order.attachPayment('00000000-0000-0000-0000-000000000001');
-				await repo.persist(order);
-				await em.flush();
+				await uow.transaction(async () => {
+					await repo.persist(order);
+				});
 				orderId = order.id;
 			});
 
@@ -121,9 +123,11 @@ describeDb('OrderRepository (DB)', () => {
 					total: Money.of(100, 'KRW'),
 					items: [OrderItem.of('SKU-001', 1)],
 				});
+				order.attachPayment('00000000-0000-0000-0000-000000000001');
 				order.markPaid();
-				await repo.persist(order);
-				await em.flush();
+				await uow.transaction(async () => {
+					await repo.persist(order);
+				});
 				orderId = order.id;
 			});
 

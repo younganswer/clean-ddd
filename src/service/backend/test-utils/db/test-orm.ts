@@ -2,10 +2,6 @@ import { UnderscoreNamingStrategy } from '@mikro-orm/core';
 import { defineConfig, MikroORM } from '@mikro-orm/postgresql';
 
 export const createTestOrm = async (): Promise<MikroORM> => {
-	if (process.env.RUN_DB_TESTS !== '1') {
-		throw new Error('RUN_DB_TESTS=1 is required to run DB tests');
-	}
-
 	const clientUrl =
 		process.env.TEST_DATABASE_URL ??
 		process.env.DATABASE_URL_DIRECT ??
@@ -44,9 +40,12 @@ export const createTestOrm = async (): Promise<MikroORM> => {
 		await orm.getMigrator().up();
 	} catch (error) {
 		const message = error instanceof Error ? error.message : String(error);
-		if (!message.includes('Migrator extension not registered')) {
-			throw error;
+		if (message.includes('Migrator extension not registered')) {
+			await orm.getSchemaGenerator().updateSchema();
+			return orm;
 		}
+
+		throw new Error(`Failed to run DB test migrations: ${message}`);
 	}
 	return orm;
 };
