@@ -14,18 +14,23 @@ describe('InventoryReservationService', () => {
 			reservedQuantity: 0,
 		});
 
+		const persistInventoryItem = jest.fn(() => Promise.resolve());
+		const findInventoryItemBySku = jest.fn((sku: string) =>
+			Promise.resolve(sku === 'SKU-001' ? stock : null),
+		);
+
 		const itemRepository: IInventoryItemRepository = {
 			seedIfEmpty: jest.fn(() => Promise.resolve()),
-			persist: jest.fn(() => Promise.resolve()),
+			persist: persistInventoryItem,
 			findAll: jest.fn(() => Promise.resolve([])),
-			findBySku: jest.fn((sku: string) =>
-				Promise.resolve(sku === 'SKU-001' ? stock : null),
-			),
+			findBySku: findInventoryItemBySku,
 			countItems: jest.fn(() => Promise.resolve(1)),
 		};
 
+		const persistReservation = jest.fn(() => Promise.resolve());
+
 		const reservationRepository: IInventoryReservationRepository = {
-			persist: jest.fn(() => Promise.resolve()),
+			persist: persistReservation,
 			findReservationsByOrderId: jest.fn(() => Promise.resolve([])),
 			findByOrderAndSku: jest.fn(() => Promise.resolve(null)),
 		};
@@ -43,9 +48,9 @@ describe('InventoryReservationService', () => {
 			],
 		});
 
-		expect(itemRepository.findBySku).toHaveBeenCalledTimes(1);
-		expect(itemRepository.persist).toHaveBeenCalledTimes(1);
-		expect(reservationRepository.persist).toHaveBeenCalledTimes(1);
+		expect(findInventoryItemBySku).toHaveBeenCalledTimes(1);
+		expect(persistInventoryItem).toHaveBeenCalledTimes(1);
+		expect(persistReservation).toHaveBeenCalledTimes(1);
 		expect(stock.availableQuantity).toBe(5);
 		expect(stock.reservedQuantity).toBe(5);
 	});
