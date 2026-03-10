@@ -16,6 +16,7 @@ import { UserReaderProvider } from '@/modules/users/infrastructure/readers/user.
 import { MongoUserAvatarReader } from '@/modules/users/infrastructure/readers/mongo-user-avatar.reader';
 import { DynamoDbUserAvatarReader } from '@/modules/users/infrastructure/readers/dynamodb-user-avatar.reader';
 import { IUserAvatarReaderSymbol } from '@/modules/users/domains/readers/i.user-avatar.reader';
+import { IUserReaderSymbol } from '@/modules/users/domains/readers/i.user.reader';
 
 @Module({
 	imports: [CqrsModule],
@@ -72,5 +73,6 @@ import { IUserAvatarReaderSymbol } from '@/modules/users/domains/readers/i.user-
 		...CommandHandlers,
 		...QueryHandlers,
 	],
+	exports: [IUserReaderSymbol, IUserAvatarReaderSymbol],
 })
 export class UsersModule {}

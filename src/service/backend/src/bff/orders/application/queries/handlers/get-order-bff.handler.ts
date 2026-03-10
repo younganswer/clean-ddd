@@ -1,15 +1,19 @@
-import { IQueryHandler, QueryBus, QueryHandler } from '@nestjs/cqrs';
-
-import { GetOrderQuery } from '@/modules/ordering/application/queries/get-order.query';
+import { Inject } from '@nestjs/common';
+import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { GetOrderBffQuery } from '@/bff/orders/application/queries/get-order-bff.query';
+import {
+	IOrderReaderSymbol,
+	type IOrderReader,
+} from '@/modules/ordering/domains/readers/i.order.reader';
 
 @QueryHandler(GetOrderBffQuery)
 export class GetOrderBffHandler implements IQueryHandler<GetOrderBffQuery> {
-	constructor(private readonly queryBus: QueryBus) {}
+	constructor(
+		@Inject(IOrderReaderSymbol)
+		private readonly orderReader: IOrderReader,
+	) {}
 
 	async execute(query: GetOrderBffQuery) {
-		return await this.queryBus.execute(
-			new GetOrderQuery({ orderId: query.orderId }),
-		);
+		return await this.orderReader.findById(query.orderId);
 	}
 }

@@ -1,17 +1,37 @@
-import { IQueryHandler, QueryBus, QueryHandler } from '@nestjs/cqrs';
-
-import { GetOrdersQuery } from '@/modules/ordering/application/queries/get-orders.query';
+import { Inject } from '@nestjs/common';
+import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { GetOrdersBffQuery } from '@/bff/orders/application/queries/get-orders-bff.query';
 import type { OrderResult } from '@/modules/ordering/domains/readers/order.result';
 import type { PaginatedResult } from '@/common/types/paginated.result';
+import {
+	IOrderReaderSymbol,
+	type IOrderReader,
+} from '@/modules/ordering/domains/readers/i.order.reader';
 
 @QueryHandler(GetOrdersBffQuery)
 export class ListOrdersBffHandler implements IQueryHandler<GetOrdersBffQuery> {
-	constructor(private readonly queryBus: QueryBus) {}
+	constructor(
+		@Inject(IOrderReaderSymbol)
+		private readonly orderReader: IOrderReader,
+	) {}
 
 	async execute(
 		query: GetOrdersBffQuery,
 	): Promise<PaginatedResult<OrderResult>> {
-		return await this.queryBus.execute(new GetOrdersQuery(query));
+		const [items, total] = await Promise.all([
+			this.orderReader.findRecent(query.limit, query.offset),
+			this.orderReader.countAll(),
+		]);
+
+		const totalPages = Math.max(1, Math.ceil(total / query.limit));
+
+		return {
+			items,
+			offset: query.offset,
+			limit: query.limit,
+			total,
+			totalPages,
+			hasNext: query.offset + items.length < total,
+		};
 	}
 }

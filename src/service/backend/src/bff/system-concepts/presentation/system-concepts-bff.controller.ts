@@ -6,9 +6,8 @@ import {
 	ApiErrorEnvelopeResponse,
 } from '@/common/swagger/api-response.decorator';
 import { SystemConceptsBootstrapResponse } from '@/bff/system-concepts/presentation/swagger/system-concepts.response';
-import { GetInventoryItemsQuery } from '@/modules/inventory/application/queries/get-inventory-items.query';
-import { GetUserProfilesQuery } from '@/modules/users/application/queries/get-user-profiles.query';
 import { PageQueryDto } from '@/common/cqrs/query-input.dto';
+import { GetSystemConceptsBootstrapBffQuery } from '@/bff/system-concepts/application/queries';
 
 @Controller('bff/system-concepts')
 export class SystemConceptsBffController {
@@ -20,21 +19,12 @@ export class SystemConceptsBffController {
 	async bootstrap(
 		@Query() query: PageQueryDto,
 	): Promise<DataEnvelope<SystemConceptsBootstrapResponse>> {
-		const [users, inventoryItems] = await Promise.all([
-			this.queryBus.execute(
-				new GetUserProfilesQuery({
-					limit: query.limit,
-					offset: query.offset,
-				}),
-			),
-			this.queryBus.execute(
-				new GetInventoryItemsQuery({
-					limit: query.limit,
-					offset: query.offset,
-				}),
-			),
-		]);
-		const result = { users, inventoryItems };
+		const result = await this.queryBus.execute(
+			new GetSystemConceptsBootstrapBffQuery({
+				limit: query.limit,
+				offset: query.offset,
+			}),
+		);
 		const response = SystemConceptsBootstrapResponse.fromResult(result);
 
 		return ResponseHelper.data(response);
