@@ -6,8 +6,9 @@ import {
 	HttpStatus,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
+import { BaseError } from '@/common/errors/base.error';
+import { ErrorScope } from '@/common/errors/error-scope.enum';
 import { ErrorResponse, ResponseHelper } from '@/common/responses';
-import { BaseError, ErrorScope } from '@/shared/errors';
 
 @Catch()
 export class GlobalHttpExceptionFilter implements ExceptionFilter {
