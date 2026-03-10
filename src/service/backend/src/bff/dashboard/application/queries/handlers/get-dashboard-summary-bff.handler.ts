@@ -9,6 +9,7 @@ import { GetShipmentsQuery } from '@/modules/shipping/application/queries/get-sh
 import { GetInventoryItemsQuery } from '@/modules/inventory/application/queries/get-inventory-items.query';
 
 import { GetDashboardSummaryBffQuery } from '@/bff/dashboard/application/queries/get-dashboard-summary-bff.query';
+import { toBffPartialError } from '@/common/utils/partial-error';
 import type { DashboardSummaryBffView } from '@/bff/dashboard/application/views/dashboard-summary-bff.view';
 
 @QueryHandler(GetDashboardSummaryBffQuery)
@@ -18,7 +19,7 @@ export class GetDashboardSummaryBffHandler implements IQueryHandler<GetDashboard
 		query: GetDashboardSummaryBffQuery,
 	): Promise<DashboardSummaryBffView> {
 		const limit = query.limit;
-		const partialErrors: string[] = [];
+		const partialErrors: DashboardSummaryBffView['partialErrors'] = [];
 		const [
 			ordersSettled,
 			paymentsSettled,
@@ -34,22 +35,40 @@ export class GetDashboardSummaryBffHandler implements IQueryHandler<GetDashboard
 		const orders =
 			ordersSettled.status === 'fulfilled'
 				? ordersSettled.value.items
-				: (partialErrors.push('orders'), []);
+				: (partialErrors.push(
+						toBffPartialError('orders', ordersSettled.reason),
+					),
+					[]);
 
 		const paymentIntents =
 			paymentsSettled.status === 'fulfilled'
 				? paymentsSettled.value
-				: (partialErrors.push('paymentIntents'), []);
+				: (partialErrors.push(
+						toBffPartialError(
+							'paymentIntents',
+							paymentsSettled.reason,
+						),
+					),
+					[]);
 
 		const shipments =
 			shipmentsSettled.status === 'fulfilled'
 				? shipmentsSettled.value.items
-				: (partialErrors.push('shipments'), []);
+				: (partialErrors.push(
+						toBffPartialError('shipments', shipmentsSettled.reason),
+					),
+					[]);
 
 		const inventoryItems =
 			inventorySettled.status === 'fulfilled'
 				? inventorySettled.value.items
-				: (partialErrors.push('inventoryItems'), []);
+				: (partialErrors.push(
+						toBffPartialError(
+							'inventoryItems',
+							inventorySettled.reason,
+						),
+					),
+					[]);
 
 		return {
 			orders,

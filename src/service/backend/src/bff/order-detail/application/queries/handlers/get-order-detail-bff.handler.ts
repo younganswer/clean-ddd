@@ -9,6 +9,7 @@ import { GetShipmentByOrderQuery } from '@/modules/shipping/application/queries/
 import { GetInventoryReservationsQuery } from '@/modules/inventory/application/queries/get-inventory-reservations.query';
 
 import { GetOrderDetailBffQuery } from '@/bff/order-detail/application/queries/get-order-detail-bff.query';
+import { toBffPartialError } from '@/common/utils/partial-error';
 import type { OrderDetailBffView } from '@/bff/order-detail/application/views/order-detail-bff.view';
 
 @QueryHandler(GetOrderDetailBffQuery)
@@ -30,7 +31,7 @@ export class GetOrderDetailBffHandler implements IQueryHandler<GetOrderDetailBff
 		);
 		if (!order) return null;
 
-		const partialErrors: string[] = [];
+		const partialErrors: OrderDetailBffView['partialErrors'] = [];
 
 		const paymentPromise =
 			includePayment && order.paymentId
@@ -67,17 +68,32 @@ export class GetOrderDetailBffHandler implements IQueryHandler<GetOrderDetailBff
 		const paymentIntent =
 			paymentSettled.status === 'fulfilled'
 				? paymentSettled.value
-				: (partialErrors.push('paymentIntent'), null);
+				: (partialErrors.push(
+						toBffPartialError(
+							'paymentIntent',
+							paymentSettled.reason,
+						),
+					),
+					null);
 
 		const shipment =
 			shipmentSettled.status === 'fulfilled'
 				? shipmentSettled.value
-				: (partialErrors.push('shipment'), null);
+				: (partialErrors.push(
+						toBffPartialError('shipment', shipmentSettled.reason),
+					),
+					null);
 
 		const reservations =
 			reservationsSettled.status === 'fulfilled'
 				? reservationsSettled.value
-				: (partialErrors.push('reservations'), []);
+				: (partialErrors.push(
+						toBffPartialError(
+							'reservations',
+							reservationsSettled.reason,
+						),
+					),
+					[]);
 
 		return {
 			order,

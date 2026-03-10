@@ -18,8 +18,18 @@ export class OrderDetailBffResponse {
 	@ApiProperty({ type: [InventoryReservationResponse] })
 	reservations!: InventoryReservationResponse[];
 
-	@ApiProperty({ required: false, type: [String] })
-	partialErrors?: string[];
+	@ApiProperty({
+		required: false,
+		type: 'array',
+		items: {
+			type: 'object',
+			properties: {
+				domain: { type: 'string' },
+				message: { type: 'string' },
+			},
+		},
+	})
+	partialErrors?: Array<{ domain: string; message: string }>;
 
 	static fromResult(result: OrderDetailBffView): OrderDetailBffResponse {
 		return {

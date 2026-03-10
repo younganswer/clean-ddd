@@ -116,6 +116,9 @@ describe('GetDashboardSummaryBffHandler', () => {
 		expect(result.paymentIntents).toEqual([]);
 		expect(result.shipments).toEqual([]);
 		expect(result.inventoryItems).toEqual([]);
-		expect(result.partialErrors).toEqual(['orders', 'shipments']);
+		expect(result.partialErrors).toEqual([
+			{ domain: 'orders', message: 'orders failed' },
+			{ domain: 'shipments', message: 'shipments failed' },
+		]);
 	});
 });
