@@ -40,6 +40,12 @@
 - Reader는 Repository를 참조하지 않고 인프라에서 `EntityManager`로 직접 조회합니다.
 - Reader에서 상태 변경 로직(쓰기/seed/flush)은 금지합니다.
 - Reader Result 매핑은 `Result.fromSchema(...)` 정적 팩토리로 통일합니다.
+- Reader pagination 입력 정규화는 공통 policy(`common/cqrs/pagination-policy`)를 사용하고, Reader별 임의 상수 clamp를 추가하지 않습니다.
+
+### Event Import 강제 규칙
+
+- 비동기 이벤트 import는 `contracts/{context}/events/*.event` direct path를 사용합니다.
+- contracts index(barrel) re-export를 추가하거나 의존하지 않습니다.
 
 <br/>
 <br/>

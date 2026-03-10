@@ -68,6 +68,7 @@ Reader는 타 도메인에서 필요한 조회 요구를 계약으로 고정해�
 - 총 개수가 의미 있는 화면/정산 시나리오는 `totalCount`를 계약에 포함합니다.
 - 정렬 기준(`sortBy`, `direction`)과 필터 조건은 계약 필드로 명시합니다.
 - Reader 구현체가 DB 최적화를 바꿔도 계약 시그니처는 안정적으로 유지합니다.
+- Reader별 하드코딩 clamp를 두지 않고 공통 pagination policy(`common/cqrs/pagination-policy`)를 통해 입력 정규화를 통일합니다.
 
 <br/>
 <br/>
@@ -141,6 +142,12 @@ Hybrid Outbox는 즉시 처리성과 재처리 안정성을 함께 가져가기 
 | CONSUMED  | 소비 처리 완료               | 종료               |
 
 핵심은 상태 변경과 outbox 기록의 원자성을 먼저 보장하고, 외부 전달은 재시도로 복구하는 것입니다.
+
+운영 보강 규칙:
+
+- Consumer lock timeout은 공통 정책(`OUTBOX_CONSUMER_LOCK_TIMEOUT_MS`)으로 poller/consumer에 동일 적용합니다.
+- duplicate idempotency claim은 `CONSUMED`로 간주하지 않고 retryable failure(`FAILED`)로 기록한 뒤 lock을 해제합니다.
+- idempotency release 실패는 처리 완료를 무효화하지 않으며, 경고 로그를 남기고 후속 관측 대상으로 분리합니다.
 
 <br/>
 <br/>

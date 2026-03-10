@@ -86,6 +86,11 @@ sequenceDiagram
 5. Consumer가 `outboxId`를 기준으로 이벤트를 재구성합니다.
 6. 멱등성 확인 후 후속 처리를 수행하고 처리 완료를 기록합니다.
 
+결제 흐름 분리 규칙:
+
+- 결제 생성 Command는 주문 도메인 Command를 직접 호출하지 않고 `PaymentIntentCreatedEvent`를 outbox에 기록합니다.
+- 주문 도메인은 해당 이벤트 핸들러에서 `AttachPaymentToOrderCommand`를 실행해 결합을 이벤트 경계로 분리합니다.
+
 <br/>
 <br/>
 
@@ -143,6 +148,7 @@ sequenceDiagram
 
 - Lock: 소비 시작 전 outbox row를 lock 하여 중복 동시 처리를 완화합니다.
 - Idempotency: `consumerName + eventId` 유니크 클레임으로 재처리 안전성을 확보합니다.
+- Duplicate Claim: 클레임 충돌은 소비 완료가 아니라 retryable failure로 남기고 lock을 해제합니다.
 - Retry: 실패 시 `attempt`, `nextAttemptAt`, `lastError`를 갱신해 재시도합니다.
 - RequestContext: poller/consumer 실행 단위를 별도 컨텍스트로 분리해 EntityManager 스코프를 고정합니다.
 
