@@ -345,11 +345,10 @@ export class GetGraphBffHandler implements IQueryHandler<GetGraphBffQuery> {
 						// ignore (fallback label=userId)
 					}
 
-					const list = await this.orderReader.findByUserId(
-						userId,
-						200,
-						0,
-					);
+					const list = await this.orderReader.findByUserId(userId, {
+						limit: 200,
+						offset: 0,
+					});
 
 					for (const o of list) addOrder(o);
 					return;
@@ -563,7 +562,9 @@ export class GetGraphBffHandler implements IQueryHandler<GetGraphBffQuery> {
 			const orderIds = new Set(knownOrders);
 			const paymentIds = new Set(knownPayments);
 
-			const recent = await this.outboxEventReader.findRecent(maxEvents);
+			const recent = await this.outboxEventReader.findRecent({
+				limit: maxEvents,
+			});
 
 			for (const row of recent) {
 				const eventType = String(row.eventType ?? '');

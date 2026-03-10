@@ -15,10 +15,9 @@ export class ListOrdersByUserSubjectIdHandler implements IQueryHandler<GetOrders
 	) {}
 
 	async execute(query: GetOrdersByUserIdQuery): Promise<OrderResult[]> {
-		return await this.orderReader.findByUserId(
-			query.userId,
-			query.limit,
-			query.offset,
-		);
+		return await this.orderReader.findByUserId(query.userId, {
+			limit: query.limit,
+			offset: query.offset,
+		});
 	}
 }

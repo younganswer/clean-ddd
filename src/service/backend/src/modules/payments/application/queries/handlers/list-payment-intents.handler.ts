@@ -17,6 +17,6 @@ export class ListPaymentIntentsHandler implements IQueryHandler<GetPaymentIntent
 	async execute(
 		query: GetPaymentIntentsQuery,
 	): Promise<PaymentIntentResult[]> {
-		return this.paymentRepository.findRecent(query.limit);
+		return this.paymentRepository.findRecent({ limit: query.limit });
 	}
 }

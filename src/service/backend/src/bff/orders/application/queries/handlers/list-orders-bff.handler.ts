@@ -19,7 +19,10 @@ export class ListOrdersBffHandler implements IQueryHandler<GetOrdersBffQuery> {
 		query: GetOrdersBffQuery,
 	): Promise<PaginatedResult<OrderResult>> {
 		const [items, total] = await Promise.all([
-			this.orderReader.findRecent(query.limit, query.offset),
+			this.orderReader.findRecent({
+				limit: query.limit,
+				offset: query.offset,
+			}),
 			this.orderReader.countAll(),
 		]);
 

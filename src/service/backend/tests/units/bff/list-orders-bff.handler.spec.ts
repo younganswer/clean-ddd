@@ -40,7 +40,10 @@ describe('ListOrdersBffHandler', () => {
 			new GetOrdersBffQuery({ limit: 7, offset: 3 }),
 		);
 
-		expect(findRecentOrders).toHaveBeenCalledWith(7, 3);
+		expect(findRecentOrders).toHaveBeenCalledWith({
+			limit: 7,
+			offset: 3,
+		});
 		expect(countAllOrders).toHaveBeenCalledTimes(1);
 		expect(result).toEqual(paginated);
 	});

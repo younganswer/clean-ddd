@@ -21,7 +21,7 @@ export class GetRecentOutboxEventsHandler implements IQueryHandler<
 		query: GetRecentOutboxEventsQuery,
 	): Promise<GetRecentOutboxEventsResult> {
 		return new GetRecentOutboxEventsResult(
-			await this.outboxEventReader.findRecent(query.limit),
+			await this.outboxEventReader.findRecent({ limit: query.limit }),
 		);
 	}
 }

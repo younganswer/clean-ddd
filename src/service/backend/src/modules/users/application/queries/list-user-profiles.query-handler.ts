@@ -25,7 +25,7 @@ export class GetUserProfilesQueryHandler implements IQueryHandler<GetUserProfile
 		query: GetUserProfilesQuery,
 	): Promise<PaginatedResult<UserProfileResult>> {
 		const [items, total] = await Promise.all([
-			this.userReader.findAll(query),
+			this.userReader.findRecent(query),
 			this.userReader.countAll(),
 		]);
 

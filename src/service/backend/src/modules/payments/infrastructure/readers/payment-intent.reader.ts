@@ -5,6 +5,7 @@ import {
 	IPaymentIntentReaderSymbol,
 	type IPaymentIntentReader,
 } from '@/modules/payments/domains/readers/i.payment-intent.reader';
+import type { PageOptions } from '@/lib/database/repository-get-options';
 import { PaymentIntentResult } from '@/modules/payments/domains/readers/payment-intent.result';
 import { PaymentIntentSchema } from '@/modules/payments/infrastructure/schemas/payment-intent.schema';
 import { normalizeReaderExternalPage } from '@/common/cqrs/pagination-policy';
@@ -28,8 +29,10 @@ export class PaymentIntentReader implements IPaymentIntentReader {
 		return PaymentIntentResult.fromSchema(payment);
 	}
 
-	async findRecent(limit: number): Promise<PaymentIntentResult[]> {
-		const page = normalizeReaderExternalPage(limit, 0);
+	async findRecent(
+		options: PageOptions<PaymentIntentResult>,
+	): Promise<PaymentIntentResult[]> {
+		const page = normalizeReaderExternalPage(options.limit, options.offset);
 		const payments = await this.emForContext().find(
 			PaymentIntentSchema,
 			{},

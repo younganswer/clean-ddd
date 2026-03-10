@@ -22,7 +22,7 @@ describe('InventoryReservationService', () => {
 		const itemRepository: IInventoryItemRepository = {
 			seedIfEmpty: jest.fn(() => Promise.resolve()),
 			persist: persistInventoryItem,
-			findAll: jest.fn(() => Promise.resolve([])),
+			findRecent: jest.fn(() => Promise.resolve([])),
 			findBySku: findInventoryItemBySku,
 			countItems: jest.fn(() => Promise.resolve(1)),
 		};

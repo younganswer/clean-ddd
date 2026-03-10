@@ -20,7 +20,7 @@ export class ListShipmentsHandler implements IQueryHandler<GetShipmentsQuery> {
 	): Promise<PaginatedResult<ShipmentResult>> {
 		const { limit, offset } = query;
 		const [shipments, total] = await Promise.all([
-			this.shipmentReader.findRecent(limit, offset),
+			this.shipmentReader.findRecent({ limit, offset }),
 			this.shipmentReader.countAll(),
 		]);
 		const items = shipments;

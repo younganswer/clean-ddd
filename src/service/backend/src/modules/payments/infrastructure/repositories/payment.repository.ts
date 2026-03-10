@@ -1,7 +1,10 @@
 import { RequestContext } from '@mikro-orm/core';
 import { EntityManager } from '@mikro-orm/postgresql';
 import { Injectable } from '@nestjs/common';
-import type { RepositoryGetByIdOptions } from '@/lib/database/repository-get-options';
+import type {
+	RepositoryGetByIdOptions,
+	RepositoryPageOptions,
+} from '@/lib/database/repository-get-options';
 import type { IPaymentRepository } from '@/modules/payments/domains/repositories/i.payment.repository';
 import { PaymentIntent } from '@/modules/payments/domains/entities/aggregates/payment-intent/payment-intent.aggregate';
 import { PaymentIntentMapper } from '@/modules/payments/infrastructure/mappers/payment-intent.mapper';
@@ -89,7 +92,10 @@ export class PaymentRepository implements IPaymentRepository {
 		return found ? this.mapper.toDomain(found) : null;
 	}
 
-	async findRecent(limit: number): Promise<PaymentIntent[]> {
+	async findRecent(
+		options: RepositoryPageOptions<PaymentIntent>,
+	): Promise<PaymentIntent[]> {
+		const { limit, offset = 0 } = options;
 		const em = this.emForContext();
 		const found = await em.find(
 			PaymentIntentSchema,
@@ -97,6 +103,7 @@ export class PaymentRepository implements IPaymentRepository {
 			{
 				orderBy: { id: 'asc' },
 				limit,
+				offset,
 			},
 		);
 		return found.map((p) => this.mapper.toDomain(p));

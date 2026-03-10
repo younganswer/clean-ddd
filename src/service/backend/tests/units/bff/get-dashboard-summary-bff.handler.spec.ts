@@ -87,10 +87,14 @@ describe('GetDashboardSummaryBffHandler', () => {
 		expect(result.shipments).toEqual(shipments);
 		expect(result.inventoryItems).toEqual(inventoryItems);
 		expect(result.partialErrors).toBeUndefined();
-		expect(findRecentOrders).toHaveBeenCalledWith(10);
-		expect(findRecentPaymentIntents).toHaveBeenCalledWith(10);
-		expect(findRecentShipments).toHaveBeenCalledWith(10);
-		expect(findRecentInventoryItems).toHaveBeenCalledWith(10);
+		expect(findRecentOrders).toHaveBeenCalledWith({ limit: 10 });
+		expect(findRecentPaymentIntents).toHaveBeenCalledWith({
+			limit: 10,
+		});
+		expect(findRecentShipments).toHaveBeenCalledWith({ limit: 10 });
+		expect(findRecentInventoryItems).toHaveBeenCalledWith({
+			limit: 10,
+		});
 	});
 
 	it('collects partialErrors and falls back to empty lists for failed branches', async () => {

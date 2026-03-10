@@ -1,7 +1,10 @@
 import { RequestContext } from '@mikro-orm/core';
 import { EntityManager } from '@mikro-orm/postgresql';
 import { Injectable } from '@nestjs/common';
-import type { RepositoryGetByIdOptions } from '@/lib/database/repository-get-options';
+import type {
+	RepositoryGetByIdOptions,
+	RepositoryPageOptions,
+} from '@/lib/database/repository-get-options';
 import { User } from '@/modules/users/domains/entities/user.entity';
 import type { IUserRepository } from '@/modules/users/domains/repositories/i.user.repository';
 import { UserMapper } from '@/modules/users/infrastructure/mappers/user.mapper';
@@ -85,14 +88,15 @@ export class SqlUserRepository implements IUserRepository {
 		return user ? this.mapper.toDomain(user) : null;
 	}
 
-	async findAll(input: { limit: number; offset: number }): Promise<User[]> {
+	async findRecent(options: RepositoryPageOptions<User>): Promise<User[]> {
+		const { limit, offset = 0 } = options;
 		const em = this.emForContext();
 		const rows = await em.find(
 			UserSchema,
 			{},
 			{
-				limit: input.limit,
-				offset: input.offset,
+				limit,
+				offset,
 				orderBy: { id: 'asc' },
 			},
 		);

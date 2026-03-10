@@ -6,6 +6,7 @@ import {
 	IShipmentReaderSymbol,
 	type IShipmentReader,
 } from '@/modules/shipping/domains/readers/i.shipment.reader';
+import type { PageOptions } from '@/lib/database/repository-get-options';
 import { ShipmentResult } from '@/modules/shipping/domains/readers/shipment.result';
 import { ShipmentSchema } from '@/modules/shipping/infrastructure/schemas/shipment.schema';
 import { normalizeReaderExternalPage } from '@/common/cqrs/pagination-policy';
@@ -38,10 +39,9 @@ export class ShipmentReader implements IShipmentReader {
 	}
 
 	async findRecent(
-		limit: number,
-		offset: number = 0,
+		options: PageOptions<ShipmentResult>,
 	): Promise<ShipmentResult[]> {
-		const page = normalizeReaderExternalPage(limit, offset);
+		const page = normalizeReaderExternalPage(options.limit, options.offset);
 		const list = await this.emForContext().find(
 			ShipmentSchema,
 			{},

@@ -2,6 +2,7 @@ import { RequestContext } from '@mikro-orm/core';
 import { EntityManager } from '@mikro-orm/postgresql';
 import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
+import type { RepositoryPageOptions } from '@/lib/database/repository-get-options';
 import type { IInventoryItemRepository } from '@/modules/inventory/domains/repositories/i.inventory-item.repository';
 import { InventoryItem } from '@/modules/inventory/domains/entities/inventory-item.entity';
 import { InventoryItemMapper } from '@/modules/inventory/infrastructure/mappers/inventory-item.mapper';
@@ -64,7 +65,10 @@ export class InventoryItemRepository implements IInventoryItemRepository {
 		em.persist(items);
 	}
 
-	async findAll(limit: number, offset: number = 0): Promise<InventoryItem[]> {
+	async findRecent(
+		options: RepositoryPageOptions<InventoryItem>,
+	): Promise<InventoryItem[]> {
+		const { limit, offset = 0 } = options;
 		const em = this.emForContext();
 		const found = await em.find(
 			InventoryItemSchema,

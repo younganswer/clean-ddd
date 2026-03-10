@@ -5,6 +5,7 @@ import {
 	IUserReaderSymbol,
 	type IUserReader,
 } from '@/modules/users/domains/readers/i.user.reader';
+import type { PageOptions } from '@/lib/database/repository-get-options';
 import { UserSchema } from '@/modules/users/infrastructure/schemas/user.schema';
 import { USER_APPLICATION_ERRORS } from '@/shared/errors';
 import { ApplicationErrorFactory } from '@/common/errors/base.error-factory';
@@ -45,11 +46,10 @@ export class UserReader implements IUserReader {
 		return UserProfileResult.fromSchema(user);
 	}
 
-	async findAll(input: {
-		limit: number;
-		offset: number;
-	}): Promise<UserProfileResult[]> {
-		const page = normalizeReaderInternalPage(input.limit, input.offset);
+	async findRecent(
+		options: PageOptions<UserProfileResult>,
+	): Promise<UserProfileResult[]> {
+		const page = normalizeReaderInternalPage(options.limit, options.offset);
 		const rows = await this.emForContext().find(
 			UserSchema,
 			{},

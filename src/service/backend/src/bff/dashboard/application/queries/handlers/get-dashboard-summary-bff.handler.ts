@@ -44,10 +44,10 @@ export class GetDashboardSummaryBffHandler implements IQueryHandler<GetDashboard
 			shipmentsSettled,
 			inventorySettled,
 		] = await Promise.allSettled([
-			this.orderReader.findRecent(limit),
-			this.paymentIntentReader.findRecent(limit),
-			this.shipmentReader.findRecent(limit),
-			this.inventoryReader.findRecentItems(limit),
+			this.orderReader.findRecent({ limit }),
+			this.paymentIntentReader.findRecent({ limit }),
+			this.shipmentReader.findRecent({ limit }),
+			this.inventoryReader.findRecentItems({ limit }),
 		]);
 
 		const orders =

@@ -21,7 +21,7 @@ export class ListOrdersHandler implements IQueryHandler<GetOrdersQuery> {
 		const { limit, offset } = query;
 
 		const [items, total] = await Promise.all([
-			this.orderReader.findRecent(limit, offset),
+			this.orderReader.findRecent({ limit, offset }),
 			this.orderReader.countAll(),
 		]);
 

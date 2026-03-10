@@ -15,7 +15,10 @@ import type { IOutboxQueue } from '@/shared/outbox/domain/queue/i.outbox.queue';
 import { OutboxEvent } from '@/shared/outbox/domain/entities/outbox-event.entity';
 import { OutboxEventStatus } from '@/shared/outbox/domain/outbox-event-status.enum';
 import { IdempotencyService } from '@/modules/outbox/idempotency/application/idempotency.service';
-import type { RepositoryGetByIdOptions } from '@/lib/database/repository-get-options';
+import type {
+	RepositoryGetByIdOptions,
+	RepositoryPageOptions,
+} from '@/lib/database/repository-get-options';
 import type { UnitOfWork } from '@/lib/database/unit-of-work';
 import { CreateShipmentForOrderRequestedEvent } from '@/contracts/shipping/events/create-shipment-for-order-requested.event';
 
@@ -44,7 +47,10 @@ class InMemoryOutboxRepository implements IOutboxRepository {
 		return Promise.resolve(event);
 	}
 
-	findDispatchable(limit: number, now: Date): Promise<OutboxEvent[]> {
+	findDispatchable(
+		options: RepositoryPageOptions<OutboxEvent> & { now: Date },
+	): Promise<OutboxEvent[]> {
+		const { limit, offset = 0, now } = options;
 		const filtered = [...this.events.values()]
 			.filter((event) => {
 				const unlocked = !event.lockedUntil || event.lockedUntil < now;
@@ -54,13 +60,18 @@ class InMemoryOutboxRepository implements IOutboxRepository {
 					event.status === OutboxEventStatus.FAILED;
 				return unlocked && retryReady && dispatchableStatus;
 			})
-			.slice(0, limit);
+			.slice(offset, offset + limit);
 
 		return Promise.resolve(filtered);
 	}
 
-	findRecent(limit: number): Promise<OutboxEvent[]> {
-		return Promise.resolve([...this.events.values()].slice(0, limit));
+	findRecent(
+		options: RepositoryPageOptions<OutboxEvent>,
+	): Promise<OutboxEvent[]> {
+		const { limit, offset = 0 } = options;
+		return Promise.resolve(
+			[...this.events.values()].slice(offset, offset + limit),
+		);
 	}
 
 	lock(uuid: string, lockedUntil: Date): Promise<boolean> {
@@ -140,10 +151,10 @@ describe('Outbox flow state transition', () => {
 			>(
 				query: TQuery,
 			): Promise<TResult> => {
-				const events = await repository.findDispatchable(
-					query.limit,
-					query.now,
-				);
+				const events = await repository.findDispatchable({
+					limit: query.limit,
+					now: query.now,
+				});
 				return new GetPendingOutboxEventsResult(events) as TResult;
 			},
 		};

@@ -1,7 +1,10 @@
 import { RequestContext } from '@mikro-orm/core';
 import { EntityManager } from '@mikro-orm/postgresql';
 import { Injectable } from '@nestjs/common';
-import type { RepositoryGetByIdOptions } from '@/lib/database/repository-get-options';
+import type {
+	RepositoryGetByIdOptions,
+	RepositoryPageOptions,
+} from '@/lib/database/repository-get-options';
 import type { IOutboxRepository } from '@/shared/outbox/domain/repositories/i.outbox.repository';
 import { OutboxEvent } from '@/shared/outbox/domain/entities/outbox-event.entity';
 import { OutboxEventStatus } from '@/shared/outbox/domain/outbox-event-status.enum';
@@ -68,7 +71,10 @@ export class OutboxRepository implements IOutboxRepository {
 		return row ? this.mapper.toDomain(row) : null;
 	}
 
-	async findDispatchable(limit: number, now: Date): Promise<OutboxEvent[]> {
+	async findDispatchable(
+		options: RepositoryPageOptions<OutboxEvent> & { now: Date },
+	): Promise<OutboxEvent[]> {
+		const { limit, offset = 0, now } = options;
 		const em = this.emForContext();
 		const rows = await em.find(
 			OutboxEventSchema,
@@ -81,6 +87,7 @@ export class OutboxRepository implements IOutboxRepository {
 			},
 			{
 				limit,
+				offset,
 				orderBy: { id: 'asc' },
 			},
 		);
@@ -88,13 +95,17 @@ export class OutboxRepository implements IOutboxRepository {
 		return rows.map((r) => this.mapper.toDomain(r));
 	}
 
-	async findRecent(limit: number): Promise<OutboxEvent[]> {
+	async findRecent(
+		options: RepositoryPageOptions<OutboxEvent>,
+	): Promise<OutboxEvent[]> {
+		const { limit, offset = 0 } = options;
 		const em = this.emForContext();
 		const rows = await em.find(
 			OutboxEventSchema,
 			{},
 			{
 				limit,
+				offset,
 				orderBy: { id: 'desc' },
 			},
 		);

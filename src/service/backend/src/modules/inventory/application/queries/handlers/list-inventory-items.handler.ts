@@ -20,7 +20,7 @@ export class ListInventoryItemsHandler implements IQueryHandler<GetInventoryItem
 	): Promise<PaginatedResult<InventoryItemResult>> {
 		const { limit, offset } = query;
 		const [rows, total] = await Promise.all([
-			this.inventoryReader.findRecentItems(limit, offset),
+			this.inventoryReader.findRecentItems({ limit, offset }),
 			this.inventoryReader.countItems(),
 		]);
 		const items = rows;

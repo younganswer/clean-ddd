@@ -1,5 +1,8 @@
 import { OutboxEvent } from '@/shared/outbox/domain/entities/outbox-event.entity';
-import type { RepositoryGetByIdOptions } from '@/lib/database/repository-get-options';
+import type {
+	RepositoryGetByIdOptions,
+	RepositoryPageOptions,
+} from '@/lib/database/repository-get-options';
 
 export interface IOutboxRepository {
 	persist(event: OutboxEvent): Promise<void>;
@@ -9,8 +12,12 @@ export interface IOutboxRepository {
 		options?: RepositoryGetByIdOptions,
 	): Promise<OutboxEvent>;
 
-	findDispatchable(limit: number, now: Date): Promise<OutboxEvent[]>;
-	findRecent(limit: number): Promise<OutboxEvent[]>;
+	findDispatchable(
+		options: RepositoryPageOptions<OutboxEvent> & { now: Date },
+	): Promise<OutboxEvent[]>;
+	findRecent(
+		options: RepositoryPageOptions<OutboxEvent>,
+	): Promise<OutboxEvent[]>;
 	lock(uuid: string, lockedUntil: Date): Promise<boolean>;
 	unlock(uuid: string): Promise<void>;
 }

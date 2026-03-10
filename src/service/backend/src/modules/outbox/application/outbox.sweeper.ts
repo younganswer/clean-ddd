@@ -55,10 +55,10 @@ export class OutboxSweeper {
 
 	async sweepAndEnqueue(limit: number): Promise<number> {
 		const now = new Date();
-		const candidates = await this.outboxRepository.findDispatchable(
+		const candidates = await this.outboxRepository.findDispatchable({
 			limit,
 			now,
-		);
+		});
 		let enqueued = 0;
 		const directConsumeFallbackEnabled =
 			this.isDirectConsumeFallbackEnabled();

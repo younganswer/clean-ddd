@@ -6,6 +6,7 @@ import {
 	IInventoryReaderSymbol,
 	type IInventoryReader,
 } from '@/modules/inventory/domains/readers/i.inventory.reader';
+import type { PageOptions } from '@/lib/database/repository-get-options';
 import { InventoryItemResult } from '@/modules/inventory/domains/readers/inventory-item.result';
 import { InventoryReservationResult } from '@/modules/inventory/domains/readers/inventory-reservation.result';
 import { InventoryItemSchema } from '@/modules/inventory/infrastructure/schemas/inventory-item.schema';
@@ -34,10 +35,9 @@ export class InventoryReader implements IInventoryReader {
 	}
 
 	async findRecentItems(
-		limit: number,
-		offset: number = 0,
+		options: PageOptions<InventoryItemResult>,
 	): Promise<InventoryItemResult[]> {
-		const page = normalizeReaderExternalPage(limit, offset);
+		const page = normalizeReaderExternalPage(options.limit, options.offset);
 		const items = await this.emForContext().find(
 			InventoryItemSchema,
 			{},

@@ -5,6 +5,7 @@ import {
 	IOrderReaderSymbol,
 	type IOrderReader,
 } from '@/modules/ordering/domains/readers/i.order.reader';
+import type { PageOptions } from '@/lib/database/repository-get-options';
 import { OrderResult } from '@/modules/ordering/domains/readers/order.result';
 import { OrderSchema } from '@/modules/ordering/infrastructure/schemas/order.schema';
 import { RepositoryGetByIdOptions } from '@/lib/database/repository-get-options';
@@ -56,10 +57,9 @@ export class OrderReader implements IOrderReader {
 	}
 
 	async findRecent(
-		limit: number,
-		offset: number = 0,
+		options: PageOptions<OrderResult>,
 	): Promise<OrderResult[]> {
-		const page = normalizeReaderExternalPage(limit, offset);
+		const page = normalizeReaderExternalPage(options.limit, options.offset);
 		const orders = await this.emForContext().find(
 			OrderSchema,
 			{},
@@ -74,13 +74,12 @@ export class OrderReader implements IOrderReader {
 
 	async findByUserId(
 		userId: string,
-		limit: number,
-		offset: number = 0,
+		options: PageOptions<OrderResult>,
 	): Promise<OrderResult[]> {
 		const normalized = String(userId ?? '').trim();
 		if (!normalized) return [];
 
-		const page = normalizeReaderInternalPage(limit, offset);
+		const page = normalizeReaderInternalPage(options.limit, options.offset);
 		const orders = await this.emForContext().find(
 			OrderSchema,
 			{ userId: normalized },

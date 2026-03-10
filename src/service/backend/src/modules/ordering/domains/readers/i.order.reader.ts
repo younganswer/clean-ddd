@@ -1,4 +1,7 @@
-import { RepositoryGetByIdOptions } from '@/lib/database/repository-get-options';
+import type {
+	PageOptions,
+	RepositoryGetByIdOptions,
+} from '@/lib/database/repository-get-options';
 import type { OrderResult } from '@/modules/ordering/domains/readers/order.result';
 
 export const IOrderReaderSymbol = Symbol('IOrderReader');
@@ -9,11 +12,10 @@ export interface IOrderReader {
 		id: string,
 		options?: RepositoryGetByIdOptions,
 	): Promise<OrderResult>;
-	findRecent(limit: number, offset?: number): Promise<OrderResult[]>;
+	findRecent(options: PageOptions<OrderResult>): Promise<OrderResult[]>;
 	findByUserId(
 		userId: string,
-		limit: number,
-		offset?: number,
+		options: PageOptions<OrderResult>,
 	): Promise<OrderResult[]>;
 	countAll(): Promise<number>;
 }

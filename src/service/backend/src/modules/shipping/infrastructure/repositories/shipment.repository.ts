@@ -1,7 +1,10 @@
 import { RequestContext } from '@mikro-orm/core';
 import { EntityManager } from '@mikro-orm/postgresql';
 import { Injectable } from '@nestjs/common';
-import type { RepositoryGetByIdOptions } from '@/lib/database/repository-get-options';
+import type {
+	RepositoryGetByIdOptions,
+	RepositoryPageOptions,
+} from '@/lib/database/repository-get-options';
 import type { IShipmentRepository } from '@/modules/shipping/domains/repositories/i.shipment.repository';
 import { ShipmentSchema } from '@/modules/shipping/infrastructure/schemas/shipment.schema';
 import { Shipment } from '@/modules/shipping/domains/entities/aggregates/shipment/shipment.aggregate';
@@ -93,7 +96,10 @@ export class ShipmentRepository implements IShipmentRepository {
 		return found ? this.mapper.toDomain(found) : null;
 	}
 
-	async findRecent(limit: number, offset: number = 0): Promise<Shipment[]> {
+	async findRecent(
+		options: RepositoryPageOptions<Shipment>,
+	): Promise<Shipment[]> {
+		const { limit, offset = 0 } = options;
 		const em = this.emForContext();
 		const found = await em.find(
 			ShipmentSchema,

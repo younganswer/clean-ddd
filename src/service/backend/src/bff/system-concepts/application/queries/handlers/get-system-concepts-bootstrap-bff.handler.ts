@@ -47,7 +47,7 @@ export class GetSystemConceptsBootstrapBffHandler implements IQueryHandler<GetSy
 		offset: number,
 	): Promise<PaginatedResult<UserProfileResult>> {
 		const [items, total] = await Promise.all([
-			this.userReader.findAll({ limit, offset }),
+			this.userReader.findRecent({ limit, offset }),
 			this.userReader.countAll(),
 		]);
 
@@ -89,7 +89,7 @@ export class GetSystemConceptsBootstrapBffHandler implements IQueryHandler<GetSy
 		offset: number,
 	): Promise<PaginatedResult<InventoryItemResult>> {
 		const [items, total] = await Promise.all([
-			this.inventoryReader.findRecentItems(limit, offset),
+			this.inventoryReader.findRecentItems({ limit, offset }),
 			this.inventoryReader.countItems(),
 		]);
 
