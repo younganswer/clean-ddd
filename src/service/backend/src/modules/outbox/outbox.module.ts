@@ -4,7 +4,7 @@ import { DiscoveryModule } from '@nestjs/core';
 import { SqsModule } from '@/lib/queue/sqs.module';
 import { ProcessedEventMapper } from '@/modules/outbox/idempotency/infrastructure/processed-event.mapper';
 import { ProcessedEventRepository } from '@/modules/outbox/idempotency/infrastructure/processed-event.repository';
-import { IdempotencyService } from '@/modules/outbox/idempotency/idempotency.service';
+import { IdempotencyService } from '@/modules/outbox/idempotency/application/idempotency.service';
 import { IProcessedEventRepositorySymbol } from '@/modules/outbox/idempotency/domain/i.processed-event.repository';
 import { IOutboxQueueSymbol, IOutboxRepositorySymbol } from '@/shared/outbox';
 import { OutboxCommandHandlers } from '@/modules/outbox/application/commands';

@@ -4,10 +4,10 @@ import { OutboxConsumer } from '@/modules/outbox/application/outbox.consumer';
 import { OutboxKnownHandlerRegistryService } from '@/modules/outbox/application/outbox-known-handler.registry.service';
 import { OutboxEvent } from '@/shared/outbox/domain/entities/outbox-event.entity';
 import { OutboxEventStatus } from '@/shared/outbox/domain/outbox-event-status.enum';
-import { IdempotencyService } from '@/modules/outbox/idempotency/idempotency.service';
+import { IdempotencyService } from '@/modules/outbox/idempotency/application/idempotency.service';
 import type { IOutboxRepository } from '@/shared/outbox/domain/repositories/i.outbox.repository';
 import type { UnitOfWork } from '@/lib/database/unit-of-work';
-import { PaymentWebhookSucceededEvent } from '@/contracts/payments';
+import { PaymentWebhookSucceededEvent } from '@/contracts/payments/events/payment-webhook-succeeded.event';
 
 describe('OutboxConsumer idempotency', () => {
 	it('does not execute side effect on duplicate message', async () => {
@@ -18,6 +18,7 @@ describe('OutboxConsumer idempotency', () => {
 		});
 
 		const persistMock = jest.fn(() => Promise.resolve(undefined));
+		const unlockMock = jest.fn(() => Promise.resolve(undefined));
 		const outboxRepository: IOutboxRepository = {
 			persist: persistMock,
 			findById: jest.fn(() => Promise.resolve(outboxEvent)),
@@ -25,7 +26,7 @@ describe('OutboxConsumer idempotency', () => {
 			findDispatchable: jest.fn(() => Promise.resolve([outboxEvent])),
 			findRecent: jest.fn(() => Promise.resolve([outboxEvent])),
 			lock: jest.fn(() => Promise.resolve(true)),
-			unlock: jest.fn(() => Promise.resolve(undefined)),
+			unlock: unlockMock,
 		};
 
 		const knownHandlerHandle = jest.fn(() => Promise.resolve(undefined));
@@ -68,10 +69,11 @@ describe('OutboxConsumer idempotency', () => {
 			body: JSON.stringify({ outboxId: outboxEvent.id }),
 		});
 
-		expect(outboxEvent.status).toBe(OutboxEventStatus.CONSUMED);
+		expect(outboxEvent.status).toBe(OutboxEventStatus.FAILED);
 		expect(knownHandlerHandle).not.toHaveBeenCalled();
 		expect(publishMock).not.toHaveBeenCalled();
 		expect(releaseMock).not.toHaveBeenCalled();
 		expect(persistMock).toHaveBeenCalled();
+		expect(unlockMock).toHaveBeenCalledWith(outboxEvent.id);
 	});
 });

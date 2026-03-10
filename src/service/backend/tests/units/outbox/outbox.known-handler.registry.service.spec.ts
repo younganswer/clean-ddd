@@ -1,10 +1,8 @@
 import { DiscoveryService, Reflector } from '@nestjs/core';
 import { OutboxKnownHandler } from '@/common/outbox/outbox-known-handler.decorator';
 import { OutboxKnownHandlerRegistryService } from '@/modules/outbox/application/outbox-known-handler.registry.service';
-import {
-	PAYMENT_WEBHOOK_FAILED_EVENT_TYPE,
-	PAYMENT_WEBHOOK_SUCCEEDED_EVENT_TYPE,
-} from '@/contracts/payments';
+import { PAYMENT_WEBHOOK_SUCCEEDED_EVENT_TYPE } from '@/contracts/payments/events/payment-webhook-succeeded.event';
+import { PAYMENT_WEBHOOK_FAILED_EVENT_TYPE } from '@/contracts/payments/events/payment-webhook-failed.event';
 
 describe('OutboxKnownHandlerRegistryService', () => {
 	it('registers handlers discovered via metadata', () => {

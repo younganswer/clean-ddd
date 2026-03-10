@@ -2,7 +2,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { EventBus } from '@nestjs/cqrs';
 import type { SQSRecord } from 'aws-lambda';
 import { UnitOfWork } from '@/lib/database/unit-of-work';
-import { IdempotencyService } from '@/modules/outbox/idempotency/idempotency.service';
+import { IdempotencyService } from '@/modules/outbox/idempotency/application/idempotency.service';
 import {
 	IOutboxRepositorySymbol,
 	type IOutboxRepository,
@@ -11,6 +11,7 @@ import { hydrateEvent } from '@/lib/outbox/event-registry';
 import { resolveErrorMessage } from '@/modules/outbox/application/outbox-error.util';
 import { OutboxKnownHandlerRegistryService } from '@/modules/outbox/application/outbox-known-handler.registry.service';
 import { OutboxConsumeStateMachine } from '@/modules/outbox/application/outbox-consume.state-machine';
+import { resolveOutboxTimeoutPolicy } from '@/modules/outbox/application/outbox-timeout-policy';
 
 @Injectable()
 export class OutboxConsumer {
@@ -28,38 +29,18 @@ export class OutboxConsumer {
 		private readonly knownHandlerRegistry: OutboxKnownHandlerRegistryService,
 		private readonly consumeStateMachine: OutboxConsumeStateMachine,
 	) {
-		this.lockTimeoutMs = this.resolveLockTimeoutMs();
-	}
+		const timeoutPolicy = resolveOutboxTimeoutPolicy({
+			lockTimeoutRaw: process.env.OUTBOX_CONSUMER_LOCK_TIMEOUT_MS,
+			visibilityTimeoutSecondsRaw:
+				process.env.OUTBOX_SQS_VISIBILITY_TIMEOUT_SECONDS,
+			defaultLockTimeoutMs: OutboxConsumer.DEFAULT_LOCK_TIMEOUT_MS,
+			defaultVisibilityTimeoutSeconds: Math.floor(
+				OutboxConsumer.DEFAULT_LOCK_TIMEOUT_MS / 1000,
+			),
+			logger: this.logger,
+		});
 
-	private resolveLockTimeoutMs(): number {
-		const raw = process.env.OUTBOX_CONSUMER_LOCK_TIMEOUT_MS;
-		if (raw) {
-			const parsed = Number(raw);
-			if (!Number.isFinite(parsed) || parsed <= 0) {
-				this.logger.warn(
-					`invalid OUTBOX_CONSUMER_LOCK_TIMEOUT_MS=${raw}; using default ${OutboxConsumer.DEFAULT_LOCK_TIMEOUT_MS}`,
-				);
-				return OutboxConsumer.DEFAULT_LOCK_TIMEOUT_MS;
-			}
-
-			return Math.floor(parsed);
-		}
-
-		const visibilitySecondsRaw =
-			process.env.OUTBOX_SQS_VISIBILITY_TIMEOUT_SECONDS;
-		if (!visibilitySecondsRaw) {
-			return OutboxConsumer.DEFAULT_LOCK_TIMEOUT_MS;
-		}
-
-		const visibilitySeconds = Number(visibilitySecondsRaw);
-		if (!Number.isFinite(visibilitySeconds) || visibilitySeconds <= 0) {
-			this.logger.warn(
-				`invalid OUTBOX_SQS_VISIBILITY_TIMEOUT_SECONDS=${visibilitySecondsRaw}; using default ${OutboxConsumer.DEFAULT_LOCK_TIMEOUT_MS}`,
-			);
-			return OutboxConsumer.DEFAULT_LOCK_TIMEOUT_MS;
-		}
-
-		return Math.floor(visibilitySeconds * 1000);
+		this.lockTimeoutMs = timeoutPolicy.lockTimeoutMs;
 	}
 
 	private async dispatchKnownEvent(
@@ -156,10 +137,11 @@ export class OutboxConsumer {
 						eventType: outboxEvent.eventType,
 					}),
 				);
-				this.consumeStateMachine.markDuplicateClaimConsumed(
+				this.consumeStateMachine.markDuplicateClaimConflict(
 					outboxEvent,
 				);
 				await this.outboxRepository.persist(outboxEvent);
+				await this.outboxRepository.unlock(outboxId);
 				return;
 			}
 
@@ -227,8 +209,15 @@ export class OutboxConsumer {
 						this.consumerName,
 						outboxId,
 					);
-				} catch {
-					// ignore release failure and keep original error flow
+				} catch (releaseError: unknown) {
+					this.logger.error(
+						JSON.stringify({
+							step: 'outbox_idempotency_release_failed',
+							outboxId,
+							eventType: outboxEvent.eventType,
+							error: resolveErrorMessage(releaseError),
+						}),
+					);
 				}
 				throw error;
 			}

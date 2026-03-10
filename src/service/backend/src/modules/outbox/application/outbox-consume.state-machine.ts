@@ -14,8 +14,11 @@ export class OutboxConsumeStateMachine {
 		);
 	}
 
-	markDuplicateClaimConsumed(event: OutboxEvent): void {
-		event.markConsumed();
+	markDuplicateClaimConflict(event: OutboxEvent): void {
+		event.recordFailure(
+			'duplicate idempotency claim; keeping event retryable',
+			createRetryAt(OutboxConsumeStateMachine.RETRY_DELAY_MS),
+		);
 	}
 
 	markUnknownEventTypeFailure(event: OutboxEvent): void {

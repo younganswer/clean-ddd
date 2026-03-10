@@ -4,10 +4,10 @@ import { OutboxConsumer } from '@/modules/outbox/application/outbox.consumer';
 import { OutboxKnownHandlerRegistryService } from '@/modules/outbox/application/outbox-known-handler.registry.service';
 import { OutboxEvent } from '@/shared/outbox/domain/entities/outbox-event.entity';
 import { OutboxEventStatus } from '@/shared/outbox/domain/outbox-event-status.enum';
-import { IdempotencyService } from '@/modules/outbox/idempotency/idempotency.service';
+import { IdempotencyService } from '@/modules/outbox/idempotency/application/idempotency.service';
 import type { IOutboxRepository } from '@/shared/outbox/domain/repositories/i.outbox.repository';
 import type { UnitOfWork } from '@/lib/database/unit-of-work';
-import { PaymentWebhookSucceededEvent } from '@/contracts/payments';
+import { PaymentWebhookSucceededEvent } from '@/contracts/payments/events/payment-webhook-succeeded.event';
 
 describe('OutboxConsumer (registry dispatch)', () => {
 	it('dispatches known event via registry handler', async () => {

@@ -14,10 +14,10 @@ import type { IOutboxRepository } from '@/shared/outbox/domain/repositories/i.ou
 import type { IOutboxQueue } from '@/shared/outbox/domain/queue/i.outbox.queue';
 import { OutboxEvent } from '@/shared/outbox/domain/entities/outbox-event.entity';
 import { OutboxEventStatus } from '@/shared/outbox/domain/outbox-event-status.enum';
-import { IdempotencyService } from '@/modules/outbox/idempotency/idempotency.service';
+import { IdempotencyService } from '@/modules/outbox/idempotency/application/idempotency.service';
 import type { RepositoryGetByIdOptions } from '@/lib/database/repository-get-options';
 import type { UnitOfWork } from '@/lib/database/unit-of-work';
-import { CreateShipmentForOrderRequestedEvent } from '@/contracts/shipping';
+import { CreateShipmentForOrderRequestedEvent } from '@/contracts/shipping/events/create-shipment-for-order-requested.event';
 
 class InMemoryOutboxRepository implements IOutboxRepository {
 	private readonly events = new Map<string, OutboxEvent>();

@@ -12,6 +12,7 @@ import {
 	SQSClient,
 } from '@aws-sdk/client-sqs';
 import { OutboxConsumer } from '@/modules/outbox/application/outbox.consumer';
+import { resolveOutboxTimeoutPolicy } from '@/modules/outbox/application/outbox-timeout-policy';
 import { isOutboxPollingEnabled } from '@/runtime-role';
 import { SQS_CLIENT, SQS_OUTBOX_QUEUE_URL } from '@/lib/queue/sqs.module';
 
@@ -29,36 +30,18 @@ export class OutboxSqsPoller implements OnModuleInit, OnModuleDestroy {
 		private readonly consumer: OutboxConsumer,
 		private readonly orm: MikroORM,
 	) {
-		this.visibilityTimeoutSeconds = this.resolveVisibilityTimeoutSeconds();
-	}
+		const timeoutPolicy = resolveOutboxTimeoutPolicy({
+			lockTimeoutRaw: process.env.OUTBOX_CONSUMER_LOCK_TIMEOUT_MS,
+			visibilityTimeoutSecondsRaw:
+				process.env.OUTBOX_SQS_VISIBILITY_TIMEOUT_SECONDS,
+			defaultLockTimeoutMs:
+				OutboxSqsPoller.DEFAULT_VISIBILITY_TIMEOUT_SECONDS * 1000,
+			defaultVisibilityTimeoutSeconds:
+				OutboxSqsPoller.DEFAULT_VISIBILITY_TIMEOUT_SECONDS,
+			logger: this.logger,
+		});
 
-	private resolveVisibilityTimeoutSeconds(): number {
-		const explicit = process.env.OUTBOX_SQS_VISIBILITY_TIMEOUT_SECONDS;
-		if (explicit) {
-			const parsed = Number(explicit);
-			if (Number.isFinite(parsed) && parsed > 0) {
-				return Math.floor(parsed);
-			}
-			this.logger.warn(
-				`invalid OUTBOX_SQS_VISIBILITY_TIMEOUT_SECONDS=${explicit}; using default ${OutboxSqsPoller.DEFAULT_VISIBILITY_TIMEOUT_SECONDS}`,
-			);
-			return OutboxSqsPoller.DEFAULT_VISIBILITY_TIMEOUT_SECONDS;
-		}
-
-		const lockTimeoutRaw = process.env.OUTBOX_CONSUMER_LOCK_TIMEOUT_MS;
-		if (!lockTimeoutRaw) {
-			return OutboxSqsPoller.DEFAULT_VISIBILITY_TIMEOUT_SECONDS;
-		}
-
-		const lockTimeoutMs = Number(lockTimeoutRaw);
-		if (!Number.isFinite(lockTimeoutMs) || lockTimeoutMs <= 0) {
-			this.logger.warn(
-				`invalid OUTBOX_CONSUMER_LOCK_TIMEOUT_MS=${lockTimeoutRaw}; using default ${OutboxSqsPoller.DEFAULT_VISIBILITY_TIMEOUT_SECONDS}`,
-			);
-			return OutboxSqsPoller.DEFAULT_VISIBILITY_TIMEOUT_SECONDS;
-		}
-
-		return Math.max(1, Math.floor(lockTimeoutMs / 1000));
+		this.visibilityTimeoutSeconds = timeoutPolicy.visibilityTimeoutSeconds;
 	}
 
 	onModuleInit() {

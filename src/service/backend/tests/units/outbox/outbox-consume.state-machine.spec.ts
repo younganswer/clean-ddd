@@ -51,4 +51,18 @@ describe('OutboxConsumeStateMachine', () => {
 		expect(event.attempt).toBe(1);
 		expect(event.nextAttemptAt.getTime()).toBeGreaterThan(Date.now());
 	});
+
+	it('marks duplicate claim as retryable failure instead of consumed', () => {
+		const event = OutboxEvent.create({
+			eventType: 'duplicate.claim',
+			payload: {},
+			status: OutboxEventStatus.PUBLISHED,
+		});
+
+		stateMachine.markDuplicateClaimConflict(event);
+
+		expect(event.status).toBe(OutboxEventStatus.FAILED);
+		expect(event.lastError).toContain('duplicate idempotency claim');
+		expect(event.nextAttemptAt.getTime()).toBeGreaterThan(Date.now());
+	});
 });
