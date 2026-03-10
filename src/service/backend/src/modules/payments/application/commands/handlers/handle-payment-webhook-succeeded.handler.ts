@@ -15,6 +15,7 @@ import {
 	measureAsyncStep,
 	runLoggedAsync,
 } from '@/common/logging/structured-log';
+import { PaymentStatus } from '@/modules/payments/domains/enums/payment-status.enum';
 
 @CommandHandler(HandlePaymentWebhookSucceededCommand)
 export class HandlePaymentWebhookSucceededHandler implements ICommandHandler<HandlePaymentWebhookSucceededCommand> {
@@ -48,6 +49,18 @@ export class HandlePaymentWebhookSucceededHandler implements ICommandHandler<Han
 									command.paymentId,
 								),
 						);
+
+					if (payment.status === PaymentStatus.SUCCEEDED) {
+						return {
+							orderId: command.orderId,
+							paymentId: command.paymentId,
+							paymentLoadMs,
+							paymentPersistMs: 0,
+							fulfillmentOutboxPublishMs: 0,
+							duplicateIgnored: true,
+						};
+					}
+
 					payment.markSucceeded();
 					const { durationMs: paymentPersistMs } =
 						await measureAsyncStep(async () => {

@@ -82,38 +82,13 @@ export class ProcessedEventRepository implements IProcessedEventRepository {
 		const now = new Date();
 		const schema = this.mapper.toSchema(event);
 
-		try {
-			await em.insert(ProcessedEventSchema, {
-				uuid: schema.uuid,
-				consumerName: schema.consumerName,
-				eventId: schema.eventId,
-				createdAt: now,
-				updatedAt: now,
-			});
-			return true;
-		} catch (error: unknown) {
-			const maybeError =
-				typeof error === 'object' && error !== null
-					? (error as Record<string, unknown>)
-					: undefined;
-			const rawCode = maybeError?.code;
-			const rawMessage = maybeError?.message;
-			const code =
-				typeof rawCode === 'string' || typeof rawCode === 'number'
-					? String(rawCode)
-					: '';
-			const message = typeof rawMessage === 'string' ? rawMessage : '';
+		const insertedRows = await em
+			.getConnection()
+			.execute<
+				Array<{ uuid: string }>
+			>(['insert into "processed_events"', '("uuid", "consumer_name", "event_id", "created_at", "updated_at")', 'values (?, ?, ?, ?, ?)', 'on conflict ("consumer_name", "event_id") do nothing', 'returning "uuid"'].join(' '), [schema.uuid, schema.consumerName, schema.eventId, now, now]);
 
-			if (
-				code === '23505' ||
-				message.toLowerCase().includes('unique') ||
-				message.toLowerCase().includes('duplicate')
-			) {
-				return false;
-			}
-
-			throw error;
-		}
+		return insertedRows.length > 0;
 	}
 
 	async release(event: ProcessedEvent): Promise<void> {

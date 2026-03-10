@@ -11,10 +11,10 @@ type ClaimInsertPayload = {
 	eventId: string;
 };
 
-type InsertFn = (
-	entity: typeof ProcessedEventSchema,
-	payload: ClaimInsertPayload,
-) => Promise<void>;
+type ExecuteFn = (
+	query: string,
+	params: unknown[],
+) => Promise<Array<{ uuid: string }>>;
 
 type DeleteFn = (
 	entity: typeof ProcessedEventSchema,
@@ -32,9 +32,9 @@ describe('ProcessedEventRepository', () => {
 			consumerName: 'OutboxConsumer',
 			eventId: 'event-1',
 		});
-		const insertMock = jest
-			.fn<ReturnType<InsertFn>, Parameters<InsertFn>>()
-			.mockResolvedValue(undefined);
+		const executeMock = jest
+			.fn<ReturnType<ExecuteFn>, Parameters<ExecuteFn>>()
+			.mockResolvedValue([{ uuid: processedEvent.id }]);
 		const mapper = {
 			toSchema: jest.fn(
 				(event: ProcessedEvent) =>
@@ -47,7 +47,7 @@ describe('ProcessedEventRepository', () => {
 		} as Pick<ProcessedEventMapper, 'toSchema'>;
 		const repository = new ProcessedEventRepository(
 			{
-				insert: insertMock,
+				getConnection: jest.fn(() => ({ execute: executeMock })),
 			} as never,
 			mapper as ProcessedEventMapper,
 		);
@@ -55,22 +55,26 @@ describe('ProcessedEventRepository', () => {
 		const claimed = await repository.claim(processedEvent);
 
 		expect(claimed).toBe(true);
-		expect(insertMock).toHaveBeenCalledTimes(1);
-		expect(insertMock.mock.calls[0]?.[0]).toBe(ProcessedEventSchema);
+		expect(executeMock).toHaveBeenCalledTimes(1);
 		expect(mapper.toSchema).toHaveBeenCalledWith(processedEvent);
 
-		const insertPayload = insertMock.mock.calls[0]?.[1];
-		expect(insertPayload).toBeDefined();
-		if (!insertPayload) {
-			throw new Error('expected insert payload to be defined');
+		const query = executeMock.mock.calls[0]?.[0];
+		expect(query).toContain('insert into "processed_events"');
+		expect(query).toContain(
+			'on conflict ("consumer_name", "event_id") do nothing',
+		);
+
+		const queryParams = executeMock.mock.calls[0]?.[1];
+		expect(queryParams).toBeDefined();
+		if (!queryParams) {
+			throw new Error('expected query params to be defined');
 		}
-		expect(insertPayload.consumerName).toBe(processedEvent.consumerName);
-		expect(insertPayload.eventId).toBe(processedEvent.eventId);
-		expect(insertPayload.createdAt).toBeInstanceOf(Date);
-		expect(insertPayload.updatedAt).toBeInstanceOf(Date);
-		expect(insertPayload.uuid).toEqual(expect.any(String));
-		expect(insertPayload.uuid).toBe(processedEvent.id);
-		expect(insertPayload.createdAt).toBe(insertPayload.updatedAt);
+		expect(queryParams[0]).toBe(processedEvent.id);
+		expect(queryParams[1]).toBe(processedEvent.consumerName);
+		expect(queryParams[2]).toBe(processedEvent.eventId);
+		expect(queryParams[3]).toBeInstanceOf(Date);
+		expect(queryParams[4]).toBeInstanceOf(Date);
+		expect(queryParams[3]).toBe(queryParams[4]);
 	});
 
 	it('returns false on unique conflict during claim', async () => {
@@ -78,13 +82,9 @@ describe('ProcessedEventRepository', () => {
 			consumerName: 'OutboxConsumer',
 			eventId: 'event-1',
 		});
-		const duplicateError = new Error(
-			'duplicate key value violates unique constraint',
-		) as Error & { code: string };
-		duplicateError.code = '23505';
-		const insertMock = jest
-			.fn<ReturnType<InsertFn>, Parameters<InsertFn>>()
-			.mockRejectedValue(duplicateError);
+		const executeMock = jest
+			.fn<ReturnType<ExecuteFn>, Parameters<ExecuteFn>>()
+			.mockResolvedValue([]);
 		const mapper = {
 			toSchema: jest.fn(
 				(event: ProcessedEvent) =>
@@ -97,7 +97,7 @@ describe('ProcessedEventRepository', () => {
 		} as Pick<ProcessedEventMapper, 'toSchema'>;
 		const repository = new ProcessedEventRepository(
 			{
-				insert: insertMock,
+				getConnection: jest.fn(() => ({ execute: executeMock })),
 			} as never,
 			mapper as ProcessedEventMapper,
 		);
