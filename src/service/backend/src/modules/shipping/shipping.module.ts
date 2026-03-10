@@ -10,7 +10,7 @@ import { ShipmentMapper } from '@/modules/shipping/infrastructure/mappers/shipme
 import { ShipmentRepository } from '@/modules/shipping/infrastructure/repositories/shipment.repository';
 import { ShipmentsController } from '@/modules/shipping/presentation/shipments.controller';
 import { ShipmentReaderProvider } from '@/modules/shipping/infrastructure/readers/shipment.reader';
-import { ShipmentCreationDomainService } from '@/modules/shipping/domains/services/shipment-creation.domain-service';
+import { ShipmentCreationService } from '@/modules/shipping/domains/services/shipment-creation.service';
 
 @Module({
 	imports: [CqrsModule],
@@ -22,7 +22,7 @@ import { ShipmentCreationDomainService } from '@/modules/shipping/domains/servic
 			provide: IShipmentRepositorySymbol,
 			useExisting: ShipmentRepository,
 		},
-		ShipmentCreationDomainService,
+		ShipmentCreationService,
 		ShipmentReaderProvider,
 		CreateShipmentForOrderHandler,
 		ListShipmentsHandler,

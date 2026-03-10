@@ -8,7 +8,7 @@ import { SHIPPING_DOMAIN_ERRORS } from '@/shared/errors';
 import { DomainErrorFactory } from '@/common/errors/base.error-factory';
 
 @Injectable()
-export class ShipmentCreationDomainService {
+export class ShipmentCreationService {
 	constructor(
 		@Inject(IShipmentRepositorySymbol)
 		private readonly shipmentRepository: IShipmentRepository,
