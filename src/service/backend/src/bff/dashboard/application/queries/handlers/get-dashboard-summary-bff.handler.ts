@@ -1,20 +1,38 @@
-import { IQueryHandler, QueryBus, QueryHandler } from '@nestjs/cqrs';
-
-import { GetOrdersQuery } from '@/modules/ordering/application/queries/get-orders.query';
-
-import { GetPaymentIntentsQuery } from '@/modules/payments/application/queries/get-payment-intents.query';
-
-import { GetShipmentsQuery } from '@/modules/shipping/application/queries/get-shipments.query';
-
-import { GetInventoryItemsQuery } from '@/modules/inventory/application/queries/get-inventory-items.query';
+import { Inject } from '@nestjs/common';
+import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 
 import { GetDashboardSummaryBffQuery } from '@/bff/dashboard/application/queries/get-dashboard-summary-bff.query';
-import { toBffPartialError } from '@/common/utils/partial-error';
+import { toBffPartialError } from '@/bff/shared/partial-error';
 import type { DashboardSummaryBffView } from '@/bff/dashboard/application/views/dashboard-summary-bff.view';
+import {
+	IOrderReaderSymbol,
+	type IOrderReader,
+} from '@/modules/ordering/domains/readers/i.order.reader';
+import {
+	IPaymentIntentReaderSymbol,
+	type IPaymentIntentReader,
+} from '@/modules/payments/domains/readers/i.payment-intent.reader';
+import {
+	IShipmentReaderSymbol,
+	type IShipmentReader,
+} from '@/modules/shipping/domains/readers/i.shipment.reader';
+import {
+	IInventoryReaderSymbol,
+	type IInventoryReader,
+} from '@/modules/inventory/domains/readers/i.inventory.reader';
 
 @QueryHandler(GetDashboardSummaryBffQuery)
 export class GetDashboardSummaryBffHandler implements IQueryHandler<GetDashboardSummaryBffQuery> {
-	constructor(private readonly queryBus: QueryBus) {}
+	constructor(
+		@Inject(IOrderReaderSymbol)
+		private readonly orderReader: IOrderReader,
+		@Inject(IPaymentIntentReaderSymbol)
+		private readonly paymentIntentReader: IPaymentIntentReader,
+		@Inject(IShipmentReaderSymbol)
+		private readonly shipmentReader: IShipmentReader,
+		@Inject(IInventoryReaderSymbol)
+		private readonly inventoryReader: IInventoryReader,
+	) {}
 	async execute(
 		query: GetDashboardSummaryBffQuery,
 	): Promise<DashboardSummaryBffView> {
@@ -26,15 +44,15 @@ export class GetDashboardSummaryBffHandler implements IQueryHandler<GetDashboard
 			shipmentsSettled,
 			inventorySettled,
 		] = await Promise.allSettled([
-			this.queryBus.execute(new GetOrdersQuery({ limit })),
-			this.queryBus.execute(new GetPaymentIntentsQuery({ limit })),
-			this.queryBus.execute(new GetShipmentsQuery({ limit })),
-			this.queryBus.execute(new GetInventoryItemsQuery({ limit })),
+			this.orderReader.findRecent(limit),
+			this.paymentIntentReader.findRecent(limit),
+			this.shipmentReader.findRecent(limit),
+			this.inventoryReader.findRecentItems(limit),
 		]);
 
 		const orders =
 			ordersSettled.status === 'fulfilled'
-				? ordersSettled.value.items
+				? ordersSettled.value
 				: (partialErrors.push(
 						toBffPartialError('orders', ordersSettled.reason),
 					),
@@ -53,7 +71,7 @@ export class GetDashboardSummaryBffHandler implements IQueryHandler<GetDashboard
 
 		const shipments =
 			shipmentsSettled.status === 'fulfilled'
-				? shipmentsSettled.value.items
+				? shipmentsSettled.value
 				: (partialErrors.push(
 						toBffPartialError('shipments', shipmentsSettled.reason),
 					),
@@ -61,7 +79,7 @@ export class GetDashboardSummaryBffHandler implements IQueryHandler<GetDashboard
 
 		const inventoryItems =
 			inventorySettled.status === 'fulfilled'
-				? inventorySettled.value.items
+				? inventorySettled.value
 				: (partialErrors.push(
 						toBffPartialError(
 							'inventoryItems',

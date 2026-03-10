@@ -5,6 +5,7 @@ import { ReserveInventoryForOrderHandler } from '@/modules/inventory/application
 import { GetInventoryItemHandler } from '@/modules/inventory/application/queries/handlers/get-inventory-item.handler';
 import { ListInventoryItemsHandler } from '@/modules/inventory/application/queries/handlers/list-inventory-items.handler';
 import { ListInventoryReservationsHandler } from '@/modules/inventory/application/queries/handlers/list-inventory-reservations.handler';
+import { IInventoryReaderSymbol } from '@/modules/inventory/domains/readers/i.inventory.reader';
 import { IInventoryItemRepositorySymbol } from '@/modules/inventory/domains/repositories/i.inventory-item.repository';
 import { IInventoryReservationRepositorySymbol } from '@/modules/inventory/domains/repositories/i.inventory-reservation.repository';
 import { InventoryItemMapper } from '@/modules/inventory/infrastructure/mappers/inventory-item.mapper';
@@ -39,5 +40,6 @@ import { InventoryReservationService } from '@/modules/inventory/domains/service
 		ListInventoryReservationsHandler,
 		ReserveInventoryForOrderRequestedHandler,
 	],
+	exports: [IInventoryReaderSymbol],
 })
 export class InventoryModule {}

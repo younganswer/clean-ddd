@@ -2,7 +2,7 @@ import type { InventoryReservationResult } from '@/modules/inventory/domains/rea
 import type { OrderResult } from '@/modules/ordering/domains/readers/order.result';
 import type { PaymentIntentResult } from '@/modules/payments/domains/readers/payment-intent.result';
 import type { ShipmentResult } from '@/modules/shipping/domains/readers/shipment.result';
-import type { BffPartialError } from '@/common/utils/partial-error';
+import type { BffPartialError } from '@/bff/shared/partial-error';
 
 export type OrderDetailBffView = {
 	order: OrderResult;

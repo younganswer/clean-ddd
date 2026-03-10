@@ -1,20 +1,38 @@
-import { IQueryHandler, QueryBus, QueryHandler } from '@nestjs/cqrs';
-
-import { GetOrderQuery } from '@/modules/ordering/application/queries/get-order.query';
-
-import { GetPaymentIntentQuery } from '@/modules/payments/application/queries/get-payment-intent.query';
-
-import { GetShipmentByOrderQuery } from '@/modules/shipping/application/queries/get-shipment-by-order.query';
-
-import { GetInventoryReservationsQuery } from '@/modules/inventory/application/queries/get-inventory-reservations.query';
+import { Inject } from '@nestjs/common';
+import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 
 import { GetOrderDetailBffQuery } from '@/bff/order-detail/application/queries/get-order-detail-bff.query';
-import { toBffPartialError } from '@/common/utils/partial-error';
+import { toBffPartialError } from '@/bff/shared/partial-error';
 import type { OrderDetailBffView } from '@/bff/order-detail/application/views/order-detail-bff.view';
+import {
+	IOrderReaderSymbol,
+	type IOrderReader,
+} from '@/modules/ordering/domains/readers/i.order.reader';
+import {
+	IPaymentIntentReaderSymbol,
+	type IPaymentIntentReader,
+} from '@/modules/payments/domains/readers/i.payment-intent.reader';
+import {
+	IShipmentReaderSymbol,
+	type IShipmentReader,
+} from '@/modules/shipping/domains/readers/i.shipment.reader';
+import {
+	IInventoryReaderSymbol,
+	type IInventoryReader,
+} from '@/modules/inventory/domains/readers/i.inventory.reader';
 
 @QueryHandler(GetOrderDetailBffQuery)
 export class GetOrderDetailBffHandler implements IQueryHandler<GetOrderDetailBffQuery> {
-	constructor(private readonly queryBus: QueryBus) {}
+	constructor(
+		@Inject(IOrderReaderSymbol)
+		private readonly orderReader: IOrderReader,
+		@Inject(IPaymentIntentReaderSymbol)
+		private readonly paymentIntentReader: IPaymentIntentReader,
+		@Inject(IShipmentReaderSymbol)
+		private readonly shipmentReader: IShipmentReader,
+		@Inject(IInventoryReaderSymbol)
+		private readonly inventoryReader: IInventoryReader,
+	) {}
 
 	async execute(
 		query: GetOrderDetailBffQuery,
@@ -26,36 +44,22 @@ export class GetOrderDetailBffHandler implements IQueryHandler<GetOrderDetailBff
 			includeReservations,
 		} = query;
 
-		const order = await this.queryBus.execute(
-			new GetOrderQuery({ orderId }),
-		);
+		const order = await this.orderReader.findById(orderId);
 		if (!order) return null;
 
 		const partialErrors: OrderDetailBffView['partialErrors'] = [];
 
 		const paymentPromise =
 			includePayment && order.paymentId
-				? this.queryBus.execute(
-						new GetPaymentIntentQuery({
-							paymentId: order.paymentId,
-						}),
-					)
+				? this.paymentIntentReader.findById(order.paymentId)
 				: Promise.resolve(null);
 
 		const shipmentPromise = includeShipment
-			? this.queryBus.execute(
-					new GetShipmentByOrderQuery({
-						orderId,
-					}),
-				)
+			? this.shipmentReader.findByOrderId(orderId)
 			: Promise.resolve(null);
 
 		const reservationsPromise = includeReservations
-			? this.queryBus.execute(
-					new GetInventoryReservationsQuery({
-						orderId,
-					}),
-				)
+			? this.inventoryReader.findReservationsByOrderId(orderId)
 			: Promise.resolve([]);
 
 		const [paymentSettled, shipmentSettled, reservationsSettled] =

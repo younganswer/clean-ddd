@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { CreateShipmentForOrderRequestedHandler } from '@/modules/shipping/application/events/handlers/create-shipment-for-order-requested.handler';
 import { CreateShipmentForOrderHandler } from '@/modules/shipping/application/commands/handlers/create-shipment-for-order.handler';
+import { IShipmentReaderSymbol } from '@/modules/shipping/domains/readers/i.shipment.reader';
 import { IShipmentRepositorySymbol } from '@/modules/shipping/domains/repositories/i.shipment.repository';
 import { GetShipmentByOrderHandler } from '@/modules/shipping/application/queries/handlers/get-shipment-by-order.handler';
 import { GetShipmentHandler } from '@/modules/shipping/application/queries/handlers/get-shipment.handler';
@@ -30,5 +31,6 @@ import { ShipmentCreationService } from '@/modules/shipping/domains/services/shi
 		GetShipmentByOrderHandler,
 		CreateShipmentForOrderRequestedHandler,
 	],
+	exports: [IShipmentReaderSymbol],
 })
 export class ShippingModule {}
