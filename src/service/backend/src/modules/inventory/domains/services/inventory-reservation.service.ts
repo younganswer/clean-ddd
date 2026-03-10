@@ -7,12 +7,13 @@ import {
 	IInventoryReservationRepositorySymbol,
 	type IInventoryReservationRepository,
 } from '@/modules/inventory/domains/repositories/i.inventory-reservation.repository';
+import { InventoryItem } from '@/modules/inventory/domains/entities/inventory-item.entity';
 import { InventoryReservation } from '@/modules/inventory/domains/entities/inventory-reservation.entity';
 import { INVENTORY_DOMAIN_ERRORS } from '@/shared/errors';
 import { DomainErrorFactory } from '@/common/errors/base.error-factory';
 
 @Injectable()
-export class InventoryReservationDomainService {
+export class InventoryReservationService {
 	constructor(
 		@Inject(IInventoryItemRepositorySymbol)
 		private readonly inventoryItemRepository: IInventoryItemRepository,
@@ -33,6 +34,7 @@ export class InventoryReservationDomainService {
 
 		await this.inventoryItemRepository.seedIfEmpty();
 
+		const requestedBySku = new Map<string, number>();
 		for (const requested of input.items ?? []) {
 			const sku = String(requested.sku ?? '').trim();
 			const quantity = Number(requested.quantity ?? 0);
@@ -45,9 +47,27 @@ export class InventoryReservationDomainService {
 				);
 			}
 
-			const existingReservation =
-				await this.reservations.findByOrderAndSku(orderId, sku);
-			if (existingReservation) {
+			const current = requestedBySku.get(sku) ?? 0;
+			requestedBySku.set(sku, current + quantity);
+		}
+
+		if (requestedBySku.size === 0) {
+			throw DomainErrorFactory.create(
+				INVENTORY_DOMAIN_ERRORS.INVENTORY_RESERVE_ITEMS_INVALID,
+			);
+		}
+
+		const existingReservations =
+			await this.reservations.findReservationsByOrderId(orderId);
+		const alreadyReservedSkus = new Set(
+			existingReservations.map((reservation) => reservation.sku),
+		);
+
+		const stocksToPersist = [] as InventoryItem[];
+		const reservationsToPersist = [] as InventoryReservation[];
+
+		for (const [sku, quantity] of requestedBySku.entries()) {
+			if (alreadyReservedSkus.has(sku)) {
 				continue;
 			}
 
@@ -63,13 +83,21 @@ export class InventoryReservationDomainService {
 			}
 
 			stock.reserve(quantity);
-			await this.inventoryItemRepository.persist(stock);
+			stocksToPersist.push(stock);
+			reservationsToPersist.push(
+				InventoryReservation.create({
+					orderId,
+					sku,
+					quantity,
+				}),
+			);
+		}
 
-			const reservation = InventoryReservation.create({
-				orderId,
-				sku,
-				quantity,
-			});
+		for (const stock of stocksToPersist) {
+			await this.inventoryItemRepository.persist(stock);
+		}
+
+		for (const reservation of reservationsToPersist) {
 			await this.reservations.persist(reservation);
 		}
 	}

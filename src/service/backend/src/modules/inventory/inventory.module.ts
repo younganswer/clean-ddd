@@ -13,7 +13,7 @@ import { InventoryItemRepository } from '@/modules/inventory/infrastructure/repo
 import { InventoryReservationRepository } from '@/modules/inventory/infrastructure/repositories/inventory-reservation.repository';
 import { InventoryController } from '@/modules/inventory/presentation/inventory.controller';
 import { InventoryReaderProvider } from '@/modules/inventory/infrastructure/readers/inventory.reader';
-import { InventoryReservationDomainService } from '@/modules/inventory/domains/services/inventory-reservation.domain-service';
+import { InventoryReservationService } from '@/modules/inventory/domains/services/inventory-reservation.service';
 
 @Module({
 	imports: [CqrsModule],
@@ -32,7 +32,7 @@ import { InventoryReservationDomainService } from '@/modules/inventory/domains/s
 			useExisting: InventoryReservationRepository,
 		},
 		InventoryReaderProvider,
-		InventoryReservationDomainService,
+		InventoryReservationService,
 		ReserveInventoryForOrderHandler,
 		ListInventoryItemsHandler,
 		GetInventoryItemHandler,
