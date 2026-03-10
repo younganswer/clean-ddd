@@ -8,6 +8,10 @@ import {
 import { OrderResult } from '@/modules/ordering/domains/readers/order.result';
 import { OrderSchema } from '@/modules/ordering/infrastructure/schemas/order.schema';
 import { RepositoryGetByIdOptions } from '@/lib/database/repository-get-options';
+import {
+	normalizeReaderExternalPage,
+	normalizeReaderInternalPage,
+} from '@/common/cqrs/pagination-policy';
 import { ORDERING_APPLICATION_ERRORS } from '@/shared/errors';
 import { ApplicationErrorFactory } from '@/common/errors/base.error-factory';
 
@@ -55,14 +59,13 @@ export class OrderReader implements IOrderReader {
 		limit: number,
 		offset: number = 0,
 	): Promise<OrderResult[]> {
-		const safeLimit = Math.min(50, Math.max(1, Number(limit ?? 20)));
-		const safeOffset = Math.max(0, Number(offset ?? 0) || 0);
+		const page = normalizeReaderExternalPage(limit, offset);
 		const orders = await this.emForContext().find(
 			OrderSchema,
 			{},
 			{
-				limit: safeLimit,
-				offset: safeOffset,
+				limit: page.limit,
+				offset: page.offset,
 				orderBy: { id: 'asc' },
 			},
 		);
@@ -77,14 +80,13 @@ export class OrderReader implements IOrderReader {
 		const normalized = String(userId ?? '').trim();
 		if (!normalized) return [];
 
-		const safeLimit = Math.min(200, Math.max(1, Number(limit ?? 50) || 50));
-		const safeOffset = Math.max(0, Number(offset ?? 0) || 0);
+		const page = normalizeReaderInternalPage(limit, offset);
 		const orders = await this.emForContext().find(
 			OrderSchema,
 			{ userId: normalized },
 			{
-				limit: safeLimit,
-				offset: safeOffset,
+				limit: page.limit,
+				offset: page.offset,
 				orderBy: { id: 'asc' },
 			},
 		);

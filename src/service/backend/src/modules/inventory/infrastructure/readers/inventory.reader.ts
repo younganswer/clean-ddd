@@ -10,6 +10,7 @@ import { InventoryItemResult } from '@/modules/inventory/domains/readers/invento
 import { InventoryReservationResult } from '@/modules/inventory/domains/readers/inventory-reservation.result';
 import { InventoryItemSchema } from '@/modules/inventory/infrastructure/schemas/inventory-item.schema';
 import { InventoryReservationSchema } from '@/modules/inventory/infrastructure/schemas/inventory-reservation.schema';
+import { normalizeReaderExternalPage } from '@/common/cqrs/pagination-policy';
 
 @Injectable()
 export class InventoryReader implements IInventoryReader {
@@ -36,14 +37,13 @@ export class InventoryReader implements IInventoryReader {
 		limit: number,
 		offset: number = 0,
 	): Promise<InventoryItemResult[]> {
-		const safeLimit = Math.min(50, Math.max(1, Number(limit ?? 20)));
-		const safeOffset = Math.max(0, Number(offset ?? 0) || 0);
+		const page = normalizeReaderExternalPage(limit, offset);
 		const items = await this.emForContext().find(
 			InventoryItemSchema,
 			{},
 			{
-				limit: safeLimit,
-				offset: safeOffset,
+				limit: page.limit,
+				offset: page.offset,
 				orderBy: { id: 'asc' },
 			},
 		);

@@ -7,6 +7,7 @@ import {
 } from '@/modules/payments/domains/readers/i.payment-intent.reader';
 import { PaymentIntentResult } from '@/modules/payments/domains/readers/payment-intent.result';
 import { PaymentIntentSchema } from '@/modules/payments/infrastructure/schemas/payment-intent.schema';
+import { normalizeReaderExternalPage } from '@/common/cqrs/pagination-policy';
 
 @Injectable()
 export class PaymentIntentReader implements IPaymentIntentReader {
@@ -28,13 +29,13 @@ export class PaymentIntentReader implements IPaymentIntentReader {
 	}
 
 	async findRecent(limit: number): Promise<PaymentIntentResult[]> {
-		const safeLimit = Math.min(50, Math.max(1, Number(limit ?? 20)));
+		const page = normalizeReaderExternalPage(limit, 0);
 		const payments = await this.emForContext().find(
 			PaymentIntentSchema,
 			{},
 			{
 				orderBy: { id: 'asc' },
-				limit: safeLimit,
+				limit: page.limit,
 			},
 		);
 		return payments.map((payment) =>

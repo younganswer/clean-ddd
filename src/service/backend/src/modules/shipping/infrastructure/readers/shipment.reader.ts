@@ -8,6 +8,7 @@ import {
 } from '@/modules/shipping/domains/readers/i.shipment.reader';
 import { ShipmentResult } from '@/modules/shipping/domains/readers/shipment.result';
 import { ShipmentSchema } from '@/modules/shipping/infrastructure/schemas/shipment.schema';
+import { normalizeReaderExternalPage } from '@/common/cqrs/pagination-policy';
 
 @Injectable()
 export class ShipmentReader implements IShipmentReader {
@@ -40,14 +41,13 @@ export class ShipmentReader implements IShipmentReader {
 		limit: number,
 		offset: number = 0,
 	): Promise<ShipmentResult[]> {
-		const safeLimit = Math.min(50, Math.max(1, Number(limit ?? 20)));
-		const safeOffset = Math.max(0, Number(offset ?? 0) || 0);
+		const page = normalizeReaderExternalPage(limit, offset);
 		const list = await this.emForContext().find(
 			ShipmentSchema,
 			{},
 			{
-				limit: safeLimit,
-				offset: safeOffset,
+				limit: page.limit,
+				offset: page.offset,
 				orderBy: { id: 'asc' },
 			},
 		);

@@ -9,6 +9,7 @@ import { UserSchema } from '@/modules/users/infrastructure/schemas/user.schema';
 import { USER_APPLICATION_ERRORS } from '@/shared/errors';
 import { ApplicationErrorFactory } from '@/common/errors/base.error-factory';
 import { UserProfileResult } from '@/modules/users/domains/readers/user-profile.result';
+import { normalizeReaderInternalPage } from '@/common/cqrs/pagination-policy';
 
 @Injectable()
 export class UserReader implements IUserReader {
@@ -48,17 +49,13 @@ export class UserReader implements IUserReader {
 		limit: number;
 		offset: number;
 	}): Promise<UserProfileResult[]> {
-		const limit = Math.min(
-			200,
-			Math.max(1, Number(input.limit ?? 20) || 20),
-		);
-		const offset = Math.max(0, Number(input.offset ?? 0) || 0);
+		const page = normalizeReaderInternalPage(input.limit, input.offset);
 		const rows = await this.emForContext().find(
 			UserSchema,
 			{},
 			{
-				limit,
-				offset,
+				limit: page.limit,
+				offset: page.offset,
 				orderBy: { id: 'asc' },
 			},
 		);
