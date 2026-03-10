@@ -2,6 +2,7 @@ import type { Handler, SQSEvent } from 'aws-lambda';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from '@/app.module';
 import { OutboxConsumer } from '@/modules/outbox/application/outbox.consumer';
+import { OutboxConsumerModule } from '@/modules/outbox/outbox-consumer.module';
 
 let cachedConsumer: OutboxConsumer | undefined;
 
@@ -10,9 +11,11 @@ async function getConsumer(): Promise<OutboxConsumer> {
 	const appContext = await NestFactory.createApplicationContext(AppModule, {
 		logger: ['log', 'warn', 'error'],
 	});
-	const consumer = appContext.get(OutboxConsumer, {
-		strict: true,
-	});
+	const consumer = appContext
+		.select(OutboxConsumerModule)
+		.get(OutboxConsumer, {
+			strict: true,
+		});
 	cachedConsumer = consumer;
 	return consumer;
 }

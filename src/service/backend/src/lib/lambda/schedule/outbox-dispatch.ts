@@ -2,6 +2,7 @@ import type { Handler } from 'aws-lambda';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from '@/app.module';
 import { OutboxDispatcher } from '@/modules/outbox/application/outbox.dispatcher';
+import { OutboxModule } from '@/modules/outbox/outbox.module';
 import { optionalEnv } from '@/env';
 
 let cachedDispatcher: OutboxDispatcher | undefined;
@@ -18,7 +19,7 @@ async function getDispatcher(): Promise<OutboxDispatcher> {
 	const appContext = await NestFactory.createApplicationContext(AppModule, {
 		logger: ['log', 'warn', 'error'],
 	});
-	const dispatcher = appContext.get(OutboxDispatcher, {
+	const dispatcher = appContext.select(OutboxModule).get(OutboxDispatcher, {
 		strict: true,
 	});
 	cachedDispatcher = dispatcher;
