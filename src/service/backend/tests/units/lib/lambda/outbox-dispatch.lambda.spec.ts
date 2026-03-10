@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import { AppModule } from '@/app.module';
 import { OutboxDispatcher } from '@/modules/outbox/application/outbox.dispatcher';
 import { OutboxModule } from '@/modules/outbox/outbox.module';
@@ -28,6 +29,7 @@ describe('outbox dispatch lambda', () => {
 	});
 
 	it('resolves OutboxDispatcher from OutboxModule context', async () => {
+		const logSpy = jest.spyOn(Logger.prototype, 'log').mockImplementation();
 		const dispatcher = {
 			dispatchPending: jest.fn().mockResolvedValue(1),
 		};
@@ -58,5 +60,12 @@ describe('outbox dispatch lambda', () => {
 			10,
 			expect.any(Date),
 		);
+		expect(logSpy).toHaveBeenCalledWith(
+			expect.stringContaining('outbox_dispatch_invoked'),
+		);
+		expect(logSpy).toHaveBeenCalledWith(
+			expect.stringContaining('outbox_dispatch_completed'),
+		);
+		logSpy.mockRestore();
 	});
 });

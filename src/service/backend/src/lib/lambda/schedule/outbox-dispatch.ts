@@ -1,6 +1,10 @@
 import type { Handler } from 'aws-lambda';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from '@/app.module';
+import {
+	resolveStructuredLogErrorMessage,
+	writeStructuredLog,
+} from '@/common/logging/structured-log';
 import { OutboxDispatcher } from '@/modules/outbox/application/outbox.dispatcher';
 import { OutboxModule } from '@/modules/outbox/outbox.module';
 import { optionalEnv } from '@/env';
@@ -27,6 +31,37 @@ async function getDispatcher(): Promise<OutboxDispatcher> {
 }
 
 export const handler: Handler = async () => {
-	const dispatcher = await getDispatcher();
-	await dispatcher.dispatchPending(resolveBatchSize(), new Date());
+	const batchSize = resolveBatchSize();
+	const now = new Date();
+
+	writeStructuredLog('OutboxDispatchLambda', {
+		step: 'outbox_dispatch_invoked',
+		batchSize,
+		invokedAt: now.toISOString(),
+	});
+
+	try {
+		const dispatcher = await getDispatcher();
+		const dispatched = await dispatcher.dispatchPending(batchSize, now);
+
+		writeStructuredLog('OutboxDispatchLambda', {
+			step: 'outbox_dispatch_completed',
+			batchSize,
+			dispatched,
+			invokedAt: now.toISOString(),
+		});
+		return;
+	} catch (error: unknown) {
+		writeStructuredLog(
+			'OutboxDispatchLambda',
+			{
+				step: 'outbox_dispatch_failed',
+				batchSize,
+				invokedAt: now.toISOString(),
+				error: resolveStructuredLogErrorMessage(error),
+			},
+			'error',
+		);
+		throw error;
+	}
 };
