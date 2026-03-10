@@ -11,11 +11,11 @@ import {
 	ApiErrorEnvelopeResponse,
 	ApiListResponse,
 	ApiPageResponse,
-} from '@/common/swagger';
+} from '@/common/swagger/api-response.decorator';
 import {
 	InventoryItemResponse,
 	InventoryReservationResponse,
-} from '@/modules/inventory/presentation/swagger';
+} from '@/modules/inventory/presentation/swagger/inventory.response';
 import { GetInventoryItemQuery } from '@/modules/inventory/application/queries/get-inventory-item.query';
 import { GetInventoryItemsQuery } from '@/modules/inventory/application/queries/get-inventory-items.query';
 import { GetInventoryReservationsQuery } from '@/modules/inventory/application/queries/get-inventory-reservations.query';

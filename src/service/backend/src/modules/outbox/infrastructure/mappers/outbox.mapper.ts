@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { OutboxEventSchema } from '@/modules/outbox/infrastructure/persistence/outbox.schema';
-import { OutboxEvent } from '@/shared/outbox';
+import { OutboxEvent } from '@/shared/outbox/domain/entities/outbox-event.entity';
 
 @Injectable()
 export class OutboxMapper {

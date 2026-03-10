@@ -5,7 +5,7 @@ import {
 	ApiDataResponse,
 	ApiErrorEnvelopeResponse,
 	ApiPageResponse,
-} from '@/common/swagger';
+} from '@/common/swagger/api-response.decorator';
 import { CreateOrderCommand } from '@/modules/ordering/application/commands/create-order.command';
 import { GetOrderQuery } from '@/modules/ordering/application/queries/get-order.query';
 import { GetOrdersQuery } from '@/modules/ordering/application/queries/get-orders.query';
@@ -14,7 +14,7 @@ import { CreateOrderRequest } from '@/modules/ordering/presentation/dto/create-o
 import {
 	CreateOrderResponse,
 	OrderResponse,
-} from '@/modules/ordering/presentation/swagger';
+} from '@/modules/ordering/presentation/swagger/orders.response';
 import { PageQueryDto } from '@/common/cqrs/query-input.dto';
 import { ORDERING_APPLICATION_ERRORS } from '@/shared/errors';
 import { ApplicationErrorFactory } from '@/common/errors/base.error-factory';

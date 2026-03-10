@@ -1,8 +1,11 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 import { PageEnvelope, ResponseHelper } from '@/common/responses';
-import { ApiErrorEnvelopeResponse, ApiPageResponse } from '@/common/swagger';
-import { UserProfileResponse } from '@/modules/users/presentation/swagger';
+import {
+	ApiErrorEnvelopeResponse,
+	ApiPageResponse,
+} from '@/common/swagger/api-response.decorator';
+import { UserProfileResponse } from '@/modules/users/presentation/swagger/users.response';
 import { PageQueryDto } from '@/common/cqrs/query-input.dto';
 import { GetUserProfilesQuery } from '@/modules/users/application/queries/get-user-profiles.query';
 

@@ -2,11 +2,14 @@ import { Body, Controller, Get, Patch } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { AuthContextAccessor } from '@/common/context/auth-context';
 import { DataEnvelope, ResponseHelper } from '@/common/responses';
-import { ApiDataResponse, ApiErrorEnvelopeResponse } from '@/common/swagger';
+import {
+	ApiDataResponse,
+	ApiErrorEnvelopeResponse,
+} from '@/common/swagger/api-response.decorator';
 import {
 	UpdateAvatarResponse,
 	UserProfileResponse,
-} from '@/modules/users/presentation/swagger';
+} from '@/modules/users/presentation/swagger/users.response';
 import { GetUserProfileQuery } from '@/modules/users/application/queries/get-user-profile.query';
 import { UpdateMyAvatarCommand } from '@/modules/users/application/commands/update-my-avatar.command';
 import { UpdateMyAvatarRequest } from '@/modules/users/presentation/dto/update-my-avatar.request';

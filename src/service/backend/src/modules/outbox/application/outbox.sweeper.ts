@@ -3,10 +3,12 @@ import { ModuleRef } from '@nestjs/core';
 import { UnitOfWork } from '@/lib/database/unit-of-work';
 import {
 	IOutboxRepositorySymbol,
-	IOutboxQueueSymbol,
 	type IOutboxRepository,
+} from '@/shared/outbox/domain/repositories/i.outbox.repository';
+import {
+	IOutboxQueueSymbol,
 	type IOutboxQueue,
-} from '@/shared/outbox';
+} from '@/shared/outbox/domain/queue/i.outbox.queue';
 import { OutboxConsumer } from '@/modules/outbox/application/outbox.consumer';
 import {
 	createRetryAt,

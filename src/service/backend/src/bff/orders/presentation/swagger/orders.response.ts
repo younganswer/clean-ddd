@@ -1,4 +1,4 @@
 export {
 	CreateOrderResponse,
 	OrderResponse,
-} from '@/modules/ordering/presentation/swagger';
+} from '@/modules/ordering/presentation/swagger/orders.response';

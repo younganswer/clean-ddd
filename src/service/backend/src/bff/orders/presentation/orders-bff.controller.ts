@@ -5,11 +5,11 @@ import {
 	ApiDataResponse,
 	ApiErrorEnvelopeResponse,
 	ApiPageResponse,
-} from '@/common/swagger';
+} from '@/common/swagger/api-response.decorator';
 import {
 	CreateOrderResponse,
 	OrderResponse,
-} from '@/bff/orders/presentation/swagger';
+} from '@/bff/orders/presentation/swagger/orders.response';
 
 import { CreateOrderBffBodyDto } from '@/bff/orders/presentation/orders-bff.dto';
 import { CreateOrderBffCommand } from '@/bff/orders/application/commands/create-order-bff.command';

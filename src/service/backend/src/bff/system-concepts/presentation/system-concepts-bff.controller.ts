@@ -1,8 +1,11 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 import { DataEnvelope, ResponseHelper } from '@/common/responses';
-import { ApiDataResponse, ApiErrorEnvelopeResponse } from '@/common/swagger';
-import { SystemConceptsBootstrapResponse } from '@/bff/system-concepts/presentation/swagger';
+import {
+	ApiDataResponse,
+	ApiErrorEnvelopeResponse,
+} from '@/common/swagger/api-response.decorator';
+import { SystemConceptsBootstrapResponse } from '@/bff/system-concepts/presentation/swagger/system-concepts.response';
 import { GetInventoryItemsQuery } from '@/modules/inventory/application/queries/get-inventory-items.query';
 import { GetUserProfilesQuery } from '@/modules/users/application/queries/get-user-profiles.query';
 import { PageQueryDto } from '@/common/cqrs/query-input.dto';

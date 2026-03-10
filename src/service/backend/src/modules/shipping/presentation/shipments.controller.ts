@@ -5,8 +5,8 @@ import {
 	ApiDataResponse,
 	ApiErrorEnvelopeResponse,
 	ApiPageResponse,
-} from '@/common/swagger';
-import { ShipmentResponse } from '@/modules/shipping/presentation/swagger';
+} from '@/common/swagger/api-response.decorator';
+import { ShipmentResponse } from '@/modules/shipping/presentation/swagger/shipping.response';
 import { GetShipmentByOrderQuery } from '@/modules/shipping/application/queries/get-shipment-by-order.query';
 import { GetShipmentQuery } from '@/modules/shipping/application/queries/get-shipment.query';
 import { GetShipmentsQuery } from '@/modules/shipping/application/queries/get-shipments.query';

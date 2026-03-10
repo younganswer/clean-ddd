@@ -4,10 +4,12 @@ import { UnitOfWork } from '@/lib/database/unit-of-work';
 import { DispatchOutboxEventCommand } from '@/modules/outbox/application/commands/dispatch-outbox-event.command';
 import {
 	IOutboxRepositorySymbol,
-	IOutboxQueueSymbol,
 	type IOutboxRepository,
+} from '@/shared/outbox/domain/repositories/i.outbox.repository';
+import {
+	IOutboxQueueSymbol,
 	type IOutboxQueue,
-} from '@/shared/outbox';
+} from '@/shared/outbox/domain/queue/i.outbox.queue';
 import {
 	createRetryAt,
 	resolveErrorMessage,

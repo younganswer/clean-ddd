@@ -5,8 +5,8 @@ import {
 	ApiDataResponse,
 	ApiErrorEnvelopeResponse,
 	ApiListResponse,
-} from '@/common/swagger';
-import { PaymentIntentResponse } from '@/modules/payments/presentation/swagger';
+} from '@/common/swagger/api-response.decorator';
+import { PaymentIntentResponse } from '@/modules/payments/presentation/swagger/payments.response';
 import { GetPaymentIntentQuery } from '@/modules/payments/application/queries/get-payment-intent.query';
 import { GetPaymentIntentsQuery } from '@/modules/payments/application/queries/get-payment-intents.query';
 import type { PaymentIntentResult } from '@/modules/payments/domains/readers/payment-intent.result';

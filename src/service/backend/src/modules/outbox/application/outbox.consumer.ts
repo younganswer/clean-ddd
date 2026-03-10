@@ -6,7 +6,7 @@ import { IdempotencyService } from '@/modules/outbox/idempotency/application/ide
 import {
 	IOutboxRepositorySymbol,
 	type IOutboxRepository,
-} from '@/shared/outbox';
+} from '@/shared/outbox/domain/repositories/i.outbox.repository';
 import { hydrateEvent } from '@/lib/outbox/event-registry';
 import { resolveErrorMessage } from '@/modules/outbox/application/outbox-error.util';
 import { OutboxKnownHandlerRegistryService } from '@/modules/outbox/application/outbox-known-handler.registry.service';

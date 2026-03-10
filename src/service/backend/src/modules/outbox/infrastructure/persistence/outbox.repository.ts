@@ -4,7 +4,7 @@ import { Injectable } from '@nestjs/common';
 import type { RepositoryGetByIdOptions } from '@/lib/database/repository-get-options';
 import type { IOutboxRepository } from '@/shared/outbox/domain/repositories/i.outbox.repository';
 import { OutboxEvent } from '@/shared/outbox/domain/entities/outbox-event.entity';
-import { OutboxEventStatus } from '@/shared/outbox';
+import { OutboxEventStatus } from '@/shared/outbox/domain/outbox-event-status.enum';
 import { OutboxMapper } from '@/modules/outbox/infrastructure/mappers/outbox.mapper';
 import { OutboxEventSchema } from '@/modules/outbox/infrastructure/persistence/outbox.schema';
 import { OUTBOX_INFRA_ERRORS } from '@/shared/errors';

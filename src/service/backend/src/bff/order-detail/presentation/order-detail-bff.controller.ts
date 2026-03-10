@@ -1,8 +1,11 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 import { DataEnvelope, ResponseHelper } from '@/common/responses';
-import { ApiDataResponse, ApiErrorEnvelopeResponse } from '@/common/swagger';
-import { OrderDetailBffResponse } from '@/bff/order-detail/presentation/swagger';
+import {
+	ApiDataResponse,
+	ApiErrorEnvelopeResponse,
+} from '@/common/swagger/api-response.decorator';
+import { OrderDetailBffResponse } from '@/bff/order-detail/presentation/swagger/order-detail.response';
 
 import { GetOrderDetailBffQuery } from '@/bff/order-detail/application/queries/get-order-detail-bff.query';
 import { GetOrderDetailBffQueryDto } from '@/bff/order-detail/presentation/order-detail-bff.dto';

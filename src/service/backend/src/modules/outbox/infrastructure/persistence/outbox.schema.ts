@@ -1,5 +1,5 @@
 import { Entity, Index, Property } from '@mikro-orm/core';
-import { OutboxEventStatus } from '@/shared/outbox';
+import { OutboxEventStatus } from '@/shared/outbox/domain/outbox-event-status.enum';
 import { BaseSchema } from '@/common/persistence/mikro-orm/base.schema';
 
 @Entity({ tableName: 'outbox_events' })

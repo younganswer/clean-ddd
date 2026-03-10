@@ -1,8 +1,11 @@
 import { Body, Controller, Param, Post } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import { DataEnvelope, ResponseHelper } from '@/common/responses';
-import { ApiDataResponse, ApiErrorEnvelopeResponse } from '@/common/swagger';
-import { CreatePaymentIntentResponse } from '@/modules/payments/presentation/swagger';
+import {
+	ApiDataResponse,
+	ApiErrorEnvelopeResponse,
+} from '@/common/swagger/api-response.decorator';
+import { CreatePaymentIntentResponse } from '@/modules/payments/presentation/swagger/payments.response';
 import { CreatePaymentIntentCommand } from '@/modules/payments/application/commands/create-payment-intent.command';
 import { CreatePaymentIntentRequest } from '@/modules/payments/presentation/dto/create-payment-intent.request';
 

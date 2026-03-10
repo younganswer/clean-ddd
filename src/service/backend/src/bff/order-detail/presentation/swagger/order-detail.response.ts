@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { InventoryReservationResponse } from '@/modules/inventory/presentation/swagger';
-import { OrderResponse } from '@/modules/ordering/presentation/swagger';
-import { PaymentIntentResponse } from '@/modules/payments/presentation/swagger';
-import { ShipmentResponse } from '@/modules/shipping/presentation/swagger';
+import { InventoryReservationResponse } from '@/modules/inventory/presentation/swagger/inventory.response';
+import { OrderResponse } from '@/modules/ordering/presentation/swagger/orders.response';
+import { PaymentIntentResponse } from '@/modules/payments/presentation/swagger/payments.response';
+import { ShipmentResponse } from '@/modules/shipping/presentation/swagger/shipping.response';
 import type { OrderDetailBffView } from '@/bff/order-detail/application/views/order-detail-bff.view';
 
 export class OrderDetailBffResponse {

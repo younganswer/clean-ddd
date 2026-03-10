@@ -2,8 +2,8 @@ import { ApiProperty } from '@nestjs/swagger';
 import type { PaginatedResult } from '@/common/types/paginated.result';
 import type { InventoryItemResult } from '@/modules/inventory/domains/readers/inventory-item.result';
 import type { UserProfileResult } from '@/modules/users/domains/readers/user-profile.result';
-import { InventoryItemResponse } from '@/modules/inventory/presentation/swagger';
-import { UserProfileResponse } from '@/modules/users/presentation/swagger';
+import { InventoryItemResponse } from '@/modules/inventory/presentation/swagger/inventory.response';
+import { UserProfileResponse } from '@/modules/users/presentation/swagger/users.response';
 
 export class PaginatedUserProfileResponse {
 	@ApiProperty({ type: [UserProfileResponse] })

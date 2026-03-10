@@ -6,7 +6,8 @@ import { ProcessedEventMapper } from '@/modules/outbox/idempotency/infrastructur
 import { ProcessedEventRepository } from '@/modules/outbox/idempotency/infrastructure/processed-event.repository';
 import { IdempotencyService } from '@/modules/outbox/idempotency/application/idempotency.service';
 import { IProcessedEventRepositorySymbol } from '@/modules/outbox/idempotency/domain/i.processed-event.repository';
-import { IOutboxQueueSymbol, IOutboxRepositorySymbol } from '@/shared/outbox';
+import { IOutboxQueueSymbol } from '@/shared/outbox/domain/queue/i.outbox.queue';
+import { IOutboxRepositorySymbol } from '@/shared/outbox/domain/repositories/i.outbox.repository';
 import { OutboxCommandHandlers } from '@/modules/outbox/application/commands';
 import { OutboxProducer } from '@/modules/outbox/application/outbox.producer';
 import { OutboxDispatcher } from '@/modules/outbox/application/outbox.dispatcher';

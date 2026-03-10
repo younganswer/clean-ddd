@@ -1,8 +1,11 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 import { DataEnvelope, ResponseHelper } from '@/common/responses';
-import { ApiDataResponse, ApiErrorEnvelopeResponse } from '@/common/swagger';
-import { GraphResponse } from '@/bff/graph/presentation/swagger';
+import {
+	ApiDataResponse,
+	ApiErrorEnvelopeResponse,
+} from '@/common/swagger/api-response.decorator';
+import { GraphResponse } from '@/bff/graph/presentation/swagger/graph.response';
 
 import { GetGraphBffQuery } from '@/bff/graph/application/queries/get-graph-bff.query';
 import { GetGraphBffQueryDto } from '@/bff/graph/presentation/graph-bff.dto';

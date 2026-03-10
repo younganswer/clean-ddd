@@ -1,8 +1,11 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 import { DataEnvelope, ResponseHelper } from '@/common/responses';
-import { ApiDataResponse, ApiErrorEnvelopeResponse } from '@/common/swagger';
-import { DashboardSummaryBffResponse } from '@/bff/dashboard/presentation/swagger';
+import {
+	ApiDataResponse,
+	ApiErrorEnvelopeResponse,
+} from '@/common/swagger/api-response.decorator';
+import { DashboardSummaryBffResponse } from '@/bff/dashboard/presentation/swagger/dashboard.response';
 import { GetDashboardSummaryBffQuery } from '@/bff/dashboard/application/queries/get-dashboard-summary-bff.query';
 
 @Controller('bff/dashboard')

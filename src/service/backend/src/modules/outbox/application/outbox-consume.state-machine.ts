@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { createRetryAt } from '@/modules/outbox/application/outbox-error.util';
-import { OutboxEvent, OutboxEventStatus } from '@/shared/outbox';
+import { OutboxEvent } from '@/shared/outbox/domain/entities/outbox-event.entity';
+import { OutboxEventStatus } from '@/shared/outbox/domain/outbox-event-status.enum';
 
 @Injectable()
 export class OutboxConsumeStateMachine {

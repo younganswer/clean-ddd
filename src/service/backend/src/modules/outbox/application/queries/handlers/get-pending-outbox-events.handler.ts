@@ -7,7 +7,7 @@ import {
 import {
 	IOutboxRepositorySymbol,
 	type IOutboxRepository,
-} from '@/shared/outbox';
+} from '@/shared/outbox/domain/repositories/i.outbox.repository';
 
 @QueryHandler(GetPendingOutboxEventsQuery)
 export class GetPendingOutboxEventsHandler implements IQueryHandler<
