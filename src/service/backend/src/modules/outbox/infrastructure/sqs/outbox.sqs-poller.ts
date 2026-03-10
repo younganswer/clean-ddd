@@ -1,7 +1,6 @@
 import {
 	Inject,
 	Injectable,
-	Logger,
 	OnModuleDestroy,
 	OnModuleInit,
 } from '@nestjs/common';
@@ -15,10 +14,13 @@ import { OutboxConsumer } from '@/modules/outbox/application/outbox.consumer';
 import { resolveOutboxTimeoutPolicy } from '@/modules/outbox/application/outbox-timeout-policy';
 import { isOutboxPollingEnabled } from '@/runtime-role';
 import { SQS_CLIENT, SQS_OUTBOX_QUEUE_URL } from '@/lib/queue/sqs.module';
+import {
+	resolveStructuredLogErrorMessage,
+	writeStructuredLog,
+} from '@/common/logging/structured-log';
 
 @Injectable()
 export class OutboxSqsPoller implements OnModuleInit, OnModuleDestroy {
-	private readonly logger = new Logger(OutboxSqsPoller.name);
 	private static readonly DEFAULT_VISIBILITY_TIMEOUT_SECONDS = 30;
 	private stopped = false;
 	private inFlight: Promise<void> | null = null;
@@ -38,7 +40,7 @@ export class OutboxSqsPoller implements OnModuleInit, OnModuleDestroy {
 				OutboxSqsPoller.DEFAULT_VISIBILITY_TIMEOUT_SECONDS * 1000,
 			defaultVisibilityTimeoutSeconds:
 				OutboxSqsPoller.DEFAULT_VISIBILITY_TIMEOUT_SECONDS,
-			logger: this.logger,
+			loggerContext: OutboxSqsPoller.name,
 		});
 
 		this.visibilityTimeoutSeconds = timeoutPolicy.visibilityTimeoutSeconds;
@@ -48,7 +50,9 @@ export class OutboxSqsPoller implements OnModuleInit, OnModuleDestroy {
 		const enabled = isOutboxPollingEnabled();
 		if (!enabled) return;
 
-		this.logger.log('polling enabled');
+		writeStructuredLog(OutboxSqsPoller.name, {
+			step: 'outbox_sqs_polling_enabled',
+		});
 		this.inFlight = this.loop();
 	}
 
@@ -85,9 +89,14 @@ export class OutboxSqsPoller implements OnModuleInit, OnModuleDestroy {
 					}),
 				);
 			} catch (error: unknown) {
-				const message =
-					error instanceof Error ? error.message : String(error);
-				this.logger.warn(`polling error: ${message}`);
+				writeStructuredLog(
+					OutboxSqsPoller.name,
+					{
+						step: 'outbox_sqs_polling_error',
+						error: resolveStructuredLogErrorMessage(error),
+					},
+					'warn',
+				);
 				await new Promise((r) => setTimeout(r, 1_000));
 			}
 		}

@@ -1,4 +1,4 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { DiscoveryService, Reflector } from '@nestjs/core';
 import {
 	OUTBOX_KNOWN_HANDLER_EVENT_TYPE_METADATA,
@@ -10,6 +10,7 @@ import {
 } from '@/lib/outbox/event-registry';
 import { OUTBOX_INFRA_ERRORS } from '@/shared/errors';
 import { InfrastructureErrorFactory } from '@/common/errors/base.error-factory';
+import { writeStructuredLog } from '@/common/logging/structured-log';
 
 type OutboxKnownHandlerEntry = {
 	eventType: OutboxEventType;
@@ -19,9 +20,6 @@ type OutboxKnownHandlerEntry = {
 
 @Injectable()
 export class OutboxKnownHandlerRegistryService implements OnModuleInit {
-	private readonly logger = new Logger(
-		OutboxKnownHandlerRegistryService.name,
-	);
 	private readonly handlersByEventType = new Map<
 		string,
 		OutboxKnownHandlerEntry
@@ -93,9 +91,10 @@ export class OutboxKnownHandlerRegistryService implements OnModuleInit {
 		}
 
 		if (this.handlersByEventType.size > 0) {
-			this.logger.log(
-				`registered outbox known handlers=${this.handlersByEventType.size}`,
-			);
+			writeStructuredLog(OutboxKnownHandlerRegistryService.name, {
+				step: 'outbox_known_handlers_registered',
+				handlerCount: this.handlersByEventType.size,
+			});
 		}
 	}
 

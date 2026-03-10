@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { UnitOfWork } from '@/lib/database/unit-of-work';
 import {
@@ -16,11 +16,10 @@ import {
 } from '@/modules/outbox/application/outbox-error.util';
 import { OUTBOX_INFRA_ERRORS } from '@/shared/errors';
 import { InfrastructureErrorFactory } from '@/common/errors/base.error-factory';
+import { writeStructuredLog } from '@/common/logging/structured-log';
 
 @Injectable()
 export class OutboxSweeper {
-	private readonly logger = new Logger(OutboxSweeper.name);
-
 	constructor(
 		private readonly moduleRef: ModuleRef,
 		@Inject(IOutboxRepositorySymbol)
@@ -74,8 +73,14 @@ export class OutboxSweeper {
 					continue;
 				} catch (error: unknown) {
 					const message = resolveErrorMessage(error);
-					this.logger.warn(
-						`direct consume failed: outboxId=${eventId} err=${message}`,
+					writeStructuredLog(
+						OutboxSweeper.name,
+						{
+							step: 'outbox_direct_consume_failed',
+							outboxId: eventId,
+							error: message,
+						},
+						'warn',
 					);
 					await this.uow.transaction(async () => {
 						const outboxEvent =
@@ -113,8 +118,14 @@ export class OutboxSweeper {
 				enqueued += 1;
 			} catch (error: unknown) {
 				const message = resolveErrorMessage(error);
-				this.logger.warn(
-					`enqueue failed: outboxId=${eventId} err=${message}`,
+				writeStructuredLog(
+					OutboxSweeper.name,
+					{
+						step: 'outbox_sweeper_enqueue_failed',
+						outboxId: eventId,
+						error: message,
+					},
+					'warn',
 				);
 				await this.uow.transaction(async () => {
 					const outboxEvent =

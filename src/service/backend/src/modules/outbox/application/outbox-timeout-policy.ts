@@ -1,6 +1,4 @@
-import { Logger } from '@nestjs/common';
-
-type WarnLogger = Pick<Logger, 'warn'>;
+import { writeStructuredLog } from '@/common/logging/structured-log';
 
 export interface OutboxTimeoutPolicy {
 	lockTimeoutMs: number;
@@ -12,7 +10,7 @@ export interface ResolveOutboxTimeoutPolicyOptions {
 	visibilityTimeoutSecondsRaw?: string;
 	defaultLockTimeoutMs: number;
 	defaultVisibilityTimeoutSeconds: number;
-	logger: WarnLogger;
+	loggerContext: string;
 }
 
 function parsePositiveInteger(raw: string | undefined): number | null {
@@ -33,13 +31,18 @@ export function resolveOutboxTimeoutPolicy(
 		visibilityTimeoutSecondsRaw,
 		defaultLockTimeoutMs,
 		defaultVisibilityTimeoutSeconds,
-		logger,
+		loggerContext,
 	} = options;
 
 	const parsedLockTimeoutMs = parsePositiveInteger(lockTimeoutRaw);
 	if (lockTimeoutRaw && parsedLockTimeoutMs === null) {
-		logger.warn(
-			`invalid OUTBOX_CONSUMER_LOCK_TIMEOUT_MS=${lockTimeoutRaw}; ignoring value`,
+		writeStructuredLog(
+			loggerContext,
+			{
+				step: 'outbox_consumer_lock_timeout_invalid',
+				value: lockTimeoutRaw,
+			},
+			'warn',
 		);
 	}
 
@@ -50,8 +53,13 @@ export function resolveOutboxTimeoutPolicy(
 		visibilityTimeoutSecondsRaw &&
 		parsedVisibilityTimeoutSeconds === null
 	) {
-		logger.warn(
-			`invalid OUTBOX_SQS_VISIBILITY_TIMEOUT_SECONDS=${visibilityTimeoutSecondsRaw}; ignoring value`,
+		writeStructuredLog(
+			loggerContext,
+			{
+				step: 'outbox_sqs_visibility_timeout_invalid',
+				value: visibilityTimeoutSecondsRaw,
+			},
+			'warn',
 		);
 	}
 
@@ -61,8 +69,15 @@ export function resolveOutboxTimeoutPolicy(
 	) {
 		const alignedLockTimeoutMs = parsedVisibilityTimeoutSeconds * 1000;
 		if (parsedLockTimeoutMs !== alignedLockTimeoutMs) {
-			logger.warn(
-				`timeout mismatch detected: OUTBOX_CONSUMER_LOCK_TIMEOUT_MS=${parsedLockTimeoutMs} and OUTBOX_SQS_VISIBILITY_TIMEOUT_SECONDS=${parsedVisibilityTimeoutSeconds}; aligning lock timeout to ${alignedLockTimeoutMs}`,
+			writeStructuredLog(
+				loggerContext,
+				{
+					step: 'outbox_timeout_mismatch_detected',
+					lockTimeoutMs: parsedLockTimeoutMs,
+					visibilityTimeoutSeconds: parsedVisibilityTimeoutSeconds,
+					alignedLockTimeoutMs,
+				},
+				'warn',
 			);
 		}
 		return {

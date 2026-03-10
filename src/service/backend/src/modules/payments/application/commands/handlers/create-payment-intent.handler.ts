@@ -21,6 +21,15 @@ import {
 import { UnitOfWork } from '@/lib/database/unit-of-work';
 import { ORDERING_APPLICATION_ERRORS } from '@/shared/errors';
 import { ApplicationErrorFactory } from '@/common/errors/base.error-factory';
+import {
+	measureAsyncStep,
+	runLoggedAsync,
+} from '@/common/logging/structured-log';
+
+interface CreatePaymentIntentExecution {
+	response: CreatePaymentIntentResult;
+	completionLog: Record<string, unknown>;
+}
 
 @CommandHandler(CreatePaymentIntentCommand)
 export class CreatePaymentIntentHandler implements ICommandHandler<CreatePaymentIntentCommand> {
@@ -37,65 +46,117 @@ export class CreatePaymentIntentHandler implements ICommandHandler<CreatePayment
 	async execute(
 		command: CreatePaymentIntentCommand,
 	): Promise<CreatePaymentIntentResult> {
-		return this.uow.transaction(async () => {
-			const orderSnapshot = await this.orderReader.findById(
-				command.orderId,
-			);
-			if (!orderSnapshot) {
-				throw ApplicationErrorFactory.create(
-					ORDERING_APPLICATION_ERRORS.ORDER_NOT_FOUND,
-					{ details: { id: command.orderId } },
-				);
-			}
+		const execution = await runLoggedAsync(
+			{
+				context: CreatePaymentIntentHandler.name,
+				args: [command] as const,
+				started: {
+					step: 'create_payment_intent_started',
+					getPayload: ([currentCommand]) => ({
+						orderId: currentCommand.orderId,
+						simulateOutcome: currentCommand.simulateOutcome,
+						simulateDelaySeconds:
+							currentCommand.simulateDelaySeconds,
+					}),
+				},
+				completed: {
+					step: 'create_payment_intent_completed',
+					durationFieldName: 'handlerTotalMs',
+					getPayload: (_args, result) => result.completionLog,
+				},
+			},
+			async (): Promise<CreatePaymentIntentExecution> =>
+				await this.uow.transaction(async () => {
+					const { result: orderSnapshot, durationMs: orderLookupMs } =
+						await measureAsyncStep(
+							async () =>
+								await this.orderReader.findById(
+									command.orderId,
+								),
+						);
+					if (!orderSnapshot) {
+						throw ApplicationErrorFactory.create(
+							ORDERING_APPLICATION_ERRORS.ORDER_NOT_FOUND,
+							{ details: { id: command.orderId } },
+						);
+					}
 
-			const payment = PaymentIntent.create({
-				orderId: command.orderId,
-				amount: orderSnapshot.amount,
-				currency: orderSnapshot.currency,
-			});
-			await this.paymentRepository.persist(payment);
-
-			await this.outboxProducer.publish(
-				new PaymentIntentCreatedEvent({
-					orderId: command.orderId,
-					paymentId: payment.id,
-				}),
-				{ messageGroupId: command.orderId },
-			);
-
-			const outcome = command.simulateOutcome ?? 'SUCCEEDED';
-			const delaySeconds = command.simulateDelaySeconds;
-
-			const event =
-				outcome === 'SUCCEEDED'
-					? new PaymentWebhookSucceededEvent({
-							orderId: command.orderId,
-							paymentId: payment.id,
-						})
-					: new PaymentWebhookFailedEvent({
-							orderId: command.orderId,
-							paymentId: payment.id,
+					const payment = PaymentIntent.create({
+						orderId: command.orderId,
+						amount: orderSnapshot.amount,
+						currency: orderSnapshot.currency,
+					});
+					const { durationMs: paymentPersistMs } =
+						await measureAsyncStep(async () => {
+							await this.paymentRepository.persist(payment);
 						});
 
-			const outboxId = await this.outboxProducer.publish(event, {
-				delaySeconds,
-				messageGroupId: command.orderId,
-			});
+					const { durationMs: paymentCreatedOutboxPublishMs } =
+						await measureAsyncStep(async () => {
+							await this.outboxProducer.publish(
+								new PaymentIntentCreatedEvent({
+									orderId: command.orderId,
+									paymentId: payment.id,
+								}),
+								{ messageGroupId: command.orderId },
+							);
+						});
 
-			const eventType =
-				outcome === 'SUCCEEDED'
-					? PaymentWebhookSucceededEvent.eventType
-					: PaymentWebhookFailedEvent.eventType;
+					const outcome = command.simulateOutcome ?? 'SUCCEEDED';
+					const delaySeconds = command.simulateDelaySeconds;
 
-			return {
-				paymentId: payment.id,
-				status: payment.status,
-				scheduled: {
-					eventType,
-					delaySeconds,
-					outboxId,
-				},
-			};
-		});
+					const event =
+						outcome === 'SUCCEEDED'
+							? new PaymentWebhookSucceededEvent({
+									orderId: command.orderId,
+									paymentId: payment.id,
+								})
+							: new PaymentWebhookFailedEvent({
+									orderId: command.orderId,
+									paymentId: payment.id,
+								});
+
+					const {
+						result: outboxId,
+						durationMs: webhookOutboxPublishMs,
+					} = await measureAsyncStep(
+						async () =>
+							await this.outboxProducer.publish(event, {
+								delaySeconds,
+								messageGroupId: command.orderId,
+							}),
+					);
+
+					const eventType =
+						outcome === 'SUCCEEDED'
+							? PaymentWebhookSucceededEvent.eventType
+							: PaymentWebhookFailedEvent.eventType;
+
+					return {
+						response: {
+							paymentId: payment.id,
+							status: payment.status,
+							scheduled: {
+								eventType,
+								delaySeconds,
+								outboxId,
+							},
+						},
+						completionLog: {
+							orderId: command.orderId,
+							paymentId: payment.id,
+							eventType,
+							outboxId,
+							simulateDelaySeconds: delaySeconds,
+							orderLookupMs,
+							paymentPersistMs,
+							paymentCreatedOutboxPublishMs,
+							webhookOutboxPublishMs,
+						},
+					};
+				}),
+		);
+
+		return execution.response;
 	}
 }

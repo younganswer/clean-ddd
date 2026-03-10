@@ -1,13 +1,12 @@
 import { MikroORM, RequestContext } from '@mikro-orm/core';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { DispatchOutboxEventCommand } from '@/modules/outbox/application/commands/dispatch-outbox-event.command';
 import { GetPendingOutboxEventsQuery } from '@/modules/outbox/application/queries/get-pending-outbox-events.query';
+import { writeStructuredLog } from '@/common/logging/structured-log';
 
 @Injectable()
 export class OutboxDispatcher {
-	private readonly logger = new Logger(OutboxDispatcher.name);
-
 	constructor(
 		private readonly orm: MikroORM,
 		private readonly queryBus: QueryBus,
@@ -15,6 +14,7 @@ export class OutboxDispatcher {
 	) {}
 
 	async dispatchPending(limit = 10, now = new Date()): Promise<number> {
+		const startedAt = Date.now();
 		const pendingEvents = await RequestContext.create(
 			this.orm.em.fork(),
 			async () => {
@@ -25,6 +25,8 @@ export class OutboxDispatcher {
 					id: event.id,
 					eventType: event.eventType,
 					payload: event.payload,
+					recordedAt: event.recordedAt,
+					nextAttemptAt: event.nextAttemptAt,
 				}));
 			},
 		);
@@ -62,6 +64,7 @@ export class OutboxDispatcher {
 		let dispatched = 0;
 		for (const event of pendingEvents) {
 			if (!event.id) continue;
+			const eventDispatchStartedAt = Date.now();
 
 			const messageGroupId = getMessageGroupId(
 				event.eventType,
@@ -76,11 +79,25 @@ export class OutboxDispatcher {
 					}),
 				);
 			});
+			writeStructuredLog(OutboxDispatcher.name, {
+				step: 'outbox_dispatch_forwarded',
+				outboxId: event.id,
+				eventType: event.eventType,
+				messageGroupId,
+				dispatchLagMs: now.getTime() - event.recordedAt.getTime(),
+				retryReadyLagMs: now.getTime() - event.nextAttemptAt.getTime(),
+				forwardMs: Date.now() - eventDispatchStartedAt,
+			});
 			dispatched += 1;
 		}
 
 		if (dispatched > 0) {
-			this.logger.log(`dispatched=${dispatched}`);
+			writeStructuredLog(OutboxDispatcher.name, {
+				step: 'outbox_dispatch_batch_completed',
+				dispatched,
+				limit,
+				totalMs: Date.now() - startedAt,
+			});
 		}
 
 		return dispatched;

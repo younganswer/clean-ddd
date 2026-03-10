@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { EventBus } from '@nestjs/cqrs';
 import type { SQSRecord } from 'aws-lambda';
 import { UnitOfWork } from '@/lib/database/unit-of-work';
@@ -12,10 +12,10 @@ import { resolveErrorMessage } from '@/modules/outbox/application/outbox-error.u
 import { OutboxKnownHandlerRegistryService } from '@/modules/outbox/application/outbox-known-handler.registry.service';
 import { OutboxConsumeStateMachine } from '@/modules/outbox/application/outbox-consume.state-machine';
 import { resolveOutboxTimeoutPolicy } from '@/modules/outbox/application/outbox-timeout-policy';
+import { writeStructuredLog } from '@/common/logging/structured-log';
 
 @Injectable()
 export class OutboxConsumer {
-	private readonly logger = new Logger(OutboxConsumer.name);
 	private readonly consumerName = 'OutboxConsumer';
 	private static readonly DEFAULT_LOCK_TIMEOUT_MS = 120_000;
 	private readonly lockTimeoutMs: number;
@@ -37,7 +37,7 @@ export class OutboxConsumer {
 			defaultVisibilityTimeoutSeconds: Math.floor(
 				OutboxConsumer.DEFAULT_LOCK_TIMEOUT_MS / 1000,
 			),
-			logger: this.logger,
+			loggerContext: OutboxConsumer.name,
 		});
 
 		this.lockTimeoutMs = timeoutPolicy.lockTimeoutMs;
@@ -57,37 +57,43 @@ export class OutboxConsumer {
 		try {
 			const parsed = JSON.parse(record.body) as { outboxId?: string };
 			if (!parsed.outboxId) {
-				this.logger.warn('invalid message body (missing outboxId)');
+				writeStructuredLog(
+					OutboxConsumer.name,
+					{ step: 'outbox_message_body_missing_outbox_id' },
+					'warn',
+				);
 				return null;
 			}
 			return parsed.outboxId;
 		} catch {
-			this.logger.warn('invalid message body (not json)');
+			writeStructuredLog(
+				OutboxConsumer.name,
+				{ step: 'outbox_message_body_invalid_json' },
+				'warn',
+			);
 			return null;
 		}
 	}
 
 	private async tryLockOutbox(outboxId: string): Promise<boolean> {
+		const startedAt = Date.now();
 		const locked = await this.outboxRepository.lock(
 			outboxId,
 			new Date(Date.now() + this.lockTimeoutMs),
 		);
 		if (!locked) {
-			this.logger.log(
-				JSON.stringify({
-					step: 'outbox_lock_skipped',
-					outboxId,
-				}),
-			);
+			writeStructuredLog(OutboxConsumer.name, {
+				step: 'outbox_lock_skipped',
+				outboxId,
+			});
 			return false;
 		}
 
-		this.logger.log(
-			JSON.stringify({
-				step: 'outbox_locked',
-				outboxId,
-			}),
-		);
+		writeStructuredLog(OutboxConsumer.name, {
+			step: 'outbox_locked',
+			outboxId,
+			lockMs: Date.now() - startedAt,
+		});
 		return true;
 	}
 
@@ -111,11 +117,13 @@ export class OutboxConsumer {
 				const outboxEvent =
 					await this.outboxRepository.findById(outboxId);
 				if (!outboxEvent) {
-					this.logger.warn(
-						JSON.stringify({
+					writeStructuredLog(
+						OutboxConsumer.name,
+						{
 							step: 'outbox_event_missing_during_failure_recovery',
 							outboxId,
-						}),
+						},
+						'warn',
 					);
 					await this.outboxRepository.unlock(outboxId);
 					return;
@@ -126,13 +134,15 @@ export class OutboxConsumer {
 					message,
 				);
 				await this.outboxRepository.persist(outboxEvent);
-				this.logger.error(
-					JSON.stringify({
+				writeStructuredLog(
+					OutboxConsumer.name,
+					{
 						step: 'outbox_consume_failed',
 						outboxId,
 						eventType: outboxEvent.eventType,
 						error: message,
-					}),
+					},
+					'error',
 				);
 
 				try {
@@ -141,13 +151,15 @@ export class OutboxConsumer {
 						outboxId,
 					);
 				} catch (releaseError: unknown) {
-					this.logger.error(
-						JSON.stringify({
+					writeStructuredLog(
+						OutboxConsumer.name,
+						{
 							step: 'outbox_idempotency_release_failed',
 							outboxId,
 							eventType: outboxEvent.eventType,
 							error: resolveErrorMessage(releaseError),
-						}),
+						},
+						'error',
 					);
 				}
 			},
@@ -158,48 +170,67 @@ export class OutboxConsumer {
 	private async consumeLockedOutboxWithTransaction(
 		outboxId: string,
 	): Promise<void> {
+		const consumeStartedAt = Date.now();
 		await this.uow.transaction(async () => {
+			const loadStartedAt = Date.now();
 			const outboxEvent = await this.outboxRepository.findById(outboxId);
+			const loadOutboxMs = Date.now() - loadStartedAt;
 			if (!outboxEvent) {
-				this.logger.warn(
-					JSON.stringify({
+				writeStructuredLog(
+					OutboxConsumer.name,
+					{
 						step: 'outbox_event_missing',
 						outboxId,
-					}),
+					},
+					'warn',
 				);
 				await this.outboxRepository.unlock(outboxId);
 				return;
 			}
+
+			const eventAgeMs =
+				consumeStartedAt - outboxEvent.recordedAt.getTime();
+			const publishedLagMs = outboxEvent.publishedAt
+				? consumeStartedAt - outboxEvent.publishedAt.getTime()
+				: null;
 
 			if (!this.consumeStateMachine.isDispatchable(outboxEvent)) {
-				this.logger.log(
-					JSON.stringify({
-						step: 'outbox_status_not_dispatchable',
-						outboxId,
-						status: outboxEvent.status,
-					}),
-				);
+				writeStructuredLog(OutboxConsumer.name, {
+					step: 'outbox_status_not_dispatchable',
+					outboxId,
+					status: outboxEvent.status,
+				});
 				await this.outboxRepository.unlock(outboxId);
 				return;
 			}
 
+			const claimStartedAt = Date.now();
 			const claimed = await this.idempotencyService.claim(
 				this.consumerName,
 				outboxId,
 			);
+			const idempotencyClaimMs = Date.now() - claimStartedAt;
 			if (!claimed) {
-				this.logger.log(
-					JSON.stringify({
-						step: 'outbox_duplicate_claim',
-						outboxId,
-						eventType: outboxEvent.eventType,
-					}),
-				);
+				writeStructuredLog(OutboxConsumer.name, {
+					step: 'outbox_duplicate_claim',
+					outboxId,
+					eventType: outboxEvent.eventType,
+				});
 				this.consumeStateMachine.markDuplicateClaimConflict(
 					outboxEvent,
 				);
 				await this.outboxRepository.persist(outboxEvent);
 				await this.outboxRepository.unlock(outboxId);
+				writeStructuredLog(OutboxConsumer.name, {
+					step: 'outbox_duplicate_claim_completed',
+					outboxId,
+					eventType: outboxEvent.eventType,
+					loadOutboxMs,
+					idempotencyClaimMs,
+					eventAgeMs,
+					publishedLagMs,
+					consumeTotalMs: Date.now() - consumeStartedAt,
+				});
 				return;
 			}
 
@@ -208,12 +239,14 @@ export class OutboxConsumer {
 				outboxEvent.payload,
 			);
 			if (!event) {
-				this.logger.warn(
-					JSON.stringify({
+				writeStructuredLog(
+					OutboxConsumer.name,
+					{
 						step: 'outbox_unknown_event_type',
 						outboxId,
 						eventType: outboxEvent.eventType,
-					}),
+					},
+					'warn',
 				);
 				this.consumeStateMachine.markUnknownEventTypeFailure(
 					outboxEvent,
@@ -222,30 +255,37 @@ export class OutboxConsumer {
 				return;
 			}
 
+			const handlerStartedAt = Date.now();
 			const dispatched = await this.dispatchKnownEvent(
 				event,
 				outboxEvent.eventType,
 			);
-			this.logger.log(
-				JSON.stringify({
-					step: 'outbox_event_dispatched',
-					outboxId,
-					eventType: outboxEvent.eventType,
-					mode: dispatched ? 'known-handler' : 'event-bus',
-				}),
-			);
+			const handlerDispatchMs = Date.now() - handlerStartedAt;
+			writeStructuredLog(OutboxConsumer.name, {
+				step: 'outbox_event_dispatched',
+				outboxId,
+				eventType: outboxEvent.eventType,
+				mode: dispatched ? 'known-handler' : 'event-bus',
+			});
 			if (!dispatched) {
 				this.eventBus.publish(event);
 			}
 			this.consumeStateMachine.markConsumed(outboxEvent);
+			const persistStartedAt = Date.now();
 			await this.outboxRepository.persist(outboxEvent);
-			this.logger.log(
-				JSON.stringify({
-					step: 'outbox_marked_consumed',
-					outboxId,
-					eventType: outboxEvent.eventType,
-				}),
-			);
+			const persistFinalStateMs = Date.now() - persistStartedAt;
+			writeStructuredLog(OutboxConsumer.name, {
+				step: 'outbox_marked_consumed',
+				outboxId,
+				eventType: outboxEvent.eventType,
+				loadOutboxMs,
+				idempotencyClaimMs,
+				handlerDispatchMs,
+				persistFinalStateMs,
+				eventAgeMs,
+				publishedLagMs,
+				consumeTotalMs: Date.now() - consumeStartedAt,
+			});
 		});
 	}
 
@@ -255,12 +295,10 @@ export class OutboxConsumer {
 			return;
 		}
 
-		this.logger.log(
-			JSON.stringify({
-				step: 'outbox_consume_received',
-				outboxId,
-			}),
-		);
+		writeStructuredLog(OutboxConsumer.name, {
+			step: 'outbox_consume_received',
+			outboxId,
+		});
 
 		const locked = await this.tryLockOutbox(outboxId);
 		if (!locked) {
@@ -272,19 +310,19 @@ export class OutboxConsumer {
 		} catch (error) {
 			try {
 				await this.recoverFailureWithTransaction(outboxId, error);
-				this.logger.log(
-					JSON.stringify({
-						step: 'outbox_unlocked_after_failure',
-						outboxId,
-					}),
-				);
+				writeStructuredLog(OutboxConsumer.name, {
+					step: 'outbox_unlocked_after_failure',
+					outboxId,
+				});
 			} catch (recoveryError: unknown) {
-				this.logger.error(
-					JSON.stringify({
+				writeStructuredLog(
+					OutboxConsumer.name,
+					{
 						step: 'outbox_failure_recovery_failed',
 						outboxId,
 						error: resolveErrorMessage(recoveryError),
-					}),
+					},
+					'error',
 				);
 				try {
 					await this.unlockWithTransaction(outboxId);
