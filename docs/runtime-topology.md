@@ -68,6 +68,27 @@ graph LR
 <br/>
 <br/>
 
+### Outbox Worker 운영 기본값
+
+- AWS 배포 기본값에서 outbox dispatch scheduler Lambda는 `rate(1 minute)`로 동작합니다.
+- 즉, Application이 outbox row를 기록한 직후 바로 SQS로 전달되지 않을 수 있으며, 다음 scheduler tick까지 최대 약 1분 대기할 수 있습니다.
+- 이 지연은 현재 운영 모델에서 의도된 동작입니다. 기본값은 저지연보다 전달 경로 분리와 운영 단순성에 무게를 둡니다.
+- 관련 설정 위치:
+    - SAM 루트 파라미터: `src/infra/sam/template.yaml`
+    - Worker stack 파라미터/이벤트 스케줄: `src/infra/sam/stacks/worker-stack.yaml`
+
+### 로그 위치
+
+- `outbox-consumer` 로그는 SQS consumer Lambda 실행 로그입니다. `OutboxConsumer`, known handler, 후속 command handler 로그가 여기에 함께 남습니다.
+- `outbox-dispatch` 로그는 scheduler Lambda 실행 로그입니다. `OutboxDispatcher`와 `DispatchOutboxEventHandler` 로그는 이 로그 그룹에서 확인해야 합니다.
+- 따라서 fulfillment/shipment 처리가 consumer 경로에서 실행되면 shipment 완료 로그도 `outbox-consumer` 로그 그룹에서 보이는 것이 정상입니다.
+- 반대로 dispatcher 로그가 `outbox-consumer`에 보이지 않는 것도 정상입니다. 실행 Lambda가 다르기 때문입니다.
+- `outbox-dispatch` 로그 그룹 자체가 비어 있다면 정상으로 보기 어렵습니다. scheduler Lambda invocation 자체가 없거나, 보고 있는 함수/리전/환경이 다를 가능성을 먼저 확인해야 합니다.
+- 현재 코드 기준으로 scheduler Lambda는 invocation마다 `outbox_dispatch_invoked` / `outbox_dispatch_completed` 또는 `outbox_dispatch_failed`를 남기므로, 이 로그조차 없다면 EventBridge schedule 연결 또는 Lambda invocation 경로를 우선 점검해야 합니다.
+
+<br/>
+<br/>
+
 ## 실행 정책
 
 - HTTP, cron, queue 역할은 진입점만 다르고 도메인 규칙은 동일한 경계를 사용합니다.

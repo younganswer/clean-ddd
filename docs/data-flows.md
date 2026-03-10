@@ -46,6 +46,12 @@ sequenceDiagram
   Dispatcher->>DB: mark as dispatched
 ```
 
+운영 기본값:
+
+- AWS 배포에서는 outbox dispatcher가 scheduler Lambda로 실행되며 기본 스케줄은 `rate(1 minute)`입니다.
+- 따라서 outbox row가 기록된 시점과 실제 SQS enqueue 시점 사이에는 최대 약 1분의 의도된 대기 시간이 생길 수 있습니다.
+- 이 구간은 `OutboxDispatcher` 로그의 `dispatchLagMs`나 `OutboxConsumer` 로그의 `eventAgeMs`로 관찰할 수 있습니다.
+
 <br/>
 <br/>
 
@@ -68,9 +74,15 @@ sequenceDiagram
 
 실제 구현은 다음 컴포넌트로 분리됩니다.
 
-- Producer: outbox 저장 + queue enqueue (`OutboxProducer`)
+- Producer: outbox 저장 (`OutboxProducer`)
+- Dispatcher: pending outbox 조회 + SQS enqueue (`OutboxDispatcher`, `DispatchOutboxEventHandler`)
 - Poller: SQS long polling + 메시지 delete (`OutboxSqsPoller`)
 - Consumer: lock/멱등성/이벤트 발행/실패 기록 (`OutboxConsumer`)
+
+로그 해석 팁:
+
+- `PaymentFulfillmentRequestedHandler`, `ReserveInventoryForOrderHandler`, `CreateShipmentForOrderHandler` 같은 후속 처리 로그는 consumer 실행 컨텍스트 안에서 남기 때문에 `outbox-consumer` 로그 그룹에서 확인하는 것이 정상입니다.
+- `OutboxDispatcher` 로그는 scheduler Lambda인 `outbox-dispatch` 로그 그룹에서 따로 확인해야 합니다.
 
 <br/>
 <br/>
