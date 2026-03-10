@@ -1,10 +1,19 @@
 import { ProcessedEvent } from '@/modules/outbox/idempotency/domain/entities/processed-event.entity';
 
+type ProcessedEventFindableFields = Pick<
+	ProcessedEvent,
+	'consumerName' | 'eventId'
+>;
+
+export type ProcessedEventFindCriteria = Partial<ProcessedEventFindableFields>;
+
 export interface IProcessedEventRepository {
-	find(consumerName: string, eventId: string): Promise<ProcessedEvent | null>;
-	claim(consumerName: string, eventId: string): Promise<boolean>;
+	findByCriteria(
+		criteria: ProcessedEventFindCriteria,
+	): Promise<ProcessedEvent[]>;
+	claim(event: ProcessedEvent): Promise<boolean>;
 	persist(event: ProcessedEvent): Promise<void>;
-	release(consumerName: string, eventId: string): Promise<void>;
+	release(event: ProcessedEvent): Promise<void>;
 }
 
 export const IProcessedEventRepositorySymbol = Symbol(

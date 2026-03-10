@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { ProcessedEvent } from '@/modules/outbox/idempotency/domain/entities/processed-event.entity';
 import {
 	IProcessedEventRepositorySymbol,
 	type IProcessedEventRepository,
@@ -12,10 +13,20 @@ export class IdempotencyService {
 	) {}
 
 	async claim(consumerName: string, eventId: string): Promise<boolean> {
-		return await this.processedEventRepository.claim(consumerName, eventId);
+		const processedEvent = ProcessedEvent.create({
+			consumerName,
+			eventId,
+		});
+
+		return await this.processedEventRepository.claim(processedEvent);
 	}
 
 	async release(consumerName: string, eventId: string): Promise<void> {
-		await this.processedEventRepository.release(consumerName, eventId);
+		const processedEvent = ProcessedEvent.create({
+			consumerName,
+			eventId,
+		});
+
+		await this.processedEventRepository.release(processedEvent);
 	}
 }

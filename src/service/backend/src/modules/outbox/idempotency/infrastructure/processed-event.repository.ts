@@ -1,9 +1,11 @@
 import { RequestContext } from '@mikro-orm/core';
 import { EntityManager } from '@mikro-orm/postgresql';
 import { Injectable } from '@nestjs/common';
-import { randomUUID } from 'node:crypto';
 import { ProcessedEvent } from '@/modules/outbox/idempotency/domain/entities/processed-event.entity';
-import type { IProcessedEventRepository } from '@/modules/outbox/idempotency/domain/i.processed-event.repository';
+import {
+	type IProcessedEventRepository,
+	type ProcessedEventFindCriteria,
+} from '@/modules/outbox/idempotency/domain/i.processed-event.repository';
 import { ProcessedEventMapper } from '@/modules/outbox/idempotency/infrastructure/processed-event.mapper';
 import { ProcessedEventSchema } from '@/modules/outbox/idempotency/infrastructure/processed-event.schema';
 
@@ -21,24 +23,40 @@ export class ProcessedEventRepository implements IProcessedEventRepository {
 		);
 	}
 
-	async find(
-		consumerName: string,
-		eventId: string,
-	): Promise<ProcessedEvent | null> {
-		const normalizedConsumerName = String(consumerName ?? '').trim();
-		const normalizedEventId = String(eventId ?? '').trim();
+	private normalizeFindCriteria(
+		criteria: ProcessedEventFindCriteria,
+	): Partial<Pick<ProcessedEventSchema, 'consumerName' | 'eventId'>> {
+		const normalizedConsumerName = String(
+			criteria.consumerName ?? '',
+		).trim();
+		const normalizedEventId = String(criteria.eventId ?? '').trim();
+		const normalizedCriteria: Partial<
+			Pick<ProcessedEventSchema, 'consumerName' | 'eventId'>
+		> = {};
 
-		if (!normalizedConsumerName || !normalizedEventId) {
-			return null;
+		if (normalizedConsumerName) {
+			normalizedCriteria.consumerName = normalizedConsumerName;
+		}
+		if (normalizedEventId) {
+			normalizedCriteria.eventId = normalizedEventId;
+		}
+
+		return normalizedCriteria;
+	}
+
+	async findByCriteria(
+		criteria: ProcessedEventFindCriteria,
+	): Promise<ProcessedEvent[]> {
+		const normalizedCriteria = this.normalizeFindCriteria(criteria);
+
+		if (Object.keys(normalizedCriteria).length === 0) {
+			return [];
 		}
 
 		const em = this.emForContext();
-		const found = await em.findOne(ProcessedEventSchema, {
-			consumerName: normalizedConsumerName,
-			eventId: normalizedEventId,
-		});
+		const found = await em.find(ProcessedEventSchema, normalizedCriteria);
 
-		return found ? this.mapper.toDomain(found) : null;
+		return found.map((row) => this.mapper.toDomain(row));
 	}
 
 	async persist(event: ProcessedEvent): Promise<void> {
@@ -59,23 +77,18 @@ export class ProcessedEventRepository implements IProcessedEventRepository {
 		}
 	}
 
-	async claim(consumerName: string, eventId: string): Promise<boolean> {
-		const normalizedConsumerName = String(consumerName ?? '').trim();
-		const normalizedEventId = String(eventId ?? '').trim();
-
-		if (!normalizedConsumerName || !normalizedEventId) {
-			return false;
-		}
-
+	async claim(event: ProcessedEvent): Promise<boolean> {
 		const em = this.emForContext();
 		const now = new Date();
+		const schema = this.mapper.toSchema(event);
+
 		try {
 			await em.insert(ProcessedEventSchema, {
-				uuid: randomUUID(),
+				uuid: schema.uuid,
+				consumerName: schema.consumerName,
+				eventId: schema.eventId,
 				createdAt: now,
 				updatedAt: now,
-				consumerName: normalizedConsumerName,
-				eventId: normalizedEventId,
 			});
 			return true;
 		} catch (error: unknown) {
@@ -103,18 +116,12 @@ export class ProcessedEventRepository implements IProcessedEventRepository {
 		}
 	}
 
-	async release(consumerName: string, eventId: string): Promise<void> {
-		const normalizedConsumerName = String(consumerName ?? '').trim();
-		const normalizedEventId = String(eventId ?? '').trim();
-
-		if (!normalizedConsumerName || !normalizedEventId) {
-			return;
-		}
-
+	async release(event: ProcessedEvent): Promise<void> {
 		const em = this.emForContext();
+		const schema = this.mapper.toSchema(event);
 		await em.nativeDelete(ProcessedEventSchema, {
-			consumerName: normalizedConsumerName,
-			eventId: normalizedEventId,
+			consumerName: schema.consumerName,
+			eventId: schema.eventId,
 		});
 	}
 }
