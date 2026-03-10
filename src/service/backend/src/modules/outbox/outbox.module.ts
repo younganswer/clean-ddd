@@ -17,6 +17,8 @@ import { OutboxQueue } from '@/modules/outbox/infrastructure/queue/outbox.queue'
 import { OutboxMapper } from '@/modules/outbox/infrastructure/mappers/outbox.mapper';
 import { OutboxKnownHandlerRegistryService } from '@/modules/outbox/application/outbox-known-handler.registry.service';
 import { IOutboxProducerSymbol } from '@/shared/outbox/domain/producers/i.outbox.producer';
+import { OutboxEventReaderProvider } from '@/modules/outbox/infrastructure/readers/outbox-event.reader';
+import { IOutboxEventReaderSymbol } from '@/modules/outbox/domains/readers/i.outbox-event.reader';
 
 @Module({
 	imports: [CqrsModule, DiscoveryModule, SqsModule],
@@ -42,6 +44,7 @@ import { IOutboxProducerSymbol } from '@/shared/outbox/domain/producers/i.outbox
 		OutboxKnownHandlerRegistryService,
 		OutboxRepository,
 		OutboxMapper,
+		OutboxEventReaderProvider,
 		...OutboxCommandHandlers,
 		...OutboxQueryHandlers,
 		{
@@ -58,6 +61,7 @@ import { IOutboxProducerSymbol } from '@/shared/outbox/domain/producers/i.outbox
 		IdempotencyService,
 		IOutboxQueueSymbol,
 		IOutboxRepositorySymbol,
+		IOutboxEventReaderSymbol,
 	],
 })
 export class OutboxModule {}

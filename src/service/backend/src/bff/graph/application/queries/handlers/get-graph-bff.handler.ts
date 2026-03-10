@@ -1,20 +1,32 @@
-import { Injectable } from '@nestjs/common';
-import { IQueryHandler, QueryBus, QueryHandler } from '@nestjs/cqrs';
-
-import { GetOrderQuery } from '@/modules/ordering/application/queries/get-order.query';
+import { Inject, Injectable } from '@nestjs/common';
+import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import type { OrderResult } from '@/modules/ordering/domains/readers/order.result';
-import { GetOrdersByUserIdQuery } from '@/modules/ordering/application/queries/get-orders-by-user-subject-id.query';
+import {
+	IOrderReaderSymbol,
+	type IOrderReader,
+} from '@/modules/ordering/domains/readers/i.order.reader';
 
-import { GetShipmentQuery } from '@/modules/shipping/application/queries/get-shipment.query';
 import type { ShipmentResult } from '@/modules/shipping/domains/readers/shipment.result';
-import { GetShipmentByOrderQuery } from '@/modules/shipping/application/queries/get-shipment-by-order.query';
+import {
+	IShipmentReaderSymbol,
+	type IShipmentReader,
+} from '@/modules/shipping/domains/readers/i.shipment.reader';
 
-import { GetPaymentIntentQuery } from '@/modules/payments/application/queries/get-payment-intent.query';
 import type { PaymentIntentResult } from '@/modules/payments/domains/readers/payment-intent.result';
+import {
+	IPaymentIntentReaderSymbol,
+	type IPaymentIntentReader,
+} from '@/modules/payments/domains/readers/i.payment-intent.reader';
 
-import { GetUserProfileQuery } from '@/modules/users/application/queries/get-user-profile.query';
 import type { UserProfileResult } from '@/modules/users/domains/readers/user-profile.result';
-import { GetRecentOutboxEventsQuery } from '@/modules/outbox/application/queries/get-recent-outbox-events.query';
+import {
+	IUserReaderSymbol,
+	type IUserReader,
+} from '@/modules/users/domains/readers/i.user.reader';
+import {
+	IOutboxEventReaderSymbol,
+	type IOutboxEventReader,
+} from '@/modules/outbox/domains/readers/i.outbox-event.reader';
 
 import {
 	GetGraphBffQuery,
@@ -58,7 +70,18 @@ const normalizeId = (value: unknown): string => {
 @QueryHandler(GetGraphBffQuery)
 @Injectable()
 export class GetGraphBffHandler implements IQueryHandler<GetGraphBffQuery> {
-	constructor(private readonly queryBus: QueryBus) {}
+	constructor(
+		@Inject(IOrderReaderSymbol)
+		private readonly orderReader: IOrderReader,
+		@Inject(IShipmentReaderSymbol)
+		private readonly shipmentReader: IShipmentReader,
+		@Inject(IPaymentIntentReaderSymbol)
+		private readonly paymentIntentReader: IPaymentIntentReader,
+		@Inject(IUserReaderSymbol)
+		private readonly userReader: IUserReader,
+		@Inject(IOutboxEventReaderSymbol)
+		private readonly outboxEventReader: IOutboxEventReader,
+	) {}
 
 	async execute(query: GetGraphBffQuery): Promise<GraphView | null> {
 		const rootType = query.rootType;
@@ -180,9 +203,8 @@ export class GetGraphBffHandler implements IQueryHandler<GetGraphBffQuery> {
 			const cached = userProfileCache.get(id);
 			if (cached) return cached;
 
-			const profile = await this.queryBus.execute(
-				new GetUserProfileQuery({ userId: id }),
-			);
+			const profile = await this.userReader.findById(id);
+			if (!profile) return null;
 
 			userProfileCache.set(id, profile);
 			return profile;
@@ -281,9 +303,7 @@ export class GetGraphBffHandler implements IQueryHandler<GetGraphBffQuery> {
 		): Promise<OrderResult | null> => {
 			const id = normalizeId(orderId);
 			if (!id) return null;
-			return await this.queryBus.execute(
-				new GetOrderQuery({ orderId: id }),
-			);
+			return await this.orderReader.findById(id);
 		};
 
 		const fetchShipmentById = async (
@@ -291,9 +311,7 @@ export class GetGraphBffHandler implements IQueryHandler<GetGraphBffQuery> {
 		): Promise<ShipmentResult | null> => {
 			const id = normalizeId(shipmentId);
 			if (!id) return null;
-			return await this.queryBus.execute(
-				new GetShipmentQuery({ shipmentId: id }),
-			);
+			return await this.shipmentReader.findById(id);
 		};
 
 		const fetchShipmentByOrderId = async (
@@ -301,9 +319,7 @@ export class GetGraphBffHandler implements IQueryHandler<GetGraphBffQuery> {
 		): Promise<ShipmentResult | null> => {
 			const id = normalizeId(orderId);
 			if (!id) return null;
-			return await this.queryBus.execute(
-				new GetShipmentByOrderQuery({ orderId: id }),
-			);
+			return await this.shipmentReader.findByOrderId(id);
 		};
 
 		const fetchPayment = async (
@@ -311,9 +327,7 @@ export class GetGraphBffHandler implements IQueryHandler<GetGraphBffQuery> {
 		): Promise<PaymentIntentResult | null> => {
 			const id = normalizeId(paymentId);
 			if (!id) return null;
-			return await this.queryBus.execute(
-				new GetPaymentIntentQuery({ paymentId: id }),
-			);
+			return await this.paymentIntentReader.findById(id);
 		};
 
 		const expandEntity = async (ref: EntityRef): Promise<void> => {
@@ -331,12 +345,10 @@ export class GetGraphBffHandler implements IQueryHandler<GetGraphBffQuery> {
 						// ignore (fallback label=userId)
 					}
 
-					const list = await this.queryBus.execute(
-						new GetOrdersByUserIdQuery({
-							userId,
-							limit: 200,
-							offset: 0,
-						}),
+					const list = await this.orderReader.findByUserId(
+						userId,
+						200,
+						0,
 					);
 
 					for (const o of list) addOrder(o);
@@ -551,13 +563,9 @@ export class GetGraphBffHandler implements IQueryHandler<GetGraphBffQuery> {
 			const orderIds = new Set(knownOrders);
 			const paymentIds = new Set(knownPayments);
 
-			const recent = await this.queryBus.execute(
-				new GetRecentOutboxEventsQuery({
-					limit: maxEvents,
-				}),
-			);
+			const recent = await this.outboxEventReader.findRecent(maxEvents);
 
-			for (const row of recent.events) {
+			for (const row of recent) {
 				const eventType = String(row.eventType ?? '');
 				if (eventType.startsWith('INVENTORY.')) continue;
 

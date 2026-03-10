@@ -1,5 +1,5 @@
 import { CommandBus, EventsHandler, IEventHandler } from '@nestjs/cqrs';
-import { OutboxKnownHandler } from '@/common/outbox/outbox-known-handler.decorator';
+import { OutboxKnownHandler } from '@/lib/outbox/outbox-known-handler.decorator';
 import { PaymentIntentCreatedEvent } from '@/contracts/payments/events/payment-intent-created.event';
 import { AttachPaymentToOrderCommand } from '@/modules/ordering/application/commands/attach-payment-to-order.command';
 

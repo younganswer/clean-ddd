@@ -1,14 +1,11 @@
 import { Inject } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import {
-	IOutboxRepositorySymbol,
-	type IOutboxRepository,
-} from '@/shared/outbox/domain/repositories/i.outbox.repository';
+	IOutboxEventReaderSymbol,
+	type IOutboxEventReader,
+} from '@/modules/outbox/domains/readers/i.outbox-event.reader';
 import { GetRecentOutboxEventsQuery } from '@/modules/outbox/application/queries/get-recent-outbox-events.query';
-import {
-	GetRecentOutboxEventsResult,
-	type RecentOutboxEventResult,
-} from '@/modules/outbox/application/queries/get-recent-outbox-events.result';
+import { GetRecentOutboxEventsResult } from '@/modules/outbox/application/queries/get-recent-outbox-events.result';
 
 @QueryHandler(GetRecentOutboxEventsQuery)
 export class GetRecentOutboxEventsHandler implements IQueryHandler<
@@ -16,22 +13,15 @@ export class GetRecentOutboxEventsHandler implements IQueryHandler<
 	GetRecentOutboxEventsResult
 > {
 	constructor(
-		@Inject(IOutboxRepositorySymbol)
-		private readonly outboxRepository: IOutboxRepository,
+		@Inject(IOutboxEventReaderSymbol)
+		private readonly outboxEventReader: IOutboxEventReader,
 	) {}
 
 	async execute(
 		query: GetRecentOutboxEventsQuery,
 	): Promise<GetRecentOutboxEventsResult> {
-		const events = await this.outboxRepository.findRecent(query.limit);
-		const results: RecentOutboxEventResult[] = events.map((event) => ({
-			outboxId: event.id,
-			eventType: event.eventType,
-			payload: event.payload,
-			status: event.status,
-			recordedAt: event.recordedAt,
-		}));
-
-		return new GetRecentOutboxEventsResult(results);
+		return new GetRecentOutboxEventsResult(
+			await this.outboxEventReader.findRecent(query.limit),
+		);
 	}
 }

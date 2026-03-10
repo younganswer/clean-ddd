@@ -1,13 +1,5 @@
-import { OutboxEventStatus } from '@/shared/outbox/domain/outbox-event-status.enum';
-
-export type RecentOutboxEventResult = {
-	outboxId: string;
-	eventType: string;
-	payload: Record<string, unknown>;
-	status: OutboxEventStatus;
-	recordedAt: Date;
-};
+import type { OutboxEventResult } from '@/modules/outbox/domains/readers/outbox-event.result';
 
 export class GetRecentOutboxEventsResult {
-	constructor(readonly events: RecentOutboxEventResult[]) {}
+	constructor(readonly events: OutboxEventResult[]) {}
 }
