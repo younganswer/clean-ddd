@@ -1,7 +1,7 @@
-import { CommandBus, QueryBus } from '@nestjs/cqrs';
+import { CommandBus } from '@nestjs/cqrs';
 import { PaymentFulfillmentRequestedEvent } from '@/contracts/payments/events/payment-fulfillment-requested.event';
 import { ReserveInventoryForOrderCommand } from '@/modules/inventory/application/commands/reserve-inventory-for-order.command';
-import { GetOrderQuery } from '@/modules/ordering/application/queries/get-order.query';
+import type { IOrderReader } from '@/modules/ordering/domains/readers/i.order.reader';
 import { OrderStatus } from '@/modules/ordering/domains/enums/order-status.enum';
 import { CreateShipmentForOrderCommand } from '@/modules/shipping/application/commands/create-shipment-for-order.command';
 import { PaymentFulfillmentRequestedHandler } from '@/saga-orchestrator/fulfillment/payment-fulfillment-requested.event-handler';
@@ -13,29 +13,25 @@ describe('PaymentFulfillmentRequestedHandler', () => {
 			execute: commandExecute,
 		} as unknown as CommandBus;
 
-		const queryBus = {
-			execute: jest.fn((query: object) => {
-				if (query instanceof GetOrderQuery) {
-					return Promise.resolve({
-						orderId: 'order-1',
-						userId: 'user-1',
-						status: OrderStatus.PAID,
-						amount: 1000,
-						currency: 'KRW',
-						items: [
-							{ sku: 'sku-a', quantity: 1 },
-							{ sku: 'sku-b', quantity: 2 },
-						],
-						paymentId: 'payment-1',
-					});
-				}
-
-				return Promise.resolve(null);
-			}),
-		} as unknown as QueryBus;
+		const orderReader = {
+			findById: jest.fn(() =>
+				Promise.resolve({
+					orderId: 'order-1',
+					userId: 'user-1',
+					status: OrderStatus.PAID,
+					amount: 1000,
+					currency: 'KRW',
+					items: [
+						{ sku: 'sku-a', quantity: 1 },
+						{ sku: 'sku-b', quantity: 2 },
+					],
+					paymentId: 'payment-1',
+				}),
+			),
+		} as unknown as IOrderReader;
 
 		const handler = new PaymentFulfillmentRequestedHandler(
-			queryBus,
+			orderReader,
 			commandBus,
 		);
 
@@ -55,8 +51,8 @@ describe('PaymentFulfillmentRequestedHandler', () => {
 			execute: commandExecute,
 		} as unknown as CommandBus;
 
-		const queryBus = {
-			execute: jest.fn(() =>
+		const orderReader = {
+			findById: jest.fn(() =>
 				Promise.resolve({
 					orderId: 'order-empty',
 					userId: 'user-1',
@@ -67,10 +63,10 @@ describe('PaymentFulfillmentRequestedHandler', () => {
 					paymentId: 'payment-1',
 				}),
 			),
-		} as unknown as QueryBus;
+		} as unknown as IOrderReader;
 
 		const handler = new PaymentFulfillmentRequestedHandler(
-			queryBus,
+			orderReader,
 			commandBus,
 		);
 

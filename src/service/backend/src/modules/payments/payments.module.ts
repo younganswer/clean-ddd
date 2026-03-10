@@ -1,11 +1,13 @@
 import { forwardRef, Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { OutboxModule } from '@/modules/outbox/outbox.module';
+import { OrderingModule } from '@/modules/ordering/ordering.module';
 import { CreatePaymentIntentHandler } from '@/modules/payments/application/commands/handlers/create-payment-intent.handler';
 import { HandlePaymentWebhookSucceededHandler } from '@/modules/payments/application/commands/handlers/handle-payment-webhook-succeeded.handler';
 import { HandlePaymentWebhookFailedHandler } from '@/modules/payments/application/commands/handlers/handle-payment-webhook-failed.handler';
 import { GetPaymentIntentHandler } from '@/modules/payments/application/queries/handlers/get-payment-intent.handler';
 import { ListPaymentIntentsHandler } from '@/modules/payments/application/queries/handlers/list-payment-intents.handler';
+import { IPaymentIntentReaderSymbol } from '@/modules/payments/domains/readers/i.payment-intent.reader';
 import { IPaymentRepositorySymbol } from '@/modules/payments/domains/repositories/i.payment.repository';
 import { PaymentIntentReaderProvider } from '@/modules/payments/infrastructure/readers/payment-intent.reader';
 import { PaymentIntentMapper } from '@/modules/payments/infrastructure/mappers/payment-intent.mapper';
@@ -14,7 +16,7 @@ import { PaymentsController } from '@/modules/payments/presentation/payments.con
 import { PaymentIntentsController } from '@/modules/payments/presentation/payment-intents.controller';
 
 @Module({
-	imports: [CqrsModule, forwardRef(() => OutboxModule)],
+	imports: [CqrsModule, forwardRef(() => OutboxModule), OrderingModule],
 	controllers: [PaymentsController, PaymentIntentsController],
 	providers: [
 		PaymentIntentMapper,
@@ -30,5 +32,6 @@ import { PaymentIntentsController } from '@/modules/payments/presentation/paymen
 		GetPaymentIntentHandler,
 		ListPaymentIntentsHandler,
 	],
+	exports: [IPaymentIntentReaderSymbol],
 })
 export class PaymentsModule {}

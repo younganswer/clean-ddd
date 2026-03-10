@@ -1,10 +1,11 @@
-import { CommandBus, QueryBus } from '@nestjs/cqrs';
+import { CommandBus } from '@nestjs/cqrs';
 import { CreatePaymentIntentHandler } from '@/modules/payments/application/commands/handlers/create-payment-intent.handler';
 import { PaymentWebhookSucceededHandler } from '@/saga-orchestrator/webhooks/payment-webhook.event-handlers';
 import { AttachPaymentOnPaymentIntentCreatedHandler } from '@/modules/ordering/application/events/handlers/attach-payment-on-payment-intent-created.handler';
 import { MarkOrderPaidOnPaymentWebhookSucceededHandler } from '@/modules/ordering/application/events/handlers/mark-order-paid-on-payment-webhook-succeeded.handler';
 import { PaymentFulfillmentRequestedHandler } from '@/saga-orchestrator/fulfillment/payment-fulfillment-requested.event-handler';
 import type { IPaymentRepository } from '@/modules/payments/domains/repositories/i.payment.repository';
+import type { IOrderReader } from '@/modules/ordering/domains/readers/i.order.reader';
 import { PaymentIntent } from '@/modules/payments/domains/entities/aggregates/payment-intent/payment-intent.aggregate';
 import type { IOutboxProducer } from '@/shared/outbox/domain/producers/i.outbox.producer';
 import type { UnitOfWork } from '@/lib/database/unit-of-work';
@@ -18,7 +19,6 @@ import { AttachPaymentToOrderCommand } from '@/modules/ordering/application/comm
 import { MarkOrderPaidCommand } from '@/modules/ordering/application/commands/mark-order-paid.command';
 import type { OrderResult } from '@/modules/ordering/domains/readers/order.result';
 import { OrderStatus } from '@/modules/ordering/domains/enums/order-status.enum';
-import { GetOrderQuery } from '@/modules/ordering/application/queries/get-order.query';
 import { ReserveInventoryForOrderCommand } from '@/modules/inventory/application/commands/reserve-inventory-for-order.command';
 import { CreateShipmentForOrderCommand } from '@/modules/shipping/application/commands/create-shipment-for-order.command';
 
@@ -56,16 +56,11 @@ describe('Cross module flow (order -> payment -> inventory/shipping)', () => {
 			findRecent: () => Promise.resolve([]),
 		};
 
-		const queryBus = {
-			execute: jest.fn((query: object) => {
-				if (query instanceof GetOrderQuery) {
-					return Promise.resolve(
-						query.orderId === order.orderId ? order : null,
-					);
-				}
-				return Promise.resolve(null);
-			}),
-		} as unknown as QueryBus;
+		const orderReader = {
+			findById: jest.fn((id: string) =>
+				Promise.resolve(id === order.orderId ? order : null),
+			),
+		} as unknown as IOrderReader;
 
 		const publishedEvents: object[] = [];
 		const outboxProducer = {
@@ -104,9 +99,9 @@ describe('Cross module flow (order -> payment -> inventory/shipping)', () => {
 
 		const createPaymentIntentHandler = new CreatePaymentIntentHandler(
 			paymentRepository,
+			orderReader,
 			outboxProducer,
 			uow as UnitOfWork,
-			queryBus,
 		);
 
 		const createResult = await createPaymentIntentHandler.execute(
@@ -167,7 +162,7 @@ describe('Cross module flow (order -> payment -> inventory/shipping)', () => {
 		);
 
 		const paymentFulfillmentRequestedHandler =
-			new PaymentFulfillmentRequestedHandler(queryBus, commandBus);
+			new PaymentFulfillmentRequestedHandler(orderReader, commandBus);
 		await paymentFulfillmentRequestedHandler.handle(
 			fulfillmentRequestedEvent as PaymentFulfillmentRequestedEvent,
 		);

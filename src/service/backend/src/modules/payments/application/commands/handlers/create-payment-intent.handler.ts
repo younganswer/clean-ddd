@@ -1,13 +1,16 @@
 import { Inject } from '@nestjs/common';
-import { CommandHandler, ICommandHandler, QueryBus } from '@nestjs/cqrs';
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import {
 	IOutboxProducerSymbol,
 	type IOutboxProducer,
 } from '@/shared/outbox/domain/producers/i.outbox.producer';
 import { IPaymentRepositorySymbol } from '@/modules/payments/domains/repositories/i.payment.repository';
 import type { IPaymentRepository } from '@/modules/payments/domains/repositories/i.payment.repository';
+import {
+	IOrderReaderSymbol,
+	type IOrderReader,
+} from '@/modules/ordering/domains/readers/i.order.reader';
 import { PaymentIntent } from '@/modules/payments/domains/entities/aggregates/payment-intent/payment-intent.aggregate';
-import { GetOrderQuery } from '@/modules/ordering/application/queries/get-order.query';
 import { PaymentIntentCreatedEvent } from '@/contracts/payments/events/payment-intent-created.event';
 import { PaymentWebhookFailedEvent } from '@/contracts/payments/events/payment-webhook-failed.event';
 import { PaymentWebhookSucceededEvent } from '@/contracts/payments/events/payment-webhook-succeeded.event';
@@ -24,18 +27,19 @@ export class CreatePaymentIntentHandler implements ICommandHandler<CreatePayment
 	constructor(
 		@Inject(IPaymentRepositorySymbol)
 		private readonly paymentRepository: IPaymentRepository,
+		@Inject(IOrderReaderSymbol)
+		private readonly orderReader: IOrderReader,
 		@Inject(IOutboxProducerSymbol)
 		private readonly outboxProducer: IOutboxProducer,
 		private readonly uow: UnitOfWork,
-		private readonly queryBus: QueryBus,
 	) {}
 
 	async execute(
 		command: CreatePaymentIntentCommand,
 	): Promise<CreatePaymentIntentResult> {
 		return this.uow.transaction(async () => {
-			const orderSnapshot = await this.queryBus.execute(
-				new GetOrderQuery({ orderId: command.orderId }),
+			const orderSnapshot = await this.orderReader.findById(
+				command.orderId,
 			);
 			if (!orderSnapshot) {
 				throw ApplicationErrorFactory.create(
