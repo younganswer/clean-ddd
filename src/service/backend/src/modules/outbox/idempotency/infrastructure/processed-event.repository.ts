@@ -68,9 +68,12 @@ export class ProcessedEventRepository implements IProcessedEventRepository {
 		}
 
 		const em = this.emForContext();
+		const now = new Date();
 		try {
 			await em.insert(ProcessedEventSchema, {
 				uuid: randomUUID(),
+				createdAt: now,
+				updatedAt: now,
 				consumerName: normalizedConsumerName,
 				eventId: normalizedEventId,
 			});
