@@ -8,6 +8,10 @@ type UnitOfWorkStore = {
 	depth: number;
 };
 
+type TransactionOptions = {
+	requiresNew?: boolean;
+};
+
 const unitOfWorkStorage = new AsyncLocalStorage<UnitOfWorkStore>();
 
 @Injectable()
@@ -20,9 +24,12 @@ export class UnitOfWork {
 	 * - Outermost call starts a DB transaction and guarantees a single flush at the end.
 	 * - Nested calls reuse the same transactional EntityManager and do NOT flush.
 	 */
-	async transaction<T>(work: (em: EntityManager) => Promise<T>): Promise<T> {
+	async transaction<T>(
+		work: (em: EntityManager) => Promise<T>,
+		options: TransactionOptions = {},
+	): Promise<T> {
 		const existing = unitOfWorkStorage.getStore();
-		if (existing) {
+		if (existing && !options.requiresNew) {
 			existing.depth += 1;
 			try {
 				return await work(existing.em);

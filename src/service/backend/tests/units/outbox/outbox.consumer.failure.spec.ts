@@ -19,9 +19,10 @@ describe('OutboxConsumer failure path', () => {
 
 		const persistMock = jest.fn(() => Promise.resolve(undefined));
 		const unlockMock = jest.fn(() => Promise.resolve(undefined));
+		const findByIdMock = jest.fn(() => Promise.resolve(outboxEvent));
 		const outboxRepository: IOutboxRepository = {
 			persist: persistMock,
-			findById: jest.fn(() => Promise.resolve(outboxEvent)),
+			findById: findByIdMock,
 			getById: jest.fn(() => Promise.resolve(outboxEvent)),
 			findDispatchable: jest.fn(() => Promise.resolve([outboxEvent])),
 			findRecent: jest.fn(() => Promise.resolve([outboxEvent])),
@@ -50,10 +51,17 @@ describe('OutboxConsumer failure path', () => {
 			publish: jest.fn(),
 		} as unknown as EventBus;
 
+		const transactionOptions: Array<{ requiresNew?: boolean } | undefined> =
+			[];
+		const transactionMock: UnitOfWork['transaction'] = async <T>(
+			work: (em: never) => Promise<T>,
+			options?: { requiresNew?: boolean },
+		): Promise<T> => {
+			transactionOptions.push(options);
+			return await work(undefined as never);
+		};
 		const uow: Pick<UnitOfWork, 'transaction'> = {
-			transaction: async <T>(
-				work: (em: never) => Promise<T>,
-			): Promise<T> => await work(undefined as never),
+			transaction: transactionMock,
 		};
 
 		const consumer = new OutboxConsumer(
@@ -77,6 +85,11 @@ describe('OutboxConsumer failure path', () => {
 			'OutboxConsumer',
 			outboxEvent.id,
 		);
-		expect(unlockMock).toHaveBeenCalledWith(outboxEvent.id);
+		expect(unlockMock).not.toHaveBeenCalled();
+		expect(findByIdMock).toHaveBeenCalledTimes(2);
+		expect(transactionOptions).toHaveLength(2);
+		expect(transactionOptions[1]).toEqual({
+			requiresNew: true,
+		});
 	});
 });
