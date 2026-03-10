@@ -1,10 +1,5 @@
 import { Inject } from '@nestjs/common';
-import {
-	CommandBus,
-	CommandHandler,
-	ICommandHandler,
-	QueryBus,
-} from '@nestjs/cqrs';
+import { CommandHandler, ICommandHandler, QueryBus } from '@nestjs/cqrs';
 import {
 	IOutboxProducerSymbol,
 	type IOutboxProducer,
@@ -12,12 +7,10 @@ import {
 import { IPaymentRepositorySymbol } from '@/modules/payments/domains/repositories/i.payment.repository';
 import type { IPaymentRepository } from '@/modules/payments/domains/repositories/i.payment.repository';
 import { PaymentIntent } from '@/modules/payments/domains/entities/aggregates/payment-intent/payment-intent.aggregate';
-import { AttachPaymentToOrderCommand } from '@/modules/ordering/application/commands/attach-payment-to-order.command';
 import { GetOrderQuery } from '@/modules/ordering/application/queries/get-order.query';
-import {
-	PaymentWebhookFailedEvent,
-	PaymentWebhookSucceededEvent,
-} from '@/contracts/payments';
+import { PaymentIntentCreatedEvent } from '@/contracts/payments/events/payment-intent-created.event';
+import { PaymentWebhookFailedEvent } from '@/contracts/payments/events/payment-webhook-failed.event';
+import { PaymentWebhookSucceededEvent } from '@/contracts/payments/events/payment-webhook-succeeded.event';
 import {
 	CreatePaymentIntentCommand,
 	type CreatePaymentIntentResult,
@@ -34,7 +27,6 @@ export class CreatePaymentIntentHandler implements ICommandHandler<CreatePayment
 		@Inject(IOutboxProducerSymbol)
 		private readonly outboxProducer: IOutboxProducer,
 		private readonly uow: UnitOfWork,
-		private readonly commandBus: CommandBus,
 		private readonly queryBus: QueryBus,
 	) {}
 
@@ -59,11 +51,12 @@ export class CreatePaymentIntentHandler implements ICommandHandler<CreatePayment
 			});
 			await this.paymentRepository.persist(payment);
 
-			await this.commandBus.execute(
-				new AttachPaymentToOrderCommand({
+			await this.outboxProducer.publish(
+				new PaymentIntentCreatedEvent({
 					orderId: command.orderId,
 					paymentId: payment.id,
 				}),
+				{ messageGroupId: command.orderId },
 			);
 
 			const outcome = command.simulateOutcome ?? 'SUCCEEDED';

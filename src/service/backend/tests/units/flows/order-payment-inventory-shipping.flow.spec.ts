@@ -1,16 +1,16 @@
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { CreatePaymentIntentHandler } from '@/modules/payments/application/commands/handlers/create-payment-intent.handler';
 import { PaymentWebhookSucceededHandler } from '@/saga-orchestrator/webhooks/payment-webhook.event-handlers';
+import { AttachPaymentOnPaymentIntentCreatedHandler } from '@/modules/ordering/application/events/handlers/attach-payment-on-payment-intent-created.handler';
 import { MarkOrderPaidOnPaymentWebhookSucceededHandler } from '@/modules/ordering/application/events/handlers/mark-order-paid-on-payment-webhook-succeeded.handler';
 import { PaymentFulfillmentRequestedHandler } from '@/saga-orchestrator/fulfillment/payment-fulfillment-requested.event-handler';
 import type { IPaymentRepository } from '@/modules/payments/domains/repositories/i.payment.repository';
 import { PaymentIntent } from '@/modules/payments/domains/entities/aggregates/payment-intent/payment-intent.aggregate';
 import type { IOutboxProducer } from '@/shared/outbox/domain/producers/i.outbox.producer';
 import type { UnitOfWork } from '@/lib/database/unit-of-work';
-import {
-	PaymentFulfillmentRequestedEvent,
-	PaymentWebhookSucceededEvent,
-} from '@/contracts/payments';
+import { PaymentWebhookSucceededEvent } from '@/contracts/payments/events/payment-webhook-succeeded.event';
+import { PaymentFulfillmentRequestedEvent } from '@/contracts/payments/events/payment-fulfillment-requested.event';
+import { PaymentIntentCreatedEvent } from '@/contracts/payments/events/payment-intent-created.event';
 import { CreatePaymentIntentCommand } from '@/modules/payments/application/commands/create-payment-intent.command';
 import { PaymentStatus } from '@/modules/payments/domains/enums/payment-status.enum';
 import { HandlePaymentWebhookSucceededCommand } from '@/modules/payments/application/commands/handle-payment-webhook-succeeded.command';
@@ -106,7 +106,6 @@ describe('Cross module flow (order -> payment -> inventory/shipping)', () => {
 			paymentRepository,
 			outboxProducer,
 			uow as UnitOfWork,
-			commandBus,
 			queryBus,
 		);
 
@@ -121,9 +120,24 @@ describe('Cross module flow (order -> payment -> inventory/shipping)', () => {
 		expect(createResult.scheduled.eventType).toBe(
 			PaymentWebhookSucceededEvent.eventType,
 		);
+
+		const paymentIntentCreatedEvent = publishedEvents.find(
+			(event) => event instanceof PaymentIntentCreatedEvent,
+		);
+		expect(paymentIntentCreatedEvent).toBeInstanceOf(
+			PaymentIntentCreatedEvent,
+		);
+
+		const attachPaymentOnPaymentIntentCreatedHandler =
+			new AttachPaymentOnPaymentIntentCreatedHandler(commandBus);
+		await attachPaymentOnPaymentIntentCreatedHandler.handle(
+			paymentIntentCreatedEvent as PaymentIntentCreatedEvent,
+		);
 		expect(executedCommands[0]).toBeInstanceOf(AttachPaymentToOrderCommand);
 
-		const webhookEvent = publishedEvents[0];
+		const webhookEvent = publishedEvents.find(
+			(event) => event instanceof PaymentWebhookSucceededEvent,
+		);
 		expect(webhookEvent).toBeInstanceOf(PaymentWebhookSucceededEvent);
 		const paymentWebhookSucceededHandler =
 			new PaymentWebhookSucceededHandler(commandBus);
