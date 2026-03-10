@@ -8,10 +8,8 @@ import {
 import { MarkOrderPaidCommand } from '@/modules/ordering/application/commands/mark-order-paid.command';
 import { HandlePaymentWebhookFailedCommand } from '@/modules/payments/application/commands/handle-payment-webhook-failed.command';
 import { HandlePaymentWebhookSucceededCommand } from '@/modules/payments/application/commands/handle-payment-webhook-succeeded.command';
-import {
-	PaymentWebhookFailedEvent,
-	PaymentWebhookSucceededEvent,
-} from '@/contracts/payments';
+import { PaymentWebhookSucceededEvent } from '@/contracts/payments/events/payment-webhook-succeeded.event';
+import { PaymentWebhookFailedEvent } from '@/contracts/payments/events/payment-webhook-failed.event';
 import { PaymentStatus } from '@/modules/payments/domains/enums/payment-status.enum';
 import { PaymentIntent } from '@/modules/payments/domains/entities/aggregates/payment-intent/payment-intent.aggregate';
 import {

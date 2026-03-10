@@ -1,5 +1,5 @@
 import { Command } from '@nestjs/cqrs';
-import type { InventoryOrderItemPayload } from '@/contracts/inventory';
+import type { InventoryOrderItemPayload } from '@/contracts/inventory/events/reserve-inventory-for-order-requested.event';
 import { INVENTORY_APPLICATION_ERRORS } from '@/shared/errors';
 import {
 	requireTrimmedString,

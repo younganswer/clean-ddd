@@ -9,7 +9,7 @@ import {
 	IPaymentRepositorySymbol,
 	type IPaymentRepository,
 } from '@/modules/payments/domains/repositories/i.payment.repository';
-import { PaymentFulfillmentRequestedEvent } from '@/contracts/payments';
+import { PaymentFulfillmentRequestedEvent } from '@/contracts/payments/events/payment-fulfillment-requested.event';
 import { HandlePaymentWebhookSucceededCommand } from '@/modules/payments/application/commands/handle-payment-webhook-succeeded.command';
 
 @CommandHandler(HandlePaymentWebhookSucceededCommand)

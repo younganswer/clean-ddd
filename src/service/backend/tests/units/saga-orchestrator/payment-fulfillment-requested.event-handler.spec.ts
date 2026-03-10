@@ -1,0 +1,86 @@
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
+import { PaymentFulfillmentRequestedEvent } from '@/contracts/payments/events/payment-fulfillment-requested.event';
+import { ReserveInventoryForOrderCommand } from '@/modules/inventory/application/commands/reserve-inventory-for-order.command';
+import { GetOrderQuery } from '@/modules/ordering/application/queries/get-order.query';
+import { OrderStatus } from '@/modules/ordering/domains/enums/order-status.enum';
+import { CreateShipmentForOrderCommand } from '@/modules/shipping/application/commands/create-shipment-for-order.command';
+import { PaymentFulfillmentRequestedHandler } from '@/saga-orchestrator/fulfillment/payment-fulfillment-requested.event-handler';
+
+describe('PaymentFulfillmentRequestedHandler', () => {
+	it('dispatches reserve inventory and create shipment commands in sequence', async () => {
+		const commandExecute = jest.fn(() => Promise.resolve(undefined));
+		const commandBus = {
+			execute: commandExecute,
+		} as unknown as CommandBus;
+
+		const queryBus = {
+			execute: jest.fn((query: object) => {
+				if (query instanceof GetOrderQuery) {
+					return Promise.resolve({
+						orderId: 'order-1',
+						userId: 'user-1',
+						status: OrderStatus.PAID,
+						amount: 1000,
+						currency: 'KRW',
+						items: [
+							{ sku: 'sku-a', quantity: 1 },
+							{ sku: 'sku-b', quantity: 2 },
+						],
+						paymentId: 'payment-1',
+					});
+				}
+
+				return Promise.resolve(null);
+			}),
+		} as unknown as QueryBus;
+
+		const handler = new PaymentFulfillmentRequestedHandler(
+			queryBus,
+			commandBus,
+		);
+
+		await handler.handle(
+			new PaymentFulfillmentRequestedEvent({ orderId: 'order-1' }),
+		);
+
+		expect(commandExecute).toHaveBeenCalledTimes(2);
+		const calls = commandExecute.mock.calls as unknown[][];
+		expect(calls[0]?.[0]).toBeInstanceOf(ReserveInventoryForOrderCommand);
+		expect(calls[1]?.[0]).toBeInstanceOf(CreateShipmentForOrderCommand);
+	});
+
+	it('throws when order has no items and does not dispatch commands', async () => {
+		const commandExecute = jest.fn(() => Promise.resolve(undefined));
+		const commandBus = {
+			execute: commandExecute,
+		} as unknown as CommandBus;
+
+		const queryBus = {
+			execute: jest.fn(() =>
+				Promise.resolve({
+					orderId: 'order-empty',
+					userId: 'user-1',
+					status: OrderStatus.PAID,
+					amount: 0,
+					currency: 'KRW',
+					items: [],
+					paymentId: 'payment-1',
+				}),
+			),
+		} as unknown as QueryBus;
+
+		const handler = new PaymentFulfillmentRequestedHandler(
+			queryBus,
+			commandBus,
+		);
+
+		await expect(
+			handler.handle(
+				new PaymentFulfillmentRequestedEvent({
+					orderId: 'order-empty',
+				}),
+			),
+		).rejects.toThrow();
+		expect(commandExecute).not.toHaveBeenCalled();
+	});
+});

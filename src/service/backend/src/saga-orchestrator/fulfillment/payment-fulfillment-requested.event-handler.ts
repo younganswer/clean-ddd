@@ -6,13 +6,13 @@ import {
 	QueryBus,
 } from '@nestjs/cqrs';
 import { assertOrderResult } from '@/modules/ordering/domains/readers/order-result.guard';
-import { type InventoryOrderItemPayload } from '@/contracts/inventory';
+import { type InventoryOrderItemPayload } from '@/contracts/inventory/events/reserve-inventory-for-order-requested.event';
 import { ReserveInventoryForOrderCommand } from '@/modules/inventory/application/commands/reserve-inventory-for-order.command';
 import { CreateShipmentForOrderCommand } from '@/modules/shipping/application/commands/create-shipment-for-order.command';
 import { PAYMENTS_APPLICATION_ERRORS } from '@/shared/errors';
 import { ApplicationErrorFactory } from '@/common/errors/base.error-factory';
 import { OutboxKnownHandler } from '@/common/outbox/outbox-known-handler.decorator';
-import { PaymentFulfillmentRequestedEvent } from '@/contracts/payments';
+import { PaymentFulfillmentRequestedEvent } from '@/contracts/payments/events/payment-fulfillment-requested.event';
 import { GetOrderQuery } from '@/modules/ordering/application/queries/get-order.query';
 
 @Injectable()

@@ -1,5 +1,5 @@
 import { CommandBus, EventsHandler, IEventHandler } from '@nestjs/cqrs';
-import { ReserveInventoryForOrderRequestedEvent } from '@/contracts/inventory';
+import { ReserveInventoryForOrderRequestedEvent } from '@/contracts/inventory/events/reserve-inventory-for-order-requested.event';
 import { ReserveInventoryForOrderCommand } from '@/modules/inventory/application/commands/reserve-inventory-for-order.command';
 import { OutboxKnownHandler } from '@/common/outbox/outbox-known-handler.decorator';
 

@@ -1,5 +1,5 @@
 import { CommandBus, EventsHandler, IEventHandler } from '@nestjs/cqrs';
-import { PaymentWebhookSucceededEvent } from '@/contracts/payments';
+import { PaymentWebhookSucceededEvent } from '@/contracts/payments/events/payment-webhook-succeeded.event';
 import { MarkOrderPaidCommand } from '@/modules/ordering/application/commands/mark-order-paid.command';
 
 @EventsHandler(PaymentWebhookSucceededEvent)
