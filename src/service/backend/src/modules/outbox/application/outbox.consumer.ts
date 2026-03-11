@@ -13,12 +13,10 @@ import { OutboxKnownHandlerRegistryService } from '@/modules/outbox/application/
 import { OutboxConsumeStateMachine } from '@/modules/outbox/application/outbox-consume.state-machine';
 import { resolveOutboxTimeoutPolicy } from '@/modules/outbox/application/outbox-timeout-policy';
 import { writeStructuredLog } from '@/common/logging/structured-log';
-import { OutboxDispatchSource } from '@/shared/outbox/domain/queue/outbox-dispatch-source.enum';
-
-type ParsedOutboxMessage = {
-	outboxId: string;
-	source: OutboxDispatchSource;
-};
+import {
+	parseOutboxDispatchMessage,
+	type NormalizedOutboxDispatchMessage,
+} from '@/shared/outbox/domain/queue/outbox-dispatch-message';
 
 @Injectable()
 export class OutboxConsumer {
@@ -61,13 +59,11 @@ export class OutboxConsumer {
 
 	private parseOutboxMessage(
 		record: Pick<SQSRecord, 'body'>,
-	): ParsedOutboxMessage | null {
-		try {
-			const parsed = JSON.parse(record.body) as {
-				outboxId?: string;
-				source?: string;
-			};
-			if (!parsed.outboxId) {
+	): NormalizedOutboxDispatchMessage | null {
+		const parsed = parseOutboxDispatchMessage(record.body);
+
+		if (!parsed.ok) {
+			if (parsed.reason === 'missing-outbox-id') {
 				writeStructuredLog(
 					OutboxConsumer.name,
 					{ step: 'outbox_message_body_missing_outbox_id' },
@@ -75,16 +71,7 @@ export class OutboxConsumer {
 				);
 				return null;
 			}
-			return {
-				outboxId: parsed.outboxId,
-				source:
-					parsed.source === OutboxDispatchSource.DISPATCHER ||
-					parsed.source === OutboxDispatchSource.SWEEPER ||
-					parsed.source === OutboxDispatchSource.SWEEPER_DIRECT
-						? parsed.source
-						: OutboxDispatchSource.LEGACY,
-			};
-		} catch {
+
 			writeStructuredLog(
 				OutboxConsumer.name,
 				{ step: 'outbox_message_body_invalid_json' },
@@ -92,11 +79,13 @@ export class OutboxConsumer {
 			);
 			return null;
 		}
+
+		return parsed.message;
 	}
 
 	private async tryLockOutbox(
 		outboxId: string,
-		source: ParsedOutboxMessage['source'],
+		source: NormalizedOutboxDispatchMessage['source'],
 	): Promise<boolean> {
 		const startedAt = Date.now();
 		const locked = await this.outboxRepository.lock(
@@ -132,7 +121,7 @@ export class OutboxConsumer {
 
 	private async recoverFailureWithTransaction(
 		outboxId: string,
-		source: ParsedOutboxMessage['source'],
+		source: NormalizedOutboxDispatchMessage['source'],
 		error: unknown,
 	): Promise<void> {
 		const message = resolveErrorMessage(error);
@@ -197,7 +186,7 @@ export class OutboxConsumer {
 
 	private async consumeLockedOutboxWithTransaction(
 		outboxId: string,
-		source: ParsedOutboxMessage['source'],
+		source: NormalizedOutboxDispatchMessage['source'],
 	): Promise<void> {
 		const consumeStartedAt = Date.now();
 		await this.uow.transaction(async () => {

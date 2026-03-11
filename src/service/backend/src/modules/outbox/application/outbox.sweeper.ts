@@ -18,6 +18,7 @@ import { OUTBOX_INFRA_ERRORS } from '@/shared/errors';
 import { InfrastructureErrorFactory } from '@/common/errors/base.error-factory';
 import { writeStructuredLog } from '@/common/logging/structured-log';
 import { OutboxDispatchSource } from '@/shared/outbox/domain/queue/outbox-dispatch-source.enum';
+import { serializeOutboxDispatchMessage } from '@/shared/outbox/domain/queue/outbox-dispatch-message';
 
 @Injectable()
 export class OutboxSweeper {
@@ -46,8 +47,7 @@ export class OutboxSweeper {
 		}
 
 		await consumer.consumeRawMessage({
-			body: JSON.stringify({
-				schemaVersion: 1,
+			body: serializeOutboxDispatchMessage({
 				outboxId,
 				source: OutboxDispatchSource.SWEEPER_DIRECT,
 			}),

@@ -2,13 +2,10 @@ import { Inject, Injectable } from '@nestjs/common';
 import { SendMessageCommand, SQSClient } from '@aws-sdk/client-sqs';
 import { SQS_CLIENT, SQS_OUTBOX_QUEUE_URL } from '@/lib/queue/sqs.module';
 import { IOutboxQueue } from '@/shared/outbox/domain/queue/i.outbox.queue';
-import { OutboxDispatchSource } from '@/shared/outbox/domain/queue/outbox-dispatch-source.enum';
-
-export interface OutboxDispatchMessage {
-	schemaVersion: 1;
-	outboxId: string;
-	source?: OutboxDispatchSource;
-}
+import {
+	serializeOutboxDispatchMessage,
+	type OutboxEnqueueSource,
+} from '@/shared/outbox/domain/queue/outbox-dispatch-message';
 
 @Injectable()
 export class OutboxQueue implements IOutboxQueue {
@@ -27,19 +24,16 @@ export class OutboxQueue implements IOutboxQueue {
 		options?: {
 			delaySeconds?: number;
 			messageGroupId?: string;
-			source?: OutboxDispatchSource;
+			source?: OutboxEnqueueSource;
 		},
 	): Promise<void> {
-		const body: OutboxDispatchMessage = {
-			schemaVersion: 1,
-			outboxId,
-			...(options?.source ? { source: options.source } : {}),
-		};
-
 		const isFifoQueue = this.isFifoQueue();
 		const messageAttributes = {
 			QueueUrl: this.queueUrl,
-			MessageBody: JSON.stringify(body),
+			MessageBody: serializeOutboxDispatchMessage({
+				outboxId,
+				source: options?.source,
+			}),
 			...(isFifoQueue
 				? {
 						MessageGroupId: options?.messageGroupId ?? 'outbox',

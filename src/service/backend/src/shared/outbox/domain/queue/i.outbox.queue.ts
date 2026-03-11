@@ -1,4 +1,4 @@
-import { OutboxDispatchSource } from '@/shared/outbox/domain/queue/outbox-dispatch-source.enum';
+import { OutboxEnqueueSource } from '@/shared/outbox/domain/queue/outbox-dispatch-message';
 
 export interface IOutboxQueue {
 	enqueue(
@@ -6,7 +6,7 @@ export interface IOutboxQueue {
 		options?: {
 			delaySeconds?: number;
 			messageGroupId?: string;
-			source?: OutboxDispatchSource;
+			source?: OutboxEnqueueSource;
 		},
 	): Promise<void>;
 }
