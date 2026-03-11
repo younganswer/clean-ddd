@@ -18,6 +18,7 @@ import {
 	measureAsyncStep,
 	writeStructuredLog,
 } from '@/common/logging/structured-log';
+import { OutboxDispatchSource } from '@/shared/outbox/domain/queue/outbox-dispatch-source.enum';
 
 @CommandHandler(DispatchOutboxEventCommand)
 export class DispatchOutboxEventHandler implements ICommandHandler<DispatchOutboxEventCommand> {
@@ -41,7 +42,7 @@ export class DispatchOutboxEventHandler implements ICommandHandler<DispatchOutbo
 				async () => {
 					await this.outboxQueue.enqueue(outboxId, {
 						messageGroupId,
-						source: 'dispatcher',
+						source: OutboxDispatchSource.DISPATCHER,
 					});
 				},
 			);

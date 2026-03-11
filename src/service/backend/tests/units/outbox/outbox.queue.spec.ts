@@ -1,5 +1,6 @@
 import { SendMessageCommand, SQSClient } from '@aws-sdk/client-sqs';
 import { OutboxQueue } from '@/modules/outbox/infrastructure/queue/outbox.queue';
+import { OutboxDispatchSource } from '@/shared/outbox/domain/queue/outbox-dispatch-source.enum';
 
 describe('OutboxQueue', () => {
 	it('includes enqueue source in SQS message body', async () => {
@@ -15,7 +16,7 @@ describe('OutboxQueue', () => {
 
 		await queue.enqueue('outbox-1', {
 			messageGroupId: 'order:order-1',
-			source: 'dispatcher',
+			source: OutboxDispatchSource.DISPATCHER,
 		});
 
 		expect(sendMock).toHaveBeenCalledTimes(1);
@@ -29,7 +30,7 @@ describe('OutboxQueue', () => {
 			JSON.stringify({
 				schemaVersion: 1,
 				outboxId: 'outbox-1',
-				source: 'dispatcher',
+				source: OutboxDispatchSource.DISPATCHER,
 			}),
 		);
 		expect(input.MessageGroupId).toBe('order:order-1');

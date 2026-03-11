@@ -13,10 +13,11 @@ import { OutboxKnownHandlerRegistryService } from '@/modules/outbox/application/
 import { OutboxConsumeStateMachine } from '@/modules/outbox/application/outbox-consume.state-machine';
 import { resolveOutboxTimeoutPolicy } from '@/modules/outbox/application/outbox-timeout-policy';
 import { writeStructuredLog } from '@/common/logging/structured-log';
+import { OutboxDispatchSource } from '@/shared/outbox/domain/queue/outbox-dispatch-source.enum';
 
 type ParsedOutboxMessage = {
 	outboxId: string;
-	source: 'dispatcher' | 'sweeper' | 'sweeper-direct' | 'legacy';
+	source: OutboxDispatchSource;
 };
 
 @Injectable()
@@ -64,7 +65,7 @@ export class OutboxConsumer {
 		try {
 			const parsed = JSON.parse(record.body) as {
 				outboxId?: string;
-				source?: ParsedOutboxMessage['source'];
+				source?: string;
 			};
 			if (!parsed.outboxId) {
 				writeStructuredLog(
@@ -77,11 +78,11 @@ export class OutboxConsumer {
 			return {
 				outboxId: parsed.outboxId,
 				source:
-					parsed.source === 'dispatcher' ||
-					parsed.source === 'sweeper' ||
-					parsed.source === 'sweeper-direct'
+					parsed.source === OutboxDispatchSource.DISPATCHER ||
+					parsed.source === OutboxDispatchSource.SWEEPER ||
+					parsed.source === OutboxDispatchSource.SWEEPER_DIRECT
 						? parsed.source
-						: 'legacy',
+						: OutboxDispatchSource.LEGACY,
 			};
 		} catch {
 			writeStructuredLog(

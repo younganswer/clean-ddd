@@ -1,4 +1,4 @@
-export type OutboxDispatchSource = 'dispatcher' | 'sweeper' | 'sweeper-direct';
+import { OutboxDispatchSource } from '@/shared/outbox/domain/queue/outbox-dispatch-source.enum';
 
 export interface IOutboxQueue {
 	enqueue(

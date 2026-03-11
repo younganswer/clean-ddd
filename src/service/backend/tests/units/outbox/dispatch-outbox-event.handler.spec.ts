@@ -5,6 +5,7 @@ import { OutboxEventStatus } from '@/shared/outbox/domain/outbox-event-status.en
 import type { IOutboxRepository } from '@/shared/outbox/domain/repositories/i.outbox.repository';
 import type { IOutboxQueue } from '@/shared/outbox/domain/queue/i.outbox.queue';
 import type { UnitOfWork } from '@/lib/database/unit-of-work';
+import { OutboxDispatchSource } from '@/shared/outbox/domain/queue/outbox-dispatch-source.enum';
 
 describe('DispatchOutboxEventHandler', () => {
 	it('marks event as published after successful enqueue', async () => {
@@ -50,7 +51,7 @@ describe('DispatchOutboxEventHandler', () => {
 
 		expect(enqueueMock).toHaveBeenCalledWith(event.id, {
 			messageGroupId: 'order-1',
-			source: 'dispatcher',
+			source: OutboxDispatchSource.DISPATCHER,
 		});
 		expect(event.status).toBe(OutboxEventStatus.PUBLISHED);
 		expect(persistMock).toHaveBeenCalled();

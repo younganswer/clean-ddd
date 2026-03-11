@@ -1,10 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { SendMessageCommand, SQSClient } from '@aws-sdk/client-sqs';
 import { SQS_CLIENT, SQS_OUTBOX_QUEUE_URL } from '@/lib/queue/sqs.module';
-import {
-	IOutboxQueue,
-	type OutboxDispatchSource,
-} from '@/shared/outbox/domain/queue/i.outbox.queue';
+import { IOutboxQueue } from '@/shared/outbox/domain/queue/i.outbox.queue';
+import { OutboxDispatchSource } from '@/shared/outbox/domain/queue/outbox-dispatch-source.enum';
 
 export interface OutboxDispatchMessage {
 	schemaVersion: 1;

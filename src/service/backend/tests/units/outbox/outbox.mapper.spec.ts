@@ -1,4 +1,5 @@
 import { OutboxMapper } from '@/modules/outbox/infrastructure/mappers/outbox.mapper';
+import { OutboxEventSchema } from '@/modules/outbox/infrastructure/persistence/outbox.schema';
 import { OutboxEvent } from '@/shared/outbox/domain/entities/outbox-event.entity';
 import { OutboxEventStatus } from '@/shared/outbox/domain/outbox-event-status.enum';
 
@@ -29,5 +30,23 @@ describe('OutboxMapper', () => {
 		expect(schema.lockedUntil).toBeNull();
 		expect(schema.publishedAt).toEqual(publishedAt);
 		expect(schema.lastError).toBe('previous failure');
+	});
+
+	it('accepts outbox state through schema constructor', () => {
+		const nextAttemptAt = new Date('2026-03-11T03:42:20.000Z');
+		const schema = new OutboxEventSchema({
+			uuid: 'outbox-2',
+			eventType: 'PAYMENT.PAYMENT_INTENT_CREATED',
+			payload: { paymentId: 'payment-1' },
+			status: OutboxEventStatus.FAILED,
+			attempt: 2,
+			nextAttemptAt,
+			lastError: 'enqueue failed',
+		});
+
+		expect(schema.status).toBe(OutboxEventStatus.FAILED);
+		expect(schema.attempt).toBe(2);
+		expect(schema.nextAttemptAt).toEqual(nextAttemptAt);
+		expect(schema.lastError).toBe('enqueue failed');
 	});
 });
