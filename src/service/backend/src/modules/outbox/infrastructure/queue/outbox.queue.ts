@@ -1,11 +1,15 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { SendMessageCommand, SQSClient } from '@aws-sdk/client-sqs';
 import { SQS_CLIENT, SQS_OUTBOX_QUEUE_URL } from '@/lib/queue/sqs.module';
-import { IOutboxQueue } from '@/shared/outbox/domain/queue/i.outbox.queue';
+import {
+	IOutboxQueue,
+	type OutboxDispatchSource,
+} from '@/shared/outbox/domain/queue/i.outbox.queue';
 
 export interface OutboxDispatchMessage {
 	schemaVersion: 1;
 	outboxId: string;
+	source?: OutboxDispatchSource;
 }
 
 @Injectable()
@@ -22,11 +26,16 @@ export class OutboxQueue implements IOutboxQueue {
 
 	async enqueue(
 		outboxId: string,
-		options?: { delaySeconds?: number; messageGroupId?: string },
+		options?: {
+			delaySeconds?: number;
+			messageGroupId?: string;
+			source?: OutboxDispatchSource;
+		},
 	): Promise<void> {
 		const body: OutboxDispatchMessage = {
 			schemaVersion: 1,
 			outboxId,
+			...(options?.source ? { source: options.source } : {}),
 		};
 
 		const isFifoQueue = this.isFifoQueue();

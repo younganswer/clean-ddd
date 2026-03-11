@@ -41,6 +41,7 @@ export class DispatchOutboxEventHandler implements ICommandHandler<DispatchOutbo
 				async () => {
 					await this.outboxQueue.enqueue(outboxId, {
 						messageGroupId,
+						source: 'dispatcher',
 					});
 				},
 			);

@@ -14,6 +14,11 @@ import { OutboxConsumeStateMachine } from '@/modules/outbox/application/outbox-c
 import { resolveOutboxTimeoutPolicy } from '@/modules/outbox/application/outbox-timeout-policy';
 import { writeStructuredLog } from '@/common/logging/structured-log';
 
+type ParsedOutboxMessage = {
+	outboxId: string;
+	source: 'dispatcher' | 'sweeper' | 'sweeper-direct' | 'legacy';
+};
+
 @Injectable()
 export class OutboxConsumer {
 	private readonly consumerName = 'OutboxConsumer';
@@ -53,9 +58,14 @@ export class OutboxConsumer {
 		return true;
 	}
 
-	private parseOutboxId(record: Pick<SQSRecord, 'body'>): string | null {
+	private parseOutboxMessage(
+		record: Pick<SQSRecord, 'body'>,
+	): ParsedOutboxMessage | null {
 		try {
-			const parsed = JSON.parse(record.body) as { outboxId?: string };
+			const parsed = JSON.parse(record.body) as {
+				outboxId?: string;
+				source?: ParsedOutboxMessage['source'];
+			};
 			if (!parsed.outboxId) {
 				writeStructuredLog(
 					OutboxConsumer.name,
@@ -64,7 +74,15 @@ export class OutboxConsumer {
 				);
 				return null;
 			}
-			return parsed.outboxId;
+			return {
+				outboxId: parsed.outboxId,
+				source:
+					parsed.source === 'dispatcher' ||
+					parsed.source === 'sweeper' ||
+					parsed.source === 'sweeper-direct'
+						? parsed.source
+						: 'legacy',
+			};
 		} catch {
 			writeStructuredLog(
 				OutboxConsumer.name,
@@ -75,7 +93,10 @@ export class OutboxConsumer {
 		}
 	}
 
-	private async tryLockOutbox(outboxId: string): Promise<boolean> {
+	private async tryLockOutbox(
+		outboxId: string,
+		source: ParsedOutboxMessage['source'],
+	): Promise<boolean> {
 		const startedAt = Date.now();
 		const locked = await this.outboxRepository.lock(
 			outboxId,
@@ -85,6 +106,7 @@ export class OutboxConsumer {
 			writeStructuredLog(OutboxConsumer.name, {
 				step: 'outbox_lock_skipped',
 				outboxId,
+				source,
 			});
 			return false;
 		}
@@ -92,6 +114,7 @@ export class OutboxConsumer {
 		writeStructuredLog(OutboxConsumer.name, {
 			step: 'outbox_locked',
 			outboxId,
+			source,
 			lockMs: Date.now() - startedAt,
 		});
 		return true;
@@ -108,6 +131,7 @@ export class OutboxConsumer {
 
 	private async recoverFailureWithTransaction(
 		outboxId: string,
+		source: ParsedOutboxMessage['source'],
 		error: unknown,
 	): Promise<void> {
 		const message = resolveErrorMessage(error);
@@ -122,6 +146,7 @@ export class OutboxConsumer {
 						{
 							step: 'outbox_event_missing_during_failure_recovery',
 							outboxId,
+							source,
 						},
 						'warn',
 					);
@@ -139,6 +164,7 @@ export class OutboxConsumer {
 					{
 						step: 'outbox_consume_failed',
 						outboxId,
+						source,
 						eventType: outboxEvent.eventType,
 						error: message,
 					},
@@ -156,6 +182,7 @@ export class OutboxConsumer {
 						{
 							step: 'outbox_idempotency_release_failed',
 							outboxId,
+							source,
 							eventType: outboxEvent.eventType,
 							error: resolveErrorMessage(releaseError),
 						},
@@ -169,6 +196,7 @@ export class OutboxConsumer {
 
 	private async consumeLockedOutboxWithTransaction(
 		outboxId: string,
+		source: ParsedOutboxMessage['source'],
 	): Promise<void> {
 		const consumeStartedAt = Date.now();
 		await this.uow.transaction(async () => {
@@ -181,6 +209,7 @@ export class OutboxConsumer {
 					{
 						step: 'outbox_event_missing',
 						outboxId,
+						source,
 					},
 					'warn',
 				);
@@ -198,6 +227,7 @@ export class OutboxConsumer {
 				writeStructuredLog(OutboxConsumer.name, {
 					step: 'outbox_status_not_dispatchable',
 					outboxId,
+					source,
 					status: outboxEvent.status,
 				});
 				await this.outboxRepository.unlock(outboxId);
@@ -214,6 +244,7 @@ export class OutboxConsumer {
 				writeStructuredLog(OutboxConsumer.name, {
 					step: 'outbox_duplicate_claim',
 					outboxId,
+					source,
 					eventType: outboxEvent.eventType,
 				});
 				this.consumeStateMachine.markDuplicateClaimConflict(
@@ -224,6 +255,7 @@ export class OutboxConsumer {
 				writeStructuredLog(OutboxConsumer.name, {
 					step: 'outbox_duplicate_claim_completed',
 					outboxId,
+					source,
 					eventType: outboxEvent.eventType,
 					loadOutboxMs,
 					idempotencyClaimMs,
@@ -244,6 +276,7 @@ export class OutboxConsumer {
 					{
 						step: 'outbox_unknown_event_type',
 						outboxId,
+						source,
 						eventType: outboxEvent.eventType,
 					},
 					'warn',
@@ -264,6 +297,7 @@ export class OutboxConsumer {
 			writeStructuredLog(OutboxConsumer.name, {
 				step: 'outbox_event_dispatched',
 				outboxId,
+				source,
 				eventType: outboxEvent.eventType,
 				mode: dispatched ? 'known-handler' : 'event-bus',
 			});
@@ -277,6 +311,7 @@ export class OutboxConsumer {
 			writeStructuredLog(OutboxConsumer.name, {
 				step: 'outbox_marked_consumed',
 				outboxId,
+				source,
 				eventType: outboxEvent.eventType,
 				loadOutboxMs,
 				idempotencyClaimMs,
@@ -290,29 +325,37 @@ export class OutboxConsumer {
 	}
 
 	async consumeRawMessage(record: Pick<SQSRecord, 'body'>): Promise<void> {
-		const outboxId = this.parseOutboxId(record);
-		if (!outboxId) {
+		const parsedMessage = this.parseOutboxMessage(record);
+		if (!parsedMessage) {
 			return;
 		}
+
+		const { outboxId, source } = parsedMessage;
 
 		writeStructuredLog(OutboxConsumer.name, {
 			step: 'outbox_consume_received',
 			outboxId,
+			source,
 		});
 
-		const locked = await this.tryLockOutbox(outboxId);
+		const locked = await this.tryLockOutbox(outboxId, source);
 		if (!locked) {
 			return;
 		}
 
 		try {
-			await this.consumeLockedOutboxWithTransaction(outboxId);
+			await this.consumeLockedOutboxWithTransaction(outboxId, source);
 		} catch (error) {
 			try {
-				await this.recoverFailureWithTransaction(outboxId, error);
+				await this.recoverFailureWithTransaction(
+					outboxId,
+					source,
+					error,
+				);
 				writeStructuredLog(OutboxConsumer.name, {
 					step: 'outbox_unlocked_after_failure',
 					outboxId,
+					source,
 				});
 			} catch (recoveryError: unknown) {
 				writeStructuredLog(
@@ -320,6 +363,7 @@ export class OutboxConsumer {
 					{
 						step: 'outbox_failure_recovery_failed',
 						outboxId,
+						source,
 						error: resolveErrorMessage(recoveryError),
 					},
 					'error',

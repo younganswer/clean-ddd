@@ -50,6 +50,7 @@ describe('DispatchOutboxEventHandler', () => {
 
 		expect(enqueueMock).toHaveBeenCalledWith(event.id, {
 			messageGroupId: 'order-1',
+			source: 'dispatcher',
 		});
 		expect(event.status).toBe(OutboxEventStatus.PUBLISHED);
 		expect(persistMock).toHaveBeenCalled();

@@ -48,6 +48,7 @@ export class OutboxSweeper {
 			body: JSON.stringify({
 				schemaVersion: 1,
 				outboxId,
+				source: 'sweeper-direct',
 			}),
 		});
 	}
@@ -106,7 +107,10 @@ export class OutboxSweeper {
 				const messageGroupId =
 					typeof orderId === 'string' && orderId ? orderId : 'outbox';
 
-				await this.outboxQueue.enqueue(eventId, { messageGroupId });
+				await this.outboxQueue.enqueue(eventId, {
+					messageGroupId,
+					source: 'sweeper',
+				});
 				await this.uow.transaction(async () => {
 					const outboxEvent =
 						await this.outboxRepository.findById(eventId);

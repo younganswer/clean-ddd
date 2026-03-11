@@ -21,11 +21,20 @@ export class OutboxMapper {
 
 	toSchema(event: OutboxEvent): OutboxEventSchema {
 		const primitives = event.toPrimitives();
-
-		return new OutboxEventSchema({
+		const schema = new OutboxEventSchema({
 			uuid: primitives.outboxEventId,
 			eventType: primitives.eventType,
 			payload: primitives.payload,
 		});
+
+		schema.createdAt = primitives.recordedAt;
+		schema.status = primitives.status;
+		schema.attempt = primitives.attempt;
+		schema.nextAttemptAt = primitives.nextAttemptAt;
+		schema.lockedUntil = primitives.lockedUntil;
+		schema.publishedAt = primitives.publishedAt;
+		schema.lastError = primitives.lastError;
+
+		return schema;
 	}
 }
