@@ -3,7 +3,7 @@
 set -euo pipefail
 
 PROJECT="clean-ddd"
-ENV_NAME="dev"
+ENV_NAME="prod"
 AWS_REGION="ap-northeast-2"
 AWS_PROFILE_NAME="clean-ddd"
 WRITE_VARS_FILE=""
@@ -20,7 +20,7 @@ Usage:
 	src/infra/scripts/bootstrap/bootstrap-aws-resources.sh [options]
 
 Options:
-	--env <name>				Environment name (default: dev)
+	--env <name>				Environment name (default: prod)
 	--project <name>			Project prefix (default: clean-ddd)
 	--region <aws-region>		AWS region (default: ap-northeast-2)
 	--profile <aws-profile>		AWS CLI profile (default: clean-ddd)
@@ -29,7 +29,6 @@ Options:
 	-h, --help					Show this help
 
 Examples:
-	src/infra/scripts/bootstrap/bootstrap-aws-resources.sh --env dev --write-vars-file .github/env/dev.vars
 	src/infra/scripts/bootstrap/bootstrap-aws-resources.sh --env prod --region ap-northeast-2 --profile clean-ddd --write-vars-file .github/env/prod.vars
 USAGE
 }

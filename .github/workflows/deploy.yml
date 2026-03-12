@@ -2,15 +2,6 @@ name: clean-ddd-deploy
 
 on:
     workflow_dispatch:
-        inputs:
-            target_env:
-                description: GitHub Environment name
-                type: choice
-                required: true
-                default: dev
-                options:
-                    - dev
-                    - prod
     workflow_run:
         workflows: [clean-ddd-ci]
         types:
@@ -22,7 +13,7 @@ permissions:
     id-token: write
 
 concurrency:
-    group: deploy-${{ github.ref }}-${{ github.event.inputs.target_env || 'prod' }}
+    group: deploy-${{ github.ref }}-prod
     cancel-in-progress: false
 
 jobs:
@@ -30,16 +21,15 @@ jobs:
         if: github.event_name == 'workflow_dispatch' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
         uses: ./.github/workflows/reusable-node-workspace-task.yml
         with:
-            environment_name: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.target_env || 'prod' }}
+            environment_name: prod
             checkout_ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
             configure_aws: true
             setup_sam: true
             run_script: |
-                TARGET_ENV="${{ github.event_name == 'workflow_dispatch' && github.event.inputs.target_env || 'prod' }}"
                 export DEPLOY_TIMEOUT_SECONDS=1200
                 chmod +x infra/scripts/deploy/deploy.sh
                 chmod +x infra/scripts/github/sync-github-metadata.sh
-                infra/scripts/deploy/deploy.sh "$TARGET_ENV"
+                infra/scripts/deploy/deploy.sh
 
                 API_STAGE_URL=$(aws cloudformation describe-stacks \
                     --stack-name "$SAM_STACK_NAME" \
@@ -54,7 +44,6 @@ jobs:
                 DEPLOY_URL="https://${CF_DOMAIN}"
 
                 infra/scripts/github/sync-github-metadata.sh \
-                    "$TARGET_ENV" \
                     "${{ github.repository }}" \
                     "$API_URL" \
                     "$DEPLOY_URL"

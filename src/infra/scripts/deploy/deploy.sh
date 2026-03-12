@@ -5,7 +5,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 INFRA_SCRIPTS_DIR="$(cd -- "${SCRIPT_DIR}/.." && pwd)"
 
-TARGET_ENV="${1-}"
+TARGET_ENV="prod"
 DEPLOY_TIMEOUT_SECONDS="${DEPLOY_TIMEOUT_SECONDS-1200}"
 PROJECT_NAME="${PROJECT_NAME-clean-ddd}"
 
@@ -35,7 +35,13 @@ source "${SCRIPT_DIR}/lib/data.sh"
 source "${SCRIPT_DIR}/lib/deploy.sh"
 
 main() {
-  if [[ -z "${TARGET_ENV}" ]]; then
+  if [[ $# -gt 1 ]]; then
+    print_usage
+    exit 1
+  fi
+
+  if [[ $# -eq 1 && "$1" != "prod" ]]; then
+    echo "unsupported target environment: $1"
     print_usage
     exit 1
   fi

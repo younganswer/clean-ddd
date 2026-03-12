@@ -1,25 +1,24 @@
 {
-	"Version": "2012-10-17",
-	"Statement": [
-		{
-			"Effect": "Allow",
-			"Principal": {
-				"Federated": "arn:aws:iam::891377136566:oidc-provider/token.actions.githubusercontent.com"
-			},
-			"Action": "sts:AssumeRoleWithWebIdentity",
-			"Condition": {
-				"StringEquals": {
-					"token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
-				},
-				"StringLike": {
-					"token.actions.githubusercontent.com:sub": [
-						"repo:younganswer/clean-ddd:*",
-						"repo:younganswer/clean-ddd:ref:refs/heads/main",
-						"repo:younganswer/clean-ddd:environment:prod",
-						"repo:younganswer/clean-ddd:environment:dev"
-					]
-				}
-			}
-		}
-	]
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Federated": "arn:aws:iam::891377136566:oidc-provider/token.actions.githubusercontent.com"
+      },
+      "Action": "sts:AssumeRoleWithWebIdentity",
+      "Condition": {
+        "StringEquals": {
+          "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
+        },
+        "StringLike": {
+          "token.actions.githubusercontent.com:sub": [
+            "repo:younganswer/clean-ddd:*",
+            "repo:younganswer/clean-ddd:ref:refs/heads/main",
+            "repo:younganswer/clean-ddd:environment:prod"
+          ]
+        }
+      }
+    }
+  ]
 }

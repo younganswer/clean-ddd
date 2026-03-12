@@ -2,16 +2,13 @@
 
 set -euo pipefail
 
-TARGET_ENV="$1"
-REPO_SLUG="$2"
-API_URL="$3"
-DEPLOY_URL="$4"
+TARGET_ENV="prod"
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd -- "${SCRIPT_DIR}/../../../.." && pwd)"
 README_PATH="${REPO_ROOT}/README.md"
 
 print_usage() {
-  echo "Usage: $0 <target_env> <repo_slug> <api_url> <deploy_url>"
+  echo "Usage: $0 <repo_slug> <api_url> <deploy_url>"
 }
 
 run_allow_failure() {
@@ -99,10 +96,14 @@ PY
 }
 
 main() {
-  if [[ $# -ne 4 ]]; then
+  if [[ $# -ne 3 ]]; then
     print_usage
     exit 1
   fi
+
+  REPO_SLUG="$1"
+  API_URL="$2"
+  DEPLOY_URL="$3"
 
   sync_github_metadata
 }

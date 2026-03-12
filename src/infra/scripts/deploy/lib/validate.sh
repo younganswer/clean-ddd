@@ -1,5 +1,5 @@
 print_usage() {
-  echo "Usage: $0 <target_env>"
+  echo "Usage: $0 [prod]"
 }
 
 validate_required_inputs() {
@@ -11,7 +11,7 @@ validate_required_inputs() {
     value="${!key-}"
     if [[ -z "$value" ]]; then
       echo "missing required github environment variable: $key"
-      echo "hint: check Repository Settings > Environments > '$TARGET_ENV' > Variables"
+      echo "hint: check Repository Settings > Environments > 'prod' > Variables"
       exit 1
     fi
   done
@@ -20,7 +20,7 @@ validate_required_inputs() {
     value="${!key-}"
     if [[ -z "$value" ]]; then
       echo "missing required github environment secret: $key"
-      echo "hint: check Repository Settings > Environments > '$TARGET_ENV' > Secrets"
+      echo "hint: check Repository Settings > Environments > 'prod' > Secrets"
       exit 1
     fi
   done

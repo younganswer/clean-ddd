@@ -18,7 +18,7 @@ Usage:
   .github/scripts/register-env.sh <owner/repo> <environment> <vars.env> [secrets.env] [homepage_url]
 
 Example:
-  .github/scripts/register-env.sh younganswer/clean-ddd dev .github/env/dev.vars .github/env/dev.secrets https://example.com
+  .github/scripts/register-env.sh younganswer/clean-ddd prod .github/env/prod.vars .github/env/prod.secrets https://example.com
 
 Notes:
   - vars.env format: KEY=value (non-sensitive values)
