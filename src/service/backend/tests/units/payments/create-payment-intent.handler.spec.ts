@@ -52,7 +52,9 @@ describe('CreatePaymentIntentHandler', () => {
 			transaction: <T>(work: (em: never) => Promise<T>): Promise<T> =>
 				work(undefined as never),
 		};
-		const executeMock = jest.fn(() => Promise.resolve(undefined));
+		const executeMock = jest.fn<Promise<void>, [unknown]>(() =>
+			Promise.resolve(undefined),
+		);
 		const commandBus = {
 			execute: executeMock,
 		} as unknown as CommandBus;
@@ -137,7 +139,9 @@ describe('CreatePaymentIntentHandler', () => {
 			transaction: <T>(work: (em: never) => Promise<T>): Promise<T> =>
 				work(undefined as never),
 		};
-		const executeMock = jest.fn(() => Promise.resolve(undefined));
+		const executeMock = jest.fn<Promise<void>, [unknown]>(() =>
+			Promise.resolve(undefined),
+		);
 		const commandBus = {
 			execute: executeMock,
 		} as unknown as CommandBus;
