@@ -28,7 +28,6 @@ recover_stack_if_needed() {
 
 deploy_backend() {
   local outbox_consumer_lock_timeout_ms="${OUTBOX_CONSUMER_LOCK_TIMEOUT_MS-120000}"
-  local outbox_dispatch_schedule_expression="${OUTBOX_DISPATCH_SCHEDULE_EXPRESSION-rate(45 minutes)}"
 
   run_with_timeout "$DEPLOY_TIMEOUT_SECONDS" sam deploy \
     --template-file .aws-sam/build/template.yaml \
@@ -44,7 +43,6 @@ deploy_backend() {
       DatabaseUrlDirect="$DATABASE_URL_DIRECT" \
       AvatarRepositoryBackend="$AVATAR_REPOSITORY_BACKEND" \
       DynamoDbAvatarTable="$DYNAMODB_AVATAR_TABLE" \
-      OutboxDispatchScheduleExpression="$outbox_dispatch_schedule_expression" \
       OutboxConsumerLockTimeoutMs="$outbox_consumer_lock_timeout_ms" \
       EdgeOriginVerifyHeaderValue="$EDGE_ORIGIN_VERIFY_HEADER_VALUE"
 }
