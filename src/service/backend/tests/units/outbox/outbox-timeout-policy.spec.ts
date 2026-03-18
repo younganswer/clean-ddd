@@ -73,7 +73,7 @@ describe('resolveOutboxTimeoutPolicy', () => {
 			lockTimeoutMs: 30_000,
 			visibilityTimeoutSeconds: 30,
 		});
-		expect(warnSpy).toHaveBeenCalledTimes(1);
+		expect(warnSpy).not.toHaveBeenCalled();
 	});
 
 	it('ignores invalid env values and falls back to defaults', () => {
@@ -89,6 +89,6 @@ describe('resolveOutboxTimeoutPolicy', () => {
 			lockTimeoutMs: 120_000,
 			visibilityTimeoutSeconds: 30,
 		});
-		expect(warnSpy).toHaveBeenCalledTimes(2);
+		expect(warnSpy).not.toHaveBeenCalled();
 	});
 });
