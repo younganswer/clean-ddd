@@ -12,7 +12,10 @@ import { resolveErrorMessage } from '@/modules/outbox/application/outbox-error.u
 import { OutboxKnownHandlerRegistryService } from '@/modules/outbox/application/outbox-known-handler.registry.service';
 import { OutboxConsumeStateMachine } from '@/modules/outbox/application/outbox-consume.state-machine';
 import { resolveOutboxTimeoutPolicy } from '@/modules/outbox/application/outbox-timeout-policy';
-import { writeStructuredLog } from '@/common/logging/structured-log';
+import {
+	resolveBoundaryErrorMessage,
+	writeBoundaryLog,
+} from '@/common/logging/non-http-boundary-log';
 import {
 	parseOutboxDispatchMessage,
 	type NormalizedOutboxDispatchMessage,
@@ -64,7 +67,7 @@ export class OutboxConsumer {
 
 		if (!parsed.ok) {
 			if (parsed.reason === 'missing-outbox-id') {
-				writeStructuredLog(
+				writeBoundaryLog(
 					OutboxConsumer.name,
 					{ step: 'outbox_message_body_missing_outbox_id' },
 					'warn',
@@ -72,7 +75,7 @@ export class OutboxConsumer {
 				return null;
 			}
 
-			writeStructuredLog(
+			writeBoundaryLog(
 				OutboxConsumer.name,
 				{ step: 'outbox_message_body_invalid_json' },
 				'warn',
@@ -93,7 +96,7 @@ export class OutboxConsumer {
 			new Date(Date.now() + this.lockTimeoutMs),
 		);
 		if (!locked) {
-			writeStructuredLog(OutboxConsumer.name, {
+			writeBoundaryLog(OutboxConsumer.name, {
 				step: 'outbox_lock_skipped',
 				outboxId,
 				source,
@@ -101,7 +104,7 @@ export class OutboxConsumer {
 			return false;
 		}
 
-		writeStructuredLog(OutboxConsumer.name, {
+		writeBoundaryLog(OutboxConsumer.name, {
 			step: 'outbox_locked',
 			outboxId,
 			source,
@@ -131,7 +134,7 @@ export class OutboxConsumer {
 				const outboxEvent =
 					await this.outboxRepository.findById(outboxId);
 				if (!outboxEvent) {
-					writeStructuredLog(
+					writeBoundaryLog(
 						OutboxConsumer.name,
 						{
 							step: 'outbox_event_missing_during_failure_recovery',
@@ -149,7 +152,7 @@ export class OutboxConsumer {
 					message,
 				);
 				await this.outboxRepository.persist(outboxEvent);
-				writeStructuredLog(
+				writeBoundaryLog(
 					OutboxConsumer.name,
 					{
 						step: 'outbox_consume_failed',
@@ -167,7 +170,7 @@ export class OutboxConsumer {
 						outboxId,
 					);
 				} catch (releaseError: unknown) {
-					writeStructuredLog(
+					writeBoundaryLog(
 						OutboxConsumer.name,
 						{
 							step: 'outbox_idempotency_release_failed',
@@ -194,7 +197,7 @@ export class OutboxConsumer {
 			const outboxEvent = await this.outboxRepository.findById(outboxId);
 			const loadOutboxMs = Date.now() - loadStartedAt;
 			if (!outboxEvent) {
-				writeStructuredLog(
+				writeBoundaryLog(
 					OutboxConsumer.name,
 					{
 						step: 'outbox_event_missing',
@@ -214,7 +217,7 @@ export class OutboxConsumer {
 				: null;
 
 			if (!this.consumeStateMachine.isDispatchable(outboxEvent)) {
-				writeStructuredLog(OutboxConsumer.name, {
+				writeBoundaryLog(OutboxConsumer.name, {
 					step: 'outbox_status_not_dispatchable',
 					outboxId,
 					source,
@@ -231,7 +234,7 @@ export class OutboxConsumer {
 			);
 			const idempotencyClaimMs = Date.now() - claimStartedAt;
 			if (!claimed) {
-				writeStructuredLog(OutboxConsumer.name, {
+				writeBoundaryLog(OutboxConsumer.name, {
 					step: 'outbox_duplicate_claim',
 					outboxId,
 					source,
@@ -242,7 +245,7 @@ export class OutboxConsumer {
 				);
 				await this.outboxRepository.persist(outboxEvent);
 				await this.outboxRepository.unlock(outboxId);
-				writeStructuredLog(OutboxConsumer.name, {
+				writeBoundaryLog(OutboxConsumer.name, {
 					step: 'outbox_duplicate_claim_completed',
 					outboxId,
 					source,
@@ -261,7 +264,7 @@ export class OutboxConsumer {
 				outboxEvent.payload,
 			);
 			if (!event) {
-				writeStructuredLog(
+				writeBoundaryLog(
 					OutboxConsumer.name,
 					{
 						step: 'outbox_unknown_event_type',
@@ -284,7 +287,7 @@ export class OutboxConsumer {
 				outboxEvent.eventType,
 			);
 			const handlerDispatchMs = Date.now() - handlerStartedAt;
-			writeStructuredLog(OutboxConsumer.name, {
+			writeBoundaryLog(OutboxConsumer.name, {
 				step: 'outbox_event_dispatched',
 				outboxId,
 				source,
@@ -298,7 +301,7 @@ export class OutboxConsumer {
 			const persistStartedAt = Date.now();
 			await this.outboxRepository.persist(outboxEvent);
 			const persistFinalStateMs = Date.now() - persistStartedAt;
-			writeStructuredLog(OutboxConsumer.name, {
+			writeBoundaryLog(OutboxConsumer.name, {
 				step: 'outbox_marked_consumed',
 				outboxId,
 				source,
@@ -322,7 +325,7 @@ export class OutboxConsumer {
 
 		const { outboxId, source } = parsedMessage;
 
-		writeStructuredLog(OutboxConsumer.name, {
+		writeBoundaryLog(OutboxConsumer.name, {
 			step: 'outbox_consume_received',
 			outboxId,
 			source,
@@ -342,19 +345,19 @@ export class OutboxConsumer {
 					source,
 					error,
 				);
-				writeStructuredLog(OutboxConsumer.name, {
+				writeBoundaryLog(OutboxConsumer.name, {
 					step: 'outbox_unlocked_after_failure',
 					outboxId,
 					source,
 				});
 			} catch (recoveryError: unknown) {
-				writeStructuredLog(
+				writeBoundaryLog(
 					OutboxConsumer.name,
 					{
 						step: 'outbox_failure_recovery_failed',
 						outboxId,
 						source,
-						error: resolveErrorMessage(recoveryError),
+						error: resolveBoundaryErrorMessage(recoveryError),
 					},
 					'error',
 				);

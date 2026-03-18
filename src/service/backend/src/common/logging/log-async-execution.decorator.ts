@@ -1,9 +1,51 @@
 import {
-	runLoggedAsync,
-	type LoggedCompletedPhase,
-	type LoggedFailedPhase,
-	type LoggedStartedPhase,
-} from '@/common/logging/structured-log';
+	runNonHttpBoundary,
+	resolveBoundaryErrorMessage,
+} from '@/common/logging/non-http-boundary-log';
+
+type BoundaryLogLevel = 'log' | 'warn' | 'error';
+type StructuredLogPayload = Record<string, unknown>;
+
+type StartedPayloadFactory<TArgs extends readonly unknown[]> = (
+	args: TArgs,
+) => StructuredLogPayload | void;
+
+type CompletedPayloadFactory<TArgs extends readonly unknown[], TResult> = (
+	args: TArgs,
+	result: TResult,
+	durationMs: number,
+) => StructuredLogPayload | void;
+
+type FailedPayloadFactory<TArgs extends readonly unknown[]> = (
+	args: TArgs,
+	error: unknown,
+	durationMs: number,
+) => StructuredLogPayload | void;
+
+interface LoggedPhaseBase {
+	step: string;
+	level?: BoundaryLogLevel;
+	durationFieldName?: string;
+}
+
+export interface LoggedStartedPhase<
+	TArgs extends readonly unknown[],
+> extends LoggedPhaseBase {
+	getPayload?: StartedPayloadFactory<TArgs>;
+}
+
+export interface LoggedCompletedPhase<
+	TArgs extends readonly unknown[],
+	TResult,
+> extends LoggedPhaseBase {
+	getPayload?: CompletedPayloadFactory<TArgs, TResult>;
+}
+
+export interface LoggedFailedPhase<
+	TArgs extends readonly unknown[],
+> extends LoggedPhaseBase {
+	getPayload?: FailedPayloadFactory<TArgs>;
+}
 
 type AsyncMethod<TArgs extends readonly unknown[], TResult> = (
 	...args: TArgs
@@ -42,13 +84,41 @@ export function LogAsyncExecution<TArgs extends readonly unknown[], TResult>(
 					?.name ??
 				String(propertyKey);
 
-			return await runLoggedAsync(
+			return await runNonHttpBoundary<TResult>(
 				{
 					context: constructorName,
-					args,
-					started: options.started,
-					completed: options.completed,
-					failed: options.failed,
+					started: options.started
+						? {
+								step: options.started.step,
+								...(options.started.getPayload?.(args) ?? {}),
+							}
+						: undefined,
+					completed: options.completed
+						? (result: TResult, durationMs: number) => ({
+								step: options.completed?.step,
+								...(options.completed?.getPayload?.(
+									args,
+									result,
+									durationMs,
+								) ?? {}),
+								durationMs,
+							})
+						: undefined,
+					failed: options.failed
+						? (error: unknown, durationMs: number) => ({
+								level: options.failed?.level,
+								payload: {
+									step: options.failed?.step,
+									error: resolveBoundaryErrorMessage(error),
+									durationMs,
+									...(options.failed?.getPayload?.(
+										args,
+										error,
+										durationMs,
+									) ?? {}),
+								},
+							})
+						: undefined,
 				},
 				() => original.apply(this, [...args]),
 			);

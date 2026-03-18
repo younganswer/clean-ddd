@@ -1,13 +1,17 @@
-import { CallHandler, ExecutionContext, NestInterceptor } from '@nestjs/common';
+import {
+	CallHandler,
+	ExecutionContext,
+	Logger,
+	NestInterceptor,
+} from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { randomUUID } from 'node:crypto';
 import { Observable } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 import { AuthContextAccessor } from '@/common/context/auth-context';
-import {
-	type StructuredLogPayload,
-	writeStructuredLog,
-} from '@/common/logging/structured-log';
+
+type HttpBoundaryLogLevel = 'log' | 'warn' | 'error';
+type HttpBoundaryLogPayload = Record<string, unknown>;
 
 function resolveRoutePath(req: Request): string | undefined {
 	const route = req.route as { path?: unknown } | undefined;
@@ -34,7 +38,7 @@ export class HttpRequestLoggingInterceptor implements NestInterceptor {
 		const controller = context.getClass().name;
 		const handler = context.getHandler().name;
 
-		writeStructuredLog(HttpRequestLoggingInterceptor.name, {
+		this.write({
 			step: 'http_request_started',
 			traceId,
 			method,
@@ -48,7 +52,7 @@ export class HttpRequestLoggingInterceptor implements NestInterceptor {
 
 		return next.handle().pipe(
 			finalize(() => {
-				const payload: StructuredLogPayload = {
+				const payload: HttpBoundaryLogPayload = {
 					step: 'http_request_completed',
 					traceId,
 					method,
@@ -63,26 +67,26 @@ export class HttpRequestLoggingInterceptor implements NestInterceptor {
 				};
 
 				if (res.statusCode >= 500) {
-					writeStructuredLog(
-						HttpRequestLoggingInterceptor.name,
-						payload,
-						'error',
-					);
+					this.write(payload, 'error');
 					return;
 				}
 
 				if (res.statusCode >= 400) {
-					writeStructuredLog(
-						HttpRequestLoggingInterceptor.name,
-						payload,
-						'warn',
-					);
+					this.write(payload, 'warn');
 					return;
 				}
 
-				writeStructuredLog(HttpRequestLoggingInterceptor.name, payload);
+				this.write(payload);
 			}),
 		);
+	}
+
+	private write(
+		payload: HttpBoundaryLogPayload,
+		level: HttpBoundaryLogLevel = 'log',
+	): void {
+		const logger = new Logger(HttpRequestLoggingInterceptor.name);
+		logger[level](JSON.stringify(payload));
 	}
 
 	private ensureTraceId(req: Request, res: Response): string {

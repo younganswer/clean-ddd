@@ -2,9 +2,9 @@ import type { Handler } from 'aws-lambda';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from '@/app.module';
 import {
-	resolveStructuredLogErrorMessage,
-	writeStructuredLog,
-} from '@/common/logging/structured-log';
+	withBoundaryLogging,
+	resolveBoundaryErrorMessage,
+} from '@/lib/lambda/with-boundary-logging';
 import { OutboxDispatcher } from '@/modules/outbox/application/outbox.dispatcher';
 import { OutboxModule } from '@/modules/outbox/outbox.module';
 import { optionalEnv } from '@/env';
@@ -34,34 +34,32 @@ export const handler: Handler = async () => {
 	const batchSize = resolveBatchSize();
 	const now = new Date();
 
-	writeStructuredLog('OutboxDispatchLambda', {
-		step: 'outbox_dispatch_invoked',
-		batchSize,
-		invokedAt: now.toISOString(),
-	});
-
-	try {
-		const dispatcher = await getDispatcher();
-		const dispatched = await dispatcher.dispatchPending(batchSize, now);
-
-		writeStructuredLog('OutboxDispatchLambda', {
-			step: 'outbox_dispatch_completed',
-			batchSize,
-			dispatched,
-			invokedAt: now.toISOString(),
-		});
-		return;
-	} catch (error: unknown) {
-		writeStructuredLog(
-			'OutboxDispatchLambda',
-			{
-				step: 'outbox_dispatch_failed',
+	await withBoundaryLogging(
+		{
+			context: 'OutboxDispatchLambda',
+			started: {
+				step: 'outbox_dispatch_invoked',
 				batchSize,
 				invokedAt: now.toISOString(),
-				error: resolveStructuredLogErrorMessage(error),
 			},
-			'error',
-		);
-		throw error;
-	}
+			completed: (dispatched, _durationMs) => ({
+				step: 'outbox_dispatch_completed',
+				batchSize,
+				dispatched,
+				invokedAt: now.toISOString(),
+			}),
+			failed: (error, _durationMs) => ({
+				payload: {
+					step: 'outbox_dispatch_failed',
+					batchSize,
+					invokedAt: now.toISOString(),
+					error: resolveBoundaryErrorMessage(error),
+				},
+			}),
+		},
+		async () => {
+			const dispatcher = await getDispatcher();
+			return await dispatcher.dispatchPending(batchSize, now);
+		},
+	);
 };

@@ -12,6 +12,7 @@ import { AuthContextAccessor } from '@/common/context/auth-context';
 import { GlobalHttpExceptionFilter } from '@/common/filters/global-http-exception.filter';
 import { AuthGuard } from '@/common/guards/auth.guard';
 import { HttpRequestLoggingInterceptor } from '@/common/interceptors/http-request-logging.interceptor';
+import { NonHttpRequestLoggingInterceptor } from '@/common/interceptors/non-http-request-logging.interceptor';
 import { NestApp } from '@/nest-app';
 
 let isConfigured = false;
@@ -101,6 +102,7 @@ function configureHttpApp(app: INestApplication): void {
 
 	app.useGlobalInterceptors(
 		new HttpRequestLoggingInterceptor(authContextAccessor),
+		new NonHttpRequestLoggingInterceptor(),
 	);
 
 	app.useGlobalFilters(new GlobalHttpExceptionFilter());

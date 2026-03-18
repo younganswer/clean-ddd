@@ -15,9 +15,9 @@ import { resolveOutboxTimeoutPolicy } from '@/modules/outbox/application/outbox-
 import { isOutboxPollingEnabled } from '@/runtime-role';
 import { SQS_CLIENT, SQS_OUTBOX_QUEUE_URL } from '@/lib/queue/sqs.module';
 import {
-	resolveStructuredLogErrorMessage,
-	writeStructuredLog,
-} from '@/common/logging/structured-log';
+	resolveBoundaryErrorMessage,
+	writeBoundaryLog,
+} from '@/common/logging/non-http-boundary-log';
 
 @Injectable()
 export class OutboxSqsPoller implements OnModuleInit, OnModuleDestroy {
@@ -50,7 +50,7 @@ export class OutboxSqsPoller implements OnModuleInit, OnModuleDestroy {
 		const enabled = isOutboxPollingEnabled();
 		if (!enabled) return;
 
-		writeStructuredLog(OutboxSqsPoller.name, {
+		writeBoundaryLog(OutboxSqsPoller.name, {
 			step: 'outbox_sqs_polling_enabled',
 		});
 		this.inFlight = this.loop();
@@ -89,11 +89,11 @@ export class OutboxSqsPoller implements OnModuleInit, OnModuleDestroy {
 					}),
 				);
 			} catch (error: unknown) {
-				writeStructuredLog(
+				writeBoundaryLog(
 					OutboxSqsPoller.name,
 					{
 						step: 'outbox_sqs_polling_error',
-						error: resolveStructuredLogErrorMessage(error),
+						error: resolveBoundaryErrorMessage(error),
 					},
 					'warn',
 				);
