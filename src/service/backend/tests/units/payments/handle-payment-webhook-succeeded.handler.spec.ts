@@ -1,3 +1,4 @@
+import type { CommandBus } from '@nestjs/cqrs';
 import { HandlePaymentWebhookSucceededHandler } from '@/modules/payments/application/commands/handlers/handle-payment-webhook-succeeded.handler';
 import { HandlePaymentWebhookSucceededCommand } from '@/modules/payments/application/commands/handle-payment-webhook-succeeded.command';
 import { PaymentIntent } from '@/modules/payments/domains/entities/aggregates/payment-intent/payment-intent.aggregate';
@@ -36,24 +37,27 @@ describe('HandlePaymentWebhookSucceededHandler', () => {
 			transaction: <T>(work: (em: never) => Promise<T>): Promise<T> =>
 				work(undefined as never),
 		};
+		const executeMock = jest.fn(() => Promise.resolve(undefined));
+		const commandBus = {
+			execute: executeMock,
+		} as unknown as CommandBus;
 
 		const handler = new HandlePaymentWebhookSucceededHandler(
 			paymentRepository,
 			outboxProducer,
+			commandBus,
 			uow as UnitOfWork,
 		);
 
-		await expect(
-			handler.execute(
-				new HandlePaymentWebhookSucceededCommand({
-					orderId: 'order-1',
-					paymentId: 'payment-1',
-				}),
-			),
-		).resolves.toBeUndefined();
+		const command = new HandlePaymentWebhookSucceededCommand({
+			orderId: 'order-1',
+			paymentId: 'payment-1',
+		});
+		await expect(handler.execute(command)).resolves.toBeUndefined();
 
 		expect(getByIdMock).toHaveBeenCalledWith('payment-1');
 		expect(persistMock).not.toHaveBeenCalled();
 		expect(publishMock).not.toHaveBeenCalled();
+		expect(executeMock).not.toHaveBeenCalled();
 	});
 });

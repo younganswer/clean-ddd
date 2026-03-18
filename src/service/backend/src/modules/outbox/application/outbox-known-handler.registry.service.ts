@@ -10,7 +10,6 @@ import {
 } from '@/lib/outbox/event-registry';
 import { OUTBOX_INFRA_ERRORS } from '@/shared/errors';
 import { InfrastructureErrorFactory } from '@/common/errors/base.error-factory';
-import { writeStructuredLog } from '@/common/logging/structured-log';
 
 type OutboxKnownHandlerEntry = {
 	eventType: OutboxEventType;
@@ -90,12 +89,7 @@ export class OutboxKnownHandlerRegistryService implements OnModuleInit {
 			});
 		}
 
-		if (this.handlersByEventType.size > 0) {
-			writeStructuredLog(OutboxKnownHandlerRegistryService.name, {
-				step: 'outbox_known_handlers_registered',
-				handlerCount: this.handlersByEventType.size,
-			});
-		}
+		void this.handlersByEventType.size;
 	}
 
 	find(eventType: string): OutboxKnownHandlerEntry | undefined {

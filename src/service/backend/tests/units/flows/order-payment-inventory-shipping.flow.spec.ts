@@ -101,16 +101,16 @@ describe('Cross module flow (order -> payment -> inventory/shipping)', () => {
 			paymentRepository,
 			orderReader,
 			outboxProducer,
+			commandBus,
 			uow as UnitOfWork,
 		);
 
-		const createResult = await createPaymentIntentHandler.execute(
-			new CreatePaymentIntentCommand({
-				orderId: order.orderId,
-				simulateOutcome: 'SUCCEEDED',
-				simulateDelaySeconds: 0,
-			}),
-		);
+		const command = new CreatePaymentIntentCommand({
+			orderId: order.orderId,
+			simulateOutcome: 'SUCCEEDED',
+			simulateDelaySeconds: 0,
+		});
+		const createResult = await createPaymentIntentHandler.execute(command);
 
 		expect(createResult.scheduled.eventType).toBe(
 			PaymentWebhookSucceededEvent.eventType,
@@ -128,7 +128,11 @@ describe('Cross module flow (order -> payment -> inventory/shipping)', () => {
 		await attachPaymentOnPaymentIntentCreatedHandler.handle(
 			paymentIntentCreatedEvent as PaymentIntentCreatedEvent,
 		);
-		expect(executedCommands[0]).toBeInstanceOf(AttachPaymentToOrderCommand);
+		expect(
+			executedCommands.some(
+				(command) => command instanceof AttachPaymentToOrderCommand,
+			),
+		).toBe(true);
 
 		const webhookEvent = publishedEvents.find(
 			(event) => event instanceof PaymentWebhookSucceededEvent,

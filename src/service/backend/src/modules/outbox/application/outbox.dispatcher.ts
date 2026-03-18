@@ -3,7 +3,6 @@ import { Injectable } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { DispatchOutboxEventCommand } from '@/modules/outbox/application/commands/dispatch-outbox-event.command';
 import { GetPendingOutboxEventsQuery } from '@/modules/outbox/application/queries/get-pending-outbox-events.query';
-import { writeStructuredLog } from '@/common/logging/structured-log';
 
 @Injectable()
 export class OutboxDispatcher {
@@ -14,13 +13,11 @@ export class OutboxDispatcher {
 	) {}
 
 	async dispatchPending(limit = 10, now = new Date()): Promise<number> {
-		const startedAt = Date.now();
 		const pendingEvents = await RequestContext.create(
 			this.orm.em.fork(),
 			async () => {
-				const result = await this.queryBus.execute(
-					new GetPendingOutboxEventsQuery({ limit, now }),
-				);
+				const query = new GetPendingOutboxEventsQuery({ limit, now });
+				const result = await this.queryBus.execute(query);
 				return result.events.map((event) => ({
 					id: event.id,
 					eventType: event.eventType,
@@ -64,7 +61,6 @@ export class OutboxDispatcher {
 		let dispatched = 0;
 		for (const event of pendingEvents) {
 			if (!event.id) continue;
-			const eventDispatchStartedAt = Date.now();
 
 			const messageGroupId = getMessageGroupId(
 				event.eventType,
@@ -72,33 +68,15 @@ export class OutboxDispatcher {
 			);
 
 			await RequestContext.create(this.orm.em.fork(), async () => {
-				await this.commandBus.execute(
-					new DispatchOutboxEventCommand({
-						outboxId: event.id,
-						messageGroupId,
-					}),
-				);
-			});
-			writeStructuredLog(OutboxDispatcher.name, {
-				step: 'outbox_dispatch_forwarded',
-				outboxId: event.id,
-				eventType: event.eventType,
-				messageGroupId,
-				dispatchLagMs: now.getTime() - event.recordedAt.getTime(),
-				retryReadyLagMs: now.getTime() - event.nextAttemptAt.getTime(),
-				forwardMs: Date.now() - eventDispatchStartedAt,
+				const command = new DispatchOutboxEventCommand({
+					outboxId: event.id,
+					messageGroupId,
+				});
+				await this.commandBus.execute(command);
 			});
 			dispatched += 1;
 		}
-
-		if (dispatched > 0) {
-			writeStructuredLog(OutboxDispatcher.name, {
-				step: 'outbox_dispatch_batch_completed',
-				dispatched,
-				limit,
-				totalMs: Date.now() - startedAt,
-			});
-		}
+		void now;
 
 		return dispatched;
 	}

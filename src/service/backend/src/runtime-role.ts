@@ -22,3 +22,9 @@ export function isOutboxPollingEnabled(): boolean {
 	const value = envValue('OUTBOX_POLLING_ENABLED');
 	return value === 'true';
 }
+
+export function isOutboxHandlerImmediateDispatchEnabled(): boolean {
+	const value = envValue('OUTBOX_HANDLER_IMMEDIATE_DISPATCH');
+	if (value === undefined) return true;
+	return value !== 'false';
+}

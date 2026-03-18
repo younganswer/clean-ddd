@@ -42,12 +42,11 @@ describe('DispatchOutboxEventHandler', () => {
 			uow as UnitOfWork,
 		);
 
-		await handler.execute(
-			new DispatchOutboxEventCommand({
-				outboxId: event.id,
-				messageGroupId: 'order-1',
-			}),
-		);
+		const command = new DispatchOutboxEventCommand({
+			outboxId: event.id,
+			messageGroupId: 'order-1',
+		});
+		await handler.execute(command);
 
 		expect(enqueueMock).toHaveBeenCalledWith(event.id, {
 			messageGroupId: 'order-1',
@@ -92,12 +91,11 @@ describe('DispatchOutboxEventHandler', () => {
 			uow as UnitOfWork,
 		);
 
-		await handler.execute(
-			new DispatchOutboxEventCommand({
-				outboxId: event.id,
-				messageGroupId: 'order-1',
-			}),
-		);
+		const command = new DispatchOutboxEventCommand({
+			outboxId: event.id,
+			messageGroupId: 'order-1',
+		});
+		await handler.execute(command);
 
 		expect(event.status).toBe(OutboxEventStatus.FAILED);
 		expect(event.attempt).toBe(1);

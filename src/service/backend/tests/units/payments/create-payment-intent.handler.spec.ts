@@ -1,3 +1,4 @@
+import type { CommandBus } from '@nestjs/cqrs';
 import { CreatePaymentIntentHandler } from '@/modules/payments/application/commands/handlers/create-payment-intent.handler';
 import type { IPaymentRepository } from '@/modules/payments/domains/repositories/i.payment.repository';
 import type { IOrderReader } from '@/modules/ordering/domains/readers/i.order.reader';
@@ -7,6 +8,7 @@ import { CreatePaymentIntentCommand } from '@/modules/payments/application/comma
 import { PaymentWebhookSucceededEvent } from '@/contracts/payments/events/payment-webhook-succeeded.event';
 import { PaymentWebhookFailedEvent } from '@/contracts/payments/events/payment-webhook-failed.event';
 import { PaymentIntentCreatedEvent } from '@/contracts/payments/events/payment-intent-created.event';
+import { DispatchOutboxEventCommand } from '@/modules/outbox/application/commands/dispatch-outbox-event.command';
 
 describe('CreatePaymentIntentHandler', () => {
 	it('creates payment using payment snapshot reader and schedules succeeded webhook event', async () => {
@@ -50,21 +52,25 @@ describe('CreatePaymentIntentHandler', () => {
 			transaction: <T>(work: (em: never) => Promise<T>): Promise<T> =>
 				work(undefined as never),
 		};
+		const executeMock = jest.fn(() => Promise.resolve(undefined));
+		const commandBus = {
+			execute: executeMock,
+		} as unknown as CommandBus;
 
 		const handler = new CreatePaymentIntentHandler(
 			paymentRepository,
 			orderReader,
 			outboxProducer,
+			commandBus,
 			uow as UnitOfWork,
 		);
 
-		const result = await handler.execute(
-			new CreatePaymentIntentCommand({
-				orderId: 'order-1',
-				simulateOutcome: 'SUCCEEDED',
-				simulateDelaySeconds: 3,
-			}),
-		);
+		const command = new CreatePaymentIntentCommand({
+			orderId: 'order-1',
+			simulateOutcome: 'SUCCEEDED',
+			simulateDelaySeconds: 3,
+		});
+		const result = await handler.execute(command);
 
 		expect(findOrderById).toHaveBeenCalledWith('order-1');
 		expect(persisted).toHaveLength(1);
@@ -85,6 +91,10 @@ describe('CreatePaymentIntentHandler', () => {
 		expect(options).toEqual({ delaySeconds: 3, messageGroupId: 'order-1' });
 		expect(result.scheduled.eventType).toBe(
 			PaymentWebhookSucceededEvent.eventType,
+		);
+		expect(executeMock).toHaveBeenCalledTimes(1);
+		expect(executeMock.mock.calls[0]?.[0]).toBeInstanceOf(
+			DispatchOutboxEventCommand,
 		);
 	});
 
@@ -119,6 +129,7 @@ describe('CreatePaymentIntentHandler', () => {
 				)?,
 			]
 		>(() => Promise.resolve('outbox-2'));
+
 		const outboxProducer = {
 			publish: outboxPublishMock,
 		} as unknown as IOutboxProducer;
@@ -126,20 +137,24 @@ describe('CreatePaymentIntentHandler', () => {
 			transaction: <T>(work: (em: never) => Promise<T>): Promise<T> =>
 				work(undefined as never),
 		};
+		const executeMock = jest.fn(() => Promise.resolve(undefined));
+		const commandBus = {
+			execute: executeMock,
+		} as unknown as CommandBus;
 
 		const handler = new CreatePaymentIntentHandler(
 			paymentRepository,
 			orderReader,
 			outboxProducer,
+			commandBus,
 			uow as UnitOfWork,
 		);
 
-		const result = await handler.execute(
-			new CreatePaymentIntentCommand({
-				orderId: 'order-2',
-				simulateOutcome: 'FAILED',
-			}),
-		);
+		const command = new CreatePaymentIntentCommand({
+			orderId: 'order-2',
+			simulateOutcome: 'FAILED',
+		});
+		const result = await handler.execute(command);
 
 		expect(result.scheduled.eventType).toBe(
 			PaymentWebhookFailedEvent.eventType,
@@ -150,6 +165,10 @@ describe('CreatePaymentIntentHandler', () => {
 		);
 		expect(outboxPublishMock.mock.calls[1]?.[0]).toBeInstanceOf(
 			PaymentWebhookFailedEvent,
+		);
+		expect(executeMock).toHaveBeenCalledTimes(1);
+		expect(executeMock.mock.calls[0]?.[0]).toBeInstanceOf(
+			DispatchOutboxEventCommand,
 		);
 	});
 });

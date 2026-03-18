@@ -16,7 +16,6 @@ import {
 } from '@/modules/outbox/application/outbox-error.util';
 import { OUTBOX_INFRA_ERRORS } from '@/shared/errors';
 import { InfrastructureErrorFactory } from '@/common/errors/base.error-factory';
-import { writeStructuredLog } from '@/common/logging/structured-log';
 import { OutboxDispatchSource } from '@/shared/outbox/domain/queue/outbox-dispatch-source.enum';
 import { serializeOutboxDispatchMessage } from '@/shared/outbox/domain/queue/outbox-dispatch-message';
 
@@ -75,15 +74,6 @@ export class OutboxSweeper {
 					continue;
 				} catch (error: unknown) {
 					const message = resolveErrorMessage(error);
-					writeStructuredLog(
-						OutboxSweeper.name,
-						{
-							step: 'outbox_direct_consume_failed',
-							outboxId: eventId,
-							error: message,
-						},
-						'warn',
-					);
 					await this.uow.transaction(async () => {
 						const outboxEvent =
 							await this.outboxRepository.findById(eventId);
@@ -123,15 +113,6 @@ export class OutboxSweeper {
 				enqueued += 1;
 			} catch (error: unknown) {
 				const message = resolveErrorMessage(error);
-				writeStructuredLog(
-					OutboxSweeper.name,
-					{
-						step: 'outbox_sweeper_enqueue_failed',
-						outboxId: eventId,
-						error: message,
-					},
-					'warn',
-				);
 				await this.uow.transaction(async () => {
 					const outboxEvent =
 						await this.outboxRepository.findById(eventId);

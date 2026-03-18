@@ -1,5 +1,5 @@
 import { Inject } from '@nestjs/common';
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import {
 	IOutboxProducerSymbol,
 	type IOutboxProducer,
@@ -21,14 +21,15 @@ import {
 import { UnitOfWork } from '@/lib/database/unit-of-work';
 import { ORDERING_APPLICATION_ERRORS } from '@/shared/errors';
 import { ApplicationErrorFactory } from '@/common/errors/base.error-factory';
-import {
-	measureAsyncStep,
-	runLoggedAsync,
-} from '@/common/logging/structured-log';
+import { DispatchOutboxEventCommand } from '@/modules/outbox/application/commands/dispatch-outbox-event.command';
+import { isOutboxHandlerImmediateDispatchEnabled } from '@/runtime-role';
 
-interface CreatePaymentIntentExecution {
+interface CreatePaymentIntentTransactionResult {
 	response: CreatePaymentIntentResult;
-	completionLog: Record<string, unknown>;
+	immediateDispatchTargets: {
+		outboxId: string;
+		messageGroupId: string;
+	}[];
 }
 
 @CommandHandler(CreatePaymentIntentCommand)
@@ -40,40 +41,19 @@ export class CreatePaymentIntentHandler implements ICommandHandler<CreatePayment
 		private readonly orderReader: IOrderReader,
 		@Inject(IOutboxProducerSymbol)
 		private readonly outboxProducer: IOutboxProducer,
+		private readonly commandBus: CommandBus,
 		private readonly uow: UnitOfWork,
 	) {}
 
 	async execute(
 		command: CreatePaymentIntentCommand,
 	): Promise<CreatePaymentIntentResult> {
-		const execution = await runLoggedAsync(
-			{
-				context: CreatePaymentIntentHandler.name,
-				args: [command] as const,
-				started: {
-					step: 'create_payment_intent_started',
-					getPayload: ([currentCommand]) => ({
-						orderId: currentCommand.orderId,
-						simulateOutcome: currentCommand.simulateOutcome,
-						simulateDelaySeconds:
-							currentCommand.simulateDelaySeconds,
-					}),
-				},
-				completed: {
-					step: 'create_payment_intent_completed',
-					durationFieldName: 'handlerTotalMs',
-					getPayload: (_args, result) => result.completionLog,
-				},
-			},
-			async (): Promise<CreatePaymentIntentExecution> =>
-				await this.uow.transaction(async () => {
-					const { result: orderSnapshot, durationMs: orderLookupMs } =
-						await measureAsyncStep(
-							async () =>
-								await this.orderReader.findById(
-									command.orderId,
-								),
-						);
+		const transactionResult =
+			await this.uow.transaction<CreatePaymentIntentTransactionResult>(
+				async () => {
+					const orderSnapshot = await this.orderReader.findById(
+						command.orderId,
+					);
 					if (!orderSnapshot) {
 						throw ApplicationErrorFactory.create(
 							ORDERING_APPLICATION_ERRORS.ORDER_NOT_FOUND,
@@ -86,21 +66,16 @@ export class CreatePaymentIntentHandler implements ICommandHandler<CreatePayment
 						amount: orderSnapshot.amount,
 						currency: orderSnapshot.currency,
 					});
-					const { durationMs: paymentPersistMs } =
-						await measureAsyncStep(async () => {
-							await this.paymentRepository.persist(payment);
-						});
+					await this.paymentRepository.persist(payment);
 
-					const { durationMs: paymentCreatedOutboxPublishMs } =
-						await measureAsyncStep(async () => {
-							await this.outboxProducer.publish(
-								new PaymentIntentCreatedEvent({
-									orderId: command.orderId,
-									paymentId: payment.id,
-								}),
-								{ messageGroupId: command.orderId },
-							);
-						});
+					const paymentIntentCreatedOutboxId =
+						await this.outboxProducer.publish(
+							new PaymentIntentCreatedEvent({
+								orderId: command.orderId,
+								paymentId: payment.id,
+							}),
+							{ messageGroupId: command.orderId },
+						);
 
 					const outcome = command.simulateOutcome ?? 'SUCCEEDED';
 					const delaySeconds = command.simulateDelaySeconds;
@@ -116,21 +91,29 @@ export class CreatePaymentIntentHandler implements ICommandHandler<CreatePayment
 									paymentId: payment.id,
 								});
 
-					const {
-						result: outboxId,
-						durationMs: webhookOutboxPublishMs,
-					} = await measureAsyncStep(
-						async () =>
-							await this.outboxProducer.publish(event, {
-								delaySeconds,
-								messageGroupId: command.orderId,
-							}),
-					);
+					const outboxId = await this.outboxProducer.publish(event, {
+						delaySeconds,
+						messageGroupId: command.orderId,
+					});
 
 					const eventType =
 						outcome === 'SUCCEEDED'
 							? PaymentWebhookSucceededEvent.eventType
 							: PaymentWebhookFailedEvent.eventType;
+
+					const immediateDispatchTargets = [
+						{
+							outboxId: paymentIntentCreatedOutboxId,
+							messageGroupId: command.orderId,
+						},
+					];
+
+					if (delaySeconds <= 0) {
+						immediateDispatchTargets.push({
+							outboxId,
+							messageGroupId: command.orderId,
+						});
+					}
 
 					return {
 						response: {
@@ -142,21 +125,28 @@ export class CreatePaymentIntentHandler implements ICommandHandler<CreatePayment
 								outboxId,
 							},
 						},
-						completionLog: {
-							orderId: command.orderId,
-							paymentId: payment.id,
-							eventType,
-							outboxId,
-							simulateDelaySeconds: delaySeconds,
-							orderLookupMs,
-							paymentPersistMs,
-							paymentCreatedOutboxPublishMs,
-							webhookOutboxPublishMs,
-						},
+						immediateDispatchTargets,
 					};
-				}),
-		);
+				},
+			);
 
-		return execution.response;
+		if (!isOutboxHandlerImmediateDispatchEnabled()) {
+			return transactionResult.response;
+		}
+
+		for (const target of transactionResult.immediateDispatchTargets) {
+			try {
+				await this.commandBus.execute(
+					new DispatchOutboxEventCommand({
+						outboxId: target.outboxId,
+						messageGroupId: target.messageGroupId,
+					}),
+				);
+			} catch {
+				continue;
+			}
+		}
+
+		return transactionResult.response;
 	}
 }

@@ -1,5 +1,3 @@
-import { writeStructuredLog } from '@/common/logging/structured-log';
-
 export interface OutboxTimeoutPolicy {
 	lockTimeoutMs: number;
 	visibilityTimeoutSeconds: number;
@@ -31,55 +29,22 @@ export function resolveOutboxTimeoutPolicy(
 		visibilityTimeoutSecondsRaw,
 		defaultLockTimeoutMs,
 		defaultVisibilityTimeoutSeconds,
-		loggerContext,
 	} = options;
 
 	const parsedLockTimeoutMs = parsePositiveInteger(lockTimeoutRaw);
-	if (lockTimeoutRaw && parsedLockTimeoutMs === null) {
-		writeStructuredLog(
-			loggerContext,
-			{
-				step: 'outbox_consumer_lock_timeout_invalid',
-				value: lockTimeoutRaw,
-			},
-			'warn',
-		);
-	}
+	void lockTimeoutRaw;
 
 	const parsedVisibilityTimeoutSeconds = parsePositiveInteger(
 		visibilityTimeoutSecondsRaw,
 	);
-	if (
-		visibilityTimeoutSecondsRaw &&
-		parsedVisibilityTimeoutSeconds === null
-	) {
-		writeStructuredLog(
-			loggerContext,
-			{
-				step: 'outbox_sqs_visibility_timeout_invalid',
-				value: visibilityTimeoutSecondsRaw,
-			},
-			'warn',
-		);
-	}
+	void visibilityTimeoutSecondsRaw;
 
 	if (
 		parsedLockTimeoutMs !== null &&
 		parsedVisibilityTimeoutSeconds !== null
 	) {
 		const alignedLockTimeoutMs = parsedVisibilityTimeoutSeconds * 1000;
-		if (parsedLockTimeoutMs !== alignedLockTimeoutMs) {
-			writeStructuredLog(
-				loggerContext,
-				{
-					step: 'outbox_timeout_mismatch_detected',
-					lockTimeoutMs: parsedLockTimeoutMs,
-					visibilityTimeoutSeconds: parsedVisibilityTimeoutSeconds,
-					alignedLockTimeoutMs,
-				},
-				'warn',
-			);
-		}
+		void parsedLockTimeoutMs;
 		return {
 			lockTimeoutMs: alignedLockTimeoutMs,
 			visibilityTimeoutSeconds: parsedVisibilityTimeoutSeconds,
