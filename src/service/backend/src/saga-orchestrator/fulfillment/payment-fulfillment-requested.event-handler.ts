@@ -12,8 +12,6 @@ import { PAYMENTS_APPLICATION_ERRORS } from '@/shared/errors';
 import { ApplicationErrorFactory } from '@/common/errors/base.error-factory';
 import { OutboxKnownHandler } from '@/lib/outbox/outbox-known-handler.decorator';
 import { PaymentFulfillmentRequestedEvent } from '@/contracts/payments/events/payment-fulfillment-requested.event';
-import { LogAsyncExecution } from '@/common/logging/log-async-execution.decorator';
-import { writeStructuredLog } from '@/common/logging/structured-log';
 
 @Injectable()
 @EventsHandler(PaymentFulfillmentRequestedEvent)
@@ -25,12 +23,6 @@ export class PaymentFulfillmentRequestedHandler implements IEventHandler<Payment
 		private readonly commandBus: CommandBus,
 	) {}
 
-	@LogAsyncExecution<[PaymentFulfillmentRequestedEvent], void>({
-		started: {
-			step: 'payment_fulfillment_requested_received',
-			getPayload: ([event]) => ({ orderId: event.orderId }),
-		},
-	})
 	async handle(event: PaymentFulfillmentRequestedEvent): Promise<void> {
 		const order = await this.orderReader.findById(event.orderId);
 		assertOrderResult(order);
@@ -49,26 +41,16 @@ export class PaymentFulfillmentRequestedHandler implements IEventHandler<Payment
 			throw ApplicationErrorFactory.create(template, options);
 		}
 
-		await this.commandBus.execute(
+		const reserveInventoryForOrderCommand =
 			new ReserveInventoryForOrderCommand({
 				orderId: event.orderId,
 				items,
-			}),
-		);
-		writeStructuredLog(PaymentFulfillmentRequestedHandler.name, {
-			step: 'inventory_reservation_requested_via_command_bus',
-			orderId: event.orderId,
-			itemCount: items.length,
-		});
+			});
+		await this.commandBus.execute(reserveInventoryForOrderCommand);
 
-		await this.commandBus.execute(
-			new CreateShipmentForOrderCommand({
-				orderId: event.orderId,
-			}),
-		);
-		writeStructuredLog(PaymentFulfillmentRequestedHandler.name, {
-			step: 'shipment_creation_requested_via_command_bus',
+		const createShipmentCommand = new CreateShipmentForOrderCommand({
 			orderId: event.orderId,
 		});
+		await this.commandBus.execute(createShipmentCommand);
 	}
 }

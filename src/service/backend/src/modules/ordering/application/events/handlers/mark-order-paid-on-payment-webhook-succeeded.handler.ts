@@ -7,8 +7,7 @@ export class MarkOrderPaidOnPaymentWebhookSucceededHandler implements IEventHand
 	constructor(private readonly commandBus: CommandBus) {}
 
 	async handle(event: PaymentWebhookSucceededEvent): Promise<void> {
-		await this.commandBus.execute(
-			new MarkOrderPaidCommand({ orderId: event.orderId }),
-		);
+		const command = new MarkOrderPaidCommand(event);
+		await this.commandBus.execute(command);
 	}
 }

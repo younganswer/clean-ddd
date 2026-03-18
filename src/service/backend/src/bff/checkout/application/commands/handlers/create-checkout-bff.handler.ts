@@ -23,22 +23,20 @@ export class CreateCheckoutBffHandler implements ICommandHandler<CreateCheckoutB
 			simulateOutcome,
 			simulateDelaySeconds,
 		} = command;
-
-		const { orderId } = await this.commandBus.execute(
-			new CreateOrderCommand({
-				userId,
-				amount,
-				currency,
-				items,
-			}),
-		);
-
+		const createOrderCommand = new CreateOrderCommand({
+			userId,
+			amount,
+			currency,
+			items,
+		});
+		const { orderId } = await this.commandBus.execute(createOrderCommand);
+		const createPaymentIntentCommand = new CreatePaymentIntentCommand({
+			orderId,
+			simulateOutcome,
+			simulateDelaySeconds,
+		});
 		const payment = await this.commandBus.execute(
-			new CreatePaymentIntentCommand({
-				orderId,
-				simulateOutcome,
-				simulateDelaySeconds,
-			}),
+			createPaymentIntentCommand,
 		);
 
 		return { orderId, payment };

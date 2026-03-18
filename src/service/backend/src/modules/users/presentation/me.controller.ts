@@ -27,9 +27,8 @@ export class MeController {
 	@ApiErrorEnvelopeResponse({ status: 404 })
 	async getMyProfile(): Promise<DataEnvelope<UserProfileResponse>> {
 		const userId = this.authContextAccessor.getOrAnonymous().actor.userId;
-		const result = await this.queryBus.execute(
-			new GetUserProfileQuery({ userId }),
-		);
+		const query = new GetUserProfileQuery({ userId });
+		const result = await this.queryBus.execute(query);
 		const response = UserProfileResponse.fromResult(result);
 
 		return ResponseHelper.data(response);
@@ -42,12 +41,11 @@ export class MeController {
 		@Body() body: UpdateMyAvatarRequest,
 	): Promise<DataEnvelope<UpdateAvatarResponse>> {
 		const userId = this.authContextAccessor.getOrAnonymous().actor.userId;
-		const result = await this.commandBus.execute(
-			new UpdateMyAvatarCommand({
-				userId,
-				avatarUrl: body.avatarUrl,
-			}),
-		);
+		const command = new UpdateMyAvatarCommand({
+			userId,
+			avatarUrl: body.avatarUrl,
+		});
+		const result = await this.commandBus.execute(command);
 		const response = UpdateAvatarResponse.fromResult(result);
 
 		return ResponseHelper.data(response);

@@ -78,9 +78,8 @@ describe('GetDashboardSummaryBffHandler', () => {
 			inventoryReader,
 		);
 
-		const result = await handler.execute(
-			new GetDashboardSummaryBffQuery({ limit: 10 }),
-		);
+		const query = new GetDashboardSummaryBffQuery({ limit: 10 });
+		const result = await handler.execute(query);
 
 		expect(result.orders).toEqual(orders);
 		expect(result.paymentIntents).toEqual(payments);
@@ -121,9 +120,8 @@ describe('GetDashboardSummaryBffHandler', () => {
 			inventoryReader,
 		);
 
-		const result = await handler.execute(
-			new GetDashboardSummaryBffQuery({ limit: 10 }),
-		);
+		const query = new GetDashboardSummaryBffQuery({ limit: 10 });
+		const result = await handler.execute(query);
 
 		expect(result.orders).toEqual([]);
 		expect(result.paymentIntents).toEqual([]);

@@ -19,11 +19,13 @@ export class SystemConceptsBffController {
 	async bootstrap(
 		@Query() query: PageQueryDto,
 	): Promise<DataEnvelope<SystemConceptsBootstrapResponse>> {
-		const result = await this.queryBus.execute(
+		const getSystemConceptsBootstrapBffQuery =
 			new GetSystemConceptsBootstrapBffQuery({
 				limit: query.limit,
 				offset: query.offset,
-			}),
+			});
+		const result = await this.queryBus.execute(
+			getSystemConceptsBootstrapBffQuery,
 		);
 		const response = SystemConceptsBootstrapResponse.fromResult(result);
 

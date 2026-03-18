@@ -32,9 +32,11 @@ export class OrdersBffController {
 	async list(
 		@Query() query: PageQueryDto,
 	): Promise<PageEnvelope<OrderResponse>> {
-		const result = await this.queryBus.execute(
-			new GetOrdersBffQuery(query),
-		);
+		const getOrdersBffQuery = new GetOrdersBffQuery({
+			limit: query.limit,
+			offset: query.offset,
+		});
+		const result = await this.queryBus.execute(getOrdersBffQuery);
 		const response = OrderResponse.fromPaginatedResults(result);
 
 		return ResponseHelper.page(response);
@@ -46,9 +48,8 @@ export class OrdersBffController {
 	async get(
 		@Param('orderId') orderId: string,
 	): Promise<DataEnvelope<OrderResponse>> {
-		const order = await this.queryBus.execute(
-			new GetOrderBffQuery({ orderId }),
-		);
+		const query = new GetOrderBffQuery({ orderId });
+		const order = await this.queryBus.execute(query);
 		if (!order)
 			throw ApplicationErrorFactory.create(
 				ORDERING_APPLICATION_ERRORS.ORDER_NOT_FOUND,
@@ -64,9 +65,8 @@ export class OrdersBffController {
 	async create(
 		@Body() body: CreateOrderBffBodyDto,
 	): Promise<DataEnvelope<CreateOrderResponse>> {
-		const result = await this.commandBus.execute(
-			new CreateOrderBffCommand(body),
-		);
+		const command = new CreateOrderBffCommand(body);
+		const result = await this.commandBus.execute(command);
 		const response = CreateOrderResponse.fromResult(result);
 
 		return ResponseHelper.data(response);

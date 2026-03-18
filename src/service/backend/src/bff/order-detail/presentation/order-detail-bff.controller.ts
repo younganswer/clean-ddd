@@ -23,12 +23,11 @@ export class OrderDetailBffController {
 		@Param('orderId') orderId: string,
 		@Query() query: GetOrderDetailBffQueryDto,
 	): Promise<DataEnvelope<OrderDetailBffResponse>> {
-		const result = await this.queryBus.execute(
-			new GetOrderDetailBffQuery({
-				orderId,
-				...query,
-			}),
-		);
+		const getOrderDetailBffQuery = new GetOrderDetailBffQuery({
+			orderId,
+			...query,
+		});
+		const result = await this.queryBus.execute(getOrderDetailBffQuery);
 		if (!result)
 			throw ApplicationErrorFactory.create(
 				ORDERING_APPLICATION_ERRORS.ORDER_NOT_FOUND,

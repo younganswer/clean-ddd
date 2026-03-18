@@ -9,11 +9,7 @@ export class ReserveInventoryForOrderRequestedHandler implements IEventHandler<R
 	constructor(private readonly commandBus: CommandBus) {}
 
 	async handle(event: ReserveInventoryForOrderRequestedEvent): Promise<void> {
-		await this.commandBus.execute(
-			new ReserveInventoryForOrderCommand({
-				orderId: event.orderId,
-				items: event.items,
-			}),
-		);
+		const command = new ReserveInventoryForOrderCommand(event);
+		await this.commandBus.execute(command);
 	}
 }

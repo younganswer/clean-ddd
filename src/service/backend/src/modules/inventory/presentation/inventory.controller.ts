@@ -31,12 +31,11 @@ export class InventoryController {
 	async listItems(
 		@Query() query: PageQueryDto,
 	): Promise<PageEnvelope<InventoryItemResponse>> {
-		const result = await this.queryBus.execute(
-			new GetInventoryItemsQuery({
-				limit: query.limit,
-				offset: query.offset,
-			}),
-		);
+		const getInventoryItemsQuery = new GetInventoryItemsQuery({
+			limit: query.limit,
+			offset: query.offset,
+		});
+		const result = await this.queryBus.execute(getInventoryItemsQuery);
 		const response = InventoryItemResponse.fromPaginatedResults(result);
 
 		return ResponseHelper.page(response);
@@ -48,9 +47,8 @@ export class InventoryController {
 	async getItem(
 		@Param('sku') sku: string,
 	): Promise<DataEnvelope<InventoryItemResponse | null>> {
-		const result = await this.queryBus.execute(
-			new GetInventoryItemQuery({ sku }),
-		);
+		const getInventoryItemQuery = new GetInventoryItemQuery({ sku });
+		const result = await this.queryBus.execute(getInventoryItemQuery);
 		const response = result
 			? InventoryItemResponse.fromResult(result)
 			: null;
@@ -64,8 +62,11 @@ export class InventoryController {
 	async listReservations(
 		@Query('orderId') orderId: string,
 	): Promise<ListEnvelope<InventoryReservationResponse>> {
+		const getInventoryReservationsQuery = new GetInventoryReservationsQuery(
+			{ orderId },
+		);
 		const result = await this.queryBus.execute(
-			new GetInventoryReservationsQuery({ orderId }),
+			getInventoryReservationsQuery,
 		);
 		const response = InventoryReservationResponse.fromResults(result);
 

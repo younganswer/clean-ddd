@@ -18,11 +18,10 @@ export class DashboardBffController {
 	async summary(
 		@Query('limit') limit?: string,
 	): Promise<DataEnvelope<DashboardSummaryBffResponse>> {
-		const result = await this.queryBus.execute(
-			new GetDashboardSummaryBffQuery({
-				limit: limit ? parseInt(limit, 10) : undefined,
-			}),
-		);
+		const query = new GetDashboardSummaryBffQuery({
+			limit: limit ? parseInt(limit, 10) : undefined,
+		});
+		const result = await this.queryBus.execute(query);
 		const response = DashboardSummaryBffResponse.fromResult(result);
 
 		return ResponseHelper.data(response);

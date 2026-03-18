@@ -36,9 +36,8 @@ describe('ListOrdersBffHandler', () => {
 		} as unknown as IOrderReader;
 
 		const handler = new ListOrdersBffHandler(orderReader);
-		const result = await handler.execute(
-			new GetOrdersBffQuery({ limit: 7, offset: 3 }),
-		);
+		const query = new GetOrdersBffQuery({ limit: 7, offset: 3 });
+		const result = await handler.execute(query);
 
 		expect(findRecentOrders).toHaveBeenCalledWith({
 			limit: 7,

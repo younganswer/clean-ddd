@@ -19,12 +19,11 @@ export class UsersController {
 	async list(
 		@Query() query: PageQueryDto,
 	): Promise<PageEnvelope<UserProfileResponse>> {
-		const result = await this.queryBus.execute(
-			new GetUserProfilesQuery({
-				limit: query.limit,
-				offset: query.offset,
-			}),
-		);
+		const getUserProfilesQuery = new GetUserProfilesQuery({
+			limit: query.limit,
+			offset: query.offset,
+		});
+		const result = await this.queryBus.execute(getUserProfilesQuery);
 		const response = UserProfileResponse.fromPaginatedResults(result);
 
 		return ResponseHelper.page(response);

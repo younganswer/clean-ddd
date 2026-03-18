@@ -9,10 +9,9 @@ export class CreateShipmentForOrderRequestedHandler implements IEventHandler<Cre
 	constructor(private readonly commandBus: CommandBus) {}
 
 	async handle(event: CreateShipmentForOrderRequestedEvent): Promise<void> {
-		await this.commandBus.execute(
-			new CreateShipmentForOrderCommand({
-				orderId: event.orderId,
-			}),
-		);
+		const command = new CreateShipmentForOrderCommand({
+			orderId: event.orderId,
+		});
+		await this.commandBus.execute(command);
 	}
 }

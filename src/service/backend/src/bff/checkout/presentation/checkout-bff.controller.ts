@@ -20,9 +20,8 @@ export class CheckoutBffController {
 	async create(
 		@Body() body: CreateCheckoutBffBodyDto,
 	): Promise<DataEnvelope<CreateCheckoutBffResponse>> {
-		const result = await this.commandBus.execute(
-			new CreateCheckoutBffCommand(body),
-		);
+		const command = new CreateCheckoutBffCommand(body);
+		const result = await this.commandBus.execute(command);
 		const response = CreateCheckoutBffResponse.fromResult(result);
 
 		return ResponseHelper.data(response);

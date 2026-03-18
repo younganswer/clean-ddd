@@ -9,11 +9,10 @@ export class AttachPaymentOnPaymentIntentCreatedHandler implements IEventHandler
 	constructor(private readonly commandBus: CommandBus) {}
 
 	async handle(event: PaymentIntentCreatedEvent): Promise<void> {
-		await this.commandBus.execute(
-			new AttachPaymentToOrderCommand({
-				orderId: event.orderId,
-				paymentId: event.paymentId,
-			}),
-		);
+		const command = new AttachPaymentToOrderCommand({
+			orderId: event.orderId,
+			paymentId: event.paymentId,
+		});
+		await this.commandBus.execute(command);
 	}
 }

@@ -32,9 +32,8 @@ export class OrdersController {
 	async create(
 		@Body() body: CreateOrderRequest,
 	): Promise<DataEnvelope<CreateOrderResponse>> {
-		const result = await this.commandBus.execute(
-			new CreateOrderCommand(body),
-		);
+		const command = new CreateOrderCommand(body);
+		const result = await this.commandBus.execute(command);
 		const response = CreateOrderResponse.fromResult(result);
 
 		return ResponseHelper.data(response);
@@ -46,12 +45,11 @@ export class OrdersController {
 	async list(
 		@Query() query: PageQueryDto,
 	): Promise<PageEnvelope<OrderResponse>> {
-		const result = await this.queryBus.execute(
-			new GetOrdersQuery({
-				limit: query.limit,
-				offset: query.offset,
-			}),
-		);
+		const queryCommand = new GetOrdersQuery({
+			limit: query.limit,
+			offset: query.offset,
+		});
+		const result = await this.queryBus.execute(queryCommand);
 		const response = OrderResponse.fromPaginatedResults(result);
 
 		return ResponseHelper.page(response);
@@ -61,9 +59,8 @@ export class OrdersController {
 	@ApiDataResponse({ model: OrderResponse })
 	@ApiErrorEnvelopeResponse({ status: 404 })
 	async get(@Param('id') id: string): Promise<DataEnvelope<OrderResponse>> {
-		const order = await this.queryBus.execute(
-			new GetOrderQuery({ orderId: id }),
-		);
+		const getOrderCommand = new GetOrderQuery({ orderId: id });
+		const order = await this.queryBus.execute(getOrderCommand);
 		if (!isOrderResult(order))
 			throw ApplicationErrorFactory.create(
 				ORDERING_APPLICATION_ERRORS.ORDER_NOT_FOUND,

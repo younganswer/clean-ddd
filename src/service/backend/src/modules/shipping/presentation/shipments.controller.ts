@@ -22,12 +22,11 @@ export class ShipmentsController {
 	async list(
 		@Query() query: PageQueryDto,
 	): Promise<PageEnvelope<ShipmentResponse>> {
-		const result = await this.queryBus.execute(
-			new GetShipmentsQuery({
-				limit: query.limit,
-				offset: query.offset,
-			}),
-		);
+		const getShipmentsQuery = new GetShipmentsQuery({
+			limit: query.limit,
+			offset: query.offset,
+		});
+		const result = await this.queryBus.execute(getShipmentsQuery);
 		const response = ShipmentResponse.fromPaginatedResults(result);
 
 		return ResponseHelper.page(response);
@@ -39,9 +38,10 @@ export class ShipmentsController {
 	async byOrder(
 		@Param('orderId') orderId: string,
 	): Promise<DataEnvelope<ShipmentResponse | null>> {
-		const result = await this.queryBus.execute(
-			new GetShipmentByOrderQuery({ orderId }),
-		);
+		const getShipmentByOrderQuery = new GetShipmentByOrderQuery({
+			orderId,
+		});
+		const result = await this.queryBus.execute(getShipmentByOrderQuery);
 		const response = result ? ShipmentResponse.fromResult(result) : null;
 
 		return ResponseHelper.data(response);
@@ -53,9 +53,8 @@ export class ShipmentsController {
 	async get(
 		@Param('id') id: string,
 	): Promise<DataEnvelope<ShipmentResponse | null>> {
-		const result = await this.queryBus.execute(
-			new GetShipmentQuery({ shipmentId: id }),
-		);
+		const getShipmentQuery = new GetShipmentQuery({ shipmentId: id });
+		const result = await this.queryBus.execute(getShipmentQuery);
 		const response = result ? ShipmentResponse.fromResult(result) : null;
 
 		return ResponseHelper.data(response);

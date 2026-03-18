@@ -20,18 +20,17 @@ export class PaymentsController {
 		@Param('orderId') orderId: string,
 		@Body() body: CreatePaymentIntentRequest,
 	): Promise<DataEnvelope<CreatePaymentIntentResponse>> {
-		const result = await this.commandBus.execute(
-			new CreatePaymentIntentCommand({
-				orderId,
-				simulateOutcome: body.simulateOutcome,
-				simulateDelaySeconds:
-					body.simulateDelaySeconds !== undefined
-						? Number(body.simulateDelaySeconds)
-						: undefined,
-			}),
-		);
-		return ResponseHelper.data(
-			CreatePaymentIntentResponse.fromResult(result),
-		);
+		const command = new CreatePaymentIntentCommand({
+			orderId,
+			simulateOutcome: body.simulateOutcome,
+			simulateDelaySeconds:
+				body.simulateDelaySeconds !== undefined
+					? Number(body.simulateDelaySeconds)
+					: undefined,
+		});
+		const result = await this.commandBus.execute(command);
+		const response = CreatePaymentIntentResponse.fromResult(result);
+
+		return ResponseHelper.data(response);
 	}
 }

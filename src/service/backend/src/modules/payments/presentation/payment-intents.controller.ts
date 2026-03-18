@@ -38,11 +38,10 @@ export class PaymentIntentsController {
 	async list(
 		@Query('limit') limit?: string,
 	): Promise<ListEnvelope<PaymentIntentResponse>> {
-		const result = await this.queryBus.execute(
-			new GetPaymentIntentsQuery({
-				limit: limit ? Number.parseInt(limit, 10) : undefined,
-			}),
-		);
+		const query = new GetPaymentIntentsQuery({
+			limit: limit ? Number.parseInt(limit, 10) : undefined,
+		});
+		const result = await this.queryBus.execute(query);
 		if (!Array.isArray(result) || !result.every(isPaymentIntentResult)) {
 			throw ApplicationErrorFactory.create(
 				PAYMENTS_APPLICATION_ERRORS.PAYMENTS_RESULT_INVALID,
@@ -59,9 +58,8 @@ export class PaymentIntentsController {
 	async get(
 		@Param('paymentId') paymentId: string,
 	): Promise<DataEnvelope<PaymentIntentResponse>> {
-		const result = await this.queryBus.execute(
-			new GetPaymentIntentQuery({ paymentId }),
-		);
+		const query = new GetPaymentIntentQuery({ paymentId });
+		const result = await this.queryBus.execute(query);
 		if (result === null || result === undefined) {
 			throw ApplicationErrorFactory.create(
 				PAYMENTS_APPLICATION_ERRORS.PAYMENT_NOT_FOUND,
