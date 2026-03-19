@@ -47,7 +47,7 @@ Parameters:
     Type: String
   OutboxDispatchScheduleExpression:
     Type: String
-    Default: rate(45 minutes)
+    Default: rate(60 minutes)
   OutboxConsumerReservedConcurrency:
     Type: Number
     Default: 5

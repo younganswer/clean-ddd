@@ -70,9 +70,10 @@ graph LR
 
 ### Outbox Worker 운영 기본값
 
-- AWS 배포 기본값에서 outbox dispatch scheduler Lambda는 `rate(1 minute)`로 동작합니다.
-- 즉, Application이 outbox row를 기록한 직후 바로 SQS로 전달되지 않을 수 있으며, 다음 scheduler tick까지 최대 약 1분 대기할 수 있습니다.
-- 이 지연은 현재 운영 모델에서 의도된 동작입니다. 기본값은 저지연보다 전달 경로 분리와 운영 단순성에 무게를 둡니다.
+- AWS 배포 기본값에서 outbox dispatch scheduler Lambda는 `rate(60 minutes)`로 동작합니다.
+- 시스템 상 1분 주기가 적절하다고 판단되나, 주기 실행(EventBridge, Lambda, Neon, etc...) 비용 절감 관점에서 기본값을 1시간으로 조정했습니다.
+- 즉, Application이 outbox row를 기록한 직후 바로 SQS로 전달되지 않을 수 있으며, 다음 scheduler tick까지 최대 약 60분 대기할 수 있습니다.
+- 이 지연은 현재 운영 모델에서 의도된 동작입니다. 기본값은 저지연보다 비용 절감과 전달 경로 분리에 무게를 둡니다.
 - 관련 설정 위치:
     - SAM 루트 파라미터: `src/infra/sam/template.yaml`
     - Worker stack 파라미터/이벤트 스케줄: `src/infra/sam/stacks/worker-stack.yaml`

@@ -48,8 +48,9 @@ sequenceDiagram
 
 운영 기본값:
 
-- AWS 배포에서는 outbox dispatcher가 scheduler Lambda로 실행되며 기본 스케줄은 `rate(1 minute)`입니다.
-- 따라서 outbox row가 기록된 시점과 실제 SQS enqueue 시점 사이에는 최대 약 1분의 의도된 대기 시간이 생길 수 있습니다.
+- AWS 배포에서는 outbox dispatcher가 scheduler Lambda로 실행되며 기본 스케줄은 `rate(60 minutes)`입니다.
+- 시스템 상 1분 주기가 적절하다고 판단되나, 주기 실행(EventBridge, Lambda, Neon, etc...) 비용 절감 관점에서 기본값을 1시간으로 조정했습니다.
+- 따라서 outbox row가 기록된 시점과 실제 SQS enqueue 시점 사이에는 최대 약 60분의 의도된 대기 시간이 생길 수 있습니다.
 - 이 구간은 `OutboxDispatcher` 로그의 `dispatchLagMs`나 `OutboxConsumer` 로그의 `eventAgeMs`로 관찰할 수 있습니다.
 
 <br/>
