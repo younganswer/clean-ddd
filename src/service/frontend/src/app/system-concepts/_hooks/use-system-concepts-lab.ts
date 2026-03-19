@@ -171,14 +171,12 @@ export const useSystemConceptsLab = () => {
 			return;
 		}
 
-		if (
-			nextPayment?.status === "SUCCEEDED" &&
-			nextOrder.status === "PAID"
-		) {
-			if (nextShipment) {
-				setPhase("completed");
-				return;
-			}
+		if (nextShipment) {
+			setPhase("completed");
+			return;
+		}
+
+		if (nextPayment?.status === "SUCCEEDED") {
 			setPhase("awaiting-shipment");
 			return;
 		}
