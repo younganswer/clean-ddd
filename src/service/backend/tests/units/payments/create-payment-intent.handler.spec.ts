@@ -9,6 +9,7 @@ import { PaymentWebhookSucceededEvent } from '@/contracts/payments/events/paymen
 import { PaymentWebhookFailedEvent } from '@/contracts/payments/events/payment-webhook-failed.event';
 import { PaymentIntentCreatedEvent } from '@/contracts/payments/events/payment-intent-created.event';
 import { DispatchOutboxEventCommand } from '@/modules/outbox/application/commands/dispatch-outbox-event.command';
+import type { IOutboxDelayedDispatchTrigger } from '@/shared/outbox/domain/schedulers/i.outbox-delayed-dispatch-trigger';
 
 describe('CreatePaymentIntentHandler', () => {
 	it('creates payment using payment snapshot reader and schedules succeeded webhook event', async () => {
@@ -58,11 +59,16 @@ describe('CreatePaymentIntentHandler', () => {
 		const commandBus = {
 			execute: executeMock,
 		} as unknown as CommandBus;
+		const scheduleOneShotMock = jest.fn(() => Promise.resolve(true));
+		const delayedDispatchTrigger = {
+			scheduleOneShot: scheduleOneShotMock,
+		} as unknown as IOutboxDelayedDispatchTrigger;
 
 		const handler = new CreatePaymentIntentHandler(
 			paymentRepository,
 			orderReader,
 			outboxProducer,
+			delayedDispatchTrigger,
 			commandBus,
 			uow as UnitOfWork,
 		);
@@ -98,6 +104,7 @@ describe('CreatePaymentIntentHandler', () => {
 		expect(executeMock.mock.calls[0]?.[0]).toBeInstanceOf(
 			DispatchOutboxEventCommand,
 		);
+		expect(scheduleOneShotMock).toHaveBeenCalledTimes(1);
 	});
 
 	it('schedules failed webhook event when simulateOutcome is FAILED', async () => {
@@ -145,11 +152,16 @@ describe('CreatePaymentIntentHandler', () => {
 		const commandBus = {
 			execute: executeMock,
 		} as unknown as CommandBus;
+		const scheduleOneShotMock = jest.fn(() => Promise.resolve(true));
+		const delayedDispatchTrigger = {
+			scheduleOneShot: scheduleOneShotMock,
+		} as unknown as IOutboxDelayedDispatchTrigger;
 
 		const handler = new CreatePaymentIntentHandler(
 			paymentRepository,
 			orderReader,
 			outboxProducer,
+			delayedDispatchTrigger,
 			commandBus,
 			uow as UnitOfWork,
 		);
@@ -174,5 +186,6 @@ describe('CreatePaymentIntentHandler', () => {
 		expect(executeMock.mock.calls[0]?.[0]).toBeInstanceOf(
 			DispatchOutboxEventCommand,
 		);
+		expect(scheduleOneShotMock).toHaveBeenCalledTimes(1);
 	});
 });

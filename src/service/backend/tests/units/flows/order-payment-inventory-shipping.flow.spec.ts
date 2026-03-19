@@ -21,6 +21,7 @@ import type { OrderResult } from '@/modules/ordering/domains/readers/order.resul
 import { OrderStatus } from '@/modules/ordering/domains/enums/order-status.enum';
 import { ReserveInventoryForOrderCommand } from '@/modules/inventory/application/commands/reserve-inventory-for-order.command';
 import { CreateShipmentForOrderCommand } from '@/modules/shipping/application/commands/create-shipment-for-order.command';
+import type { IOutboxDelayedDispatchTrigger } from '@/shared/outbox/domain/schedulers/i.outbox-delayed-dispatch-trigger';
 
 describe('Cross module flow (order -> payment -> inventory/shipping)', () => {
 	it('keeps command/event chain stable on payment succeeded flow', async () => {
@@ -96,11 +97,15 @@ describe('Cross module flow (order -> payment -> inventory/shipping)', () => {
 			transaction: <T>(work: (em: never) => Promise<T>): Promise<T> =>
 				work(undefined as never),
 		};
+		const delayedDispatchTrigger = {
+			scheduleOneShot: jest.fn(() => Promise.resolve(true)),
+		} as unknown as IOutboxDelayedDispatchTrigger;
 
 		const createPaymentIntentHandler = new CreatePaymentIntentHandler(
 			paymentRepository,
 			orderReader,
 			outboxProducer,
+			delayedDispatchTrigger,
 			commandBus,
 			uow as UnitOfWork,
 		);

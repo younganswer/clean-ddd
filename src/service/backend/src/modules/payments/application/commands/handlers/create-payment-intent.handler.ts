@@ -23,6 +23,10 @@ import { ORDERING_APPLICATION_ERRORS } from '@/shared/errors';
 import { ApplicationErrorFactory } from '@/common/errors/base.error-factory';
 import { DispatchOutboxEventCommand } from '@/modules/outbox/application/commands/dispatch-outbox-event.command';
 import { isOutboxHandlerImmediateDispatchEnabled } from '@/runtime-role';
+import {
+	IOutboxDelayedDispatchTriggerSymbol,
+	type IOutboxDelayedDispatchTrigger,
+} from '@/shared/outbox/domain/schedulers/i.outbox-delayed-dispatch-trigger';
 
 interface CreatePaymentIntentTransactionResult {
 	response: CreatePaymentIntentResult;
@@ -30,6 +34,11 @@ interface CreatePaymentIntentTransactionResult {
 		outboxId: string;
 		messageGroupId: string;
 	}[];
+	delayedDispatchTarget?: {
+		outboxId: string;
+		messageGroupId: string;
+		delaySeconds: number;
+	};
 }
 
 @CommandHandler(CreatePaymentIntentCommand)
@@ -41,6 +50,8 @@ export class CreatePaymentIntentHandler implements ICommandHandler<CreatePayment
 		private readonly orderReader: IOrderReader,
 		@Inject(IOutboxProducerSymbol)
 		private readonly outboxProducer: IOutboxProducer,
+		@Inject(IOutboxDelayedDispatchTriggerSymbol)
+		private readonly delayedDispatchTrigger: IOutboxDelayedDispatchTrigger,
 		private readonly commandBus: CommandBus,
 		private readonly uow: UnitOfWork,
 	) {}
@@ -126,9 +137,23 @@ export class CreatePaymentIntentHandler implements ICommandHandler<CreatePayment
 							},
 						},
 						immediateDispatchTargets,
+						...(delaySeconds > 0
+							? {
+									delayedDispatchTarget: {
+										outboxId,
+										messageGroupId: command.orderId,
+										delaySeconds,
+									},
+								}
+							: {}),
 					};
 				},
 			);
+
+		const delayedTarget = transactionResult.delayedDispatchTarget;
+		if (delayedTarget) {
+			await this.delayedDispatchTrigger.scheduleOneShot(delayedTarget);
+		}
 
 		if (!isOutboxHandlerImmediateDispatchEnabled()) {
 			return transactionResult.response;

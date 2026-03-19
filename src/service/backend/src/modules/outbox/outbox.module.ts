@@ -19,6 +19,8 @@ import { OutboxKnownHandlerRegistryService } from '@/modules/outbox/application/
 import { IOutboxProducerSymbol } from '@/shared/outbox/domain/producers/i.outbox.producer';
 import { OutboxEventReaderProvider } from '@/modules/outbox/infrastructure/readers/outbox-event.reader';
 import { IOutboxEventReaderSymbol } from '@/modules/outbox/domains/readers/i.outbox-event.reader';
+import { IOutboxDelayedDispatchTriggerSymbol } from '@/shared/outbox/domain/schedulers/i.outbox-delayed-dispatch-trigger';
+import { OutboxDelayedDispatchTriggerAdapter } from '@/modules/outbox/infrastructure/schedulers/outbox-delayed-dispatch-trigger.adapter';
 
 @Module({
 	imports: [CqrsModule, DiscoveryModule, SqsModule],
@@ -36,6 +38,11 @@ import { IOutboxEventReaderSymbol } from '@/modules/outbox/domains/readers/i.out
 			useExisting: OutboxQueue,
 		},
 		OutboxProducer,
+		OutboxDelayedDispatchTriggerAdapter,
+		{
+			provide: IOutboxDelayedDispatchTriggerSymbol,
+			useExisting: OutboxDelayedDispatchTriggerAdapter,
+		},
 		{
 			provide: IOutboxProducerSymbol,
 			useExisting: OutboxProducer,
@@ -55,6 +62,7 @@ import { IOutboxEventReaderSymbol } from '@/modules/outbox/domains/readers/i.out
 	exports: [
 		OutboxQueue,
 		OutboxProducer,
+		IOutboxDelayedDispatchTriggerSymbol,
 		IOutboxProducerSymbol,
 		OutboxDispatcher,
 		OutboxKnownHandlerRegistryService,
