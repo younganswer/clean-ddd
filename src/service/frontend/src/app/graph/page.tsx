@@ -150,7 +150,7 @@ const GraphPageInner = () => {
 			)}
 
 			{graph && (
-				<div className="mt-6 grid gap-4 lg:grid-cols-[1fr_320px]">
+				<div className="mt-6 grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
 					<GraphCanvas
 						graph={graph}
 						elements={elements}
@@ -169,26 +169,30 @@ const GraphPageInner = () => {
 						onNodeTap={onNodeTap}
 					/>
 
-					<GraphDetailPanel
-						selectedNode={selectedNode}
-						depth={depth}
-						maxEvents={maxEvents}
-						maxNodes={maxNodes}
-						inventoryItems={inventoryItems}
-						inventoryLoading={inventoryLoading}
-						selectedSku={selectedSku}
-						selectedQuantity={selectedQuantity}
-						computedOrderMoney={computedOrderMoney}
-						creatingOrder={creatingOrder}
-						createPaymentOutcome={createPaymentOutcome}
-						creatingPayment={creatingPayment}
-						onRefresh={onRefreshGraph}
-						onSelectedSkuChange={setSelectedSku}
-						onSelectedQuantityChange={setSelectedQuantity}
-						onCreatePaymentOutcomeChange={setCreatePaymentOutcome}
-						onCreateOrder={onCreateOrder}
-						onCreatePaymentIntent={onCreatePaymentIntent}
-					/>
+					<div className="min-w-0">
+						<GraphDetailPanel
+							selectedNode={selectedNode}
+							depth={depth}
+							maxEvents={maxEvents}
+							maxNodes={maxNodes}
+							inventoryItems={inventoryItems}
+							inventoryLoading={inventoryLoading}
+							selectedSku={selectedSku}
+							selectedQuantity={selectedQuantity}
+							computedOrderMoney={computedOrderMoney}
+							creatingOrder={creatingOrder}
+							createPaymentOutcome={createPaymentOutcome}
+							creatingPayment={creatingPayment}
+							onRefresh={onRefreshGraph}
+							onSelectedSkuChange={setSelectedSku}
+							onSelectedQuantityChange={setSelectedQuantity}
+							onCreatePaymentOutcomeChange={
+								setCreatePaymentOutcome
+							}
+							onCreateOrder={onCreateOrder}
+							onCreatePaymentIntent={onCreatePaymentIntent}
+						/>
+					</div>
 				</div>
 			)}
 		</div>

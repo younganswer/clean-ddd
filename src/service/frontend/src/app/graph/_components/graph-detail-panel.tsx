@@ -54,7 +54,7 @@ export const GraphDetailPanel = ({
 	onCreatePaymentIntent,
 }: Props) => {
 	return (
-		<div className="surface relative z-10 p-4">
+		<div className="surface relative z-10 min-w-0 max-w-full overflow-x-hidden p-4">
 			<div className="flex flex-wrap items-center justify-between gap-2">
 				<div className="text-sm font-semibold">상세</div>
 				<button
@@ -67,7 +67,7 @@ export const GraphDetailPanel = ({
 			</div>
 
 			{selectedNode ? (
-				<div className="mt-3 grid gap-2 text-sm">
+				<div className="mt-3 grid min-w-0 gap-2 text-sm">
 					<div className="surface-muted px-3 py-2">
 						<div className="text-xs text-muted-foreground">
 							NodeId
@@ -88,11 +88,11 @@ export const GraphDetailPanel = ({
 						</Link>
 					) : null}
 
-					<div className="surface px-3 py-2">
+					<div className="surface min-w-0 px-3 py-2">
 						<div className="text-xs text-muted-foreground">
 							Data
 						</div>
-						<pre className="mt-1 max-h-[360px] overflow-auto whitespace-pre-wrap break-words rounded bg-surface-muted p-2 text-xs">
+						<pre className="mt-1 max-h-[360px] min-w-0 overflow-auto whitespace-pre-wrap break-words rounded bg-surface-muted p-2 text-xs">
 							{JSON.stringify(selectedNode.data ?? {}, null, 2)}
 						</pre>
 					</div>
@@ -105,7 +105,7 @@ export const GraphDetailPanel = ({
 							<div className="mt-3 grid gap-3">
 								<div className="grid gap-1">
 									<div className="field-label">UserId</div>
-									<div className="font-mono text-xs">
+									<div className="break-all font-mono text-xs">
 										{parseNodeKey(selectedNode.id).key}
 									</div>
 								</div>
