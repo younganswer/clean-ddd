@@ -6,8 +6,6 @@
 
 - [service](service/README.md)
 - [packages](packages/README.md)
-- [infra](infra/README.md)
-- [stack](stack/README.md)
 
 ## 개념 기준 문서
 

@@ -1,40 +1,19 @@
 # stack
 
-`src/stack/`은 로컬 개발 환경에서 시스템을 구동하기 위한 런타임 조합을 정의합니다.
+`src/stack/`은 런타임 역할 분리가 로컬에서도 동일한 경계를 유지하는지 확인하기 위한 보조 구성입니다.
 
-## 구성
+## 아키텍처 관점
 
-- `compose/`: 서비스 조합 및 실행 정의
-- `localstack/`: 로컬 AWS 대체 환경 초기화 스크립트
-- `nginx/`: 로컬 라우팅/리버스 프록시 설정
+- `compose/`: HTTP/worker 역할을 분리한 실행 조합
+- `localstack/`: 메시징 경로(SQS) 재현
+- `nginx/`: 외부 진입점과 내부 역할의 연결
 
 ## 핵심 목적
 
-백엔드의 Outbox/SQS 흐름을 로컬에서도 재현하려면 `stack/` 설정 이해가 필요합니다.
+도메인 규칙은 동일하게 유지하고, 진입점만 바뀌는 런타임 모델을 검증합니다.
 
-## 로컬 런타임 모델
+## 경계 검증 포인트
 
-- 백엔드(HTTP/worker), DB, LocalStack, 프록시를 함께 띄우는 개발 환경을 표준화합니다.
-- 팀원 간 동일 런타임 조건을 확보합니다.
-- 여러 저장소(Postgres/Mongo) 조합에서도 Application이 포트만 의존하는 DIP 구조를 검증합니다.
-
-### 디렉터리별 역할
-
-- `compose/`: 함께 실행할 컨테이너 구성을 정의합니다.
-- `localstack/`: AWS 대체 리소스(예: SQS) 부트스트랩 스크립트를 제공합니다.
-- `nginx/`: 외부 진입 URL과 라우팅 규칙을 제공합니다.
-
-### 환경 변수 파일 기준
-
-- `compose/.env`: Docker Compose 치환 변수(포트/프로젝트명)
-- `nginx/.env`: Nginx 템플릿 변수(업스트림 호스트/타임아웃)
-- `localstack/.env`: LocalStack 및 부트스트랩 스크립트 변수
-
-`make -C src ...`는 기본으로 `stack/compose/.env`를 사용합니다.
-
-### 확인 순서
-
-1. `make -C src up`
-2. 큐/DB 상태 확인
-3. backend outbox 이벤트 생성
-4. worker 소비 결과 확인
+- HTTP/cron/queue 역할이 동일 애플리케이션 경계를 재사용하는가
+- Outbox -> SQS -> Consumer 경로가 로컬에서도 동일 계약으로 유지되는가
+- 인프라 보조 구성 변경이 도메인 계층 의존성 방향을 깨지 않는가

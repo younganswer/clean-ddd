@@ -1,3 +1,3 @@
 # frontend
 
-`src/service/frontend`는 UI 계층이며, 이 저장소의 핵심 아이덴티티(backend CA/DDD 적용) 보조 맥락으로 유지합니다.
+`src/service/frontend`는 본 저장소의 Clean Architecture/DDD 핵심 문서 범위에서 제외됩니다.

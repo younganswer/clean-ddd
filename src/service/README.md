@@ -5,7 +5,6 @@
 ## 핵심 진입
 
 - [backend README](backend/README.md)
-- [frontend README](frontend/README.md)
 
 ## 개념 기준 문서
 
