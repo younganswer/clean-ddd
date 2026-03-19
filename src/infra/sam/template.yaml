@@ -99,6 +99,7 @@ Resources:
         DynamoDbAvatarTable: !Ref DynamoDbAvatarTable
         OutboxQueueName: !GetAtt QueueStack.Outputs.OutboxQueueName
         OutboxQueueUrl: !GetAtt QueueStack.Outputs.OutboxQueueUrl
+        OutboxDispatchSchedulerFunctionArn: !GetAtt WorkerStack.Outputs.OutboxDispatchSchedulerFunctionArn
         PublicApiThrottleBurst: !Ref PublicApiThrottleBurst
         PublicApiThrottleRate: !Ref PublicApiThrottleRate
         ApiFunctionReservedConcurrency: !Ref ApiFunctionReservedConcurrency
