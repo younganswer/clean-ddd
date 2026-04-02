@@ -4,6 +4,13 @@ import type {
 	RepositoryPageOptions,
 } from '@/lib/database/repository-get-options';
 
+export interface OutboxConsumedOrderingCriteria {
+	eventType: string;
+	aggregateId: string;
+	eventVersion: number;
+	sequence: number;
+}
+
 export interface IOutboxRepository {
 	persist(event: OutboxEvent): Promise<void>;
 	findById(id: string): Promise<OutboxEvent | null>;
@@ -18,6 +25,9 @@ export interface IOutboxRepository {
 	findRecent(
 		options: RepositoryPageOptions<OutboxEvent>,
 	): Promise<OutboxEvent[]>;
+	hasConsumedNewerEvent(
+		criteria: OutboxConsumedOrderingCriteria,
+	): Promise<boolean>;
 	lock(uuid: string, lockedUntil: Date): Promise<boolean>;
 	unlock(uuid: string): Promise<void>;
 }

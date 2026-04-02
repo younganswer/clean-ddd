@@ -10,6 +10,7 @@ import {
 } from '@/shared/outbox/domain/queue/i.outbox.queue';
 import {
 	createRetryAt,
+	resolveOutboxMaxAttempts,
 	resolveErrorMessage,
 } from '@/modules/outbox/application/outbox-error.util';
 import { OutboxDispatchSource } from '@/shared/outbox/domain/queue/outbox-dispatch-source.enum';
@@ -18,6 +19,10 @@ const OUTBOX_RETRY_DELAY_MS = 60_000;
 
 @Injectable()
 export class OutboxSweeper {
+	private readonly maxAttempts = resolveOutboxMaxAttempts(
+		process.env.OUTBOX_MAX_ATTEMPTS,
+	);
+
 	constructor(
 		@Inject(IOutboxRepositorySymbol)
 		private readonly outboxRepository: IOutboxRepository,
@@ -70,6 +75,7 @@ export class OutboxSweeper {
 					outboxEvent.recordFailure(
 						message,
 						createRetryAt(OUTBOX_RETRY_DELAY_MS),
+						{ maxAttempts: this.maxAttempts },
 					);
 					await this.outboxRepository.persist(outboxEvent);
 				});

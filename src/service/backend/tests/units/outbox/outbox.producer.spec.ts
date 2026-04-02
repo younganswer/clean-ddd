@@ -31,6 +31,7 @@ describe('OutboxProducer', () => {
 			}),
 			findDispatchable: jest.fn(() => Promise.resolve([])),
 			findRecent: jest.fn(() => Promise.resolve([])),
+			hasConsumedNewerEvent: jest.fn(() => Promise.resolve(false)),
 			lock: jest.fn(() => Promise.resolve(false)),
 			unlock: jest.fn(() => Promise.resolve(undefined)),
 		};
@@ -89,6 +90,7 @@ describe('OutboxProducer', () => {
 			}),
 			findDispatchable: jest.fn(() => Promise.resolve([])),
 			findRecent: jest.fn(() => Promise.resolve([])),
+			hasConsumedNewerEvent: jest.fn(() => Promise.resolve(false)),
 			lock: jest.fn(() => Promise.resolve(false)),
 			unlock: jest.fn(() => Promise.resolve(undefined)),
 		};

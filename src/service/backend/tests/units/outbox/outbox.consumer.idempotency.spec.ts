@@ -25,6 +25,7 @@ describe('OutboxConsumer idempotency', () => {
 			getById: jest.fn(() => Promise.resolve(outboxEvent)),
 			findDispatchable: jest.fn(() => Promise.resolve([outboxEvent])),
 			findRecent: jest.fn(() => Promise.resolve([outboxEvent])),
+			hasConsumedNewerEvent: jest.fn(() => Promise.resolve(false)),
 			lock: jest.fn(() => Promise.resolve(true)),
 			unlock: unlockMock,
 		};
@@ -85,6 +86,7 @@ describe('OutboxConsumer idempotency', () => {
 				getById: jest.fn(() => Promise.resolve(event)),
 				findDispatchable: jest.fn(() => Promise.resolve([event])),
 				findRecent: jest.fn(() => Promise.resolve([event])),
+				hasConsumedNewerEvent: jest.fn(() => Promise.resolve(false)),
 				lock: jest.fn(() => Promise.resolve(true)),
 				unlock: jest.fn(() => Promise.resolve(undefined)),
 			};
@@ -158,5 +160,83 @@ describe('OutboxConsumer idempotency', () => {
 		);
 		expect(firstIdempotencyEventId).not.toBe(firstEvent.id);
 		expect(secondIdempotencyEventId).toBe(firstIdempotencyEventId);
+	});
+
+	it('discards out-of-order event when newer consumed event already exists', async () => {
+		const outboxEvent = OutboxEvent.create({
+			eventType: PaymentWebhookSucceededEvent.eventType,
+			payload: {
+				orderId: 'order-1',
+				paymentId: 'payment-1',
+				aggregateId: 'order-1',
+				sequence: 3,
+				eventVersion: 1,
+			},
+			status: OutboxEventStatus.PUBLISHED,
+		});
+
+		const persistMock = jest.fn(() => Promise.resolve(undefined));
+		const hasConsumedNewerEventMock = jest.fn(() => Promise.resolve(true));
+		const outboxRepository: IOutboxRepository = {
+			persist: persistMock,
+			findById: jest.fn(() => Promise.resolve(outboxEvent)),
+			getById: jest.fn(() => Promise.resolve(outboxEvent)),
+			findDispatchable: jest.fn(() => Promise.resolve([outboxEvent])),
+			findRecent: jest.fn(() => Promise.resolve([outboxEvent])),
+			hasConsumedNewerEvent: hasConsumedNewerEventMock,
+			lock: jest.fn(() => Promise.resolve(true)),
+			unlock: jest.fn(() => Promise.resolve(undefined)),
+		};
+
+		const knownHandlerHandle = jest.fn(() => Promise.resolve(undefined));
+		const knownHandlerRegistry = {
+			find: jest.fn(() => ({
+				eventType: PaymentWebhookSucceededEvent.eventType,
+				handlerName: 'KnownHandler',
+				handler: { handle: knownHandlerHandle },
+			})),
+		} as unknown as OutboxKnownHandlerRegistryService;
+
+		const claimMock = jest.fn(() => Promise.resolve(true));
+		const releaseMock = jest.fn(() => Promise.resolve(undefined));
+		const idempotency = {
+			claim: claimMock,
+			release: releaseMock,
+		} as unknown as IdempotencyService;
+
+		const eventBus = {
+			publish: jest.fn(),
+		} as unknown as EventBus;
+
+		const uow: Pick<UnitOfWork, 'transaction'> = {
+			transaction: async <T>(
+				work: (em: never) => Promise<T>,
+			): Promise<T> => await work(undefined as never),
+		};
+
+		const consumer = new OutboxConsumer(
+			outboxRepository,
+			idempotency,
+			eventBus,
+			uow as UnitOfWork,
+			knownHandlerRegistry,
+			new OutboxConsumeStateMachine(),
+		);
+
+		await consumer.consumeRawMessage({
+			body: JSON.stringify({ outboxId: outboxEvent.id }),
+		});
+
+		expect(outboxEvent.status).toBe(OutboxEventStatus.CONSUMED);
+		expect(knownHandlerHandle).not.toHaveBeenCalled();
+		expect(claimMock).not.toHaveBeenCalled();
+		expect(releaseMock).not.toHaveBeenCalled();
+		expect(persistMock).toHaveBeenCalled();
+		expect(hasConsumedNewerEventMock).toHaveBeenCalledWith({
+			eventType: PaymentWebhookSucceededEvent.eventType,
+			aggregateId: 'order-1',
+			eventVersion: 1,
+			sequence: 3,
+		});
 	});
 });

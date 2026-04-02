@@ -201,27 +201,12 @@ export class OutboxConsumer {
 		eventType: string,
 		payload: Record<string, unknown>,
 	): string {
-		const aggregateId =
-			typeof payload.aggregateId === 'string'
-				? payload.aggregateId.trim()
-				: '';
-		if (!aggregateId) {
+		const orderingMetadata = this.resolveEventOrderingMetadata(payload);
+		if (!orderingMetadata) {
 			return outboxId;
 		}
 
-		const sequenceRaw = Number(payload.sequence);
-		if (!Number.isFinite(sequenceRaw) || sequenceRaw < 0) {
-			return outboxId;
-		}
-		const sequence = Math.trunc(sequenceRaw);
-
-		const eventVersionRaw = Number(payload.eventVersion);
-		const eventVersion =
-			Number.isFinite(eventVersionRaw) && eventVersionRaw >= 1
-				? Math.trunc(eventVersionRaw)
-				: 1;
-
-		const seed = `${eventType}:${aggregateId}:v${eventVersion}:s${sequence}`;
+		const seed = `${eventType}:${orderingMetadata.aggregateId}:v${orderingMetadata.eventVersion}:s${orderingMetadata.sequence}`;
 		const hash = createHash('sha256').update(seed).digest();
 		const bytes = Buffer.from(hash.subarray(0, 16));
 
@@ -230,6 +215,35 @@ export class OutboxConsumer {
 
 		const hex = bytes.toString('hex');
 		return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20, 32)}`;
+	}
+
+	private resolveEventOrderingMetadata(payload: Record<string, unknown>): {
+		aggregateId: string;
+		eventVersion: number;
+		sequence: number;
+	} | null {
+		const aggregateId =
+			typeof payload.aggregateId === 'string'
+				? payload.aggregateId.trim()
+				: '';
+		if (!aggregateId) return null;
+
+		const sequenceRaw = Number(payload.sequence);
+		if (!Number.isFinite(sequenceRaw) || sequenceRaw < 0) {
+			return null;
+		}
+
+		const eventVersionRaw = Number(payload.eventVersion);
+		const eventVersion =
+			Number.isFinite(eventVersionRaw) && eventVersionRaw >= 1
+				? Math.trunc(eventVersionRaw)
+				: 1;
+
+		return {
+			aggregateId,
+			eventVersion,
+			sequence: Math.trunc(sequenceRaw),
+		};
 	}
 
 	private async consumeLockedOutboxWithTransaction(
@@ -270,6 +284,40 @@ export class OutboxConsumer {
 				});
 				await this.outboxRepository.unlock(outboxId);
 				return;
+			}
+
+			const orderingMetadata = this.resolveEventOrderingMetadata(
+				outboxEvent.payload,
+			);
+			if (orderingMetadata) {
+				const hasConsumedNewerEvent =
+					await this.outboxRepository.hasConsumedNewerEvent({
+						eventType: outboxEvent.eventType,
+						aggregateId: orderingMetadata.aggregateId,
+						eventVersion: orderingMetadata.eventVersion,
+						sequence: orderingMetadata.sequence,
+					});
+
+				if (hasConsumedNewerEvent) {
+					this.consumeStateMachine.markOutOfOrderDiscarded(
+						outboxEvent,
+					);
+					await this.outboxRepository.persist(outboxEvent);
+					writeBoundaryLog(OutboxConsumer.name, {
+						step: 'outbox_out_of_order_discarded',
+						outboxId,
+						source,
+						eventType: outboxEvent.eventType,
+						aggregateId: orderingMetadata.aggregateId,
+						eventVersion: orderingMetadata.eventVersion,
+						sequence: orderingMetadata.sequence,
+						loadOutboxMs,
+						eventAgeMs,
+						publishedLagMs,
+						consumeTotalMs: Date.now() - consumeStartedAt,
+					});
+					return;
+				}
 			}
 
 			const idempotencyEventId =

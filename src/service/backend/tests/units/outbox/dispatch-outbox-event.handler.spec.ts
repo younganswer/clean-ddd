@@ -23,6 +23,7 @@ describe('DispatchOutboxEventHandler', () => {
 			getById: jest.fn(() => Promise.resolve(event)),
 			findDispatchable: jest.fn(() => Promise.resolve([event])),
 			findRecent: jest.fn(() => Promise.resolve([event])),
+			hasConsumedNewerEvent: jest.fn(() => Promise.resolve(false)),
 			lock: jest.fn(() => Promise.resolve(true)),
 			unlock: jest.fn(() => Promise.resolve(undefined)),
 		};
@@ -71,6 +72,7 @@ describe('DispatchOutboxEventHandler', () => {
 			getById: jest.fn(() => Promise.resolve(event)),
 			findDispatchable: jest.fn(() => Promise.resolve([event])),
 			findRecent: jest.fn(() => Promise.resolve([event])),
+			hasConsumedNewerEvent: jest.fn(() => Promise.resolve(false)),
 			lock: jest.fn(() => Promise.resolve(true)),
 			unlock: jest.fn(() => Promise.resolve(undefined)),
 		};

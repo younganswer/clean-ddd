@@ -33,8 +33,14 @@ describe('OutboxConsumeStateMachine', () => {
 			payload: {},
 			status: OutboxEventStatus.CONSUMED,
 		});
+		const terminalFailed = OutboxEvent.create({
+			eventType: 'test.terminal-failed',
+			payload: {},
+			status: OutboxEventStatus.TERMINAL_FAILED,
+		});
 
 		expect(stateMachine.isDispatchable(consumed)).toBe(false);
+		expect(stateMachine.isDispatchable(terminalFailed)).toBe(false);
 	});
 
 	it('marks unknown event type as retryable failure', () => {
@@ -64,5 +70,32 @@ describe('OutboxConsumeStateMachine', () => {
 		expect(event.status).toBe(OutboxEventStatus.FAILED);
 		expect(event.lastError).toContain('duplicate idempotency claim');
 		expect(event.nextAttemptAt.getTime()).toBeGreaterThan(Date.now());
+	});
+
+	it('marks event as terminal failed when max attempts is exceeded', () => {
+		const previousMaxAttempts = process.env.OUTBOX_MAX_ATTEMPTS;
+		try {
+			process.env.OUTBOX_MAX_ATTEMPTS = '2';
+			const machine = new OutboxConsumeStateMachine();
+			const event = OutboxEvent.create({
+				eventType: 'terminal.failure',
+				payload: {},
+				status: OutboxEventStatus.PUBLISHED,
+			});
+
+			machine.markDispatchFailure(event, 'first failure');
+			expect(event.status).toBe(OutboxEventStatus.FAILED);
+			expect(event.attempt).toBe(1);
+
+			machine.markDispatchFailure(event, 'second failure');
+			expect(event.status).toBe(OutboxEventStatus.TERMINAL_FAILED);
+			expect(event.attempt).toBe(2);
+		} finally {
+			if (previousMaxAttempts === undefined) {
+				delete process.env.OUTBOX_MAX_ATTEMPTS;
+			} else {
+				process.env.OUTBOX_MAX_ATTEMPTS = previousMaxAttempts;
+			}
+		}
 	});
 });

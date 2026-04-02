@@ -5,7 +5,10 @@ import type {
 	RepositoryGetByIdOptions,
 	RepositoryPageOptions,
 } from '@/lib/database/repository-get-options';
-import type { IOutboxRepository } from '@/shared/outbox/domain/repositories/i.outbox.repository';
+import type {
+	IOutboxRepository,
+	OutboxConsumedOrderingCriteria,
+} from '@/shared/outbox/domain/repositories/i.outbox.repository';
 import { OutboxEvent } from '@/shared/outbox/domain/entities/outbox-event.entity';
 import { OutboxEventStatus } from '@/shared/outbox/domain/outbox-event-status.enum';
 import { OutboxMapper } from '@/modules/outbox/infrastructure/mappers/outbox.mapper';
@@ -111,6 +114,19 @@ export class OutboxRepository implements IOutboxRepository {
 		);
 
 		return rows.map((row) => this.mapper.toDomain(row));
+	}
+
+	async hasConsumedNewerEvent(
+		criteria: OutboxConsumedOrderingCriteria,
+	): Promise<boolean> {
+		const em = this.emForContext();
+		const rows = await em
+			.getConnection()
+			.execute<
+				Array<{ found: number }>
+			>(['select 1 as found', 'from "outbox_events"', 'where "event_type" = ?', 'and "status" = ?', "and coalesce(\"payload\"->>'aggregateId', '') = ?", 'and (', "(case when (\"payload\"->>'eventVersion') ~ '^[0-9]+$' then (\"payload\"->>'eventVersion')::bigint else 1 end) > ?", 'or (', "(case when (\"payload\"->>'eventVersion') ~ '^[0-9]+$' then (\"payload\"->>'eventVersion')::bigint else 1 end) = ?", "and (case when (\"payload\"->>'sequence') ~ '^[0-9]+$' then (\"payload\"->>'sequence')::bigint else 0 end) > ?", ')', ')', 'limit 1'].join(' '), [criteria.eventType, OutboxEventStatus.CONSUMED, criteria.aggregateId, criteria.eventVersion, criteria.eventVersion, criteria.sequence]);
+
+		return rows.length > 0;
 	}
 
 	async lock(uuid: string, lockedUntil: Date): Promise<boolean> {

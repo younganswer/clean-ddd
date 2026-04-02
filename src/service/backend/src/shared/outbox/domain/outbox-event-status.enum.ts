@@ -3,4 +3,5 @@ export enum OutboxEventStatus {
 	PUBLISHED = 'PUBLISHED',
 	CONSUMED = 'CONSUMED',
 	FAILED = 'FAILED',
+	TERMINAL_FAILED = 'TERMINAL_FAILED',
 }

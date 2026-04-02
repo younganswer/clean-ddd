@@ -74,6 +74,45 @@ class InMemoryOutboxRepository implements IOutboxRepository {
 		);
 	}
 
+	hasConsumedNewerEvent(criteria: {
+		eventType: string;
+		aggregateId: string;
+		eventVersion: number;
+		sequence: number;
+	}): Promise<boolean> {
+		const toBoundedInt = (
+			value: unknown,
+			fallback: number,
+			minimum: number,
+		): number => {
+			const parsed = Number(value);
+			if (!Number.isFinite(parsed) || parsed < minimum) return fallback;
+			return Math.trunc(parsed);
+		};
+
+		const hasNewer = [...this.events.values()].some((event) => {
+			if (event.status !== OutboxEventStatus.CONSUMED) return false;
+			if (event.eventType !== criteria.eventType) return false;
+
+			const aggregateId =
+				typeof event.payload.aggregateId === 'string'
+					? event.payload.aggregateId.trim()
+					: '';
+			if (aggregateId !== criteria.aggregateId) return false;
+
+			const eventVersion = toBoundedInt(event.payload.eventVersion, 1, 1);
+			const sequence = toBoundedInt(event.payload.sequence, 0, 0);
+
+			return (
+				eventVersion > criteria.eventVersion ||
+				(eventVersion === criteria.eventVersion &&
+					sequence > criteria.sequence)
+			);
+		});
+
+		return Promise.resolve(hasNewer);
+	}
+
 	lock(uuid: string, lockedUntil: Date): Promise<boolean> {
 		const event = this.events.get(uuid);
 		if (!event) return Promise.resolve(false);

@@ -32,6 +32,7 @@ describe('OutboxConsumer failure path', () => {
 			getById: jest.fn(() => Promise.resolve(outboxEvent)),
 			findDispatchable: jest.fn(() => Promise.resolve([outboxEvent])),
 			findRecent: jest.fn(() => Promise.resolve([outboxEvent])),
+			hasConsumedNewerEvent: jest.fn(() => Promise.resolve(false)),
 			lock: jest.fn(() => Promise.resolve(true)),
 			unlock: unlockMock,
 		};
