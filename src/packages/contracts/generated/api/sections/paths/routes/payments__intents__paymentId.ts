@@ -1,6 +1,6 @@
 /**
  * Generated path fragment for /payments/intents/{paymentId}.
- * Do not make direct changes to generated output.
+ * Do not make manual changes to generated output.
  */
 
 import type { components } from "../../components";

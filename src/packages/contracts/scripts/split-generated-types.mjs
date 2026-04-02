@@ -285,7 +285,7 @@ function writeComponentsSections(config, componentsBlock) {
 			[
 				"/**",
 				` * Generated schema fragment for ${entry.name}.`,
-				" * Do not make direct changes to generated output.",
+				" * Do not make manual changes to generated output.",
 				" */",
 				"",
 				'import type { components } from "../core";',
@@ -301,7 +301,7 @@ function writeComponentsSections(config, componentsBlock) {
 		[
 			"/**",
 			" * Generated schema index.",
-			" * Do not make direct changes to generated output.",
+			" * Do not make manual changes to generated output.",
 			" */",
 			"",
 			...schemaEntries.map(
@@ -323,7 +323,7 @@ function writeComponentsSections(config, componentsBlock) {
 		[
 			"/**",
 			` * This file was split from ${config.entryName}.`,
-			" * Do not make direct changes to generated output.",
+			" * Do not make manual changes to generated output.",
 			" */",
 			"",
 			'import type { GeneratedSchemas } from "./schemas";',
@@ -341,7 +341,7 @@ function writeComponentsSections(config, componentsBlock) {
 		[
 			"/**",
 			" * Generated components entry.",
-			" * Do not make direct changes to generated output.",
+			" * Do not make manual changes to generated output.",
 			" */",
 			"",
 			'export type { components } from "./core";',
@@ -370,7 +370,7 @@ function writePathsSections(config, pathsBlock) {
 			[
 				"/**",
 				` * Generated path fragment for ${entry.pathKey}.`,
-				" * Do not make direct changes to generated output.",
+				" * Do not make manual changes to generated output.",
 				" */",
 				"",
 				'import type { components } from "../../components";',
@@ -392,7 +392,7 @@ function writePathsSections(config, pathsBlock) {
 		[
 			"/**",
 			" * Generated path route index.",
-			" * Do not make direct changes to generated output.",
+			" * Do not make manual changes to generated output.",
 			" */",
 			"",
 			...routeMetadata.map(
@@ -414,7 +414,7 @@ function writePathsSections(config, pathsBlock) {
 		[
 			"/**",
 			` * This file was split from ${config.entryName}.`,
-			" * Do not make direct changes to generated output.",
+			" * Do not make manual changes to generated output.",
 			" */",
 			"",
 			'import type { GeneratedPathEntries } from "./routes";',
@@ -429,7 +429,7 @@ function writePathsSections(config, pathsBlock) {
 		[
 			"/**",
 			" * Generated paths entry.",
-			" * Do not make direct changes to generated output.",
+			" * Do not make manual changes to generated output.",
 			" */",
 			"",
 			'export type { paths } from "./paths/model";',
@@ -487,7 +487,7 @@ function splitTarget(targetKey) {
 		[
 			"/**",
 			` * This file was split from ${config.entryName}.`,
-			" * Do not make direct changes to generated output.",
+			" * Do not make manual changes to generated output.",
 			" */",
 			"",
 			webhooksBlock.trimEnd(),
@@ -502,7 +502,7 @@ function splitTarget(targetKey) {
 		[
 			"/**",
 			` * This file was split from ${config.entryName}.`,
-			" * Do not make direct changes to generated output.",
+			" * Do not make manual changes to generated output.",
 			" */",
 			"",
 			defsBlock.trimEnd(),
@@ -515,7 +515,7 @@ function splitTarget(targetKey) {
 		[
 			"/**",
 			` * This file was split from ${config.entryName}.`,
-			" * Do not make direct changes to generated output.",
+			" * Do not make manual changes to generated output.",
 			" */",
 			"",
 			operationsBlock.trimEnd(),
@@ -529,7 +529,7 @@ function splitTarget(targetKey) {
 			"/**",
 			` * Entry file generated from ${config.sourceLabel}.`,
 			" * Section files live under ./sections.",
-			" * Do not make direct changes to generated output.",
+			" * Do not make manual changes to generated output.",
 			" */",
 			"",
 			'export type { paths } from "./sections/paths";',
