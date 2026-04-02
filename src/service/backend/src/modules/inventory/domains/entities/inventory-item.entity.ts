@@ -78,6 +78,35 @@ export class InventoryItem extends BaseEntity {
 		this._reservedQuantity += normalized;
 	}
 
+	release(quantity: number): void {
+		const normalized = Number(quantity ?? 0);
+		if (!Number.isFinite(normalized) || normalized <= 0) {
+			throw DomainErrorFactory.create(
+				INVENTORY_DOMAIN_ERRORS.INVENTORY_QUANTITY_INVALID,
+				{
+					details: { quantity },
+				},
+			);
+		}
+
+		if (this._reservedQuantity < normalized) {
+			throw DomainErrorFactory.create(
+				INVENTORY_DOMAIN_ERRORS.INVENTORY_RELEASE_QUANTITY_EXCEEDS_RESERVED,
+				{
+					message: `release exceeds reserved: sku=${this._sku} reserved=${this._reservedQuantity} release=${normalized}`,
+					details: {
+						sku: this._sku,
+						reservedQuantity: this._reservedQuantity,
+						releaseQuantity: normalized,
+					},
+				},
+			);
+		}
+
+		this._reservedQuantity -= normalized;
+		this._availableQuantity += normalized;
+	}
+
 	get sku(): string {
 		return this._sku;
 	}

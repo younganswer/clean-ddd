@@ -101,4 +101,41 @@ export class InventoryReservationService {
 			await this.reservations.persist(reservation);
 		}
 	}
+
+	async releaseForOrder(input: { orderId: string }): Promise<void> {
+		const orderId = String(input.orderId ?? '').trim();
+		if (!orderId) {
+			throw DomainErrorFactory.create(
+				INVENTORY_DOMAIN_ERRORS.INVENTORY_ORDER_ID_REQUIRED,
+			);
+		}
+
+		const existingReservations =
+			await this.reservations.findReservationsByOrderId(orderId);
+		if (!existingReservations.length) {
+			return;
+		}
+
+		for (const reservation of existingReservations) {
+			const stock = await this.inventoryItemRepository.findBySku(
+				reservation.sku,
+			);
+			if (!stock) {
+				throw DomainErrorFactory.create(
+					INVENTORY_DOMAIN_ERRORS.INVENTORY_ITEM_NOT_FOUND,
+					{
+						message: `inventory item not found: sku=${reservation.sku}`,
+						details: {
+							sku: reservation.sku,
+							orderId,
+						},
+					},
+				);
+			}
+
+			stock.release(reservation.quantity);
+			await this.inventoryItemRepository.persist(stock);
+			await this.reservations.delete(reservation);
+		}
+	}
 }

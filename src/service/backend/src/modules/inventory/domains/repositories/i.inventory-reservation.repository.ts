@@ -2,6 +2,7 @@ import { InventoryReservation } from '@/modules/inventory/domains/entities/inven
 
 export interface IInventoryReservationRepository {
 	persist(reservation: InventoryReservation): Promise<void>;
+	delete(reservation: InventoryReservation): Promise<void>;
 	findReservationsByOrderId(orderId: string): Promise<InventoryReservation[]>;
 	findByOrderAndSku(
 		orderId: string,

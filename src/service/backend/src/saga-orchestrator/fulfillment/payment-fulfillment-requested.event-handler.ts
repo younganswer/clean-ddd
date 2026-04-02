@@ -7,6 +7,7 @@ import {
 } from '@/modules/ordering/domains/readers/i.order.reader';
 import { type InventoryOrderItemPayload } from '@/contracts/inventory/events/reserve-inventory-for-order-requested.event';
 import { ReserveInventoryForOrderCommand } from '@/modules/inventory/application/commands/reserve-inventory-for-order.command';
+import { ReleaseInventoryForOrderCommand } from '@/modules/inventory/application/commands/release-inventory-for-order.command';
 import { CreateShipmentForOrderCommand } from '@/modules/shipping/application/commands/create-shipment-for-order.command';
 import { PAYMENTS_APPLICATION_ERRORS } from '@/shared/errors';
 import { ApplicationErrorFactory } from '@/common/errors/base.error-factory';
@@ -48,9 +49,32 @@ export class PaymentFulfillmentRequestedHandler implements IEventHandler<Payment
 			});
 		await this.commandBus.execute(reserveInventoryForOrderCommand);
 
-		const createShipmentCommand = new CreateShipmentForOrderCommand({
-			orderId: event.orderId,
-		});
-		await this.commandBus.execute(createShipmentCommand);
+		try {
+			const createShipmentCommand = new CreateShipmentForOrderCommand({
+				orderId: event.orderId,
+			});
+			await this.commandBus.execute(createShipmentCommand);
+		} catch (error) {
+			try {
+				await this.commandBus.execute(
+					new ReleaseInventoryForOrderCommand({
+						orderId: event.orderId,
+					}),
+				);
+			} catch (compensationError) {
+				const resolve = (value: unknown): string => {
+					if (value instanceof Error && value.message) {
+						return value.message;
+					}
+					return String(value);
+				};
+
+				throw new Error(
+					`shipment creation failed and compensation failed: original=${resolve(error)} compensation=${resolve(compensationError)}`,
+				);
+			}
+
+			throw error;
+		}
 	}
 }

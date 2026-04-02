@@ -11,6 +11,11 @@ export const INVENTORY_DOMAIN_ERRORS = {
 		message: 'insufficient stock',
 		status: 409,
 	},
+	INVENTORY_RELEASE_QUANTITY_EXCEEDS_RESERVED: {
+		code: 'INVENTORY_RELEASE_QUANTITY_EXCEEDS_RESERVED',
+		message: 'release quantity exceeds reserved quantity',
+		status: 409,
+	},
 	INVENTORY_RESERVATION_ORDER_ID_REQUIRED: {
 		code: 'INVENTORY_RESERVATION_ORDER_ID_REQUIRED',
 		message: 'orderId is required',

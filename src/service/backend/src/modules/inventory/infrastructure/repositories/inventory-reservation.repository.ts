@@ -22,7 +22,7 @@ export class InventoryReservationRepository implements IInventoryReservationRepo
 		);
 	}
 
-	private transactionalEmForWrite(): EntityManager {
+	private transactionalEmForWrite(method: string): EntityManager {
 		const em = RequestContext.getEntityManager() as
 			| EntityManager
 			| undefined;
@@ -32,7 +32,7 @@ export class InventoryReservationRepository implements IInventoryReservationRepo
 				{
 					details: {
 						repository: InventoryReservationRepository.name,
-						method: 'persist',
+						method,
 					},
 				},
 			);
@@ -41,7 +41,7 @@ export class InventoryReservationRepository implements IInventoryReservationRepo
 	}
 
 	async persist(reservation: InventoryReservation): Promise<void> {
-		const em = this.transactionalEmForWrite();
+		const em = this.transactionalEmForWrite('persist');
 		const schema = this.mapper.toSchema(reservation);
 		const exists = await em.findOne(InventoryReservationSchema, {
 			uuid: schema.uuid,
@@ -55,6 +55,19 @@ export class InventoryReservationRepository implements IInventoryReservationRepo
 		} else {
 			em.create(InventoryReservationSchema, schema);
 		}
+	}
+
+	async delete(reservation: InventoryReservation): Promise<void> {
+		const em = this.transactionalEmForWrite('delete');
+		const schema = this.mapper.toSchema(reservation);
+		const existing = await em.findOne(InventoryReservationSchema, {
+			uuid: schema.uuid,
+		});
+		if (!existing) {
+			return;
+		}
+
+		em.remove(existing);
 	}
 
 	async findByOrderAndSku(
