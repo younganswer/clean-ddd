@@ -95,7 +95,7 @@ services:
       OUTBOX_CRON_ENABLED: "false"
       OUTBOX_POLLING_ENABLED: "false"
       DATABASE_URL: postgresql://app:app@postgres:5432/clean_ddd
-      DATABASE_URL_PRIMARY: postgresql://app:app@postgres:5432/clean_ddd
+      DATABASE_URL_DIRECT: postgresql://app:app@postgres:5432/clean_ddd
       DATABASE_URL_POOLED: postgresql://app:app@postgres:5432/clean_ddd
       SQS_ENDPOINT: http://localstack:4566
       SQS_OUTBOX_QUEUE_URL: http://localstack:4566/000000000000/OutboxDispatchQueue.fifo
@@ -133,7 +133,7 @@ services:
       OUTBOX_CRON_ENABLED: "true"
       OUTBOX_POLLING_ENABLED: "false"
       DATABASE_URL: postgresql://app:app@postgres:5432/clean_ddd
-      DATABASE_URL_PRIMARY: postgresql://app:app@postgres:5432/clean_ddd
+      DATABASE_URL_DIRECT: postgresql://app:app@postgres:5432/clean_ddd
       DATABASE_URL_POOLED: postgresql://app:app@postgres:5432/clean_ddd
       SQS_ENDPOINT: http://localstack:4566
       SQS_OUTBOX_QUEUE_URL: http://localstack:4566/000000000000/OutboxDispatchQueue.fifo
@@ -159,7 +159,7 @@ services:
       OUTBOX_CRON_ENABLED: "false"
       OUTBOX_POLLING_ENABLED: "true"
       DATABASE_URL: postgresql://app:app@postgres:5432/clean_ddd
-      DATABASE_URL_PRIMARY: postgresql://app:app@postgres:5432/clean_ddd
+      DATABASE_URL_DIRECT: postgresql://app:app@postgres:5432/clean_ddd
       DATABASE_URL_POOLED: postgresql://app:app@postgres:5432/clean_ddd
       SQS_ENDPOINT: http://localstack:4566
       SQS_OUTBOX_QUEUE_URL: http://localstack:4566/000000000000/OutboxDispatchQueue.fifo

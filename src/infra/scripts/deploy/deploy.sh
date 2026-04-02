@@ -26,7 +26,7 @@ required_vars=(
 
 required_secrets=(
   DATABASE_URL_POOLED
-  DATABASE_URL_PRIMARY
+  DATABASE_URL_DIRECT
 )
 
 source "${SCRIPT_DIR}/lib/common.sh"

@@ -13,7 +13,7 @@ const requireEnv = (name: string): string => {
 
 const main = async () => {
 	const pooled = requireEnv('DATABASE_URL_POOLED');
-	const direct = requireEnv('DATABASE_URL_PRIMARY');
+	const direct = requireEnv('DATABASE_URL_DIRECT');
 
 	await withRetries({ ...RETRY, label: 'Neon(Pooled)' }, async () => {
 		await checkPostgresSelect1(pooled);
@@ -27,7 +27,7 @@ const main = async () => {
 
 	console.log('- DATABASE_URL_POOLED: OK');
 
-	console.log('- DATABASE_URL_PRIMARY: OK');
+	console.log('- DATABASE_URL_DIRECT: OK');
 };
 
 main().catch((error) => {

@@ -9,10 +9,10 @@ import { runDbInit } from '@/scripts/db-init';
 const RETRY = { attempts: 30, delayMs: 2_000 };
 
 const databaseUrl = (): string => {
-	const url = process.env.DATABASE_URL_PRIMARY ?? process.env.DATABASE_URL;
+	const url = process.env.DATABASE_URL_DIRECT ?? process.env.DATABASE_URL;
 	if (!url || url.trim().length === 0) {
 		throw new Error(
-			'DATABASE_URL_PRIMARY (or DATABASE_URL) is required (e.g. postgresql://...)',
+			'DATABASE_URL_DIRECT (or DATABASE_URL) is required (e.g. postgresql://...)',
 		);
 	}
 	return url;
