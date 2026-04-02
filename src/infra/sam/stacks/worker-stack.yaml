@@ -79,6 +79,7 @@ Resources:
         Variables:
           OUTBOX_CRON_ENABLED: false
           OUTBOX_HANDLER_IMMEDIATE_DISPATCH: true
+          OUTBOX_MAX_ATTEMPTS: 10
           OUTBOX_ENQUEUE_STRICT: true
           OUTBOX_CONSUMER_LOCK_TIMEOUT_MS: !Ref OutboxConsumerLockTimeoutMs
       Policies:
@@ -116,6 +117,7 @@ Resources:
         Variables:
           OUTBOX_CRON_ENABLED: false
           OUTBOX_HANDLER_IMMEDIATE_DISPATCH: true
+          OUTBOX_MAX_ATTEMPTS: 10
           OUTBOX_DISPATCH_BATCH_SIZE: 10
           OUTBOX_ENQUEUE_STRICT: true
       Policies:

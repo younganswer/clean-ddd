@@ -144,6 +144,7 @@ Resources:
           NODE_ENV: !Ref EnvironmentName
           OUTBOX_CRON_ENABLED: false
           OUTBOX_HANDLER_IMMEDIATE_DISPATCH: true
+          OUTBOX_MAX_ATTEMPTS: 10
           OUTBOX_ENQUEUE_STRICT: true
           OUTBOX_DELAYED_TRIGGER_ENABLED: true
           OUTBOX_DELAYED_TRIGGER_TARGET_ARN: !Ref OutboxDispatchSchedulerFunctionArn
