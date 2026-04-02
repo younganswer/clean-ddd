@@ -4,11 +4,11 @@ import { defineConfig, MikroORM } from '@mikro-orm/postgresql';
 export const createTestOrm = async (): Promise<MikroORM> => {
 	const clientUrl =
 		process.env.TEST_DATABASE_URL ??
-		process.env.DATABASE_URL_DIRECT ??
+		process.env.DATABASE_URL_PRIMARY ??
 		process.env.DATABASE_URL;
 	if (!clientUrl) {
 		throw new Error(
-			'TEST_DATABASE_URL (or DATABASE_URL_DIRECT/DATABASE_URL) is required for DB tests',
+			'TEST_DATABASE_URL (or DATABASE_URL_PRIMARY/DATABASE_URL) is required for DB tests',
 		);
 	}
 

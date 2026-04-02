@@ -12,7 +12,7 @@ Parameters:
   DatabaseUrlPooled:
     Type: String
     NoEcho: true
-  DatabaseUrlDirect:
+  DatabaseUrlPrimary:
     Type: String
     NoEcho: true
   AvatarRepositoryBackend:
@@ -94,7 +94,7 @@ Resources:
         ProjectName: !Ref ProjectName
         EnvironmentName: !Ref EnvironmentName
         DatabaseUrlPooled: !Ref DatabaseUrlPooled
-        DatabaseUrlDirect: !Ref DatabaseUrlDirect
+        DatabaseUrlPrimary: !Ref DatabaseUrlPrimary
         AvatarRepositoryBackend: !Ref AvatarRepositoryBackend
         DynamoDbAvatarTable: !Ref DynamoDbAvatarTable
         OutboxQueueName: !GetAtt QueueStack.Outputs.OutboxQueueName
@@ -114,7 +114,7 @@ Resources:
         ProjectName: !Ref ProjectName
         EnvironmentName: !Ref EnvironmentName
         DatabaseUrlPooled: !Ref DatabaseUrlPooled
-        DatabaseUrlDirect: !Ref DatabaseUrlDirect
+        DatabaseUrlPrimary: !Ref DatabaseUrlPrimary
         AvatarRepositoryBackend: !Ref AvatarRepositoryBackend
         DynamoDbAvatarTable: !Ref DynamoDbAvatarTable
         OutboxQueueArn: !GetAtt QueueStack.Outputs.OutboxQueueArn

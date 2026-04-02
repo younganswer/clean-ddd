@@ -40,7 +40,7 @@ deploy_backend() {
       ProjectName="$PROJECT_NAME" \
       EnvironmentName="$TARGET_ENV" \
       DatabaseUrlPooled="$DATABASE_URL_POOLED" \
-      DatabaseUrlDirect="$DATABASE_URL_DIRECT" \
+      DatabaseUrlPrimary="$DATABASE_URL_PRIMARY" \
       AvatarRepositoryBackend="$AVATAR_REPOSITORY_BACKEND" \
       DynamoDbAvatarTable="$DYNAMODB_AVATAR_TABLE" \
       OutboxConsumerLockTimeoutMs="$outbox_consumer_lock_timeout_ms" \

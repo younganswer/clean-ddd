@@ -22,7 +22,7 @@ process.env.TEST_DB_PASSWORD = process.env.TEST_DB_PASSWORD ?? 'app';
 const fallbackUrl = `postgresql://${process.env.TEST_DB_USER}:${process.env.TEST_DB_PASSWORD}@127.0.0.1:${process.env.TEST_DB_HOST_PORT}/${process.env.TEST_DB_NAME}`;
 
 process.env.TEST_DATABASE_URL = process.env.TEST_DATABASE_URL ?? fallbackUrl;
-process.env.DATABASE_URL_DIRECT =
-	process.env.DATABASE_URL_DIRECT ?? process.env.TEST_DATABASE_URL;
+process.env.DATABASE_URL_PRIMARY =
+	process.env.DATABASE_URL_PRIMARY ?? process.env.TEST_DATABASE_URL;
 process.env.DATABASE_URL =
 	process.env.DATABASE_URL ?? process.env.TEST_DATABASE_URL;

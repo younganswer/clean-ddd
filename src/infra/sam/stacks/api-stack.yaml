@@ -14,7 +14,7 @@ Globals:
     Environment:
       Variables:
         DATABASE_URL_POOLED: !Ref DatabaseUrlPooled
-        DATABASE_URL_DIRECT: !Ref DatabaseUrlDirect
+        DATABASE_URL_PRIMARY: !Ref DatabaseUrlPrimary
         PGSSLMODE: require
         DB_FORCE_SSL: true
         SQS_OUTBOX_QUEUE_URL: !Ref OutboxQueueUrl
@@ -29,7 +29,7 @@ Parameters:
   DatabaseUrlPooled:
     Type: String
     NoEcho: true
-  DatabaseUrlDirect:
+  DatabaseUrlPrimary:
     Type: String
     NoEcho: true
   AvatarRepositoryBackend:
@@ -145,7 +145,6 @@ Resources:
           OUTBOX_CRON_ENABLED: false
           OUTBOX_HANDLER_IMMEDIATE_DISPATCH: true
           OUTBOX_ENQUEUE_STRICT: true
-          OUTBOX_DIRECT_CONSUME_FALLBACK: true
           OUTBOX_DELAYED_TRIGGER_ENABLED: true
           OUTBOX_DELAYED_TRIGGER_TARGET_ARN: !Ref OutboxDispatchSchedulerFunctionArn
           OUTBOX_DELAYED_TRIGGER_ROLE_ARN: !GetAtt OutboxDelayedDispatchSchedulerRole.Arn

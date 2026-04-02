@@ -13,7 +13,7 @@ const requireEnv = (name: string): string => {
 
 const main = async () => {
 	const pooled = requireEnv('DATABASE_URL_POOLED');
-	const direct = requireEnv('DATABASE_URL_DIRECT');
+	const direct = requireEnv('DATABASE_URL_PRIMARY');
 
 	await withRetries({ ...RETRY, label: 'Neon(Pooled)' }, async () => {
 		await checkPostgresSelect1(pooled);
@@ -23,17 +23,16 @@ const main = async () => {
 		await checkPostgresSelect1(direct);
 	});
 
-	// eslint-disable-next-line no-console
 	console.log('prod 체크 성공');
-	// eslint-disable-next-line no-console
+
 	console.log('- DATABASE_URL_POOLED: OK');
-	// eslint-disable-next-line no-console
-	console.log('- DATABASE_URL_DIRECT: OK');
+
+	console.log('- DATABASE_URL_PRIMARY: OK');
 };
 
 main().catch((error) => {
 	const message = error instanceof Error ? error.message : String(error);
-	// eslint-disable-next-line no-console
+
 	console.error(`prod 체크 실패 (10초 간격 3회 재시도 후): ${message}`);
 	process.exitCode = 1;
 });
