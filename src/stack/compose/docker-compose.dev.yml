@@ -17,6 +17,7 @@ services:
   backend-api:
     build:
       target: dev
+    restart: unless-stopped
     volumes:
       - ../../service/backend/src:/app/service/backend/src
       - ../../service/backend/scripts:/app/service/backend/scripts
@@ -27,6 +28,7 @@ services:
   backend-cron:
     build:
       target: dev
+    restart: unless-stopped
     volumes:
       - ../../service/backend/src:/app/service/backend/src
       - ../../service/backend/scripts:/app/service/backend/scripts
@@ -37,6 +39,7 @@ services:
   backend-queue:
     build:
       target: dev
+    restart: unless-stopped
     volumes:
       - ../../service/backend/src:/app/service/backend/src
       - ../../service/backend/scripts:/app/service/backend/scripts

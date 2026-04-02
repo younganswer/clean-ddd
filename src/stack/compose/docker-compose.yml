@@ -63,8 +63,10 @@ services:
       BACKEND_PORT: ${BACKEND_PORT:-3000}
       FRONTEND_PORT: ${FRONTEND_PORT:-8080}
     depends_on:
-      - frontend
-      - backend-api
+      frontend:
+        condition: service_started
+      backend-api:
+        condition: service_healthy
 
   frontend:
     build:
@@ -98,6 +100,18 @@ services:
       SQS_ENDPOINT: http://localstack:4566
       SQS_OUTBOX_QUEUE_URL: http://localstack:4566/000000000000/OutboxDispatchQueue.fifo
       MONGODB_URL: mongodb://mongodb:27017
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "const p=process.env.PORT||3000;fetch('http://127.0.0.1:'+p+'/api/v1/app/health-check').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1));",
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 10s
     depends_on:
       postgres:
         condition: service_healthy
