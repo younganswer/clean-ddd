@@ -25,13 +25,13 @@ else
 	NGINX_BASE_URL := http://localhost:$(NGINX_HTTP_PORT)
 endif
 
-dev:
+dev: init
 	@$(COMPOSE_DEV) up -d --build --remove-orphans
 
 serve:
 	@$(COMPOSE_BASE) up -d --build --remove-orphans
 
-up:
+up: init
 	@$(COMPOSE_BASE) up -d --build --remove-orphans
 
 down:
