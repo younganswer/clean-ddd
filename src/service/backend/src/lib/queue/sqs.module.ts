@@ -13,7 +13,7 @@ const normalizeOutboxQueueUrl = (raw: string): string => {
 	const url = String(raw ?? '').trim();
 	if (!url) return url;
 
-	// When running the backend directly on the host machine (not in docker-compose),
+	// When running the backend on the host machine (not in docker-compose),
 	// the hostname `localstack` is typically not resolvable. In that case, rewrite
 	// it to `localhost` which is how localstack is usually exposed.
 	try {

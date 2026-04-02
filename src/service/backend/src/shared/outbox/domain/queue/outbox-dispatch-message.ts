@@ -84,9 +84,6 @@ function normalizeOutboxDispatchSource(
 	if (source === OutboxDispatchSource.SWEEPER) {
 		return OutboxDispatchSource.SWEEPER;
 	}
-	if (source === OutboxDispatchSource.SWEEPER_DIRECT) {
-		return OutboxDispatchSource.SWEEPER_DIRECT;
-	}
 
 	return OutboxDispatchSource.LEGACY;
 }

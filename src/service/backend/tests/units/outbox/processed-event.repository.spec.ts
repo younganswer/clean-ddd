@@ -16,10 +16,12 @@ type ExecuteFn = (
 	params: unknown[],
 ) => Promise<Array<{ uuid: string }>>;
 
-type DeleteFn = (
+type FindOneFn = (
 	entity: typeof ProcessedEventSchema,
 	criteria: Pick<ClaimInsertPayload, 'consumerName' | 'eventId'>,
-) => Promise<number>;
+) => Promise<ProcessedEventSchema | null>;
+
+type RemoveFn = (entity: ProcessedEventSchema) => void;
 
 type FindFn = (
 	entity: typeof ProcessedEventSchema,
@@ -161,9 +163,18 @@ describe('ProcessedEventRepository', () => {
 			consumerName: 'OutboxConsumer',
 			eventId: 'event-1',
 		});
-		const deleteMock = jest
-			.fn<ReturnType<DeleteFn>, Parameters<DeleteFn>>()
-			.mockResolvedValue(1);
+		const existing = new ProcessedEventSchema({
+			uuid: processedEvent.id,
+			consumerName: processedEvent.consumerName,
+			eventId: processedEvent.eventId,
+		});
+		const findOneMock = jest
+			.fn<ReturnType<FindOneFn>, Parameters<FindOneFn>>()
+			.mockResolvedValue(existing);
+		const removeMock = jest.fn<
+			ReturnType<RemoveFn>,
+			Parameters<RemoveFn>
+		>();
 		const mapper = {
 			toSchema: jest.fn(
 				(event: ProcessedEvent) =>
@@ -176,7 +187,8 @@ describe('ProcessedEventRepository', () => {
 		} as Pick<ProcessedEventMapper, 'toSchema'>;
 		const repository = new ProcessedEventRepository(
 			{
-				nativeDelete: deleteMock,
+				findOne: findOneMock,
+				remove: removeMock,
 			} as never,
 			mapper as ProcessedEventMapper,
 		);
@@ -186,9 +198,10 @@ describe('ProcessedEventRepository', () => {
 		).resolves.toBeUndefined();
 
 		expect(mapper.toSchema).toHaveBeenCalledWith(processedEvent);
-		expect(deleteMock).toHaveBeenCalledWith(ProcessedEventSchema, {
+		expect(findOneMock).toHaveBeenCalledWith(ProcessedEventSchema, {
 			consumerName: processedEvent.consumerName,
 			eventId: processedEvent.eventId,
 		});
+		expect(removeMock).toHaveBeenCalledWith(existing);
 	});
 });

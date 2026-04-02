@@ -46,6 +46,23 @@ describe('outbox dispatch message', () => {
 		});
 	});
 
+	it('normalizes unknown source to legacy', () => {
+		expect(
+			parseOutboxDispatchMessage(
+				JSON.stringify({
+					outboxId: 'outbox-1',
+					source: 'inline',
+				}),
+			),
+		).toEqual({
+			ok: true,
+			message: {
+				outboxId: 'outbox-1',
+				source: OutboxDispatchSource.LEGACY,
+			},
+		});
+	});
+
 	it('returns parse errors for invalid message bodies', () => {
 		expect(parseOutboxDispatchMessage('{')).toEqual({
 			ok: false,

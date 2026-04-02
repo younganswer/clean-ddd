@@ -76,4 +76,87 @@ describe('OutboxConsumer idempotency', () => {
 		expect(persistMock).toHaveBeenCalled();
 		expect(unlockMock).toHaveBeenCalledWith(outboxEvent.id);
 	});
+
+	it('uses deterministic idempotency key when aggregate metadata exists', async () => {
+		const buildConsumer = (event: OutboxEvent) => {
+			const outboxRepository: IOutboxRepository = {
+				persist: jest.fn(() => Promise.resolve(undefined)),
+				findById: jest.fn(() => Promise.resolve(event)),
+				getById: jest.fn(() => Promise.resolve(event)),
+				findDispatchable: jest.fn(() => Promise.resolve([event])),
+				findRecent: jest.fn(() => Promise.resolve([event])),
+				lock: jest.fn(() => Promise.resolve(true)),
+				unlock: jest.fn(() => Promise.resolve(undefined)),
+			};
+
+			const claimMock = jest.fn<Promise<boolean>, [string, string]>(() =>
+				Promise.resolve(false),
+			);
+			const idempotency = {
+				claim: claimMock,
+				release: jest.fn(() => Promise.resolve(undefined)),
+			} as unknown as IdempotencyService;
+
+			const knownHandlerRegistry = {
+				find: jest.fn(() => undefined),
+			} as unknown as OutboxKnownHandlerRegistryService;
+
+			const consumer = new OutboxConsumer(
+				outboxRepository,
+				idempotency,
+				{ publish: jest.fn() } as unknown as EventBus,
+				{
+					transaction: async <T>(
+						work: (em: never) => Promise<T>,
+					): Promise<T> => await work(undefined as never),
+				} as unknown as UnitOfWork,
+				knownHandlerRegistry,
+				new OutboxConsumeStateMachine(),
+			);
+
+			return {
+				consumer,
+				claimMock,
+			};
+		};
+
+		const payload = {
+			orderId: 'order-1',
+			paymentId: 'payment-1',
+			aggregateId: 'order-1',
+			sequence: 11,
+			eventVersion: 2,
+		};
+
+		const firstEvent = OutboxEvent.create({
+			eventType: PaymentWebhookSucceededEvent.eventType,
+			payload,
+			status: OutboxEventStatus.PUBLISHED,
+		});
+		const first = buildConsumer(firstEvent);
+		await first.consumer.consumeRawMessage({
+			body: JSON.stringify({ outboxId: firstEvent.id }),
+		});
+		const firstIdempotencyEventId = first.claimMock.mock.calls.at(0)?.[1];
+
+		const secondEvent = OutboxEvent.create({
+			eventType: PaymentWebhookSucceededEvent.eventType,
+			payload,
+			status: OutboxEventStatus.PUBLISHED,
+		});
+		const second = buildConsumer(secondEvent);
+		await second.consumer.consumeRawMessage({
+			body: JSON.stringify({ outboxId: secondEvent.id }),
+		});
+		const secondIdempotencyEventId = second.claimMock.mock.calls.at(0)?.[1];
+
+		if (!firstIdempotencyEventId || !secondIdempotencyEventId) {
+			throw new Error('idempotency key was not claimed');
+		}
+		expect(firstIdempotencyEventId).toMatch(
+			/^[0-9a-f]{8}-[0-9a-f]{4}-5[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
+		);
+		expect(firstIdempotencyEventId).not.toBe(firstEvent.id);
+		expect(secondIdempotencyEventId).toBe(firstIdempotencyEventId);
+	});
 });

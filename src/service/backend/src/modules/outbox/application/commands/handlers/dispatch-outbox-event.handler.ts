@@ -15,6 +15,7 @@ import {
 	resolveErrorMessage,
 } from '@/modules/outbox/application/outbox-error.util';
 import { OutboxDispatchSource } from '@/shared/outbox/domain/queue/outbox-dispatch-source.enum';
+const OUTBOX_RETRY_DELAY_MS = 60_000;
 
 @CommandHandler(DispatchOutboxEventCommand)
 export class DispatchOutboxEventHandler implements ICommandHandler<DispatchOutboxEventCommand> {
@@ -52,7 +53,10 @@ export class DispatchOutboxEventHandler implements ICommandHandler<DispatchOutbo
 					await this.outboxRepository.findById(outboxId);
 				if (!outboxEvent) return;
 
-				outboxEvent.recordFailure(message, createRetryAt(30_000));
+				outboxEvent.recordFailure(
+					message,
+					createRetryAt(OUTBOX_RETRY_DELAY_MS),
+				);
 				await this.outboxRepository.persist(outboxEvent);
 			});
 		}

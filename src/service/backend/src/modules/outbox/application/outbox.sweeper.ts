@@ -1,5 +1,4 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { ModuleRef } from '@nestjs/core';
 import { UnitOfWork } from '@/lib/database/unit-of-work';
 import {
 	IOutboxRepositorySymbol,
@@ -9,49 +8,23 @@ import {
 	IOutboxQueueSymbol,
 	type IOutboxQueue,
 } from '@/shared/outbox/domain/queue/i.outbox.queue';
-import { OutboxConsumer } from '@/modules/outbox/application/outbox.consumer';
 import {
 	createRetryAt,
 	resolveErrorMessage,
 } from '@/modules/outbox/application/outbox-error.util';
-import { OUTBOX_INFRA_ERRORS } from '@/shared/errors';
-import { InfrastructureErrorFactory } from '@/common/errors/base.error-factory';
 import { OutboxDispatchSource } from '@/shared/outbox/domain/queue/outbox-dispatch-source.enum';
-import { serializeOutboxDispatchMessage } from '@/shared/outbox/domain/queue/outbox-dispatch-message';
+
+const OUTBOX_RETRY_DELAY_MS = 60_000;
 
 @Injectable()
 export class OutboxSweeper {
 	constructor(
-		private readonly moduleRef: ModuleRef,
 		@Inject(IOutboxRepositorySymbol)
 		private readonly outboxRepository: IOutboxRepository,
 		@Inject(IOutboxQueueSymbol)
 		private readonly outboxQueue: IOutboxQueue,
 		private readonly uow: UnitOfWork,
 	) {}
-
-	private isDirectConsumeFallbackEnabled(): boolean {
-		return process.env.OUTBOX_DIRECT_CONSUME_FALLBACK === 'true';
-	}
-
-	private async consumeDirect(outboxId: string): Promise<void> {
-		const consumer = this.moduleRef.get(OutboxConsumer, { strict: false });
-		if (!consumer) {
-			throw InfrastructureErrorFactory.create(
-				OUTBOX_INFRA_ERRORS.OUTBOX_CONSUMER_PROVIDER_NOT_FOUND,
-				{
-					details: { outboxId },
-				},
-			);
-		}
-
-		await consumer.consumeRawMessage({
-			body: serializeOutboxDispatchMessage({
-				outboxId,
-				source: OutboxDispatchSource.SWEEPER_DIRECT,
-			}),
-		});
-	}
 
 	async sweepAndEnqueue(limit: number): Promise<number> {
 		const now = new Date();
@@ -60,34 +33,10 @@ export class OutboxSweeper {
 			now,
 		});
 		let enqueued = 0;
-		const directConsumeFallbackEnabled =
-			this.isDirectConsumeFallbackEnabled();
 
 		for (const event of candidates) {
 			const eventId = event.id;
 			if (!eventId) continue;
-
-			if (directConsumeFallbackEnabled) {
-				try {
-					await this.consumeDirect(eventId);
-					enqueued += 1;
-					continue;
-				} catch (error: unknown) {
-					const message = resolveErrorMessage(error);
-					await this.uow.transaction(async () => {
-						const outboxEvent =
-							await this.outboxRepository.findById(eventId);
-						if (!outboxEvent) return;
-
-						outboxEvent.recordFailure(
-							message,
-							createRetryAt(30_000),
-						);
-						await this.outboxRepository.persist(outboxEvent);
-					});
-					continue;
-				}
-			}
 
 			try {
 				const payload =
@@ -118,7 +67,10 @@ export class OutboxSweeper {
 						await this.outboxRepository.findById(eventId);
 					if (!outboxEvent) return;
 
-					outboxEvent.recordFailure(message, createRetryAt(30_000));
+					outboxEvent.recordFailure(
+						message,
+						createRetryAt(OUTBOX_RETRY_DELAY_MS),
+					);
 					await this.outboxRepository.persist(outboxEvent);
 				});
 			}

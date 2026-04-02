@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { EventBus } from '@nestjs/cqrs';
 import type { SQSRecord } from 'aws-lambda';
+import { createHash } from 'node:crypto';
 import { UnitOfWork } from '@/lib/database/unit-of-work';
 import { IdempotencyService } from '@/modules/outbox/idempotency/application/idempotency.service';
 import {
@@ -147,6 +148,13 @@ export class OutboxConsumer {
 					return;
 				}
 
+				const idempotencyEventId =
+					this.resolveIdempotencyEventIdForOutboxEvent(
+						outboxEvent.id,
+						outboxEvent.eventType,
+						outboxEvent.payload,
+					);
+
 				this.consumeStateMachine.markDispatchFailure(
 					outboxEvent,
 					message,
@@ -167,7 +175,7 @@ export class OutboxConsumer {
 				try {
 					await this.idempotencyService.release(
 						this.consumerName,
-						outboxId,
+						idempotencyEventId,
 					);
 				} catch (releaseError: unknown) {
 					writeBoundaryLog(
@@ -175,6 +183,7 @@ export class OutboxConsumer {
 						{
 							step: 'outbox_idempotency_release_failed',
 							outboxId,
+							idempotencyEventId,
 							source,
 							eventType: outboxEvent.eventType,
 							error: resolveErrorMessage(releaseError),
@@ -185,6 +194,42 @@ export class OutboxConsumer {
 			},
 			{ requiresNew: true },
 		);
+	}
+
+	private resolveIdempotencyEventIdForOutboxEvent(
+		outboxId: string,
+		eventType: string,
+		payload: Record<string, unknown>,
+	): string {
+		const aggregateId =
+			typeof payload.aggregateId === 'string'
+				? payload.aggregateId.trim()
+				: '';
+		if (!aggregateId) {
+			return outboxId;
+		}
+
+		const sequenceRaw = Number(payload.sequence);
+		if (!Number.isFinite(sequenceRaw) || sequenceRaw < 0) {
+			return outboxId;
+		}
+		const sequence = Math.trunc(sequenceRaw);
+
+		const eventVersionRaw = Number(payload.eventVersion);
+		const eventVersion =
+			Number.isFinite(eventVersionRaw) && eventVersionRaw >= 1
+				? Math.trunc(eventVersionRaw)
+				: 1;
+
+		const seed = `${eventType}:${aggregateId}:v${eventVersion}:s${sequence}`;
+		const hash = createHash('sha256').update(seed).digest();
+		const bytes = Buffer.from(hash.subarray(0, 16));
+
+		bytes[6] = (bytes[6] & 0x0f) | 0x50;
+		bytes[8] = (bytes[8] & 0x3f) | 0x80;
+
+		const hex = bytes.toString('hex');
+		return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20, 32)}`;
 	}
 
 	private async consumeLockedOutboxWithTransaction(
@@ -227,16 +272,24 @@ export class OutboxConsumer {
 				return;
 			}
 
+			const idempotencyEventId =
+				this.resolveIdempotencyEventIdForOutboxEvent(
+					outboxEvent.id,
+					outboxEvent.eventType,
+					outboxEvent.payload,
+				);
+
 			const claimStartedAt = Date.now();
 			const claimed = await this.idempotencyService.claim(
 				this.consumerName,
-				outboxId,
+				idempotencyEventId,
 			);
 			const idempotencyClaimMs = Date.now() - claimStartedAt;
 			if (!claimed) {
 				writeBoundaryLog(OutboxConsumer.name, {
 					step: 'outbox_duplicate_claim',
 					outboxId,
+					idempotencyEventId,
 					source,
 					eventType: outboxEvent.eventType,
 				});
@@ -248,6 +301,7 @@ export class OutboxConsumer {
 				writeBoundaryLog(OutboxConsumer.name, {
 					step: 'outbox_duplicate_claim_completed',
 					outboxId,
+					idempotencyEventId,
 					source,
 					eventType: outboxEvent.eventType,
 					loadOutboxMs,

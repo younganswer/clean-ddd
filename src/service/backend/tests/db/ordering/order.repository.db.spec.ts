@@ -41,7 +41,11 @@ describe('OrderRepository (DB)', () => {
 
 	beforeEach(async () => {
 		forkForTest?.();
-		await em.nativeDelete(OrderSchema, {});
+		const orders = await em.find(OrderSchema, {});
+		if (orders.length > 0) {
+			em.remove(orders);
+			await em.flush();
+		}
 	});
 
 	given('주문을 생성하면', () => {

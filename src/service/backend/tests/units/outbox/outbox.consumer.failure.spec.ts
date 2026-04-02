@@ -13,7 +13,13 @@ describe('OutboxConsumer failure path', () => {
 	it('persists failed state and unlocks when handler throws', async () => {
 		const outboxEvent = OutboxEvent.create({
 			eventType: PaymentWebhookSucceededEvent.eventType,
-			payload: { orderId: 'order-1', paymentId: 'payment-1' },
+			payload: {
+				orderId: 'order-1',
+				paymentId: 'payment-1',
+				aggregateId: 'order-1',
+				sequence: 3,
+				eventVersion: 1,
+			},
 			status: OutboxEventStatus.PUBLISHED,
 		});
 
@@ -42,8 +48,11 @@ describe('OutboxConsumer failure path', () => {
 		} as unknown as OutboxKnownHandlerRegistryService;
 
 		const releaseMock = jest.fn(() => Promise.resolve(undefined));
+		const claimMock = jest.fn<Promise<boolean>, [string, string]>(() =>
+			Promise.resolve(true),
+		);
 		const idempotency = {
-			claim: jest.fn(() => Promise.resolve(true)),
+			claim: claimMock,
 			release: releaseMock,
 		} as unknown as IdempotencyService;
 
@@ -81,9 +90,17 @@ describe('OutboxConsumer failure path', () => {
 
 		expect(outboxEvent.status).toBe(OutboxEventStatus.FAILED);
 		expect(persistMock).toHaveBeenCalled();
+		const idempotencyEventId = claimMock.mock.calls.at(0)?.[1];
+		if (!idempotencyEventId) {
+			throw new Error('idempotency key was not claimed');
+		}
+		expect(idempotencyEventId).toMatch(
+			/^[0-9a-f]{8}-[0-9a-f]{4}-5[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
+		);
+		expect(idempotencyEventId).not.toBe(outboxEvent.id);
 		expect(releaseMock).toHaveBeenCalledWith(
 			'OutboxConsumer',
-			outboxEvent.id,
+			idempotencyEventId,
 		);
 		expect(unlockMock).not.toHaveBeenCalled();
 		expect(findByIdMock).toHaveBeenCalledTimes(2);

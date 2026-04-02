@@ -94,9 +94,14 @@ export class ProcessedEventRepository implements IProcessedEventRepository {
 	async release(event: ProcessedEvent): Promise<void> {
 		const em = this.emForContext();
 		const schema = this.mapper.toSchema(event);
-		await em.nativeDelete(ProcessedEventSchema, {
+		const existing = await em.findOne(ProcessedEventSchema, {
 			consumerName: schema.consumerName,
 			eventId: schema.eventId,
 		});
+		if (!existing) {
+			return;
+		}
+
+		em.remove(existing);
 	}
 }
