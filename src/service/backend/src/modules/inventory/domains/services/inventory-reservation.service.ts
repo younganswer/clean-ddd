@@ -21,21 +21,29 @@ export class InventoryReservationService {
 		private readonly reservations: IInventoryReservationRepository,
 	) {}
 
-	async reserve(input: {
-		orderId: string;
-		items: Array<{ sku: string; quantity: number }>;
-	}): Promise<void> {
-		const orderId = String(input.orderId ?? '').trim();
+	private normalizeOrderId(orderIdValue: unknown): string {
+		const orderId =
+			typeof orderIdValue === 'string'
+				? orderIdValue.trim()
+				: typeof orderIdValue === 'number' ||
+					  typeof orderIdValue === 'bigint' ||
+					  typeof orderIdValue === 'boolean'
+					? String(orderIdValue).trim()
+					: '';
 		if (!orderId) {
 			throw DomainErrorFactory.create(
 				INVENTORY_DOMAIN_ERRORS.INVENTORY_ORDER_ID_REQUIRED,
 			);
 		}
 
-		await this.inventoryItemRepository.seedIfEmpty();
+		return orderId;
+	}
 
+	private buildRequestedBySku(
+		items: Array<{ sku: string; quantity: number }> | undefined,
+	): Map<string, number> {
 		const requestedBySku = new Map<string, number>();
-		for (const requested of input.items ?? []) {
+		for (const requested of items ?? []) {
 			const sku = String(requested.sku ?? '').trim();
 			const quantity = Number(requested.quantity ?? 0);
 			if (!sku || !Number.isFinite(quantity) || quantity <= 0) {
@@ -57,14 +65,29 @@ export class InventoryReservationService {
 			);
 		}
 
+		return requestedBySku;
+	}
+
+	private async loadAlreadyReservedSkus(
+		orderId: string,
+	): Promise<Set<string>> {
 		const existingReservations =
 			await this.reservations.findReservationsByOrderId(orderId);
-		const alreadyReservedSkus = new Set(
+		return new Set(
 			existingReservations.map((reservation) => reservation.sku),
 		);
+	}
 
-		const stocksToPersist = [] as InventoryItem[];
-		const reservationsToPersist = [] as InventoryReservation[];
+	private async collectReserveTargets(
+		orderId: string,
+		requestedBySku: Map<string, number>,
+		alreadyReservedSkus: Set<string>,
+	): Promise<{
+		stocksToPersist: InventoryItem[];
+		reservationsToPersist: InventoryReservation[];
+	}> {
+		const stocksToPersist: InventoryItem[] = [];
+		const reservationsToPersist: InventoryReservation[] = [];
 
 		for (const [sku, quantity] of requestedBySku.entries()) {
 			if (alreadyReservedSkus.has(sku)) {
@@ -93,6 +116,16 @@ export class InventoryReservationService {
 			);
 		}
 
+		return {
+			stocksToPersist,
+			reservationsToPersist,
+		};
+	}
+
+	private async persistReserveTargets(
+		stocksToPersist: InventoryItem[],
+		reservationsToPersist: InventoryReservation[],
+	): Promise<void> {
 		for (const stock of stocksToPersist) {
 			await this.inventoryItemRepository.persist(stock);
 		}
@@ -100,6 +133,29 @@ export class InventoryReservationService {
 		for (const reservation of reservationsToPersist) {
 			await this.reservations.persist(reservation);
 		}
+	}
+
+	async reserve(input: {
+		orderId: string;
+		items: Array<{ sku: string; quantity: number }>;
+	}): Promise<void> {
+		const orderId = this.normalizeOrderId(input.orderId);
+
+		await this.inventoryItemRepository.seedIfEmpty();
+
+		const requestedBySku = this.buildRequestedBySku(input.items);
+		const alreadyReservedSkus = await this.loadAlreadyReservedSkus(orderId);
+		const { stocksToPersist, reservationsToPersist } =
+			await this.collectReserveTargets(
+				orderId,
+				requestedBySku,
+				alreadyReservedSkus,
+			);
+
+		await this.persistReserveTargets(
+			stocksToPersist,
+			reservationsToPersist,
+		);
 	}
 
 	async releaseForOrder(input: { orderId: string }): Promise<void> {
