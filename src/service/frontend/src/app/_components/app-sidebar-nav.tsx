@@ -17,7 +17,8 @@ const sections: NavSection[] = [
 	{
 		title: "Overview",
 		items: [
-			{ label: "Graph", href: "/" },
+			{ label: "Home", href: "/" },
+			{ label: "Graph", href: "/graph" },
 			{ label: "System Concepts", href: "/system-concepts" },
 		],
 	},
