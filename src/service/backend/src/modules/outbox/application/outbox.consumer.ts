@@ -8,6 +8,7 @@ import {
 	IOutboxRepositorySymbol,
 	type IOutboxRepository,
 } from '@/shared/outbox/domain/repositories/i.outbox.repository';
+import type { OutboxEvent } from '@/shared/outbox/domain/entities/outbox-event.entity';
 import { hydrateEvent } from '@/lib/outbox/event-registry';
 import { resolveErrorMessage } from '@/modules/outbox/application/outbox-error.util';
 import { OutboxKnownHandlerRegistryService } from '@/modules/outbox/application/outbox-known-handler.registry.service';
@@ -21,6 +22,24 @@ import {
 	parseOutboxDispatchMessage,
 	type NormalizedOutboxDispatchMessage,
 } from '@/shared/outbox/domain/queue/outbox-dispatch-message';
+
+type OutboxDispatchSource = NormalizedOutboxDispatchMessage['source'];
+
+type OutboxConsumeTiming = {
+	consumeStartedAt: number;
+	loadOutboxMs: number;
+	eventAgeMs: number;
+	publishedLagMs: number | null;
+};
+
+type IdempotencyClaimResult =
+	| {
+			claimed: true;
+			idempotencyClaimMs: number;
+	  }
+	| {
+			claimed: false;
+	  };
 
 @Injectable()
 export class OutboxConsumer {
@@ -246,176 +265,360 @@ export class OutboxConsumer {
 		};
 	}
 
+	private buildConsumeTiming(
+		consumeStartedAt: number,
+		outboxEvent: OutboxEvent,
+		loadOutboxMs: number,
+	): OutboxConsumeTiming {
+		return {
+			consumeStartedAt,
+			loadOutboxMs,
+			eventAgeMs: consumeStartedAt - outboxEvent.recordedAt.getTime(),
+			publishedLagMs: outboxEvent.publishedAt
+				? consumeStartedAt - outboxEvent.publishedAt.getTime()
+				: null,
+		};
+	}
+
+	private toTimingLog(timing: OutboxConsumeTiming): {
+		loadOutboxMs: number;
+		eventAgeMs: number;
+		publishedLagMs: number | null;
+		consumeTotalMs: number;
+	} {
+		return {
+			loadOutboxMs: timing.loadOutboxMs,
+			eventAgeMs: timing.eventAgeMs,
+			publishedLagMs: timing.publishedLagMs,
+			consumeTotalMs: Date.now() - timing.consumeStartedAt,
+		};
+	}
+
+	private async handleMissingOutboxEvent(
+		outboxId: string,
+		source: OutboxDispatchSource,
+	): Promise<void> {
+		writeBoundaryLog(
+			OutboxConsumer.name,
+			{
+				step: 'outbox_event_missing',
+				outboxId,
+				source,
+			},
+			'warn',
+		);
+		await this.outboxRepository.unlock(outboxId);
+	}
+
+	private async handleNonDispatchableOutboxEventIfNeeded(
+		outboxEvent: OutboxEvent,
+		outboxId: string,
+		source: OutboxDispatchSource,
+	): Promise<boolean> {
+		if (this.consumeStateMachine.isDispatchable(outboxEvent)) {
+			return false;
+		}
+
+		writeBoundaryLog(OutboxConsumer.name, {
+			step: 'outbox_status_not_dispatchable',
+			outboxId,
+			source,
+			status: outboxEvent.status,
+		});
+		await this.outboxRepository.unlock(outboxId);
+		return true;
+	}
+
+	private async handleOutOfOrderEventIfNeeded(
+		outboxEvent: OutboxEvent,
+		outboxId: string,
+		source: OutboxDispatchSource,
+		timing: OutboxConsumeTiming,
+	): Promise<boolean> {
+		const orderingMetadata = this.resolveEventOrderingMetadata(
+			outboxEvent.payload,
+		);
+		if (!orderingMetadata) {
+			return false;
+		}
+
+		const hasConsumedNewerEvent =
+			await this.outboxRepository.hasConsumedNewerEvent({
+				eventType: outboxEvent.eventType,
+				aggregateId: orderingMetadata.aggregateId,
+				eventVersion: orderingMetadata.eventVersion,
+				sequence: orderingMetadata.sequence,
+			});
+		if (!hasConsumedNewerEvent) {
+			return false;
+		}
+
+		this.consumeStateMachine.markOutOfOrderDiscarded(outboxEvent);
+		await this.outboxRepository.persist(outboxEvent);
+		writeBoundaryLog(OutboxConsumer.name, {
+			step: 'outbox_out_of_order_discarded',
+			outboxId,
+			source,
+			eventType: outboxEvent.eventType,
+			aggregateId: orderingMetadata.aggregateId,
+			eventVersion: orderingMetadata.eventVersion,
+			sequence: orderingMetadata.sequence,
+			...this.toTimingLog(timing),
+		});
+
+		return true;
+	}
+
+	private async claimIdempotencyOrHandleDuplicate(
+		outboxEvent: OutboxEvent,
+		outboxId: string,
+		source: OutboxDispatchSource,
+		timing: OutboxConsumeTiming,
+	): Promise<IdempotencyClaimResult> {
+		const idempotencyEventId = this.resolveIdempotencyEventIdForOutboxEvent(
+			outboxEvent.id,
+			outboxEvent.eventType,
+			outboxEvent.payload,
+		);
+
+		const claimStartedAt = Date.now();
+		const claimed = await this.idempotencyService.claim(
+			this.consumerName,
+			idempotencyEventId,
+		);
+		const idempotencyClaimMs = Date.now() - claimStartedAt;
+		if (claimed) {
+			return {
+				claimed: true,
+				idempotencyClaimMs,
+			};
+		}
+
+		writeBoundaryLog(OutboxConsumer.name, {
+			step: 'outbox_duplicate_claim',
+			outboxId,
+			idempotencyEventId,
+			source,
+			eventType: outboxEvent.eventType,
+		});
+		this.consumeStateMachine.markDuplicateClaimConflict(outboxEvent);
+		await this.outboxRepository.persist(outboxEvent);
+		await this.outboxRepository.unlock(outboxId);
+		writeBoundaryLog(OutboxConsumer.name, {
+			step: 'outbox_duplicate_claim_completed',
+			outboxId,
+			idempotencyEventId,
+			source,
+			eventType: outboxEvent.eventType,
+			idempotencyClaimMs,
+			...this.toTimingLog(timing),
+		});
+
+		return {
+			claimed: false,
+		};
+	}
+
+	private async hydrateEventOrHandleUnknownType(
+		outboxEvent: OutboxEvent,
+		outboxId: string,
+		source: OutboxDispatchSource,
+	): Promise<object | null> {
+		const event = hydrateEvent(outboxEvent.eventType, outboxEvent.payload);
+		if (event) {
+			return event;
+		}
+
+		writeBoundaryLog(
+			OutboxConsumer.name,
+			{
+				step: 'outbox_unknown_event_type',
+				outboxId,
+				source,
+				eventType: outboxEvent.eventType,
+			},
+			'warn',
+		);
+		this.consumeStateMachine.markUnknownEventTypeFailure(outboxEvent);
+		await this.outboxRepository.persist(outboxEvent);
+
+		return null;
+	}
+
+	private async dispatchAndPersistConsumed(
+		outboxEvent: OutboxEvent,
+		event: object,
+		outboxId: string,
+		source: OutboxDispatchSource,
+		timing: OutboxConsumeTiming,
+		idempotencyClaimMs: number,
+	): Promise<void> {
+		const handlerStartedAt = Date.now();
+		const dispatched = await this.dispatchKnownEvent(
+			event,
+			outboxEvent.eventType,
+		);
+		const handlerDispatchMs = Date.now() - handlerStartedAt;
+		writeBoundaryLog(OutboxConsumer.name, {
+			step: 'outbox_event_dispatched',
+			outboxId,
+			source,
+			eventType: outboxEvent.eventType,
+			mode: dispatched ? 'known-handler' : 'event-bus',
+		});
+		if (!dispatched) {
+			this.eventBus.publish(event);
+		}
+
+		this.consumeStateMachine.markConsumed(outboxEvent);
+		const persistStartedAt = Date.now();
+		await this.outboxRepository.persist(outboxEvent);
+		const persistFinalStateMs = Date.now() - persistStartedAt;
+		writeBoundaryLog(OutboxConsumer.name, {
+			step: 'outbox_marked_consumed',
+			outboxId,
+			source,
+			eventType: outboxEvent.eventType,
+			idempotencyClaimMs,
+			handlerDispatchMs,
+			persistFinalStateMs,
+			...this.toTimingLog(timing),
+		});
+	}
+
+	private async recoverConsumeFailure(
+		outboxId: string,
+		source: OutboxDispatchSource,
+		error: unknown,
+	): Promise<void> {
+		try {
+			await this.recoverFailureWithTransaction(outboxId, source, error);
+			writeBoundaryLog(OutboxConsumer.name, {
+				step: 'outbox_unlocked_after_failure',
+				outboxId,
+				source,
+			});
+		} catch (recoveryError: unknown) {
+			writeBoundaryLog(
+				OutboxConsumer.name,
+				{
+					step: 'outbox_failure_recovery_failed',
+					outboxId,
+					source,
+					error: resolveBoundaryErrorMessage(recoveryError),
+				},
+				'error',
+			);
+			try {
+				await this.unlockWithTransaction(outboxId);
+			} catch {
+				// ignore
+			}
+		}
+	}
+
+	private async consumeLockedOutboxWithRecovery(
+		outboxId: string,
+		source: OutboxDispatchSource,
+	): Promise<void> {
+		try {
+			await this.consumeLockedOutboxWithTransaction(outboxId, source);
+		} catch (error) {
+			await this.recoverConsumeFailure(outboxId, source, error);
+			throw error;
+		}
+	}
+
+	private async loadOutboxEventWithTiming(
+		outboxId: string,
+		source: OutboxDispatchSource,
+		consumeStartedAt: number,
+	): Promise<{
+		outboxEvent: OutboxEvent;
+		timing: OutboxConsumeTiming;
+	} | null> {
+		const loadStartedAt = Date.now();
+		const outboxEvent = await this.outboxRepository.findById(outboxId);
+		const loadOutboxMs = Date.now() - loadStartedAt;
+		if (!outboxEvent) {
+			await this.handleMissingOutboxEvent(outboxId, source);
+			return null;
+		}
+
+		return {
+			outboxEvent,
+			timing: this.buildConsumeTiming(
+				consumeStartedAt,
+				outboxEvent,
+				loadOutboxMs,
+			),
+		};
+	}
+
 	private async consumeLockedOutboxWithTransaction(
 		outboxId: string,
-		source: NormalizedOutboxDispatchMessage['source'],
+		source: OutboxDispatchSource,
 	): Promise<void> {
 		const consumeStartedAt = Date.now();
 		await this.uow.transaction(async () => {
-			const loadStartedAt = Date.now();
-			const outboxEvent = await this.outboxRepository.findById(outboxId);
-			const loadOutboxMs = Date.now() - loadStartedAt;
-			if (!outboxEvent) {
-				writeBoundaryLog(
-					OutboxConsumer.name,
-					{
-						step: 'outbox_event_missing',
-						outboxId,
-						source,
-					},
-					'warn',
-				);
-				await this.outboxRepository.unlock(outboxId);
+			const loaded = await this.loadOutboxEventWithTiming(
+				outboxId,
+				source,
+				consumeStartedAt,
+			);
+			if (!loaded) {
 				return;
 			}
 
-			const eventAgeMs =
-				consumeStartedAt - outboxEvent.recordedAt.getTime();
-			const publishedLagMs = outboxEvent.publishedAt
-				? consumeStartedAt - outboxEvent.publishedAt.getTime()
-				: null;
+			const { outboxEvent, timing } = loaded;
 
-			if (!this.consumeStateMachine.isDispatchable(outboxEvent)) {
-				writeBoundaryLog(OutboxConsumer.name, {
-					step: 'outbox_status_not_dispatchable',
-					outboxId,
-					source,
-					status: outboxEvent.status,
-				});
-				await this.outboxRepository.unlock(outboxId);
-				return;
-			}
-
-			const orderingMetadata = this.resolveEventOrderingMetadata(
-				outboxEvent.payload,
-			);
-			if (orderingMetadata) {
-				const hasConsumedNewerEvent =
-					await this.outboxRepository.hasConsumedNewerEvent({
-						eventType: outboxEvent.eventType,
-						aggregateId: orderingMetadata.aggregateId,
-						eventVersion: orderingMetadata.eventVersion,
-						sequence: orderingMetadata.sequence,
-					});
-
-				if (hasConsumedNewerEvent) {
-					this.consumeStateMachine.markOutOfOrderDiscarded(
-						outboxEvent,
-					);
-					await this.outboxRepository.persist(outboxEvent);
-					writeBoundaryLog(OutboxConsumer.name, {
-						step: 'outbox_out_of_order_discarded',
-						outboxId,
-						source,
-						eventType: outboxEvent.eventType,
-						aggregateId: orderingMetadata.aggregateId,
-						eventVersion: orderingMetadata.eventVersion,
-						sequence: orderingMetadata.sequence,
-						loadOutboxMs,
-						eventAgeMs,
-						publishedLagMs,
-						consumeTotalMs: Date.now() - consumeStartedAt,
-					});
-					return;
-				}
-			}
-
-			const idempotencyEventId =
-				this.resolveIdempotencyEventIdForOutboxEvent(
-					outboxEvent.id,
-					outboxEvent.eventType,
-					outboxEvent.payload,
-				);
-
-			const claimStartedAt = Date.now();
-			const claimed = await this.idempotencyService.claim(
-				this.consumerName,
-				idempotencyEventId,
-			);
-			const idempotencyClaimMs = Date.now() - claimStartedAt;
-			if (!claimed) {
-				writeBoundaryLog(OutboxConsumer.name, {
-					step: 'outbox_duplicate_claim',
-					outboxId,
-					idempotencyEventId,
-					source,
-					eventType: outboxEvent.eventType,
-				});
-				this.consumeStateMachine.markDuplicateClaimConflict(
+			const isNonDispatchable =
+				await this.handleNonDispatchableOutboxEventIfNeeded(
 					outboxEvent,
-				);
-				await this.outboxRepository.persist(outboxEvent);
-				await this.outboxRepository.unlock(outboxId);
-				writeBoundaryLog(OutboxConsumer.name, {
-					step: 'outbox_duplicate_claim_completed',
 					outboxId,
-					idempotencyEventId,
 					source,
-					eventType: outboxEvent.eventType,
-					loadOutboxMs,
-					idempotencyClaimMs,
-					eventAgeMs,
-					publishedLagMs,
-					consumeTotalMs: Date.now() - consumeStartedAt,
-				});
+				);
+			if (isNonDispatchable) {
 				return;
 			}
 
-			const event = hydrateEvent(
-				outboxEvent.eventType,
-				outboxEvent.payload,
+			const wasOutOfOrder = await this.handleOutOfOrderEventIfNeeded(
+				outboxEvent,
+				outboxId,
+				source,
+				timing,
+			);
+			if (wasOutOfOrder) {
+				return;
+			}
+
+			const claimResult = await this.claimIdempotencyOrHandleDuplicate(
+				outboxEvent,
+				outboxId,
+				source,
+				timing,
+			);
+			if (!claimResult.claimed) {
+				return;
+			}
+
+			const event = await this.hydrateEventOrHandleUnknownType(
+				outboxEvent,
+				outboxId,
+				source,
 			);
 			if (!event) {
-				writeBoundaryLog(
-					OutboxConsumer.name,
-					{
-						step: 'outbox_unknown_event_type',
-						outboxId,
-						source,
-						eventType: outboxEvent.eventType,
-					},
-					'warn',
-				);
-				this.consumeStateMachine.markUnknownEventTypeFailure(
-					outboxEvent,
-				);
-				await this.outboxRepository.persist(outboxEvent);
 				return;
 			}
 
-			const handlerStartedAt = Date.now();
-			const dispatched = await this.dispatchKnownEvent(
+			await this.dispatchAndPersistConsumed(
+				outboxEvent,
 				event,
-				outboxEvent.eventType,
+				outboxId,
+				source,
+				timing,
+				claimResult.idempotencyClaimMs,
 			);
-			const handlerDispatchMs = Date.now() - handlerStartedAt;
-			writeBoundaryLog(OutboxConsumer.name, {
-				step: 'outbox_event_dispatched',
-				outboxId,
-				source,
-				eventType: outboxEvent.eventType,
-				mode: dispatched ? 'known-handler' : 'event-bus',
-			});
-			if (!dispatched) {
-				this.eventBus.publish(event);
-			}
-			this.consumeStateMachine.markConsumed(outboxEvent);
-			const persistStartedAt = Date.now();
-			await this.outboxRepository.persist(outboxEvent);
-			const persistFinalStateMs = Date.now() - persistStartedAt;
-			writeBoundaryLog(OutboxConsumer.name, {
-				step: 'outbox_marked_consumed',
-				outboxId,
-				source,
-				eventType: outboxEvent.eventType,
-				loadOutboxMs,
-				idempotencyClaimMs,
-				handlerDispatchMs,
-				persistFinalStateMs,
-				eventAgeMs,
-				publishedLagMs,
-				consumeTotalMs: Date.now() - consumeStartedAt,
-			});
 		});
 	}
 
@@ -438,38 +641,6 @@ export class OutboxConsumer {
 			return;
 		}
 
-		try {
-			await this.consumeLockedOutboxWithTransaction(outboxId, source);
-		} catch (error) {
-			try {
-				await this.recoverFailureWithTransaction(
-					outboxId,
-					source,
-					error,
-				);
-				writeBoundaryLog(OutboxConsumer.name, {
-					step: 'outbox_unlocked_after_failure',
-					outboxId,
-					source,
-				});
-			} catch (recoveryError: unknown) {
-				writeBoundaryLog(
-					OutboxConsumer.name,
-					{
-						step: 'outbox_failure_recovery_failed',
-						outboxId,
-						source,
-						error: resolveBoundaryErrorMessage(recoveryError),
-					},
-					'error',
-				);
-				try {
-					await this.unlockWithTransaction(outboxId);
-				} catch {
-					// ignore
-				}
-			}
-			throw error;
-		}
+		await this.consumeLockedOutboxWithRecovery(outboxId, source);
 	}
 }
