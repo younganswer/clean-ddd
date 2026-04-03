@@ -41,6 +41,118 @@ const isLocalSqsEndpoint = (endpoint: string): boolean => {
 	}
 };
 
+const resolveLocalSqsCredentials = (): {
+	accessKeyId: string;
+	secretAccessKey: string;
+	sessionToken?: string;
+} => ({
+	accessKeyId: process.env.AWS_ACCESS_KEY_ID ?? 'test',
+	secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY ?? 'test',
+	...(process.env.AWS_SESSION_TOKEN
+		? {
+				sessionToken: process.env.AWS_SESSION_TOKEN,
+			}
+		: {}),
+});
+
+const createLookupClient = (endpoint: string): SQSClient => {
+	const region = process.env.AWS_REGION ?? 'ap-northeast-2';
+	const useLocalStaticCreds = isLocalSqsEndpoint(endpoint);
+	return new SQSClient({
+		region,
+		endpoint,
+		...(useLocalStaticCreds
+			? {
+					credentials: resolveLocalSqsCredentials(),
+				}
+			: {}),
+	});
+};
+
+const toNormalizedQueueUrlIfPresent = (
+	queueUrl: string | undefined,
+): string | null => {
+	if (!queueUrl || queueUrl.trim().length === 0) {
+		return null;
+	}
+
+	return normalizeOutboxQueueUrl(queueUrl);
+};
+
+const tryGetQueueUrl = async (
+	client: SQSClient,
+	queueName: string,
+): Promise<string | null> => {
+	try {
+		const result = await client.send(
+			new GetQueueUrlCommand({
+				QueueName: queueName,
+			}),
+		);
+
+		return toNormalizedQueueUrlIfPresent(result.QueueUrl);
+	} catch {
+		return null;
+	}
+};
+
+const tryCreateQueueAndGetQueueUrl = async (
+	client: SQSClient,
+	queueName: string,
+): Promise<string | null> => {
+	try {
+		await client.send(
+			new CreateQueueCommand({
+				QueueName: queueName,
+				Attributes: queueName.endsWith('.fifo')
+					? {
+							FifoQueue: 'true',
+							ContentBasedDeduplication: 'false',
+						}
+					: undefined,
+			}),
+		);
+
+		const created = await client.send(
+			new GetQueueUrlCommand({
+				QueueName: queueName,
+			}),
+		);
+
+		return toNormalizedQueueUrlIfPresent(created.QueueUrl);
+	} catch {
+		return null;
+	}
+};
+
+const resolveQueueUrlFromEndpoint = async (params: {
+	endpoint: string;
+	queueName: string;
+	rawQueueUrl?: string;
+}): Promise<string | null> => {
+	const client = createLookupClient(params.endpoint);
+	const resolved = await tryGetQueueUrl(client, params.queueName);
+	if (resolved) {
+		return resolved;
+	}
+
+	if (isLocalSqsEndpoint(params.endpoint)) {
+		const created = await tryCreateQueueAndGetQueueUrl(
+			client,
+			params.queueName,
+		);
+		if (created) {
+			return created;
+		}
+	}
+
+	if (params.rawQueueUrl) {
+		return normalizeOutboxQueueUrl(params.rawQueueUrl);
+	}
+
+	return null;
+};
+
 @Global()
 @Module({
 	providers: [
@@ -54,82 +166,13 @@ const isLocalSqsEndpoint = (endpoint: string): boolean => {
 					'OutboxDispatchQueue.fifo';
 
 				if (endpoint) {
-					const region = process.env.AWS_REGION ?? 'ap-northeast-2';
-					const useLocalStaticCreds = isLocalSqsEndpoint(endpoint);
-					const client = new SQSClient({
-						region,
+					const resolved = await resolveQueueUrlFromEndpoint({
 						endpoint,
-						...(useLocalStaticCreds
-							? {
-									credentials: {
-										accessKeyId:
-											process.env.AWS_ACCESS_KEY_ID ??
-											'test',
-										secretAccessKey:
-											process.env.AWS_SECRET_ACCESS_KEY ??
-											'test',
-										...(process.env.AWS_SESSION_TOKEN
-											? {
-													sessionToken:
-														process.env
-															.AWS_SESSION_TOKEN,
-												}
-											: {}),
-									},
-								}
-							: {}),
+						queueName,
+						rawQueueUrl,
 					});
-
-					try {
-						const result = await client.send(
-							new GetQueueUrlCommand({
-								QueueName: queueName,
-							}),
-						);
-
-						if (
-							result.QueueUrl &&
-							result.QueueUrl.trim().length > 0
-						) {
-							return normalizeOutboxQueueUrl(result.QueueUrl);
-						}
-					} catch {
-						if (isLocalSqsEndpoint(endpoint)) {
-							try {
-								await client.send(
-									new CreateQueueCommand({
-										QueueName: queueName,
-										Attributes: queueName.endsWith('.fifo')
-											? {
-													FifoQueue: 'true',
-													ContentBasedDeduplication:
-														'false',
-												}
-											: undefined,
-									}),
-								);
-
-								const created = await client.send(
-									new GetQueueUrlCommand({
-										QueueName: queueName,
-									}),
-								);
-								if (
-									created.QueueUrl &&
-									created.QueueUrl.trim().length > 0
-								) {
-									return normalizeOutboxQueueUrl(
-										created.QueueUrl,
-									);
-								}
-							} catch {
-								// fallback below
-							}
-						}
-
-						if (rawQueueUrl) {
-							return normalizeOutboxQueueUrl(rawQueueUrl);
-						}
+					if (resolved) {
+						return resolved;
 					}
 				}
 
