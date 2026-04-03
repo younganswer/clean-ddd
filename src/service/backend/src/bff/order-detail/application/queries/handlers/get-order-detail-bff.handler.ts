@@ -34,6 +34,55 @@ export class GetOrderDetailBffHandler implements IQueryHandler<GetOrderDetailBff
 		private readonly inventoryReader: IInventoryReader,
 	) {}
 
+	private async findOrder(orderId: string) {
+		return await this.orderReader.findById(orderId);
+	}
+
+	private buildRelatedFetches(input: {
+		orderId: string;
+		paymentId: string | null;
+		includePayment: boolean;
+		includeShipment: boolean;
+		includeReservations: boolean;
+	}): [
+		Promise<Awaited<ReturnType<IPaymentIntentReader['findById']>>>,
+		Promise<Awaited<ReturnType<IShipmentReader['findByOrderId']>>>,
+		Promise<
+			Awaited<ReturnType<IInventoryReader['findReservationsByOrderId']>>
+		>,
+	] {
+		const paymentPromise =
+			input.includePayment && input.paymentId
+				? this.paymentIntentReader.findById(input.paymentId)
+				: Promise.resolve(null);
+
+		const shipmentPromise = input.includeShipment
+			? this.shipmentReader.findByOrderId(input.orderId)
+			: Promise.resolve(null);
+
+		const reservationsPromise = input.includeReservations
+			? this.inventoryReader.findReservationsByOrderId(input.orderId)
+			: Promise.resolve([]);
+
+		return [paymentPromise, shipmentPromise, reservationsPromise];
+	}
+
+	private resolveSettledOrFallback<T>(params: {
+		settled: PromiseSettledResult<T>;
+		domain: string;
+		fallback: T;
+		partialErrors: NonNullable<OrderDetailBffView['partialErrors']>;
+	}): T {
+		if (params.settled.status === 'fulfilled') {
+			return params.settled.value;
+		}
+
+		params.partialErrors.push(
+			toBffPartialError(params.domain, params.settled.reason),
+		);
+		return params.fallback;
+	}
+
 	async execute(
 		query: GetOrderDetailBffQuery,
 	): Promise<OrderDetailBffView | null> {
@@ -44,23 +93,19 @@ export class GetOrderDetailBffHandler implements IQueryHandler<GetOrderDetailBff
 			includeReservations,
 		} = query;
 
-		const order = await this.orderReader.findById(orderId);
+		const order = await this.findOrder(orderId);
 		if (!order) return null;
 
-		const partialErrors: OrderDetailBffView['partialErrors'] = [];
-
-		const paymentPromise =
-			includePayment && order.paymentId
-				? this.paymentIntentReader.findById(order.paymentId)
-				: Promise.resolve(null);
-
-		const shipmentPromise = includeShipment
-			? this.shipmentReader.findByOrderId(orderId)
-			: Promise.resolve(null);
-
-		const reservationsPromise = includeReservations
-			? this.inventoryReader.findReservationsByOrderId(orderId)
-			: Promise.resolve([]);
+		const partialErrors: NonNullable<OrderDetailBffView['partialErrors']> =
+			[];
+		const [paymentPromise, shipmentPromise, reservationsPromise] =
+			this.buildRelatedFetches({
+				orderId,
+				paymentId: order.paymentId,
+				includePayment,
+				includeShipment,
+				includeReservations,
+			});
 
 		const [paymentSettled, shipmentSettled, reservationsSettled] =
 			await Promise.allSettled([
@@ -69,35 +114,26 @@ export class GetOrderDetailBffHandler implements IQueryHandler<GetOrderDetailBff
 				reservationsPromise,
 			]);
 
-		const paymentIntent =
-			paymentSettled.status === 'fulfilled'
-				? paymentSettled.value
-				: (partialErrors.push(
-						toBffPartialError(
-							'paymentIntent',
-							paymentSettled.reason,
-						),
-					),
-					null);
+		const paymentIntent = this.resolveSettledOrFallback({
+			settled: paymentSettled,
+			domain: 'paymentIntent',
+			fallback: null,
+			partialErrors,
+		});
 
-		const shipment =
-			shipmentSettled.status === 'fulfilled'
-				? shipmentSettled.value
-				: (partialErrors.push(
-						toBffPartialError('shipment', shipmentSettled.reason),
-					),
-					null);
+		const shipment = this.resolveSettledOrFallback({
+			settled: shipmentSettled,
+			domain: 'shipment',
+			fallback: null,
+			partialErrors,
+		});
 
-		const reservations =
-			reservationsSettled.status === 'fulfilled'
-				? reservationsSettled.value
-				: (partialErrors.push(
-						toBffPartialError(
-							'reservations',
-							reservationsSettled.reason,
-						),
-					),
-					[]);
+		const reservations = this.resolveSettledOrFallback({
+			settled: reservationsSettled,
+			domain: 'reservations',
+			fallback: [],
+			partialErrors,
+		});
 
 		return {
 			order,
