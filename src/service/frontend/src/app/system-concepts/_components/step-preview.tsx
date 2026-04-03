@@ -74,11 +74,11 @@ export const StepPreview = (props: Props) => {
 						Execution Summary
 					</div>
 					<div className="mt-1 text-base font-semibold">
-						PaymentIntent 파이프라인 학습 흐름이 완료되었습니다.
+						PaymentIntent 파이프라인 전 과정이 완료되었습니다.
 					</div>
+					{/* prettier-ignore */}
 					<p className="mt-2 text-sm text-muted-foreground">
-						Order 생성부터 PaymentIntent 처리, Outbox/Saga, Shipment
-						생성까지 모든 스텝을 확인했습니다.
+						Order 생성부터 PaymentIntent 처리, Outbox/Saga, Shipment 생성까지 모든 스텝을 확인했습니다.
 					</p>
 					<div className="mt-3 grid gap-2 text-xs text-muted-foreground sm:grid-cols-2">
 						<div className="surface p-3">
