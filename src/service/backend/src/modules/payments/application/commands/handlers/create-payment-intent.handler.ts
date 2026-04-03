@@ -41,6 +41,12 @@ interface CreatePaymentIntentTransactionResult {
 	};
 }
 
+type WebhookSchedule = {
+	event: PaymentWebhookSucceededEvent | PaymentWebhookFailedEvent;
+	eventType: string;
+	delaySeconds: number;
+};
+
 @CommandHandler(CreatePaymentIntentCommand)
 export class CreatePaymentIntentHandler implements ICommandHandler<CreatePaymentIntentCommand> {
 	constructor(
@@ -56,110 +62,176 @@ export class CreatePaymentIntentHandler implements ICommandHandler<CreatePayment
 		private readonly uow: UnitOfWork,
 	) {}
 
-	async execute(
-		command: CreatePaymentIntentCommand,
-	): Promise<CreatePaymentIntentResult> {
-		const transactionResult =
-			await this.uow.transaction<CreatePaymentIntentTransactionResult>(
-				async () => {
-					const orderSnapshot = await this.orderReader.findById(
-						command.orderId,
-					);
-					if (!orderSnapshot) {
-						throw ApplicationErrorFactory.create(
-							ORDERING_APPLICATION_ERRORS.ORDER_NOT_FOUND,
-							{ details: { id: command.orderId } },
-						);
-					}
-
-					const payment = PaymentIntent.create({
-						orderId: command.orderId,
-						amount: orderSnapshot.amount,
-						currency: orderSnapshot.currency,
-					});
-					await this.paymentRepository.persist(payment);
-
-					const paymentIntentCreatedOutboxId =
-						await this.outboxProducer.publish(
-							new PaymentIntentCreatedEvent({
-								orderId: command.orderId,
-								paymentId: payment.id,
-							}),
-							{ messageGroupId: command.orderId },
-						);
-
-					const outcome = command.simulateOutcome ?? 'SUCCEEDED';
-					const delaySeconds = command.simulateDelaySeconds;
-
-					const event =
-						outcome === 'SUCCEEDED'
-							? new PaymentWebhookSucceededEvent({
-									orderId: command.orderId,
-									paymentId: payment.id,
-								})
-							: new PaymentWebhookFailedEvent({
-									orderId: command.orderId,
-									paymentId: payment.id,
-								});
-
-					const outboxId = await this.outboxProducer.publish(event, {
-						delaySeconds,
-						messageGroupId: command.orderId,
-					});
-
-					const eventType =
-						outcome === 'SUCCEEDED'
-							? PaymentWebhookSucceededEvent.eventType
-							: PaymentWebhookFailedEvent.eventType;
-
-					const immediateDispatchTargets = [
-						{
-							outboxId: paymentIntentCreatedOutboxId,
-							messageGroupId: command.orderId,
-						},
-					];
-
-					if (delaySeconds <= 0) {
-						immediateDispatchTargets.push({
-							outboxId,
-							messageGroupId: command.orderId,
-						});
-					}
-
-					return {
-						response: {
-							paymentId: payment.id,
-							status: payment.status,
-							scheduled: {
-								eventType,
-								delaySeconds,
-								outboxId,
-							},
-						},
-						immediateDispatchTargets,
-						...(delaySeconds > 0
-							? {
-									delayedDispatchTarget: {
-										outboxId,
-										messageGroupId: command.orderId,
-										delaySeconds,
-									},
-								}
-							: {}),
-					};
-				},
+	private async loadOrderSnapshot(orderId: string) {
+		const orderSnapshot = await this.orderReader.findById(orderId);
+		if (!orderSnapshot) {
+			throw ApplicationErrorFactory.create(
+				ORDERING_APPLICATION_ERRORS.ORDER_NOT_FOUND,
+				{ details: { id: orderId } },
 			);
-
-		const delayedTarget = transactionResult.delayedDispatchTarget;
-		if (delayedTarget) {
-			await this.delayedDispatchTrigger.scheduleOneShot(delayedTarget);
 		}
 
+		return orderSnapshot;
+	}
+
+	private async createAndPersistPayment(params: {
+		orderId: string;
+		amount: number;
+		currency: string;
+	}): Promise<PaymentIntent> {
+		const payment = PaymentIntent.create({
+			orderId: params.orderId,
+			amount: params.amount,
+			currency: params.currency,
+		});
+		await this.paymentRepository.persist(payment);
+		return payment;
+	}
+
+	private buildWebhookSchedule(
+		command: CreatePaymentIntentCommand,
+		paymentId: string,
+	): WebhookSchedule {
+		const outcome = command.simulateOutcome ?? 'SUCCEEDED';
+		const delaySeconds = command.simulateDelaySeconds;
+
+		if (outcome === 'SUCCEEDED') {
+			return {
+				event: new PaymentWebhookSucceededEvent({
+					orderId: command.orderId,
+					paymentId,
+				}),
+				eventType: PaymentWebhookSucceededEvent.eventType,
+				delaySeconds,
+			};
+		}
+
+		return {
+			event: new PaymentWebhookFailedEvent({
+				orderId: command.orderId,
+				paymentId,
+			}),
+			eventType: PaymentWebhookFailedEvent.eventType,
+			delaySeconds,
+		};
+	}
+
+	private async publishPaymentIntentCreated(
+		orderId: string,
+		paymentId: string,
+	): Promise<string> {
+		return await this.outboxProducer.publish(
+			new PaymentIntentCreatedEvent({
+				orderId,
+				paymentId,
+			}),
+			{ messageGroupId: orderId },
+		);
+	}
+
+	private async publishWebhookEvent(params: {
+		event: PaymentWebhookSucceededEvent | PaymentWebhookFailedEvent;
+		orderId: string;
+		delaySeconds: number;
+	}): Promise<string> {
+		return await this.outboxProducer.publish(params.event, {
+			delaySeconds: params.delaySeconds,
+			messageGroupId: params.orderId,
+		});
+	}
+
+	private buildTransactionResult(params: {
+		payment: PaymentIntent;
+		orderId: string;
+		eventType: string;
+		delaySeconds: number;
+		paymentIntentCreatedOutboxId: string;
+		webhookOutboxId: string;
+	}): CreatePaymentIntentTransactionResult {
+		const immediateDispatchTargets = [
+			{
+				outboxId: params.paymentIntentCreatedOutboxId,
+				messageGroupId: params.orderId,
+			},
+		];
+
+		if (params.delaySeconds <= 0) {
+			immediateDispatchTargets.push({
+				outboxId: params.webhookOutboxId,
+				messageGroupId: params.orderId,
+			});
+		}
+
+		return {
+			response: {
+				paymentId: params.payment.id,
+				status: params.payment.status,
+				scheduled: {
+					eventType: params.eventType,
+					delaySeconds: params.delaySeconds,
+					outboxId: params.webhookOutboxId,
+				},
+			},
+			immediateDispatchTargets,
+			...(params.delaySeconds > 0
+				? {
+						delayedDispatchTarget: {
+							outboxId: params.webhookOutboxId,
+							messageGroupId: params.orderId,
+							delaySeconds: params.delaySeconds,
+						},
+					}
+				: {}),
+		};
+	}
+
+	private async executeInTransaction(
+		command: CreatePaymentIntentCommand,
+	): Promise<CreatePaymentIntentTransactionResult> {
+		const orderSnapshot = await this.loadOrderSnapshot(command.orderId);
+		const payment = await this.createAndPersistPayment({
+			orderId: command.orderId,
+			amount: orderSnapshot.amount,
+			currency: orderSnapshot.currency,
+		});
+
+		const paymentIntentCreatedOutboxId =
+			await this.publishPaymentIntentCreated(command.orderId, payment.id);
+		const webhookSchedule = this.buildWebhookSchedule(command, payment.id);
+		const webhookOutboxId = await this.publishWebhookEvent({
+			event: webhookSchedule.event,
+			orderId: command.orderId,
+			delaySeconds: webhookSchedule.delaySeconds,
+		});
+
+		return this.buildTransactionResult({
+			payment,
+			orderId: command.orderId,
+			eventType: webhookSchedule.eventType,
+			delaySeconds: webhookSchedule.delaySeconds,
+			paymentIntentCreatedOutboxId,
+			webhookOutboxId,
+		});
+	}
+
+	private async scheduleDelayedDispatchIfNeeded(
+		target: CreatePaymentIntentTransactionResult['delayedDispatchTarget'],
+	): Promise<void> {
+		if (!target) {
+			return;
+		}
+
+		await this.delayedDispatchTrigger.scheduleOneShot(target);
+	}
+
+	private async dispatchImmediateTargetsIfEnabled(
+		targets: CreatePaymentIntentTransactionResult['immediateDispatchTargets'],
+	): Promise<void> {
 		if (!isOutboxHandlerImmediateDispatchEnabled()) {
-			return transactionResult.response;
+			return;
 		}
 
-		for (const target of transactionResult.immediateDispatchTargets) {
+		for (const target of targets) {
 			try {
 				await this.commandBus.execute(
 					new DispatchOutboxEventCommand({
@@ -171,6 +243,22 @@ export class CreatePaymentIntentHandler implements ICommandHandler<CreatePayment
 				continue;
 			}
 		}
+	}
+
+	async execute(
+		command: CreatePaymentIntentCommand,
+	): Promise<CreatePaymentIntentResult> {
+		const transactionResult =
+			await this.uow.transaction<CreatePaymentIntentTransactionResult>(
+				async () => await this.executeInTransaction(command),
+			);
+
+		await this.scheduleDelayedDispatchIfNeeded(
+			transactionResult.delayedDispatchTarget,
+		);
+		await this.dispatchImmediateTargetsIfEnabled(
+			transactionResult.immediateDispatchTargets,
+		);
 
 		return transactionResult.response;
 	}
