@@ -46,7 +46,7 @@ const UsersPage = () => {
 								<td>
 									<Link
 										className="table-link"
-										href={`/?rootType=USER&rootId=${encodeURIComponent(u.userId)}`}
+										href={`/graph?rootType=USER&rootId=${encodeURIComponent(u.userId)}`}
 									>
 										{u.displayName}
 									</Link>
@@ -54,7 +54,7 @@ const UsersPage = () => {
 								<td>
 									<Link
 										className="table-link"
-										href={`/?rootType=USER&rootId=${encodeURIComponent(u.userId)}`}
+										href={`/graph?rootType=USER&rootId=${encodeURIComponent(u.userId)}`}
 									>
 										{u.email}
 									</Link>

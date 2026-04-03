@@ -112,7 +112,7 @@ const OrderDetailInner = () => {
 						<h1 className="text-2xl font-semibold">
 							<Link
 								className="underline"
-								href={`/?rootType=ORDER&rootId=${encodeURIComponent(orderId)}`}
+								href={`/graph?rootType=ORDER&rootId=${encodeURIComponent(orderId)}`}
 							>
 								{orderId}
 							</Link>
@@ -158,7 +158,7 @@ const OrderDetailInner = () => {
 									{order.userId ? (
 										<Link
 											className="font-mono text-xs underline"
-											href={`/?rootType=USER&rootId=${encodeURIComponent(order.userId)}`}
+											href={`/graph?rootType=USER&rootId=${encodeURIComponent(order.userId)}`}
 										>
 											{order.userId}
 										</Link>
@@ -202,7 +202,7 @@ const OrderDetailInner = () => {
 									{order.paymentId ? (
 										<Link
 											className="font-mono text-xs underline"
-											href={`/?rootType=PAYMENT&rootId=${encodeURIComponent(order.paymentId)}`}
+											href={`/graph?rootType=PAYMENT&rootId=${encodeURIComponent(order.paymentId)}`}
 										>
 											{order.paymentId}
 										</Link>
@@ -229,7 +229,7 @@ const OrderDetailInner = () => {
 											/>
 											<Link
 												className="font-mono text-xs underline"
-												href={`/?rootType=SHIPMENT&rootId=${encodeURIComponent(shipment.shipmentId)}`}
+												href={`/graph?rootType=SHIPMENT&rootId=${encodeURIComponent(shipment.shipmentId)}`}
 											>
 												{shipment.shipmentId}
 											</Link>

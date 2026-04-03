@@ -80,7 +80,7 @@ export const GraphDetailPanel = ({
 					{selectedNode.type !== "EVENT" ? (
 						<Link
 							className="btn btn-primary h-auto py-2 text-center text-xs"
-							href={`/?rootType=${encodeURIComponent(
+							href={`/graph?rootType=${encodeURIComponent(
 								selectedNode.type,
 							)}&rootId=${encodeURIComponent(parseNodeKey(selectedNode.id).key)}&depth=${encodeURIComponent(String(finiteOrDefault(depth, DEFAULT_DEPTH)))}&maxEvents=${encodeURIComponent(String(finiteOrDefault(maxEvents, DEFAULT_MAX_EVENTS)))}&maxNodes=${encodeURIComponent(String(finiteOrDefault(maxNodes, DEFAULT_MAX_NODES)))}`}
 						>

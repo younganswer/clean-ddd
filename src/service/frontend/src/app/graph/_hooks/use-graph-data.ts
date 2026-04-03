@@ -106,7 +106,7 @@ export const useGraphData = (input: Input) => {
 					String(finiteOrDefault(maxNodes, DEFAULT_MAX_NODES)),
 				);
 				sp.set("includeEvents", String(includeEvents));
-				onReplaceRoute(`/?${sp.toString()}`);
+				onReplaceRoute(`/graph?${sp.toString()}`);
 			} catch (e: unknown) {
 				if (!active) return;
 				const message = e instanceof Error ? e.message : String(e);

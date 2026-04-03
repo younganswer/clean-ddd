@@ -124,7 +124,7 @@ export const useGraphPageState = () => {
 				sp.set("maxEvents", next.maxEvents.trim());
 			if (next.maxNodes.trim()) sp.set("maxNodes", next.maxNodes.trim());
 			sp.set("includeEvents", String(next.includeEvents));
-			router.push(`/?${sp.toString()}`);
+			router.push(`/graph?${sp.toString()}`);
 		},
 		[router],
 	);
@@ -354,6 +354,12 @@ export const useGraphPageState = () => {
 		setError,
 	]);
 
+	const relayout = useCallback(() => {
+		const cy = cyRef.current;
+		if (!cy) return;
+		runLayout(cy);
+	}, [runLayout]);
+
 	return {
 		rootType,
 		rootId,
@@ -410,11 +416,7 @@ export const useGraphPageState = () => {
 			});
 		},
 		onSelectAndCenter: handleSelectAndCenter,
-		onRelayout: () => {
-			const cy = cyRef.current;
-			if (!cy) return;
-			runLayout(cy);
-		},
+		onRelayout: relayout,
 		onFit: () => cyRef.current?.fit(undefined, 40),
 		onCyReady: (cy: Core) => {
 			cyRef.current = cy;

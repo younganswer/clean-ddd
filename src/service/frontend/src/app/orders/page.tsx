@@ -48,7 +48,7 @@ const OrdersPage = () => {
 								<td className="mono-cell">
 									<Link
 										className="table-link"
-										href={`/?rootType=ORDER&rootId=${encodeURIComponent(o.orderId)}`}
+										href={`/graph?rootType=ORDER&rootId=${encodeURIComponent(o.orderId)}`}
 									>
 										{o.orderId}
 									</Link>
@@ -57,7 +57,7 @@ const OrdersPage = () => {
 									{o.userId ? (
 										<Link
 											className="table-link"
-											href={`/?rootType=USER&rootId=${encodeURIComponent(o.userId)}`}
+											href={`/graph?rootType=USER&rootId=${encodeURIComponent(o.userId)}`}
 										>
 											{o.userId}
 										</Link>
@@ -69,7 +69,7 @@ const OrdersPage = () => {
 									{o.paymentId ? (
 										<Link
 											className="table-link"
-											href={`/?rootType=PAYMENT&rootId=${encodeURIComponent(o.paymentId)}`}
+											href={`/graph?rootType=PAYMENT&rootId=${encodeURIComponent(o.paymentId)}`}
 										>
 											{o.paymentId}
 										</Link>

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import cytoscape from "cytoscape";
 import fcose from "cytoscape-fcose";
 
@@ -84,6 +84,16 @@ const GraphPageInner = () => {
 		onCreatePaymentIntent,
 	} = useGraphPageState();
 
+	useEffect(() => {
+		if (!graph) return;
+		const frame = window.requestAnimationFrame(() => {
+			onRelayout();
+		});
+		return () => {
+			window.cancelAnimationFrame(frame);
+		};
+	}, [graph, onRelayout]);
+
 	return (
 		<div className="page-shell">
 			<div className="flex items-center justify-between">
@@ -121,14 +131,14 @@ const GraphPageInner = () => {
 
 			{!rootType || !rootId ? (
 				<div className="surface mt-6 p-5 text-sm">
+					{/* prettier-ignore */}
 					<div className="text-foreground">
-						테이블에서 객체를 클릭하시면 해당 객체 기준으로
-						사용자-주문-배송-결제-이벤트 묶음 그래프를 보여드립니다.
+						테이블에서 객체를 클릭하면 해당 객체 기준으로 사용자-주문-배송-결제-이벤트 묶음 그래프를 볼 수 있습니다.
 					</div>
 					<div className="mt-4 flex flex-wrap gap-3">
 						<Link
 							className="btn h-auto py-2"
-							href="/?rootType=USER&rootId=00000000-0000-0000-0000-000000000001"
+							href="/graph?rootType=USER&rootId=00000000-0000-0000-0000-000000000001"
 						>
 							예시(USER)
 						</Link>

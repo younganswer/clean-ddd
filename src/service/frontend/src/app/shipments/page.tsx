@@ -49,7 +49,7 @@ const ShipmentsPage = () => {
 								<td className="mono-cell">
 									<Link
 										className="table-link"
-										href={`/?rootType=SHIPMENT&rootId=${encodeURIComponent(s.shipmentId)}`}
+										href={`/graph?rootType=SHIPMENT&rootId=${encodeURIComponent(s.shipmentId)}`}
 									>
 										{s.shipmentId}
 									</Link>
@@ -57,7 +57,7 @@ const ShipmentsPage = () => {
 								<td className="mono-cell">
 									<Link
 										className="table-link"
-										href={`/?rootType=ORDER&rootId=${encodeURIComponent(s.orderId)}`}
+										href={`/graph?rootType=ORDER&rootId=${encodeURIComponent(s.orderId)}`}
 									>
 										{s.orderId}
 									</Link>
