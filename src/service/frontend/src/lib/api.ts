@@ -44,6 +44,30 @@ const requireBaseUrl = (): string => {
 const toApiPath = (path: string): string =>
 	path.startsWith("/") ? path : `/${path}`;
 
+const MUTATING_HTTP_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
+
+const createIdempotencySuffix = (): string => {
+	if (
+		typeof globalThis.crypto !== "undefined" &&
+		typeof globalThis.crypto.randomUUID === "function"
+	) {
+		return globalThis.crypto.randomUUID();
+	}
+
+	return `${Date.now()}-${Math.random().toString(16).slice(2, 10)}`;
+};
+
+const createIdempotencyKey = (method: string, path: string): string => {
+	const normalizedPath = toApiPath(path)
+		.replace(/[^a-zA-Z0-9]+/g, "-")
+		.replace(/^-+|-+$/g, "")
+		.toLowerCase()
+		.slice(0, 32);
+
+	const pathToken = normalizedPath.length > 0 ? normalizedPath : "request";
+	return `web-${method.toLowerCase()}-${pathToken}-${createIdempotencySuffix()}`;
+};
+
 const toQueryString = (
 	params: Record<string, string | number | boolean | undefined>,
 ): string => {
@@ -95,18 +119,24 @@ const http = async <T>(path: string, init?: RequestInit): Promise<T> => {
 	const url = `${requireBaseUrl()}${toApiPath(path)}`;
 	const method = (init?.method ?? "GET").toUpperCase();
 	const hasBody = init?.body !== undefined && init?.body !== null;
-	const defaultHeaders: Record<string, string> = {};
+	const headers = new Headers(init?.headers);
 
-	if (hasBody && method !== "GET" && method !== "HEAD") {
-		defaultHeaders["content-type"] = "application/json";
+	if (
+		hasBody &&
+		method !== "GET" &&
+		method !== "HEAD" &&
+		!headers.has("content-type")
+	) {
+		headers.set("content-type", "application/json");
+	}
+
+	if (MUTATING_HTTP_METHODS.has(method) && !headers.has("idempotency-key")) {
+		headers.set("idempotency-key", createIdempotencyKey(method, path));
 	}
 
 	const res = await fetch(url, {
 		...init,
-		headers: {
-			...defaultHeaders,
-			...(init?.headers ?? {}),
-		},
+		headers,
 		cache: "no-store",
 	});
 
