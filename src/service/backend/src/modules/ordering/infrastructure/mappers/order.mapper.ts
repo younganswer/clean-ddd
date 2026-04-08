@@ -12,8 +12,8 @@ export class OrderMapper {
 			userId: schema.userId,
 			status: schema.status,
 			total: Money.of(schema.amount, schema.currency),
-			items: (schema.items ?? []).map((i) =>
-				OrderItem.of(i.sku, i.quantity),
+			items: (schema.items ?? []).map((item) =>
+				OrderItem.of(item.sku, item.quantity),
 			),
 			paymentId: schema.paymentId,
 			orderedAt: schema.orderedAt,
@@ -30,10 +30,7 @@ export class OrderMapper {
 			status: primitives.status,
 			amount: primitives.total.amount,
 			currency: primitives.total.currency,
-			items: primitives.items.map((i) => ({
-				sku: i.sku,
-				quantity: i.quantity,
-			})),
+			items: primitives.items,
 			paymentId: primitives.paymentId,
 			orderedAt: primitives.orderedAt,
 			paidAt: primitives.paidAt,

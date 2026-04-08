@@ -52,6 +52,7 @@ export class InventoryItem extends BaseEntity {
 
 	reserve(quantity: number): void {
 		const normalized = Number(quantity ?? 0);
+
 		if (!Number.isFinite(normalized) || normalized <= 0) {
 			throw DomainErrorFactory.create(
 				INVENTORY_DOMAIN_ERRORS.INVENTORY_QUANTITY_INVALID,
@@ -60,6 +61,7 @@ export class InventoryItem extends BaseEntity {
 				},
 			);
 		}
+
 		if (this._availableQuantity < normalized) {
 			throw DomainErrorFactory.create(
 				INVENTORY_DOMAIN_ERRORS.INVENTORY_STOCK_INSUFFICIENT,

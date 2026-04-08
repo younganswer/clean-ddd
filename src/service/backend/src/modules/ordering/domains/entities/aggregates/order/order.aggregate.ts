@@ -10,11 +10,11 @@ export class Order extends BaseEntity {
 	private constructor(
 		id: string,
 		private readonly _userId: string,
-		private _status: OrderStatus,
 		private readonly _total: Money,
 		private readonly _items: OrderItem[],
-		private _paymentId: string | null,
 		private readonly _orderedAt: Date,
+		private _status: OrderStatus,
+		private _paymentId: string | null,
 		private _paidAt: Date | null,
 	) {
 		super(id);
@@ -27,11 +27,13 @@ export class Order extends BaseEntity {
 		now?: Date;
 	}): Order {
 		const userId = String(input.userId ?? '').trim();
+
 		if (!userId) {
 			throw DomainErrorFactory.create(
 				ORDERING_DOMAIN_ERRORS.ORDER_USER_ID_REQUIRED,
 			);
 		}
+
 		if (!Array.isArray(input.items) || input.items.length === 0) {
 			throw DomainErrorFactory.create(
 				ORDERING_DOMAIN_ERRORS.ORDER_ITEMS_REQUIRED,
@@ -41,11 +43,11 @@ export class Order extends BaseEntity {
 		return new Order(
 			randomUUID(),
 			userId,
-			OrderStatus.PENDING_PAYMENT,
 			input.total,
 			[...input.items],
-			null,
 			input.now ?? new Date(),
+			OrderStatus.PENDING_PAYMENT,
+			null,
 			null,
 		);
 	}
@@ -53,32 +55,34 @@ export class Order extends BaseEntity {
 	static rehydrate(input: {
 		uuid: string;
 		userId: string;
-		status: OrderStatus;
 		total: Money;
 		items: OrderItem[];
-		paymentId: string | null;
 		orderedAt: Date;
+		status: OrderStatus;
+		paymentId: string | null;
 		paidAt: Date | null;
 	}): Order {
 		return new Order(
 			input.uuid,
 			input.userId,
-			input.status,
 			input.total,
 			input.items,
-			input.paymentId,
 			input.orderedAt,
+			input.status,
+			input.paymentId,
 			input.paidAt,
 		);
 	}
 
 	attachPayment(paymentId: string): void {
 		const normalized = String(paymentId ?? '').trim();
+
 		if (!normalized) {
 			throw DomainErrorFactory.create(
 				ORDERING_DOMAIN_ERRORS.ORDER_PAYMENT_ID_REQUIRED,
 			);
 		}
+
 		if (this._status !== OrderStatus.PENDING_PAYMENT) {
 			throw DomainErrorFactory.create(
 				ORDERING_DOMAIN_ERRORS.ORDER_PAYMENT_ATTACH_INVALID_STATUS,
@@ -88,6 +92,7 @@ export class Order extends BaseEntity {
 				},
 			);
 		}
+
 		if (this._paymentId && this._paymentId !== normalized) {
 			throw DomainErrorFactory.create(
 				ORDERING_DOMAIN_ERRORS.ORDER_PAYMENT_ALREADY_ATTACHED,
@@ -98,9 +103,11 @@ export class Order extends BaseEntity {
 	}
 
 	markPaid(): void {
+		// idempotent
 		if (this._status === OrderStatus.PAID) {
 			return;
 		}
+
 		if (this._status !== OrderStatus.PENDING_PAYMENT) {
 			throw DomainErrorFactory.create(
 				ORDERING_DOMAIN_ERRORS.ORDER_MARK_PAID_INVALID_STATUS,
@@ -110,17 +117,15 @@ export class Order extends BaseEntity {
 				},
 			);
 		}
+
 		if (!this._paymentId) {
 			throw DomainErrorFactory.create(
 				ORDERING_DOMAIN_ERRORS.ORDER_PAYMENT_NOT_ATTACHED,
 			);
 		}
+
 		this._status = OrderStatus.PAID;
 		this._paidAt = new Date();
-	}
-
-	get status(): OrderStatus {
-		return this._status;
 	}
 
 	get userId(): string {
@@ -139,40 +144,44 @@ export class Order extends BaseEntity {
 		return this._total;
 	}
 
-	get items(): Array<{ sku: string; quantity: number }> {
-		return this._items.map((i) => i.toPrimitives());
+	get items(): OrderItem[] {
+		return [...this._items];
+	}
+
+	get orderedAt(): Date {
+		return new Date(this._orderedAt);
+	}
+
+	get status(): OrderStatus {
+		return this._status;
 	}
 
 	get paymentId(): string | null {
 		return this._paymentId;
 	}
 
-	get orderedAt(): Date {
-		return this._orderedAt;
-	}
-
 	get paidAt(): Date | null {
-		return this._paidAt;
+		return this._paidAt ? new Date(this._paidAt) : null;
 	}
 
 	toPrimitives(): {
 		orderId: string;
 		userId: string;
-		status: OrderStatus;
-		total: Money;
-		items: OrderItem[];
-		paymentId: string | null;
+		total: { amount: number; currency: string };
+		items: Array<{ sku: string; quantity: number }>;
 		orderedAt: Date;
+		status: OrderStatus;
+		paymentId: string | null;
 		paidAt: Date | null;
 	} {
 		return {
 			orderId: this.id,
 			userId: this._userId,
-			status: this._status,
-			total: this._total,
-			items: [...this._items],
-			paymentId: this._paymentId,
+			total: this._total.toPrimitives(),
+			items: this._items.map((item) => item.toPrimitives()),
 			orderedAt: this._orderedAt,
+			status: this._status,
+			paymentId: this._paymentId,
 			paidAt: this._paidAt,
 		};
 	}
