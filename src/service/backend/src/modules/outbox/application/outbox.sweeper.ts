@@ -14,6 +14,7 @@ import {
 	resolveErrorMessage,
 } from '@/modules/outbox/application/outbox-error.util';
 import { OutboxDispatchSource } from '@/shared/outbox/domain/queue/outbox-dispatch-source.enum';
+import { OutboxEventStatus } from '@/shared/outbox/domain/outbox-event-status.enum';
 
 const OUTBOX_RETRY_DELAY_MS = 60_000;
 
@@ -31,6 +32,13 @@ export class OutboxSweeper {
 		private readonly uow: UnitOfWork,
 	) {}
 
+	private isDispatchableStatus(status: OutboxEventStatus): boolean {
+		return (
+			status === OutboxEventStatus.PENDING ||
+			status === OutboxEventStatus.FAILED
+		);
+	}
+
 	async sweepAndEnqueue(limit: number): Promise<number> {
 		const now = new Date();
 		const candidates = await this.outboxRepository.findDispatchable({
@@ -42,6 +50,7 @@ export class OutboxSweeper {
 		for (const event of candidates) {
 			const eventId = event.id;
 			if (!eventId) continue;
+			if (!this.isDispatchableStatus(event.status)) continue;
 
 			try {
 				const payload =
@@ -60,6 +69,7 @@ export class OutboxSweeper {
 					const outboxEvent =
 						await this.outboxRepository.findById(eventId);
 					if (!outboxEvent) return;
+					if (!this.isDispatchableStatus(outboxEvent.status)) return;
 
 					outboxEvent.markPublished();
 					await this.outboxRepository.persist(outboxEvent);

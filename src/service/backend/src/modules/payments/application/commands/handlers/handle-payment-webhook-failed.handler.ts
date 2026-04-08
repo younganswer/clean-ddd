@@ -6,6 +6,7 @@ import {
 	type IPaymentRepository,
 } from '@/modules/payments/domains/repositories/i.payment.repository';
 import { HandlePaymentWebhookFailedCommand } from '@/modules/payments/application/commands/handle-payment-webhook-failed.command';
+import { PaymentStatus } from '@/modules/payments/domains/enums/payment-status.enum';
 
 @CommandHandler(HandlePaymentWebhookFailedCommand)
 export class HandlePaymentWebhookFailedHandler implements ICommandHandler<HandlePaymentWebhookFailedCommand> {
@@ -20,6 +21,11 @@ export class HandlePaymentWebhookFailedHandler implements ICommandHandler<Handle
 			const payment = await this.paymentRepository.getById(
 				command.paymentId,
 			);
+
+			if (payment.status !== PaymentStatus.PENDING) {
+				return;
+			}
+
 			payment.markFailed();
 			await this.paymentRepository.persist(payment);
 		});

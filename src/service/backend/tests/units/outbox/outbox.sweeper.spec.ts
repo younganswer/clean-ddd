@@ -1,5 +1,6 @@
-import { DispatchOutboxEventHandler } from '@/modules/outbox/application/commands/handlers/dispatch-outbox-event.handler';
-import { DispatchOutboxEventCommand } from '@/modules/outbox/application/commands/dispatch-outbox-event.command';
+/// <reference types="jest" />
+
+import { OutboxSweeper } from '@/modules/outbox/application/outbox.sweeper';
 import { OutboxEvent } from '@/shared/outbox/domain/entities/outbox-event.entity';
 import { OutboxEventStatus } from '@/shared/outbox/domain/outbox-event-status.enum';
 import type { IOutboxRepository } from '@/shared/outbox/domain/repositories/i.outbox.repository';
@@ -7,8 +8,8 @@ import type { IOutboxQueue } from '@/shared/outbox/domain/queue/i.outbox.queue';
 import type { UnitOfWork } from '@/lib/database/unit-of-work';
 import { OutboxDispatchSource } from '@/shared/outbox/domain/queue/outbox-dispatch-source.enum';
 
-describe('DispatchOutboxEventHandler', () => {
-	it('marks event as published after successful enqueue', async () => {
+describe('OutboxSweeper', () => {
+	it('enqueues and marks pending event as published', async () => {
 		const event = OutboxEvent.create({
 			eventType: 'PAYMENT_WEBHOOK.PAYMENT_SUCCEEDED',
 			payload: { orderId: 'order-1', paymentId: 'payment-1' },
@@ -27,6 +28,7 @@ describe('DispatchOutboxEventHandler', () => {
 			lock: jest.fn(() => Promise.resolve(true)),
 			unlock: jest.fn(() => Promise.resolve(undefined)),
 		};
+
 		const enqueueMock = jest.fn(() => Promise.resolve(undefined));
 		const outboxQueue: IOutboxQueue = {
 			enqueue: enqueueMock,
@@ -37,75 +39,24 @@ describe('DispatchOutboxEventHandler', () => {
 			): Promise<T> => await work(undefined as never),
 		};
 
-		const handler = new DispatchOutboxEventHandler(
+		const sweeper = new OutboxSweeper(
 			outboxRepository,
 			outboxQueue,
 			uow as UnitOfWork,
 		);
 
-		const command = new DispatchOutboxEventCommand({
-			outboxId: event.id,
-			messageGroupId: 'order-1',
-		});
-		await handler.execute(command);
+		await expect(sweeper.sweepAndEnqueue(10)).resolves.toBe(1);
 
 		expect(enqueueMock).toHaveBeenCalledWith(event.id, {
 			messageGroupId: 'order-1',
-			source: OutboxDispatchSource.DISPATCHER,
+			source: OutboxDispatchSource.SWEEPER,
 		});
+		expect(findByIdMock).toHaveBeenCalledWith(event.id);
 		expect(event.status).toBe(OutboxEventStatus.PUBLISHED);
 		expect(persistMock).toHaveBeenCalled();
 	});
 
-	it('marks event as failed when enqueue throws', async () => {
-		const event = OutboxEvent.create({
-			eventType: 'PAYMENT_WEBHOOK.PAYMENT_SUCCEEDED',
-			payload: { orderId: 'order-1', paymentId: 'payment-1' },
-			status: OutboxEventStatus.PENDING,
-		});
-
-		const persistMock = jest.fn(() => Promise.resolve(undefined));
-		const findByIdMock = jest.fn(() => Promise.resolve(event));
-		const outboxRepository: IOutboxRepository = {
-			persist: persistMock,
-			findById: findByIdMock,
-			getById: jest.fn(() => Promise.resolve(event)),
-			findDispatchable: jest.fn(() => Promise.resolve([event])),
-			findRecent: jest.fn(() => Promise.resolve([event])),
-			hasConsumedNewerEvent: jest.fn(() => Promise.resolve(false)),
-			lock: jest.fn(() => Promise.resolve(true)),
-			unlock: jest.fn(() => Promise.resolve(undefined)),
-		};
-		const outboxQueue: IOutboxQueue = {
-			enqueue: jest.fn(() => {
-				throw new Error('enqueue failed');
-			}),
-		};
-		const uow: Pick<UnitOfWork, 'transaction'> = {
-			transaction: async <T>(
-				work: (em: never) => Promise<T>,
-			): Promise<T> => await work(undefined as never),
-		};
-
-		const handler = new DispatchOutboxEventHandler(
-			outboxRepository,
-			outboxQueue,
-			uow as UnitOfWork,
-		);
-
-		const command = new DispatchOutboxEventCommand({
-			outboxId: event.id,
-			messageGroupId: 'order-1',
-		});
-		await handler.execute(command);
-
-		expect(event.status).toBe(OutboxEventStatus.FAILED);
-		expect(event.attempt).toBe(1);
-		expect(event.lastError).toBe('enqueue failed');
-		expect(persistMock).toHaveBeenCalled();
-	});
-
-	it('skips dispatch when outbox event is already consumed', async () => {
+	it('skips non-dispatchable consumed event', async () => {
 		const event = OutboxEvent.create({
 			eventType: 'PAYMENT_WEBHOOK.PAYMENT_SUCCEEDED',
 			payload: { orderId: 'order-1', paymentId: 'payment-1' },
@@ -124,6 +75,7 @@ describe('DispatchOutboxEventHandler', () => {
 			lock: jest.fn(() => Promise.resolve(true)),
 			unlock: jest.fn(() => Promise.resolve(undefined)),
 		};
+
 		const enqueueMock = jest.fn(() => Promise.resolve(undefined));
 		const outboxQueue: IOutboxQueue = {
 			enqueue: enqueueMock,
@@ -134,20 +86,16 @@ describe('DispatchOutboxEventHandler', () => {
 			): Promise<T> => await work(undefined as never),
 		};
 
-		const handler = new DispatchOutboxEventHandler(
+		const sweeper = new OutboxSweeper(
 			outboxRepository,
 			outboxQueue,
 			uow as UnitOfWork,
 		);
 
-		const command = new DispatchOutboxEventCommand({
-			outboxId: event.id,
-			messageGroupId: 'order-1',
-		});
-		await handler.execute(command);
+		await expect(sweeper.sweepAndEnqueue(10)).resolves.toBe(0);
 
-		expect(findByIdMock).toHaveBeenCalledWith(event.id);
 		expect(enqueueMock).not.toHaveBeenCalled();
+		expect(findByIdMock).not.toHaveBeenCalled();
 		expect(persistMock).not.toHaveBeenCalled();
 		expect(event.status).toBe(OutboxEventStatus.CONSUMED);
 	});

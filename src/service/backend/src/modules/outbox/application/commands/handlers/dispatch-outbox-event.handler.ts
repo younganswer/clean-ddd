@@ -16,6 +16,7 @@ import {
 	resolveErrorMessage,
 } from '@/modules/outbox/application/outbox-error.util';
 import { OutboxDispatchSource } from '@/shared/outbox/domain/queue/outbox-dispatch-source.enum';
+import { OutboxEventStatus } from '@/shared/outbox/domain/outbox-event-status.enum';
 const OUTBOX_RETRY_DELAY_MS = 60_000;
 
 @CommandHandler(DispatchOutboxEventCommand)
@@ -32,9 +33,19 @@ export class DispatchOutboxEventHandler implements ICommandHandler<DispatchOutbo
 		private readonly uow: UnitOfWork,
 	) {}
 
+	private isDispatchableStatus(status: OutboxEventStatus): boolean {
+		return (
+			status === OutboxEventStatus.PENDING ||
+			status === OutboxEventStatus.FAILED
+		);
+	}
+
 	async execute(command: DispatchOutboxEventCommand): Promise<void> {
 		const outboxId = command.outboxId;
 		if (!outboxId) return;
+		const current = await this.outboxRepository.findById(outboxId);
+		if (!current) return;
+		if (!this.isDispatchableStatus(current.status)) return;
 
 		const { messageGroupId } = command;
 
@@ -47,6 +58,7 @@ export class DispatchOutboxEventHandler implements ICommandHandler<DispatchOutbo
 				const outboxEvent =
 					await this.outboxRepository.findById(outboxId);
 				if (!outboxEvent) return;
+				if (!this.isDispatchableStatus(outboxEvent.status)) return;
 
 				outboxEvent.markPublished();
 				await this.outboxRepository.persist(outboxEvent);

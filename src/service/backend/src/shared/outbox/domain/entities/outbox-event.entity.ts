@@ -87,6 +87,7 @@ export class OutboxEvent extends BaseEntity {
 		options?: { maxAttempts?: number },
 	): void {
 		const nextAttempt = this._attempt + 1;
+
 		this._attempt = nextAttempt;
 		this._lastError = error;
 		this._nextAttemptAt = nextAttemptAt;
@@ -95,8 +96,8 @@ export class OutboxEvent extends BaseEntity {
 		const maxAttempts = options?.maxAttempts;
 		if (
 			typeof maxAttempts === 'number' &&
-			maxAttempts > 0 &&
-			nextAttempt >= maxAttempts
+			0 < maxAttempts &&
+			maxAttempts <= nextAttempt
 		) {
 			this._status = OutboxEventStatus.TERMINAL_FAILED;
 			return;
@@ -126,15 +127,15 @@ export class OutboxEvent extends BaseEntity {
 	}
 
 	get nextAttemptAt(): Date {
-		return this._nextAttemptAt;
+		return new Date(this._nextAttemptAt);
 	}
 
 	get lockedUntil(): Date | null {
-		return this._lockedUntil;
+		return this._lockedUntil ? new Date(this._lockedUntil) : null;
 	}
 
 	get publishedAt(): Date | null {
-		return this._publishedAt;
+		return this._publishedAt ? new Date(this._publishedAt) : null;
 	}
 
 	get lastError(): string | null {
