@@ -1,6 +1,6 @@
 import type { Handler, SQSEvent } from 'aws-lambda';
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from '@/app.module';
+import { AppModule } from '@/bootstrap/app.module';
 import {
 	withBoundaryLogging,
 	resolveBoundaryErrorMessage,

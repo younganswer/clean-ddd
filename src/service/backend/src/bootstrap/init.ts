@@ -7,13 +7,14 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { NextFunction, Request, Response } from 'express';
-import { AppModule } from '@/app.module';
+import { AppModule } from '@/bootstrap/app.module';
 import { AuthContextAccessor } from '@/common/context/auth-context';
 import { GlobalHttpExceptionFilter } from '@/common/filters/global-http-exception.filter';
 import { AuthGuard } from '@/common/guards/auth.guard';
 import { HttpRequestLoggingInterceptor } from '@/common/interceptors/http-request-logging.interceptor';
+import { HttpIdempotencyInterceptor } from '@/common/interceptors/http-idempotency.interceptor';
 import { NonHttpRequestLoggingInterceptor } from '@/common/interceptors/non-http-request-logging.interceptor';
-import { NestApp } from '@/nest-app';
+import { NestApp } from '@/bootstrap/nest-app';
 
 let isConfigured = false;
 
@@ -41,6 +42,7 @@ function configureHttpApp(app: INestApplication): void {
 	});
 
 	const authContextAccessor = app.get(AuthContextAccessor);
+	const httpIdempotencyInterceptor = app.get(HttpIdempotencyInterceptor);
 	app.use((req: Request, res: Response, next: NextFunction) => {
 		void req;
 		void res;
@@ -102,6 +104,7 @@ function configureHttpApp(app: INestApplication): void {
 
 	app.useGlobalInterceptors(
 		new HttpRequestLoggingInterceptor(authContextAccessor),
+		httpIdempotencyInterceptor,
 		new NonHttpRequestLoggingInterceptor(),
 	);
 

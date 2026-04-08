@@ -2,7 +2,7 @@ import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import { Collection, MongoClient } from 'mongodb';
 import { type IUserAvatarReader } from '@/modules/users/domains/readers/i.user-avatar.reader';
 import { UserAvatarResult } from '@/modules/users/domains/readers/user-avatar.result';
-import { optionalEnv } from '@/env';
+import { optionalEnv } from '@/shared/env';
 import { AvatarDocument } from '@/modules/users/infrastructure/documents/avatar.document';
 
 @Injectable()

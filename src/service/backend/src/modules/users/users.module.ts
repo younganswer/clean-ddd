@@ -11,7 +11,7 @@ import { MongoUserAvatarRepository } from '@/modules/users/infrastructure/reposi
 import { DynamoDbUserAvatarRepository } from '@/modules/users/infrastructure/repositories/dynamodb-user-avatar.repository';
 import { AvatarMapper } from '@/modules/users/infrastructure/mappers/avatar.mapper';
 import { UserMapper } from '@/modules/users/infrastructure/mappers/user.mapper';
-import { optionalEnv } from '@/env';
+import { optionalEnv } from '@/shared/env';
 import { UserReaderProvider } from '@/modules/users/infrastructure/readers/user.reader';
 import { MongoUserAvatarReader } from '@/modules/users/infrastructure/readers/mongo-user-avatar.reader';
 import { DynamoDbUserAvatarReader } from '@/modules/users/infrastructure/readers/dynamodb-user-avatar.reader';

@@ -12,7 +12,7 @@ import {
 } from '@aws-sdk/client-sqs';
 import { OutboxConsumer } from '@/modules/outbox/application/outbox.consumer';
 import { resolveOutboxTimeoutPolicy } from '@/modules/outbox/application/outbox-timeout-policy';
-import { isOutboxPollingEnabled } from '@/runtime-role';
+import { isOutboxPollingEnabled } from '@/bootstrap/runtime-role';
 import { SQS_CLIENT, SQS_OUTBOX_QUEUE_URL } from '@/lib/queue/sqs.module';
 import {
 	resolveBoundaryErrorMessage,

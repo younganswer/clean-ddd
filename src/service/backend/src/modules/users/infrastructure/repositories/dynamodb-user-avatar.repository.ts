@@ -10,7 +10,7 @@ import { type IUserAvatarRepository } from '@/modules/users/domains/repositories
 import { Avatar } from '@/modules/users/domains/entities/avatar.entity';
 import { AvatarDocument } from '@/modules/users/infrastructure/documents/avatar.document';
 import { AvatarMapper } from '@/modules/users/infrastructure/mappers/avatar.mapper';
-import { optionalEnv } from '@/env';
+import { optionalEnv } from '@/shared/env';
 import { USER_INFRA_ERRORS } from '@/shared/errors';
 import { InfrastructureErrorFactory } from '@/common/errors/base.error-factory';
 

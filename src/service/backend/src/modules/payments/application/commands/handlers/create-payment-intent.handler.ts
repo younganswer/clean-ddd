@@ -22,7 +22,7 @@ import { UnitOfWork } from '@/lib/database/unit-of-work';
 import { ORDERING_APPLICATION_ERRORS } from '@/shared/errors';
 import { ApplicationErrorFactory } from '@/common/errors/base.error-factory';
 import { DispatchOutboxEventCommand } from '@/modules/outbox/application/commands/dispatch-outbox-event.command';
-import { isOutboxHandlerImmediateDispatchEnabled } from '@/runtime-role';
+import { isOutboxHandlerImmediateDispatchEnabled } from '@/bootstrap/runtime-role';
 import {
 	IOutboxDelayedDispatchTriggerSymbol,
 	type IOutboxDelayedDispatchTrigger,

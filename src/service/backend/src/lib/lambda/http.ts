@@ -1,6 +1,6 @@
 import serverlessExpress from '@vendia/serverless-express';
 import type { Handler } from 'aws-lambda';
-import { createHttpApp } from '@/init';
+import { createHttpApp } from '@/bootstrap/init';
 
 let cachedHandler: Handler | undefined;
 

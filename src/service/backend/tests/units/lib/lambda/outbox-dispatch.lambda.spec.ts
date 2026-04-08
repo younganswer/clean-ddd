@@ -1,11 +1,11 @@
 import { Logger } from '@nestjs/common';
-import { AppModule } from '@/app.module';
+import { AppModule } from '@/bootstrap/app.module';
 import { OutboxDispatcher } from '@/modules/outbox/application/outbox.dispatcher';
 import { OutboxModule } from '@/modules/outbox/outbox.module';
 
 const createApplicationContextMock = jest.fn();
 
-jest.mock('@/app.module', () => ({
+jest.mock('@/bootstrap/app.module', () => ({
 	AppModule: class AppModule {},
 }));
 

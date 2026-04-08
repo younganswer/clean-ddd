@@ -13,7 +13,7 @@ import { PaymentFulfillmentRequestedEvent } from '@/contracts/payments/events/pa
 import { HandlePaymentWebhookSucceededCommand } from '@/modules/payments/application/commands/handle-payment-webhook-succeeded.command';
 import { PaymentStatus } from '@/modules/payments/domains/enums/payment-status.enum';
 import { DispatchOutboxEventCommand } from '@/modules/outbox/application/commands/dispatch-outbox-event.command';
-import { isOutboxHandlerImmediateDispatchEnabled } from '@/runtime-role';
+import { isOutboxHandlerImmediateDispatchEnabled } from '@/bootstrap/runtime-role';
 
 interface HandlePaymentWebhookSucceededExecution {
 	orderId: string;

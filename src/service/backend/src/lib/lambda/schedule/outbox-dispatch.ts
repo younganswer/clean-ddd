@@ -1,14 +1,14 @@
 import type { Handler } from 'aws-lambda';
 import { NestFactory } from '@nestjs/core';
 import { CommandBus } from '@nestjs/cqrs';
-import { AppModule } from '@/app.module';
+import { AppModule } from '@/bootstrap/app.module';
 import {
 	withBoundaryLogging,
 	resolveBoundaryErrorMessage,
 } from '@/lib/lambda/with-boundary-logging';
 import { OutboxDispatcher } from '@/modules/outbox/application/outbox.dispatcher';
 import { OutboxModule } from '@/modules/outbox/outbox.module';
-import { optionalEnv } from '@/env';
+import { optionalEnv } from '@/shared/env';
 import { DispatchOutboxEventCommand } from '@/modules/outbox/application/commands/dispatch-outbox-event.command';
 
 let cachedDispatcher: OutboxDispatcher | undefined;

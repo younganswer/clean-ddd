@@ -1,8 +1,8 @@
 import { Controller, Get } from '@nestjs/common';
 import { MessageEnvelope, ResponseHelper } from '@/common/responses';
 import { ApiMessageResponse } from '@/common/swagger/api-response.decorator';
-import { AppService } from '@/app.service';
-import { NestApp } from '@/nest-app';
+import { AppService } from '@/bootstrap/app.service';
+import { NestApp } from '@/bootstrap/nest-app';
 
 @Controller()
 export class AppController {

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { isOutboxCronEnabled } from '@/runtime-role';
+import { isOutboxCronEnabled } from '@/bootstrap/runtime-role';
 import { DispatchPendingOutboxEventsCommand } from '@/modules/outbox/application/commands/dispatch-pending-outbox-events.command';
 import { LogBoundary } from '@/common/logging/log-boundary.decorator';
 

@@ -1,10 +1,10 @@
-import { AppModule } from '@/app.module';
+import { AppModule } from '@/bootstrap/app.module';
 import { OutboxConsumer } from '@/modules/outbox/application/outbox.consumer';
 import { OutboxConsumerModule } from '@/modules/outbox/outbox-consumer.module';
 
 const createApplicationContextMock = jest.fn();
 
-jest.mock('@/app.module', () => ({
+jest.mock('@/bootstrap/app.module', () => ({
 	AppModule: class AppModule {},
 }));
 

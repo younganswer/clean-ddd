@@ -9,7 +9,7 @@ import tseslint from 'typescript-eslint';
 
 const ignoreExports = [
 	'src/main.ts',
-	'src/init.ts',
+	'src/bootstrap/init.ts',
 	'src/lib/lambda/**/*.ts',
 	'tests/**/*.ts',
 	'test-utils/**/*.ts',
