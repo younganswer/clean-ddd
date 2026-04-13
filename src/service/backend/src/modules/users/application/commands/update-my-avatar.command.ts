@@ -1,6 +1,10 @@
 import { Command } from '@nestjs/cqrs';
-import { USER_APPLICATION_ERRORS } from '@/shared/errors';
-import { requireTrimmedString } from '@/common/cqrs/input-normalizer';
+import {
+	UserApplicationUserAvatarUrlRequiredException,
+	UserApplicationUserIdRequiredException,
+} from '@/shared/exceptions';
+import { ApplicationExceptionFactory } from '@/common/exceptions/base.exception-factory';
+import { toTrimmedString } from '@/common/cqrs/input-normalizer';
 
 export class UpdateMyAvatarCommand extends Command<{
 	avatarId: string;
@@ -11,13 +15,21 @@ export class UpdateMyAvatarCommand extends Command<{
 
 	constructor(input: { userId: string; avatarUrl: string }) {
 		super();
-		this.userId = requireTrimmedString(
-			input.userId,
-			USER_APPLICATION_ERRORS.USER_ID_REQUIRED,
-		);
-		this.avatarUrl = requireTrimmedString(
-			input.avatarUrl,
-			USER_APPLICATION_ERRORS.USER_AVATAR_URL_REQUIRED,
-		);
+		const userId = toTrimmedString(input.userId);
+		if (!userId) {
+			throw ApplicationExceptionFactory.create(
+				UserApplicationUserIdRequiredException,
+			);
+		}
+
+		const avatarUrl = toTrimmedString(input.avatarUrl);
+		if (!avatarUrl) {
+			throw ApplicationExceptionFactory.create(
+				UserApplicationUserAvatarUrlRequiredException,
+			);
+		}
+
+		this.userId = userId;
+		this.avatarUrl = avatarUrl;
 	}
 }

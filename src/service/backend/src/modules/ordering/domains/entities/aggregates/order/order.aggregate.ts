@@ -2,8 +2,16 @@ import { OrderStatus } from '@/modules/ordering/domains/enums/order-status.enum'
 import { BaseEntity } from '@/common/domain/base.entity';
 import { Money } from '@/shared/money/value-objects/money.vo';
 import { OrderItem } from '@/modules/ordering/domains/value-objects/order-item.vo';
-import { ORDERING_DOMAIN_ERRORS } from '@/shared/errors';
-import { DomainErrorFactory } from '@/common/errors/base.error-factory';
+import {
+	OrderingItemsRequiredException,
+	OrderingMarkPaidInvalidStatusException,
+	OrderingPaymentAlreadyAttachedException,
+	OrderingPaymentAttachInvalidStatusException,
+	OrderingPaymentIdRequiredException,
+	OrderingPaymentNotAttachedException,
+	OrderingUserIdRequiredException,
+} from '@/shared/exceptions';
+import { DomainExceptionFactory } from '@/common/exceptions/base.exception-factory';
 import { randomUUID } from 'node:crypto';
 
 export class Order extends BaseEntity {
@@ -29,15 +37,13 @@ export class Order extends BaseEntity {
 		const userId = String(input.userId ?? '').trim();
 
 		if (!userId) {
-			throw DomainErrorFactory.create(
-				ORDERING_DOMAIN_ERRORS.ORDER_USER_ID_REQUIRED,
+			throw DomainExceptionFactory.create(
+				OrderingUserIdRequiredException,
 			);
 		}
 
 		if (!Array.isArray(input.items) || input.items.length === 0) {
-			throw DomainErrorFactory.create(
-				ORDERING_DOMAIN_ERRORS.ORDER_ITEMS_REQUIRED,
-			);
+			throw DomainExceptionFactory.create(OrderingItemsRequiredException);
 		}
 
 		return new Order(
@@ -78,24 +84,24 @@ export class Order extends BaseEntity {
 		const normalized = String(paymentId ?? '').trim();
 
 		if (!normalized) {
-			throw DomainErrorFactory.create(
-				ORDERING_DOMAIN_ERRORS.ORDER_PAYMENT_ID_REQUIRED,
+			throw DomainExceptionFactory.create(
+				OrderingPaymentIdRequiredException,
 			);
 		}
 
 		if (this._status !== OrderStatus.PENDING_PAYMENT) {
-			throw DomainErrorFactory.create(
-				ORDERING_DOMAIN_ERRORS.ORDER_PAYMENT_ATTACH_INVALID_STATUS,
+			throw DomainExceptionFactory.create(
+				OrderingPaymentAttachInvalidStatusException,
 				{
-					message: `cannot attach payment when order is ${this._status}`,
-					details: { status: this._status },
+					cause: { status: this._status },
+					description: `cannot attach payment when order is ${this._status}`,
 				},
 			);
 		}
 
 		if (this._paymentId && this._paymentId !== normalized) {
-			throw DomainErrorFactory.create(
-				ORDERING_DOMAIN_ERRORS.ORDER_PAYMENT_ALREADY_ATTACHED,
+			throw DomainExceptionFactory.create(
+				OrderingPaymentAlreadyAttachedException,
 			);
 		}
 
@@ -109,18 +115,18 @@ export class Order extends BaseEntity {
 		}
 
 		if (this._status !== OrderStatus.PENDING_PAYMENT) {
-			throw DomainErrorFactory.create(
-				ORDERING_DOMAIN_ERRORS.ORDER_MARK_PAID_INVALID_STATUS,
+			throw DomainExceptionFactory.create(
+				OrderingMarkPaidInvalidStatusException,
 				{
-					message: `cannot mark paid when order is ${this._status}`,
-					details: { status: this._status },
+					cause: { status: this._status },
+					description: `cannot mark paid when order is ${this._status}`,
 				},
 			);
 		}
 
 		if (!this._paymentId) {
-			throw DomainErrorFactory.create(
-				ORDERING_DOMAIN_ERRORS.ORDER_PAYMENT_NOT_ATTACHED,
+			throw DomainExceptionFactory.create(
+				OrderingPaymentNotAttachedException,
 			);
 		}
 

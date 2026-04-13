@@ -3,8 +3,11 @@ import { UnderscoreNamingStrategy } from '@mikro-orm/core';
 import { defineConfig } from '@mikro-orm/postgresql';
 import fs from 'node:fs';
 import path from 'node:path';
-import { SYSTEM_INFRA_ERRORS } from '@/shared/errors';
-import { InfrastructureErrorFactory } from '@/common/errors/base.error-factory';
+import {
+	SystemBackendRootNotFoundException,
+	SystemDatabaseUrlRequiredException,
+} from '@/shared/exceptions';
+import { InfrastructureExceptionFactory } from '@/common/exceptions/base.exception-factory';
 
 function findBackendRoot(): string {
 	const candidates = [process.cwd(), __dirname];
@@ -32,11 +35,10 @@ function findBackendRoot(): string {
 		}
 	}
 
-	throw InfrastructureErrorFactory.create(
-		SYSTEM_INFRA_ERRORS.BACKEND_ROOT_NOT_FOUND,
+	throw InfrastructureExceptionFactory.create(
+		SystemBackendRootNotFoundException,
 		{
-			message: `Failed to locate backend root (need either nest-cli.json + src or package.json + dist/src). cwd=${process.cwd()} dirname=${__dirname}`,
-			details: {
+			cause: {
 				cwd: process.cwd(),
 				dirname: __dirname,
 			},
@@ -95,8 +97,8 @@ function databaseUrlForRuntime(): string {
 export function mikroOrmConfigForRuntime(): Options {
 	const clientUrl = databaseUrlForRuntime();
 	if (!clientUrl) {
-		throw InfrastructureErrorFactory.create(
-			SYSTEM_INFRA_ERRORS.DATABASE_URL_REQUIRED,
+		throw InfrastructureExceptionFactory.create(
+			SystemDatabaseUrlRequiredException,
 		);
 	}
 

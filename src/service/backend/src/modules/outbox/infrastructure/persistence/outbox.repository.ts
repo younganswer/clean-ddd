@@ -13,8 +13,8 @@ import { OutboxEvent } from '@/shared/outbox/domain/entities/outbox-event.entity
 import { OutboxEventStatus } from '@/shared/outbox/domain/outbox-event-status.enum';
 import { OutboxMapper } from '@/modules/outbox/infrastructure/mappers/outbox.mapper';
 import { OutboxEventSchema } from '@/modules/outbox/infrastructure/persistence/outbox.schema';
-import { OUTBOX_INFRA_ERRORS } from '@/shared/errors';
-import { InfrastructureErrorFactory } from '@/common/errors/base.error-factory';
+import { OutboxEventNotFoundException } from '@/shared/exceptions';
+import { InfrastructureExceptionFactory } from '@/common/exceptions/base.exception-factory';
 
 @Injectable()
 export class OutboxRepository implements IOutboxRepository {
@@ -55,9 +55,9 @@ export class OutboxRepository implements IOutboxRepository {
 		const failHandler =
 			options?.failHandler ??
 			(() =>
-				InfrastructureErrorFactory.create(
-					OUTBOX_INFRA_ERRORS.OUTBOX_EVENT_NOT_FOUND,
-					{ details: { outboxId: id } },
+				InfrastructureExceptionFactory.create(
+					OutboxEventNotFoundException,
+					{ cause: { outboxId: id } },
 				));
 		const row = await em.findOneOrFail(
 			OutboxEventSchema,

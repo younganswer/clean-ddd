@@ -3,14 +3,13 @@ export const INVENTORY_RESERVE_FOR_ORDER_REQUESTED_EVENT_TYPE =
 
 export type InventoryOrderItemPayload = { sku: string; quantity: number };
 
-import { INVENTORY_APPLICATION_ERRORS } from '@/shared/errors';
+import { InventoryEventPayloadInvalidException } from '@/shared/exceptions';
 import {
-	requireTrimmedString,
 	toBoundedInt,
 	toDate,
 	toTrimmedString,
 } from '@/common/cqrs/input-normalizer';
-import { ApplicationErrorFactory } from '@/common/errors/base.error-factory';
+import { ApplicationExceptionFactory } from '@/common/exceptions/base.exception-factory';
 
 export class ReserveInventoryForOrderRequestedEvent {
 	static readonly eventType =
@@ -30,11 +29,15 @@ export class ReserveInventoryForOrderRequestedEvent {
 		aggregateId?: string;
 		sequence?: number;
 	}) {
-		this.orderId = requireTrimmedString(
-			input.orderId,
-			INVENTORY_APPLICATION_ERRORS.INVENTORY_EVENT_PAYLOAD_INVALID,
-			{ reason: 'orderId' },
-		);
+		const orderId = toTrimmedString(input.orderId);
+		if (!orderId) {
+			throw ApplicationExceptionFactory.create(
+				InventoryEventPayloadInvalidException,
+				{ description: 'orderId' },
+			);
+		}
+
+		this.orderId = orderId;
 
 		const normalizedItems = Array.isArray(input.items)
 			? input.items
@@ -50,9 +53,9 @@ export class ReserveInventoryForOrderRequestedEvent {
 			: [];
 
 		if (!normalizedItems.length) {
-			throw ApplicationErrorFactory.create(
-				INVENTORY_APPLICATION_ERRORS.INVENTORY_EVENT_PAYLOAD_INVALID,
-				{ details: { reason: 'items' } },
+			throw ApplicationExceptionFactory.create(
+				InventoryEventPayloadInvalidException,
+				{ cause: { description: 'items' } },
 			);
 		}
 

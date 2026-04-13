@@ -1,7 +1,8 @@
 import { Query } from '@nestjs/cqrs';
 import type { InventoryReservationResult } from '@/modules/inventory/domains/readers/inventory-reservation.result';
-import { INVENTORY_APPLICATION_ERRORS } from '@/shared/errors';
-import { requireTrimmedString } from '@/common/cqrs/input-normalizer';
+import { InventoryOrderIdRequiredException } from '@/shared/exceptions';
+import { ApplicationExceptionFactory } from '@/common/exceptions/base.exception-factory';
+import { toTrimmedString } from '@/common/cqrs/input-normalizer';
 
 export class GetInventoryReservationsQuery extends Query<
 	InventoryReservationResult[]
@@ -10,9 +11,13 @@ export class GetInventoryReservationsQuery extends Query<
 
 	constructor(input: { orderId: string }) {
 		super();
-		this.orderId = requireTrimmedString(
-			input.orderId,
-			INVENTORY_APPLICATION_ERRORS.INVENTORY_ORDER_ID_REQUIRED,
-		);
+		const orderId = toTrimmedString(input.orderId);
+		if (!orderId) {
+			throw ApplicationExceptionFactory.create(
+				InventoryOrderIdRequiredException,
+			);
+		}
+
+		this.orderId = orderId;
 	}
 }

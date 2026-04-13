@@ -5,8 +5,8 @@ import type { IInventoryReservationRepository } from '@/modules/inventory/domain
 import { InventoryReservation } from '@/modules/inventory/domains/entities/inventory-reservation.entity';
 import { InventoryReservationMapper } from '@/modules/inventory/infrastructure/mappers/inventory-reservation.mapper';
 import { InventoryReservationSchema } from '@/modules/inventory/infrastructure/schemas/inventory-reservation.schema';
-import { SYSTEM_INFRA_ERRORS } from '@/shared/errors/catalogs/system.errors';
-import { InfrastructureErrorFactory } from '@/common/errors/base.error-factory';
+import { SystemRequestContextTransactionRequiredException } from '@/shared/exceptions/catalogs/system.exception';
+import { InfrastructureExceptionFactory } from '@/common/exceptions/base.exception-factory';
 
 @Injectable()
 export class InventoryReservationRepository implements IInventoryReservationRepository {
@@ -27,10 +27,10 @@ export class InventoryReservationRepository implements IInventoryReservationRepo
 			| EntityManager
 			| undefined;
 		if (!em) {
-			throw InfrastructureErrorFactory.create(
-				SYSTEM_INFRA_ERRORS.REQUEST_CONTEXT_TRANSACTION_REQUIRED,
+			throw InfrastructureExceptionFactory.create(
+				SystemRequestContextTransactionRequiredException,
 				{
-					details: {
+					cause: {
 						repository: InventoryReservationRepository.name,
 						method,
 					},

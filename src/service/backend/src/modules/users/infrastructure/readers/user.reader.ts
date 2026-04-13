@@ -7,8 +7,8 @@ import {
 } from '@/modules/users/domains/readers/i.user.reader';
 import type { PageOptions } from '@/lib/database/repository-get-options';
 import { UserSchema } from '@/modules/users/infrastructure/schemas/user.schema';
-import { USER_APPLICATION_ERRORS } from '@/shared/errors';
-import { ApplicationErrorFactory } from '@/common/errors/base.error-factory';
+import { UserApplicationUserNotFoundException } from '@/shared/exceptions';
+import { ApplicationExceptionFactory } from '@/common/exceptions/base.exception-factory';
 import { UserProfileResult } from '@/modules/users/domains/readers/user-profile.result';
 import { normalizeReaderInternalPage } from '@/common/cqrs/pagination-policy';
 
@@ -37,9 +37,9 @@ export class UserReader implements IUserReader {
 			{ uuid: id },
 			{
 				failHandler: () =>
-					ApplicationErrorFactory.create(
-						USER_APPLICATION_ERRORS.USER_NOT_FOUND,
-						{ details: { id } },
+					ApplicationExceptionFactory.create(
+						UserApplicationUserNotFoundException,
+						{ cause: { id } },
 					),
 			},
 		);

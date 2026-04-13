@@ -1,9 +1,7 @@
 import { Query } from '@nestjs/cqrs';
-import { ORDERING_APPLICATION_ERRORS } from '@/shared/errors';
-import {
-	requireTrimmedString,
-	toBoolean,
-} from '@/common/cqrs/input-normalizer';
+import { OrderingOrderIdRequiredException } from '@/shared/exceptions';
+import { toTrimmedString, toBoolean } from '@/common/cqrs/input-normalizer';
+import { ApplicationExceptionFactory } from '@/common/exceptions/base.exception-factory';
 import type { OrderDetailBffView } from '@/bff/order-detail/application/views/order-detail-bff.view';
 
 export class GetOrderDetailBffQuery extends Query<OrderDetailBffView | null> {
@@ -19,10 +17,14 @@ export class GetOrderDetailBffQuery extends Query<OrderDetailBffView | null> {
 		includeReservations?: boolean;
 	}) {
 		super();
-		this.orderId = requireTrimmedString(
-			input.orderId,
-			ORDERING_APPLICATION_ERRORS.ORDER_ID_REQUIRED,
-		);
+		const orderId = toTrimmedString(input.orderId);
+		if (!orderId) {
+			throw ApplicationExceptionFactory.create(
+				OrderingOrderIdRequiredException,
+			);
+		}
+
+		this.orderId = orderId;
 		this.includePayment = toBoolean(input.includePayment, true);
 		this.includeShipment = toBoolean(input.includeShipment, true);
 		this.includeReservations = toBoolean(input.includeReservations, true);

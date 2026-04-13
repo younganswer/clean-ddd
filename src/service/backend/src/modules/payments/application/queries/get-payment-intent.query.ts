@@ -1,17 +1,22 @@
 import { Query } from '@nestjs/cqrs';
 import type { PaymentIntentResult } from '@/modules/payments/domains/readers/payment-intent.result';
-import { PAYMENTS_APPLICATION_ERRORS } from '@/shared/errors';
-import { requireTrimmedString } from '@/common/cqrs/input-normalizer';
+import { PaymentOrderIdRequiredException } from '@/shared/exceptions';
+import { ApplicationExceptionFactory } from '@/common/exceptions/base.exception-factory';
+import { toTrimmedString } from '@/common/cqrs/input-normalizer';
 
 export class GetPaymentIntentQuery extends Query<PaymentIntentResult | null> {
 	public readonly paymentId: string;
 
 	constructor(input: { paymentId: string }) {
 		super();
-		this.paymentId = requireTrimmedString(
-			input.paymentId,
-			PAYMENTS_APPLICATION_ERRORS.PAYMENT_ORDER_ID_REQUIRED,
-			{ reason: 'paymentId' },
-		);
+		const paymentId = toTrimmedString(input.paymentId);
+		if (!paymentId) {
+			throw ApplicationExceptionFactory.create(
+				PaymentOrderIdRequiredException,
+				{ description: 'paymentId' },
+			);
+		}
+
+		this.paymentId = paymentId;
 	}
 }

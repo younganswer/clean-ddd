@@ -11,8 +11,11 @@ import { Avatar } from '@/modules/users/domains/entities/avatar.entity';
 import { AvatarDocument } from '@/modules/users/infrastructure/documents/avatar.document';
 import { AvatarMapper } from '@/modules/users/infrastructure/mappers/avatar.mapper';
 import { optionalEnv } from '@/shared/env';
-import { USER_INFRA_ERRORS } from '@/shared/errors';
-import { InfrastructureErrorFactory } from '@/common/errors/base.error-factory';
+import {
+	UserInfraDynamodbAvatarTableRequiredException,
+	UserInfraDynamodbAvatarUpsertFailedException,
+} from '@/shared/exceptions';
+import { InfrastructureExceptionFactory } from '@/common/exceptions/base.exception-factory';
 
 @Injectable()
 export class DynamoDbUserAvatarRepository implements IUserAvatarRepository {
@@ -58,10 +61,10 @@ export class DynamoDbUserAvatarRepository implements IUserAvatarRepository {
 
 		const saved = await this.findByAvatarId(document.uuid);
 		if (!saved) {
-			throw InfrastructureErrorFactory.create(
-				USER_INFRA_ERRORS.DYNAMODB_AVATAR_UPSERT_FAILED,
+			throw InfrastructureExceptionFactory.create(
+				UserInfraDynamodbAvatarUpsertFailedException,
 				{
-					details: { avatarId: document.uuid },
+					cause: { avatarId: document.uuid },
 				},
 			);
 		}
@@ -128,8 +131,8 @@ export class DynamoDbUserAvatarRepository implements IUserAvatarRepository {
 
 	private getTableName(): string {
 		if (!this.tableName) {
-			throw InfrastructureErrorFactory.create(
-				USER_INFRA_ERRORS.DYNAMODB_AVATAR_TABLE_REQUIRED,
+			throw InfrastructureExceptionFactory.create(
+				UserInfraDynamodbAvatarTableRequiredException,
 			);
 		}
 		return this.tableName;

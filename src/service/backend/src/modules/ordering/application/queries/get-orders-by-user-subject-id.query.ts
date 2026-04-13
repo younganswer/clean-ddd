@@ -1,11 +1,12 @@
 import { Query } from '@nestjs/cqrs';
 import type { OrderResult } from '@/modules/ordering/domains/readers/order.result';
-import { USER_APPLICATION_ERRORS } from '@/shared/errors';
+import { UserApplicationUserIdRequiredException } from '@/shared/exceptions';
 import {
-	requireTrimmedString,
+	toTrimmedString,
 	toBoundedInt,
 	toNonNegativeInt,
 } from '@/common/cqrs/input-normalizer';
+import { ApplicationExceptionFactory } from '@/common/exceptions/base.exception-factory';
 
 export class GetOrdersByUserIdQuery extends Query<OrderResult[]> {
 	public readonly userId: string;
@@ -14,11 +15,15 @@ export class GetOrdersByUserIdQuery extends Query<OrderResult[]> {
 
 	constructor(input: { userId: string; limit?: number; offset?: number }) {
 		super();
-		this.userId = requireTrimmedString(
-			input.userId,
-			USER_APPLICATION_ERRORS.USER_ID_REQUIRED,
-			{ reason: 'userId' },
-		);
+		const userId = toTrimmedString(input.userId);
+		if (!userId) {
+			throw ApplicationExceptionFactory.create(
+				UserApplicationUserIdRequiredException,
+				{ description: 'userId' },
+			);
+		}
+
+		this.userId = userId;
 		this.limit = toBoundedInt(input.limit, {
 			min: 1,
 			max: 200,

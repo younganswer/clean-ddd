@@ -1,12 +1,11 @@
 import { Command } from '@nestjs/cqrs';
 import type { InventoryOrderItemPayload } from '@/contracts/inventory/events/reserve-inventory-for-order-requested.event';
-import { INVENTORY_APPLICATION_ERRORS } from '@/shared/errors';
 import {
-	requireTrimmedString,
-	toBoundedInt,
-	toTrimmedString,
-} from '@/common/cqrs/input-normalizer';
-import { ApplicationErrorFactory } from '@/common/errors/base.error-factory';
+	InventoryEventPayloadInvalidException,
+	InventoryOrderIdRequiredException,
+} from '@/shared/exceptions';
+import { toBoundedInt, toTrimmedString } from '@/common/cqrs/input-normalizer';
+import { ApplicationExceptionFactory } from '@/common/exceptions/base.exception-factory';
 
 export class ReserveInventoryForOrderCommand extends Command<void> {
 	public readonly orderId: string;
@@ -32,16 +31,20 @@ export class ReserveInventoryForOrderCommand extends Command<void> {
 			: [];
 
 		if (!normalizedItems.length) {
-			throw ApplicationErrorFactory.create(
-				INVENTORY_APPLICATION_ERRORS.INVENTORY_EVENT_PAYLOAD_INVALID,
-				{ details: { reason: 'items' } },
+			throw ApplicationExceptionFactory.create(
+				InventoryEventPayloadInvalidException,
+				{ cause: { description: 'items' } },
 			);
 		}
 
-		this.orderId = requireTrimmedString(
-			input.orderId,
-			INVENTORY_APPLICATION_ERRORS.INVENTORY_ORDER_ID_REQUIRED,
-		);
+		const orderId = toTrimmedString(input.orderId);
+		if (!orderId) {
+			throw ApplicationExceptionFactory.create(
+				InventoryOrderIdRequiredException,
+			);
+		}
+
+		this.orderId = orderId;
 		this.items = normalizedItems;
 	}
 }

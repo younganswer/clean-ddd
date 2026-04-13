@@ -4,8 +4,8 @@ import {
 	type IShipmentRepository,
 } from '@/modules/shipping/domains/repositories/i.shipment.repository';
 import { Shipment } from '@/modules/shipping/domains/entities/aggregates/shipment/shipment.aggregate';
-import { SHIPPING_DOMAIN_ERRORS } from '@/shared/errors';
-import { DomainErrorFactory } from '@/common/errors/base.error-factory';
+import { ShippingOrderIdRequiredException } from '@/shared/exceptions';
+import { DomainExceptionFactory } from '@/common/exceptions/base.exception-factory';
 
 @Injectable()
 export class ShipmentCreationService {
@@ -17,8 +17,8 @@ export class ShipmentCreationService {
 	async createIdempotent(orderId: string): Promise<Shipment> {
 		const normalizedOrderId = String(orderId ?? '').trim();
 		if (!normalizedOrderId) {
-			throw DomainErrorFactory.create(
-				SHIPPING_DOMAIN_ERRORS.SHIPMENT_ORDER_ID_REQUIRED,
+			throw DomainExceptionFactory.create(
+				ShippingOrderIdRequiredException,
 			);
 		}
 

@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import {
 	createRetryAt,
 	resolveOutboxMaxAttempts,
-} from '@/modules/outbox/application/outbox-error.util';
+} from '@/modules/outbox/application/outbox-exception.util';
 import { OutboxEvent } from '@/shared/outbox/domain/entities/outbox-event.entity';
 import { OutboxEventStatus } from '@/shared/outbox/domain/outbox-event-status.enum';
 

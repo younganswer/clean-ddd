@@ -1,17 +1,22 @@
 import { Query } from '@nestjs/cqrs';
 import type { ShipmentResult } from '@/modules/shipping/domains/readers/shipment.result';
-import { SHIPPING_APPLICATION_ERRORS } from '@/shared/errors';
-import { requireTrimmedString } from '@/common/cqrs/input-normalizer';
+import { ShippingOrderIdRequiredException } from '@/shared/exceptions';
+import { ApplicationExceptionFactory } from '@/common/exceptions/base.exception-factory';
+import { toTrimmedString } from '@/common/cqrs/input-normalizer';
 
 export class GetShipmentQuery extends Query<ShipmentResult | null> {
 	public readonly shipmentId: string;
 
 	constructor(input: { shipmentId: string }) {
 		super();
-		this.shipmentId = requireTrimmedString(
-			input.shipmentId,
-			SHIPPING_APPLICATION_ERRORS.SHIPMENT_ORDER_ID_REQUIRED,
-			{ reason: 'shipmentId' },
-		);
+		const shipmentId = toTrimmedString(input.shipmentId);
+		if (!shipmentId) {
+			throw ApplicationExceptionFactory.create(
+				ShippingOrderIdRequiredException,
+				{ description: 'shipmentId' },
+			);
+		}
+
+		this.shipmentId = shipmentId;
 	}
 }

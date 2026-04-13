@@ -1,10 +1,11 @@
 import { Query } from '@nestjs/cqrs';
-import { ORDERING_APPLICATION_ERRORS } from '@/shared/errors';
+import { OrderingOrderIdRequiredException } from '@/shared/exceptions';
 import {
-	requireTrimmedString,
+	toTrimmedString,
 	toBoolean,
 	toBoundedInt,
 } from '@/common/cqrs/input-normalizer';
+import { ApplicationExceptionFactory } from '@/common/exceptions/base.exception-factory';
 import type { GraphView } from '@/bff/graph/application/views/graph.view';
 
 export type GraphRootType = 'USER' | 'ORDER' | 'SHIPMENT' | 'PAYMENT';
@@ -27,11 +28,15 @@ export class GetGraphBffQuery extends Query<GraphView | null> {
 	}) {
 		super();
 		this.rootType = input.rootType;
-		this.rootId = requireTrimmedString(
-			input.rootId,
-			ORDERING_APPLICATION_ERRORS.ORDER_ID_REQUIRED,
-			{ reason: 'rootId' },
-		);
+		const rootId = toTrimmedString(input.rootId);
+		if (!rootId) {
+			throw ApplicationExceptionFactory.create(
+				OrderingOrderIdRequiredException,
+				{ description: 'rootId' },
+			);
+		}
+
+		this.rootId = rootId;
 		this.depth = toBoundedInt(input.depth, {
 			min: 0,
 			max: 4,

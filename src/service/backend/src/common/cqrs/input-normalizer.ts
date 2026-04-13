@@ -1,28 +1,9 @@
-import { ApplicationErrorFactory } from '@/common/errors/base.error-factory';
-import type { ErrorTemplate } from '@/common/errors/error-template.type';
-
 export const toTrimmedString = (value: unknown): string => {
 	if (typeof value === 'string') return value.trim();
 	if (typeof value === 'number') return String(value).trim();
 	if (typeof value === 'bigint') return String(value).trim();
 	if (typeof value === 'boolean') return String(value).trim();
 	return '';
-};
-
-export const requireTrimmedString = (
-	value: unknown,
-	template: ErrorTemplate,
-	details?: unknown,
-): string => {
-	const normalized = toTrimmedString(value);
-	if (!normalized) {
-		throw ApplicationErrorFactory.create(
-			template,
-			details === undefined ? undefined : { details },
-		);
-	}
-
-	return normalized;
 };
 
 export const toBoundedInt = (

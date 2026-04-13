@@ -1,6 +1,7 @@
 import { Command } from '@nestjs/cqrs';
-import { SHIPPING_APPLICATION_ERRORS } from '@/shared/errors';
-import { requireTrimmedString } from '@/common/cqrs/input-normalizer';
+import { ShippingOrderIdRequiredException } from '@/shared/exceptions';
+import { ApplicationExceptionFactory } from '@/common/exceptions/base.exception-factory';
+import { toTrimmedString } from '@/common/cqrs/input-normalizer';
 
 export type CreateShipmentForOrderResult = {
 	shipmentId: string;
@@ -11,9 +12,13 @@ export class CreateShipmentForOrderCommand extends Command<CreateShipmentForOrde
 
 	constructor(input: { orderId: string }) {
 		super();
-		this.orderId = requireTrimmedString(
-			input.orderId,
-			SHIPPING_APPLICATION_ERRORS.SHIPMENT_ORDER_ID_REQUIRED,
-		);
+		const orderId = toTrimmedString(input.orderId);
+		if (!orderId) {
+			throw ApplicationExceptionFactory.create(
+				ShippingOrderIdRequiredException,
+			);
+		}
+
+		this.orderId = orderId;
 	}
 }

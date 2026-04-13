@@ -1,13 +1,16 @@
 export const PAYMENT_INTENT_CREATED_EVENT_TYPE =
 	'PAYMENT.PAYMENT_INTENT_CREATED' as const;
 
-import { PAYMENTS_APPLICATION_ERRORS } from '@/shared/errors';
+import {
+	PaymentOrderIdRequiredException,
+	PaymentWebhookPayloadInvalidException,
+} from '@/shared/exceptions';
 import {
 	toBoundedInt,
 	toDate,
-	requireTrimmedString,
 	toTrimmedString,
 } from '@/common/cqrs/input-normalizer';
+import { ApplicationExceptionFactory } from '@/common/exceptions/base.exception-factory';
 
 export class PaymentIntentCreatedEvent {
 	static readonly eventType = PAYMENT_INTENT_CREATED_EVENT_TYPE;
@@ -26,16 +29,24 @@ export class PaymentIntentCreatedEvent {
 		aggregateId?: string;
 		sequence?: number;
 	}) {
-		this.orderId = requireTrimmedString(
-			input.orderId,
-			PAYMENTS_APPLICATION_ERRORS.PAYMENT_ORDER_ID_REQUIRED,
-			{ reason: 'orderId' },
-		);
-		this.paymentId = requireTrimmedString(
-			input.paymentId,
-			PAYMENTS_APPLICATION_ERRORS.PAYMENT_WEBHOOK_PAYLOAD_INVALID,
-			{ reason: 'paymentId' },
-		);
+		const orderId = toTrimmedString(input.orderId);
+		if (!orderId) {
+			throw ApplicationExceptionFactory.create(
+				PaymentOrderIdRequiredException,
+				{ description: 'orderId' },
+			);
+		}
+
+		const paymentId = toTrimmedString(input.paymentId);
+		if (!paymentId) {
+			throw ApplicationExceptionFactory.create(
+				PaymentWebhookPayloadInvalidException,
+				{ description: 'paymentId' },
+			);
+		}
+
+		this.orderId = orderId;
+		this.paymentId = paymentId;
 		this.eventVersion = toBoundedInt(input.eventVersion, {
 			min: 1,
 			max: Number.MAX_SAFE_INTEGER,

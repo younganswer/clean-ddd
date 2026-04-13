@@ -1,6 +1,10 @@
 import { Command } from '@nestjs/cqrs';
-import { ORDERING_APPLICATION_ERRORS } from '@/shared/errors';
-import { requireTrimmedString } from '@/common/cqrs/input-normalizer';
+import {
+	OrderingOrderIdRequiredException,
+	OrderingPaymentIdRequiredException,
+} from '@/shared/exceptions';
+import { ApplicationExceptionFactory } from '@/common/exceptions/base.exception-factory';
+import { toTrimmedString } from '@/common/cqrs/input-normalizer';
 
 export class AttachPaymentToOrderCommand extends Command<void> {
 	public readonly orderId: string;
@@ -8,13 +12,21 @@ export class AttachPaymentToOrderCommand extends Command<void> {
 
 	constructor(input: { orderId: string; paymentId: string }) {
 		super();
-		this.orderId = requireTrimmedString(
-			input.orderId,
-			ORDERING_APPLICATION_ERRORS.ORDER_ID_REQUIRED,
-		);
-		this.paymentId = requireTrimmedString(
-			input.paymentId,
-			ORDERING_APPLICATION_ERRORS.PAYMENT_ID_REQUIRED,
-		);
+		const orderId = toTrimmedString(input.orderId);
+		if (!orderId) {
+			throw ApplicationExceptionFactory.create(
+				OrderingOrderIdRequiredException,
+			);
+		}
+
+		const paymentId = toTrimmedString(input.paymentId);
+		if (!paymentId) {
+			throw ApplicationExceptionFactory.create(
+				OrderingPaymentIdRequiredException,
+			);
+		}
+
+		this.orderId = orderId;
+		this.paymentId = paymentId;
 	}
 }

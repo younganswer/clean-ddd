@@ -9,10 +9,10 @@ import type { IShipmentRepository } from '@/modules/shipping/domains/repositorie
 import { ShipmentSchema } from '@/modules/shipping/infrastructure/schemas/shipment.schema';
 import { Shipment } from '@/modules/shipping/domains/entities/aggregates/shipment/shipment.aggregate';
 import { ShipmentMapper } from '@/modules/shipping/infrastructure/mappers/shipment.mapper';
-import { SHIPPING_APPLICATION_ERRORS } from '@/shared/errors';
-import { SYSTEM_INFRA_ERRORS } from '@/shared/errors/catalogs/system.errors';
-import { ApplicationErrorFactory } from '@/common/errors/base.error-factory';
-import { InfrastructureErrorFactory } from '@/common/errors/base.error-factory';
+import { ShippingNotFoundException } from '@/shared/exceptions';
+import { SystemRequestContextTransactionRequiredException } from '@/shared/exceptions/catalogs/system.exception';
+import { ApplicationExceptionFactory } from '@/common/exceptions/base.exception-factory';
+import { InfrastructureExceptionFactory } from '@/common/exceptions/base.exception-factory';
 
 @Injectable()
 export class ShipmentRepository implements IShipmentRepository {
@@ -33,10 +33,10 @@ export class ShipmentRepository implements IShipmentRepository {
 			| EntityManager
 			| undefined;
 		if (!em) {
-			throw InfrastructureErrorFactory.create(
-				SYSTEM_INFRA_ERRORS.REQUEST_CONTEXT_TRANSACTION_REQUIRED,
+			throw InfrastructureExceptionFactory.create(
+				SystemRequestContextTransactionRequiredException,
 				{
-					details: {
+					cause: {
 						repository: ShipmentRepository.name,
 						method: 'persist',
 					},
@@ -71,10 +71,9 @@ export class ShipmentRepository implements IShipmentRepository {
 		const failHandler =
 			options?.failHandler ??
 			(() =>
-				ApplicationErrorFactory.create(
-					SHIPPING_APPLICATION_ERRORS.SHIPMENT_NOT_FOUND,
-					{ details: { id } },
-				));
+				ApplicationExceptionFactory.create(ShippingNotFoundException, {
+					cause: { id },
+				}));
 		const found = await em.findOneOrFail(
 			ShipmentSchema,
 			{ uuid: id },

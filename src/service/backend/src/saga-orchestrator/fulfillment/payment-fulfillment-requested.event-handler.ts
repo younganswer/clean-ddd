@@ -9,8 +9,8 @@ import { type InventoryOrderItemPayload } from '@/contracts/inventory/events/res
 import { ReserveInventoryForOrderCommand } from '@/modules/inventory/application/commands/reserve-inventory-for-order.command';
 import { ReleaseInventoryForOrderCommand } from '@/modules/inventory/application/commands/release-inventory-for-order.command';
 import { CreateShipmentForOrderCommand } from '@/modules/shipping/application/commands/create-shipment-for-order.command';
-import { PAYMENTS_APPLICATION_ERRORS } from '@/shared/errors';
-import { ApplicationErrorFactory } from '@/common/errors/base.error-factory';
+import { PaymentApplicationOrderItemsRequiredForInventoryReservationException } from '@/shared/exceptions';
+import { ApplicationExceptionFactory } from '@/common/exceptions/base.exception-factory';
 import { OutboxKnownHandler } from '@/lib/outbox/outbox-known-handler.decorator';
 import { PaymentFulfillmentRequestedEvent } from '@/contracts/payments/events/payment-fulfillment-requested.event';
 
@@ -37,9 +37,9 @@ export class PaymentFulfillmentRequestedHandler implements IEventHandler<Payment
 
 		if (!items.length) {
 			const template =
-				PAYMENTS_APPLICATION_ERRORS.ORDER_ITEMS_REQUIRED_FOR_INVENTORY_RESERVATION;
-			const options = { details: { orderId: event.orderId } };
-			throw ApplicationErrorFactory.create(template, options);
+				PaymentApplicationOrderItemsRequiredForInventoryReservationException;
+			const options = { cause: { orderId: event.orderId } };
+			throw ApplicationExceptionFactory.create(template, options);
 		}
 
 		const reserveInventoryForOrderCommand =

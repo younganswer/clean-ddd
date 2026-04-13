@@ -9,10 +9,10 @@ import { User } from '@/modules/users/domains/entities/user.entity';
 import type { IUserRepository } from '@/modules/users/domains/repositories/i.user.repository';
 import { UserMapper } from '@/modules/users/infrastructure/mappers/user.mapper';
 import { UserSchema } from '@/modules/users/infrastructure/schemas/user.schema';
-import { USER_APPLICATION_ERRORS } from '@/shared/errors';
-import { SYSTEM_INFRA_ERRORS } from '@/shared/errors/catalogs/system.errors';
-import { ApplicationErrorFactory } from '@/common/errors/base.error-factory';
-import { InfrastructureErrorFactory } from '@/common/errors/base.error-factory';
+import { UserApplicationUserNotFoundException } from '@/shared/exceptions';
+import { SystemRequestContextTransactionRequiredException } from '@/shared/exceptions/catalogs/system.exception';
+import { ApplicationExceptionFactory } from '@/common/exceptions/base.exception-factory';
+import { InfrastructureExceptionFactory } from '@/common/exceptions/base.exception-factory';
 
 @Injectable()
 export class SqlUserRepository implements IUserRepository {
@@ -33,10 +33,10 @@ export class SqlUserRepository implements IUserRepository {
 			| EntityManager
 			| undefined;
 		if (!em) {
-			throw InfrastructureErrorFactory.create(
-				SYSTEM_INFRA_ERRORS.REQUEST_CONTEXT_TRANSACTION_REQUIRED,
+			throw InfrastructureExceptionFactory.create(
+				SystemRequestContextTransactionRequiredException,
 				{
-					details: {
+					cause: {
 						repository: SqlUserRepository.name,
 						method: 'persist',
 					},
@@ -69,9 +69,9 @@ export class SqlUserRepository implements IUserRepository {
 		const failHandler =
 			options?.failHandler ??
 			(() =>
-				ApplicationErrorFactory.create(
-					USER_APPLICATION_ERRORS.USER_NOT_FOUND,
-					{ details: { id } },
+				ApplicationExceptionFactory.create(
+					UserApplicationUserNotFoundException,
+					{ cause: { id } },
 				));
 		const user = await em.findOneOrFail(
 			UserSchema,

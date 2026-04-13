@@ -1,7 +1,10 @@
 import { BaseEntity } from '@/common/domain/base.entity';
 import { PaymentStatus } from '@/modules/payments/domains/enums/payment-status.enum';
-import { PAYMENTS_DOMAIN_ERRORS } from '@/shared/errors';
-import { DomainErrorFactory } from '@/common/errors/base.error-factory';
+import {
+	PaymentMarkFailedInvalidStatusException,
+	PaymentMarkSucceededInvalidStatusException,
+} from '@/shared/exceptions';
+import { DomainExceptionFactory } from '@/common/exceptions/base.exception-factory';
 import { randomUUID } from 'node:crypto';
 
 export class PaymentIntent extends BaseEntity {
@@ -47,11 +50,11 @@ export class PaymentIntent extends BaseEntity {
 
 	markSucceeded(): void {
 		if (this._status !== PaymentStatus.PENDING) {
-			throw DomainErrorFactory.create(
-				PAYMENTS_DOMAIN_ERRORS.PAYMENT_MARK_SUCCEEDED_INVALID_STATUS,
+			throw DomainExceptionFactory.create(
+				PaymentMarkSucceededInvalidStatusException,
 				{
-					message: `cannot mark payment succeeded when status is ${this._status}`,
-					details: { status: this._status },
+					cause: { status: this._status },
+					description: `cannot mark payment succeeded when status is ${this._status}`,
 				},
 			);
 		}
@@ -60,11 +63,11 @@ export class PaymentIntent extends BaseEntity {
 
 	markFailed(): void {
 		if (this._status !== PaymentStatus.PENDING) {
-			throw DomainErrorFactory.create(
-				PAYMENTS_DOMAIN_ERRORS.PAYMENT_MARK_FAILED_INVALID_STATUS,
+			throw DomainExceptionFactory.create(
+				PaymentMarkFailedInvalidStatusException,
 				{
-					message: `cannot mark payment failed when status is ${this._status}`,
-					details: { status: this._status },
+					cause: { status: this._status },
+					description: `cannot mark payment failed when status is ${this._status}`,
 				},
 			);
 		}

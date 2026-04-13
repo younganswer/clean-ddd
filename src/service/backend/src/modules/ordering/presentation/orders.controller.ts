@@ -16,8 +16,8 @@ import {
 	OrderResponse,
 } from '@/modules/ordering/presentation/swagger/orders.response';
 import { PageQueryDto } from '@/common/cqrs/query-input.dto';
-import { ORDERING_APPLICATION_ERRORS } from '@/shared/errors';
-import { ApplicationErrorFactory } from '@/common/errors/base.error-factory';
+import { OrderingOrderNotFoundException } from '@/shared/exceptions';
+import { ApplicationExceptionFactory } from '@/common/exceptions/base.exception-factory';
 
 @Controller('orders')
 export class OrdersController {
@@ -62,8 +62,8 @@ export class OrdersController {
 		const getOrderCommand = new GetOrderQuery({ orderId: id });
 		const order = await this.queryBus.execute(getOrderCommand);
 		if (!isOrderResult(order))
-			throw ApplicationErrorFactory.create(
-				ORDERING_APPLICATION_ERRORS.ORDER_NOT_FOUND,
+			throw ApplicationExceptionFactory.create(
+				OrderingOrderNotFoundException,
 			);
 		const response = OrderResponse.fromResult(order);
 

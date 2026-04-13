@@ -1,6 +1,6 @@
 import type { OrderResult } from '@/modules/ordering/domains/readers/order.result';
-import { ORDERING_APPLICATION_ERRORS } from '@/shared/errors';
-import { ApplicationErrorFactory } from '@/common/errors/base.error-factory';
+import { OrderingOrderNotFoundException } from '@/shared/exceptions';
+import { ApplicationExceptionFactory } from '@/common/exceptions/base.exception-factory';
 
 export const isOrderResult = (value: unknown): value is OrderResult => {
 	if (!value || typeof value !== 'object') return false;
@@ -17,8 +17,8 @@ export function assertOrderResult(
 	value: unknown,
 ): asserts value is OrderResult {
 	if (!isOrderResult(value)) {
-		throw ApplicationErrorFactory.create(
-			ORDERING_APPLICATION_ERRORS.ORDER_NOT_FOUND,
+		throw ApplicationExceptionFactory.create(
+			OrderingOrderNotFoundException,
 		);
 	}
 }

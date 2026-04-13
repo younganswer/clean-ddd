@@ -1,6 +1,7 @@
 import { Command } from '@nestjs/cqrs';
-import { PAYMENTS_APPLICATION_ERRORS } from '@/shared/errors';
-import { requireTrimmedString } from '@/common/cqrs/input-normalizer';
+import { PaymentWebhookPayloadInvalidException } from '@/shared/exceptions';
+import { ApplicationExceptionFactory } from '@/common/exceptions/base.exception-factory';
+import { toTrimmedString } from '@/common/cqrs/input-normalizer';
 
 export class HandlePaymentWebhookSucceededCommand extends Command<void> {
 	readonly orderId: string;
@@ -8,13 +9,21 @@ export class HandlePaymentWebhookSucceededCommand extends Command<void> {
 
 	constructor(input: { orderId: string; paymentId: string }) {
 		super();
-		this.orderId = requireTrimmedString(
-			input.orderId,
-			PAYMENTS_APPLICATION_ERRORS.PAYMENT_WEBHOOK_PAYLOAD_INVALID,
-		);
-		this.paymentId = requireTrimmedString(
-			input.paymentId,
-			PAYMENTS_APPLICATION_ERRORS.PAYMENT_WEBHOOK_PAYLOAD_INVALID,
-		);
+		const orderId = toTrimmedString(input.orderId);
+		if (!orderId) {
+			throw ApplicationExceptionFactory.create(
+				PaymentWebhookPayloadInvalidException,
+			);
+		}
+
+		const paymentId = toTrimmedString(input.paymentId);
+		if (!paymentId) {
+			throw ApplicationExceptionFactory.create(
+				PaymentWebhookPayloadInvalidException,
+			);
+		}
+
+		this.orderId = orderId;
+		this.paymentId = paymentId;
 	}
 }

@@ -9,10 +9,10 @@ import type { IPaymentRepository } from '@/modules/payments/domains/repositories
 import { PaymentIntent } from '@/modules/payments/domains/entities/aggregates/payment-intent/payment-intent.aggregate';
 import { PaymentIntentMapper } from '@/modules/payments/infrastructure/mappers/payment-intent.mapper';
 import { PaymentIntentSchema } from '@/modules/payments/infrastructure/schemas/payment-intent.schema';
-import { PAYMENTS_APPLICATION_ERRORS } from '@/shared/errors';
-import { SYSTEM_INFRA_ERRORS } from '@/shared/errors/catalogs/system.errors';
-import { ApplicationErrorFactory } from '@/common/errors/base.error-factory';
-import { InfrastructureErrorFactory } from '@/common/errors/base.error-factory';
+import { PaymentNotFoundException } from '@/shared/exceptions';
+import { SystemRequestContextTransactionRequiredException } from '@/shared/exceptions/catalogs/system.exception';
+import { ApplicationExceptionFactory } from '@/common/exceptions/base.exception-factory';
+import { InfrastructureExceptionFactory } from '@/common/exceptions/base.exception-factory';
 
 @Injectable()
 export class PaymentRepository implements IPaymentRepository {
@@ -33,10 +33,10 @@ export class PaymentRepository implements IPaymentRepository {
 			| EntityManager
 			| undefined;
 		if (!em) {
-			throw InfrastructureErrorFactory.create(
-				SYSTEM_INFRA_ERRORS.REQUEST_CONTEXT_TRANSACTION_REQUIRED,
+			throw InfrastructureExceptionFactory.create(
+				SystemRequestContextTransactionRequiredException,
 				{
-					details: {
+					cause: {
 						repository: PaymentRepository.name,
 						method: 'persist',
 					},
@@ -71,10 +71,9 @@ export class PaymentRepository implements IPaymentRepository {
 		const failHandler =
 			options?.failHandler ??
 			(() =>
-				ApplicationErrorFactory.create(
-					PAYMENTS_APPLICATION_ERRORS.PAYMENT_NOT_FOUND,
-					{ details: { id } },
-				));
+				ApplicationExceptionFactory.create(PaymentNotFoundException, {
+					cause: { id },
+				}));
 		const found = await em.findOneOrFail(
 			PaymentIntentSchema,
 			{ uuid: id },

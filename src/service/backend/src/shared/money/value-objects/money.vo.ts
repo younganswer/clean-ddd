@@ -1,5 +1,8 @@
-import { ORDERING_DOMAIN_ERRORS } from '@/shared/errors';
-import { DomainErrorFactory } from '@/common/errors/base.error-factory';
+import {
+	OrderingMoneyAmountInvalidException,
+	OrderingMoneyCurrencyRequiredException,
+} from '@/shared/exceptions';
+import { DomainExceptionFactory } from '@/common/exceptions/base.exception-factory';
 
 export class Money {
 	private constructor(
@@ -12,16 +15,16 @@ export class Money {
 		const normalizedAmount = Number(amount);
 
 		if (!Number.isFinite(normalizedAmount) || normalizedAmount <= 0) {
-			throw DomainErrorFactory.create(
-				ORDERING_DOMAIN_ERRORS.MONEY_AMOUNT_INVALID,
+			throw DomainExceptionFactory.create(
+				OrderingMoneyAmountInvalidException,
 				{
-					details: { amount },
+					cause: { amount },
 				},
 			);
 		}
 		if (!normalizedCurrency) {
-			throw DomainErrorFactory.create(
-				ORDERING_DOMAIN_ERRORS.MONEY_CURRENCY_REQUIRED,
+			throw DomainExceptionFactory.create(
+				OrderingMoneyCurrencyRequiredException,
 			);
 		}
 

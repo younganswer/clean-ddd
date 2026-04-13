@@ -9,8 +9,12 @@ import {
 } from '@/modules/inventory/domains/repositories/i.inventory-reservation.repository';
 import { InventoryItem } from '@/modules/inventory/domains/entities/inventory-item.entity';
 import { InventoryReservation } from '@/modules/inventory/domains/entities/inventory-reservation.entity';
-import { INVENTORY_DOMAIN_ERRORS } from '@/shared/errors';
-import { DomainErrorFactory } from '@/common/errors/base.error-factory';
+import {
+	InventoryItemNotFoundException,
+	InventoryOrderIdRequiredException,
+	InventoryReserveItemsInvalidException,
+} from '@/shared/exceptions';
+import { DomainExceptionFactory } from '@/common/exceptions/base.exception-factory';
 
 @Injectable()
 export class InventoryReservationService {
@@ -31,8 +35,8 @@ export class InventoryReservationService {
 					? String(orderIdValue).trim()
 					: '';
 		if (!orderId) {
-			throw DomainErrorFactory.create(
-				INVENTORY_DOMAIN_ERRORS.INVENTORY_ORDER_ID_REQUIRED,
+			throw DomainExceptionFactory.create(
+				InventoryOrderIdRequiredException,
 			);
 		}
 
@@ -47,10 +51,10 @@ export class InventoryReservationService {
 			const sku = String(requested.sku ?? '').trim();
 			const quantity = Number(requested.quantity ?? 0);
 			if (!sku || !Number.isFinite(quantity) || quantity <= 0) {
-				throw DomainErrorFactory.create(
-					INVENTORY_DOMAIN_ERRORS.INVENTORY_RESERVE_ITEMS_INVALID,
+				throw DomainExceptionFactory.create(
+					InventoryReserveItemsInvalidException,
 					{
-						details: { requested },
+						cause: { requested },
 					},
 				);
 			}
@@ -60,8 +64,8 @@ export class InventoryReservationService {
 		}
 
 		if (requestedBySku.size === 0) {
-			throw DomainErrorFactory.create(
-				INVENTORY_DOMAIN_ERRORS.INVENTORY_RESERVE_ITEMS_INVALID,
+			throw DomainExceptionFactory.create(
+				InventoryReserveItemsInvalidException,
 			);
 		}
 
@@ -96,11 +100,11 @@ export class InventoryReservationService {
 
 			const stock = await this.inventoryItemRepository.findBySku(sku);
 			if (!stock) {
-				throw DomainErrorFactory.create(
-					INVENTORY_DOMAIN_ERRORS.INVENTORY_ITEM_NOT_FOUND,
+				throw DomainExceptionFactory.create(
+					InventoryItemNotFoundException,
 					{
-						message: `inventory item not found: sku=${sku}`,
-						details: { sku },
+						cause: { sku },
+						description: `inventory item not found: sku=${sku}`,
 					},
 				);
 			}
@@ -161,8 +165,8 @@ export class InventoryReservationService {
 	async releaseForOrder(input: { orderId: string }): Promise<void> {
 		const orderId = String(input.orderId ?? '').trim();
 		if (!orderId) {
-			throw DomainErrorFactory.create(
-				INVENTORY_DOMAIN_ERRORS.INVENTORY_ORDER_ID_REQUIRED,
+			throw DomainExceptionFactory.create(
+				InventoryOrderIdRequiredException,
 			);
 		}
 
@@ -177,14 +181,14 @@ export class InventoryReservationService {
 				reservation.sku,
 			);
 			if (!stock) {
-				throw DomainErrorFactory.create(
-					INVENTORY_DOMAIN_ERRORS.INVENTORY_ITEM_NOT_FOUND,
+				throw DomainExceptionFactory.create(
+					InventoryItemNotFoundException,
 					{
-						message: `inventory item not found: sku=${reservation.sku}`,
-						details: {
+						cause: {
 							sku: reservation.sku,
 							orderId,
 						},
+						description: `inventory item not found: sku=${reservation.sku}`,
 					},
 				);
 			}

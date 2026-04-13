@@ -9,8 +9,8 @@ import { GraphResponse } from '@/bff/graph/presentation/swagger/graph.response';
 
 import { GetGraphBffQuery } from '@/bff/graph/application/queries/get-graph-bff.query';
 import { GetGraphBffQueryDto } from '@/bff/graph/presentation/graph-bff.dto';
-import { SYSTEM_APPLICATION_ERRORS } from '@/shared/errors';
-import { ApplicationErrorFactory } from '@/common/errors/base.error-factory';
+import { SystemGraphRootNotFoundException } from '@/shared/exceptions';
+import { ApplicationExceptionFactory } from '@/common/exceptions/base.exception-factory';
 
 @Controller('bff/graph')
 export class GraphBffController {
@@ -24,8 +24,8 @@ export class GraphBffController {
 	): Promise<DataEnvelope<GraphResponse>> {
 		const result = await this.queryBus.execute(new GetGraphBffQuery(query));
 		if (!result)
-			throw ApplicationErrorFactory.create(
-				SYSTEM_APPLICATION_ERRORS.GRAPH_ROOT_NOT_FOUND,
+			throw ApplicationExceptionFactory.create(
+				SystemGraphRootNotFoundException,
 			);
 		const response = GraphResponse.fromResult(result);
 

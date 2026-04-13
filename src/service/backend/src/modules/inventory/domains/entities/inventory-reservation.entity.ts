@@ -1,6 +1,11 @@
 import { BaseEntity } from '@/common/domain/base.entity';
-import { INVENTORY_DOMAIN_ERRORS } from '@/shared/errors';
-import { DomainErrorFactory } from '@/common/errors/base.error-factory';
+import {
+	InventoryReservationIdRequiredException,
+	InventoryReservationOrderIdRequiredException,
+	InventoryReservationQuantityInvalidException,
+	InventoryReservationSkuRequiredException,
+} from '@/shared/exceptions';
+import { DomainExceptionFactory } from '@/common/exceptions/base.exception-factory';
 import { randomUUID } from 'node:crypto';
 
 export class InventoryReservation extends BaseEntity {
@@ -23,20 +28,20 @@ export class InventoryReservation extends BaseEntity {
 		const quantity = Number(input.quantity ?? 0);
 
 		if (!orderId) {
-			throw DomainErrorFactory.create(
-				INVENTORY_DOMAIN_ERRORS.INVENTORY_RESERVATION_ORDER_ID_REQUIRED,
+			throw DomainExceptionFactory.create(
+				InventoryReservationOrderIdRequiredException,
 			);
 		}
 		if (!sku) {
-			throw DomainErrorFactory.create(
-				INVENTORY_DOMAIN_ERRORS.INVENTORY_RESERVATION_SKU_REQUIRED,
+			throw DomainExceptionFactory.create(
+				InventoryReservationSkuRequiredException,
 			);
 		}
 		if (!Number.isFinite(quantity) || quantity <= 0) {
-			throw DomainErrorFactory.create(
-				INVENTORY_DOMAIN_ERRORS.INVENTORY_RESERVATION_QUANTITY_INVALID,
+			throw DomainExceptionFactory.create(
+				InventoryReservationQuantityInvalidException,
 				{
-					details: { quantity: input.quantity },
+					cause: { quantity: input.quantity },
 				},
 			);
 		}
@@ -56,25 +61,25 @@ export class InventoryReservation extends BaseEntity {
 		const quantity = Number(input.quantity ?? 0);
 
 		if (!uuid) {
-			throw DomainErrorFactory.create(
-				INVENTORY_DOMAIN_ERRORS.INVENTORY_RESERVATION_ID_REQUIRED,
+			throw DomainExceptionFactory.create(
+				InventoryReservationIdRequiredException,
 			);
 		}
 		if (!orderId) {
-			throw DomainErrorFactory.create(
-				INVENTORY_DOMAIN_ERRORS.INVENTORY_RESERVATION_ORDER_ID_REQUIRED,
+			throw DomainExceptionFactory.create(
+				InventoryReservationOrderIdRequiredException,
 			);
 		}
 		if (!sku) {
-			throw DomainErrorFactory.create(
-				INVENTORY_DOMAIN_ERRORS.INVENTORY_RESERVATION_SKU_REQUIRED,
+			throw DomainExceptionFactory.create(
+				InventoryReservationSkuRequiredException,
 			);
 		}
 		if (!Number.isFinite(quantity) || quantity <= 0) {
-			throw DomainErrorFactory.create(
-				INVENTORY_DOMAIN_ERRORS.INVENTORY_RESERVATION_QUANTITY_INVALID,
+			throw DomainExceptionFactory.create(
+				InventoryReservationQuantityInvalidException,
 				{
-					details: { quantity: input.quantity },
+					cause: { quantity: input.quantity },
 				},
 			);
 		}

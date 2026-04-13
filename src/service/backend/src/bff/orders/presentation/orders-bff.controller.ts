@@ -15,8 +15,8 @@ import { CreateOrderBffBodyDto } from '@/bff/orders/presentation/orders-bff.dto'
 import { CreateOrderBffCommand } from '@/bff/orders/application/commands/create-order-bff.command';
 import { GetOrderBffQuery } from '@/bff/orders/application/queries/get-order-bff.query';
 import { GetOrdersBffQuery } from '@/bff/orders/application/queries/get-orders-bff.query';
-import { ORDERING_APPLICATION_ERRORS } from '@/shared/errors';
-import { ApplicationErrorFactory } from '@/common/errors/base.error-factory';
+import { OrderingOrderNotFoundException } from '@/shared/exceptions';
+import { ApplicationExceptionFactory } from '@/common/exceptions/base.exception-factory';
 import { PageQueryDto } from '@/common/cqrs/query-input.dto';
 
 @Controller('bff/orders')
@@ -51,8 +51,8 @@ export class OrdersBffController {
 		const query = new GetOrderBffQuery({ orderId });
 		const order = await this.queryBus.execute(query);
 		if (!order)
-			throw ApplicationErrorFactory.create(
-				ORDERING_APPLICATION_ERRORS.ORDER_NOT_FOUND,
+			throw ApplicationExceptionFactory.create(
+				OrderingOrderNotFoundException,
 			);
 		const response = OrderResponse.fromResult(order);
 

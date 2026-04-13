@@ -1,16 +1,21 @@
 import { Query } from '@nestjs/cqrs';
 import type { InventoryItemResult } from '@/modules/inventory/domains/readers/inventory-item.result';
-import { INVENTORY_DOMAIN_ERRORS } from '@/shared/errors';
-import { requireTrimmedString } from '@/common/cqrs/input-normalizer';
+import { InventoryReservationSkuRequiredException } from '@/shared/exceptions';
+import { ApplicationExceptionFactory } from '@/common/exceptions/base.exception-factory';
+import { toTrimmedString } from '@/common/cqrs/input-normalizer';
 
 export class GetInventoryItemQuery extends Query<InventoryItemResult | null> {
 	public readonly sku: string;
 
 	constructor(input: { sku: string }) {
 		super();
-		this.sku = requireTrimmedString(
-			input.sku,
-			INVENTORY_DOMAIN_ERRORS.INVENTORY_RESERVATION_SKU_REQUIRED,
-		);
+		const sku = toTrimmedString(input.sku);
+		if (!sku) {
+			throw ApplicationExceptionFactory.create(
+				InventoryReservationSkuRequiredException,
+			);
+		}
+
+		this.sku = sku;
 	}
 }

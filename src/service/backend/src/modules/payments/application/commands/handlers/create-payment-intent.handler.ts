@@ -19,8 +19,8 @@ import {
 	type CreatePaymentIntentResult,
 } from '@/modules/payments/application/commands/create-payment-intent.command';
 import { UnitOfWork } from '@/lib/database/unit-of-work';
-import { ORDERING_APPLICATION_ERRORS } from '@/shared/errors';
-import { ApplicationErrorFactory } from '@/common/errors/base.error-factory';
+import { OrderingOrderNotFoundException } from '@/shared/exceptions';
+import { ApplicationExceptionFactory } from '@/common/exceptions/base.exception-factory';
 import { DispatchOutboxEventCommand } from '@/modules/outbox/application/commands/dispatch-outbox-event.command';
 import { isOutboxHandlerImmediateDispatchEnabled } from '@/bootstrap/runtime-role';
 import {
@@ -65,9 +65,9 @@ export class CreatePaymentIntentHandler implements ICommandHandler<CreatePayment
 	private async loadOrderSnapshot(orderId: string) {
 		const orderSnapshot = await this.orderReader.findById(orderId);
 		if (!orderSnapshot) {
-			throw ApplicationErrorFactory.create(
-				ORDERING_APPLICATION_ERRORS.ORDER_NOT_FOUND,
-				{ details: { id: orderId } },
+			throw ApplicationExceptionFactory.create(
+				OrderingOrderNotFoundException,
+				{ cause: { id: orderId } },
 			);
 		}
 

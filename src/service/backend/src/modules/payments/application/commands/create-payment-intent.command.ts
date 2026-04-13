@@ -1,10 +1,8 @@
 import { Command } from '@nestjs/cqrs';
 import type { PaymentStatus } from '@/modules/payments/domains/enums/payment-status.enum';
-import { PAYMENTS_APPLICATION_ERRORS } from '@/shared/errors';
-import {
-	requireTrimmedString,
-	toBoundedInt,
-} from '@/common/cqrs/input-normalizer';
+import { PaymentOrderIdRequiredException } from '@/shared/exceptions';
+import { toTrimmedString, toBoundedInt } from '@/common/cqrs/input-normalizer';
+import { ApplicationExceptionFactory } from '@/common/exceptions/base.exception-factory';
 
 export type CreatePaymentIntentResult = {
 	paymentId: string;
@@ -27,10 +25,14 @@ export class CreatePaymentIntentCommand extends Command<CreatePaymentIntentResul
 		simulateDelaySeconds?: number;
 	}) {
 		super();
-		this.orderId = requireTrimmedString(
-			input.orderId,
-			PAYMENTS_APPLICATION_ERRORS.PAYMENT_ORDER_ID_REQUIRED,
-		);
+		const orderId = toTrimmedString(input.orderId);
+		if (!orderId) {
+			throw ApplicationExceptionFactory.create(
+				PaymentOrderIdRequiredException,
+			);
+		}
+
+		this.orderId = orderId;
 		this.simulateOutcome =
 			input.simulateOutcome === 'FAILED' ? 'FAILED' : 'SUCCEEDED';
 		this.simulateDelaySeconds = toBoundedInt(input.simulateDelaySeconds, {

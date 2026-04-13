@@ -1,5 +1,8 @@
-import { ORDERING_DOMAIN_ERRORS } from '@/shared/errors';
-import { DomainErrorFactory } from '@/common/errors/base.error-factory';
+import {
+	OrderingItemQuantityInvalidException,
+	OrderingItemSkuRequiredException,
+} from '@/shared/exceptions';
+import { DomainExceptionFactory } from '@/common/exceptions/base.exception-factory';
 
 export class OrderItem {
 	private constructor(
@@ -12,15 +15,15 @@ export class OrderItem {
 		const normalizedQuantity = Number(quantity);
 
 		if (!normalizedSku) {
-			throw DomainErrorFactory.create(
-				ORDERING_DOMAIN_ERRORS.ORDER_ITEM_SKU_REQUIRED,
+			throw DomainExceptionFactory.create(
+				OrderingItemSkuRequiredException,
 			);
 		}
 		if (!Number.isFinite(normalizedQuantity) || normalizedQuantity <= 0) {
-			throw DomainErrorFactory.create(
-				ORDERING_DOMAIN_ERRORS.ORDER_ITEM_QUANTITY_INVALID,
+			throw DomainExceptionFactory.create(
+				OrderingItemQuantityInvalidException,
 				{
-					details: { quantity },
+					cause: { quantity },
 				},
 			);
 		}

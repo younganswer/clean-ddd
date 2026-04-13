@@ -1,6 +1,10 @@
 import { BaseEntity } from '@/common/domain/base.entity';
-import { INVENTORY_DOMAIN_ERRORS } from '@/shared/errors';
-import { DomainErrorFactory } from '@/common/errors/base.error-factory';
+import {
+	InventoryQuantityInvalidException,
+	InventoryReleaseQuantityExceedsReservedException,
+	InventoryStockInsufficientException,
+} from '@/shared/exceptions';
+import { DomainExceptionFactory } from '@/common/exceptions/base.exception-factory';
 import { randomUUID } from 'node:crypto';
 
 export class InventoryItem extends BaseEntity {
@@ -54,24 +58,25 @@ export class InventoryItem extends BaseEntity {
 		const normalized = Number(quantity ?? 0);
 
 		if (!Number.isFinite(normalized) || normalized <= 0) {
-			throw DomainErrorFactory.create(
-				INVENTORY_DOMAIN_ERRORS.INVENTORY_QUANTITY_INVALID,
+			throw DomainExceptionFactory.create(
+				InventoryQuantityInvalidException,
 				{
-					details: { quantity },
+					description: 'Invalid inventory quantity',
+					cause: { quantity },
 				},
 			);
 		}
 
 		if (this._availableQuantity < normalized) {
-			throw DomainErrorFactory.create(
-				INVENTORY_DOMAIN_ERRORS.INVENTORY_STOCK_INSUFFICIENT,
+			throw DomainExceptionFactory.create(
+				InventoryStockInsufficientException,
 				{
-					message: `insufficient stock: sku=${this._sku} available=${this._availableQuantity} need=${normalized}`,
-					details: {
+					cause: {
 						sku: this._sku,
 						availableQuantity: this._availableQuantity,
 						requestedQuantity: normalized,
 					},
+					description: `insufficient stock: sku=${this._sku} available=${this._availableQuantity} need=${normalized}`,
 				},
 			);
 		}
@@ -83,20 +88,21 @@ export class InventoryItem extends BaseEntity {
 	release(quantity: number): void {
 		const normalized = Number(quantity ?? 0);
 		if (!Number.isFinite(normalized) || normalized <= 0) {
-			throw DomainErrorFactory.create(
-				INVENTORY_DOMAIN_ERRORS.INVENTORY_QUANTITY_INVALID,
+			throw DomainExceptionFactory.create(
+				InventoryQuantityInvalidException,
 				{
-					details: { quantity },
+					description: 'Invalid inventory quantity',
+					cause: { quantity },
 				},
 			);
 		}
 
 		if (this._reservedQuantity < normalized) {
-			throw DomainErrorFactory.create(
-				INVENTORY_DOMAIN_ERRORS.INVENTORY_RELEASE_QUANTITY_EXCEEDS_RESERVED,
+			throw DomainExceptionFactory.create(
+				InventoryReleaseQuantityExceedsReservedException,
 				{
-					message: `release exceeds reserved: sku=${this._sku} reserved=${this._reservedQuantity} release=${normalized}`,
-					details: {
+					description: `release exceeds reserved: sku=${this._sku} reserved=${this._reservedQuantity} release=${normalized}`,
+					cause: {
 						sku: this._sku,
 						reservedQuantity: this._reservedQuantity,
 						releaseQuantity: normalized,

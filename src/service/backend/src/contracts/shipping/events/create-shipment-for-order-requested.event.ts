@@ -1,13 +1,13 @@
 export const SHIPPING_CREATE_FOR_ORDER_REQUESTED_EVENT_TYPE =
 	'SHIPPING.CREATE_FOR_ORDER' as const;
 
-import { SHIPPING_APPLICATION_ERRORS } from '@/shared/errors';
+import { ShippingEventPayloadInvalidException } from '@/shared/exceptions';
 import {
 	toBoundedInt,
 	toDate,
-	requireTrimmedString,
 	toTrimmedString,
 } from '@/common/cqrs/input-normalizer';
+import { ApplicationExceptionFactory } from '@/common/exceptions/base.exception-factory';
 
 export class CreateShipmentForOrderRequestedEvent {
 	static readonly eventType = SHIPPING_CREATE_FOR_ORDER_REQUESTED_EVENT_TYPE;
@@ -24,11 +24,15 @@ export class CreateShipmentForOrderRequestedEvent {
 		aggregateId?: string;
 		sequence?: number;
 	}) {
-		this.orderId = requireTrimmedString(
-			input.orderId,
-			SHIPPING_APPLICATION_ERRORS.SHIPPING_EVENT_PAYLOAD_INVALID,
-			{ reason: 'orderId' },
-		);
+		const orderId = toTrimmedString(input.orderId);
+		if (!orderId) {
+			throw ApplicationExceptionFactory.create(
+				ShippingEventPayloadInvalidException,
+				{ description: 'orderId' },
+			);
+		}
+
+		this.orderId = orderId;
 		this.eventVersion = toBoundedInt(input.eventVersion, {
 			min: 1,
 			max: Number.MAX_SAFE_INTEGER,

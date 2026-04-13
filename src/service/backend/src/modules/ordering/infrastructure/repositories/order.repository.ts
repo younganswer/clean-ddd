@@ -9,12 +9,12 @@ import type { IOrderRepository } from '@/modules/ordering/domains/repositories/i
 import { Order } from '@/modules/ordering/domains/entities/aggregates/order/order.aggregate';
 import { OrderMapper } from '@/modules/ordering/infrastructure/mappers/order.mapper';
 import { OrderSchema } from '@/modules/ordering/infrastructure/schemas/order.schema';
-import { ORDERING_APPLICATION_ERRORS } from '@/shared/errors';
-import { SYSTEM_INFRA_ERRORS } from '@/shared/errors/catalogs/system.errors';
+import { OrderingOrderNotFoundException } from '@/shared/exceptions';
+import { SystemRequestContextTransactionRequiredException } from '@/shared/exceptions/catalogs/system.exception';
 import {
-	ApplicationErrorFactory,
-	InfrastructureErrorFactory,
-} from '@/common/errors/base.error-factory';
+	ApplicationExceptionFactory,
+	InfrastructureExceptionFactory,
+} from '@/common/exceptions/base.exception-factory';
 
 @Injectable()
 export class OrderRepository implements IOrderRepository {
@@ -35,10 +35,10 @@ export class OrderRepository implements IOrderRepository {
 			| EntityManager
 			| undefined;
 		if (!em) {
-			throw InfrastructureErrorFactory.create(
-				SYSTEM_INFRA_ERRORS.REQUEST_CONTEXT_TRANSACTION_REQUIRED,
+			throw InfrastructureExceptionFactory.create(
+				SystemRequestContextTransactionRequiredException,
 				{
-					details: {
+					cause: {
 						repository: OrderRepository.name,
 						method: 'persist',
 					},
@@ -71,9 +71,9 @@ export class OrderRepository implements IOrderRepository {
 		const failHandler =
 			options?.failHandler ??
 			(() =>
-				ApplicationErrorFactory.create(
-					ORDERING_APPLICATION_ERRORS.ORDER_NOT_FOUND,
-					{ details: { id } },
+				ApplicationExceptionFactory.create(
+					OrderingOrderNotFoundException,
+					{ cause: { id } },
 				));
 		const found = await em.findOneOrFail(
 			OrderSchema,

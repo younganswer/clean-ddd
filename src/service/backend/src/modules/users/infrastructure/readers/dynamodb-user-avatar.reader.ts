@@ -8,8 +8,8 @@ import {
 import { type IUserAvatarReader } from '@/modules/users/domains/readers/i.user-avatar.reader';
 import { UserAvatarResult } from '@/modules/users/domains/readers/user-avatar.result';
 import { optionalEnv } from '@/shared/env';
-import { USER_INFRA_ERRORS } from '@/shared/errors';
-import { InfrastructureErrorFactory } from '@/common/errors/base.error-factory';
+import { UserInfraDynamodbAvatarTableRequiredException } from '@/shared/exceptions';
+import { InfrastructureExceptionFactory } from '@/common/exceptions/base.exception-factory';
 
 @Injectable()
 export class DynamoDbUserAvatarReader implements IUserAvatarReader {
@@ -100,8 +100,8 @@ export class DynamoDbUserAvatarReader implements IUserAvatarReader {
 
 	private getTableName(): string {
 		if (!this.tableName) {
-			throw InfrastructureErrorFactory.create(
-				USER_INFRA_ERRORS.DYNAMODB_AVATAR_TABLE_REQUIRED,
+			throw InfrastructureExceptionFactory.create(
+				UserInfraDynamodbAvatarTableRequiredException,
 			);
 		}
 		return this.tableName;

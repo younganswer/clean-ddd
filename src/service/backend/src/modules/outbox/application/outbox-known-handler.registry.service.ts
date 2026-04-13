@@ -8,8 +8,11 @@ import {
 	type OutboxEventType,
 	isKnownOutboxEventType,
 } from '@/lib/outbox/event-registry';
-import { OUTBOX_INFRA_ERRORS } from '@/shared/errors';
-import { InfrastructureErrorFactory } from '@/common/errors/base.error-factory';
+import {
+	OutboxHandlerDuplicateEventTypeException,
+	OutboxHandlerInvalidException,
+} from '@/shared/exceptions';
+import { InfrastructureExceptionFactory } from '@/common/exceptions/base.exception-factory';
 
 type OutboxKnownHandlerEntry = {
 	eventType: OutboxEventType;
@@ -45,11 +48,11 @@ export class OutboxKnownHandlerRegistryService implements OnModuleInit {
 			const eventType = eventTypeValue.trim();
 			if (!eventType) continue;
 			if (!isKnownOutboxEventType(eventType)) {
-				throw InfrastructureErrorFactory.create(
-					OUTBOX_INFRA_ERRORS.OUTBOX_HANDLER_INVALID,
+				throw InfrastructureExceptionFactory.create(
+					OutboxHandlerInvalidException,
 					{
-						message: `unknown outbox eventType=${eventType}`,
-						details: { eventType, handler: metatype.name },
+						cause: { eventType, handler: metatype.name },
+						description: `unknown outbox eventType=${eventType}`,
 					},
 				);
 			}
@@ -58,26 +61,26 @@ export class OutboxKnownHandlerRegistryService implements OnModuleInit {
 				typeof (provider.instance as { handle?: unknown }).handle !==
 				'function'
 			) {
-				throw InfrastructureErrorFactory.create(
-					OUTBOX_INFRA_ERRORS.OUTBOX_HANDLER_INVALID,
+				throw InfrastructureExceptionFactory.create(
+					OutboxHandlerInvalidException,
 					{
-						message: `${metatype.name} does not implement handle(event)`,
-						details: { eventType, handler: metatype.name },
+						cause: { eventType, handler: metatype.name },
+						description: `${metatype.name} does not implement handle(event)`,
 					},
 				);
 			}
 
 			if (this.handlersByEventType.has(eventType)) {
 				const existing = this.handlersByEventType.get(eventType);
-				throw InfrastructureErrorFactory.create(
-					OUTBOX_INFRA_ERRORS.OUTBOX_HANDLER_DUPLICATE_EVENT_TYPE,
+				throw InfrastructureExceptionFactory.create(
+					OutboxHandlerDuplicateEventTypeException,
 					{
-						message: `duplicate outbox handler registration for eventType=${eventType}`,
-						details: {
+						cause: {
 							eventType,
 							existingHandler: existing?.handlerName,
 							handler: metatype.name,
 						},
+						description: `duplicate outbox handler registration for eventType=${eventType}`,
 					},
 				);
 			}

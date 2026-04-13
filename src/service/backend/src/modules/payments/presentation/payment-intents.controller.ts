@@ -10,8 +10,12 @@ import { PaymentIntentResponse } from '@/modules/payments/presentation/swagger/p
 import { GetPaymentIntentQuery } from '@/modules/payments/application/queries/get-payment-intent.query';
 import { GetPaymentIntentsQuery } from '@/modules/payments/application/queries/get-payment-intents.query';
 import type { PaymentIntentResult } from '@/modules/payments/domains/readers/payment-intent.result';
-import { PAYMENTS_APPLICATION_ERRORS } from '@/shared/errors';
-import { ApplicationErrorFactory } from '@/common/errors/base.error-factory';
+import {
+	PaymentIntentResultInvalidException,
+	PaymentNotFoundException,
+	PaymentResultInvalidException,
+} from '@/shared/exceptions';
+import { ApplicationExceptionFactory } from '@/common/exceptions/base.exception-factory';
 
 const isPaymentIntentResult = (
 	value: unknown,
@@ -43,8 +47,8 @@ export class PaymentIntentsController {
 		});
 		const result = await this.queryBus.execute(query);
 		if (!Array.isArray(result) || !result.every(isPaymentIntentResult)) {
-			throw ApplicationErrorFactory.create(
-				PAYMENTS_APPLICATION_ERRORS.PAYMENTS_RESULT_INVALID,
+			throw ApplicationExceptionFactory.create(
+				PaymentResultInvalidException,
 			);
 		}
 		const response = PaymentIntentResponse.fromResults(result);
@@ -61,14 +65,13 @@ export class PaymentIntentsController {
 		const query = new GetPaymentIntentQuery({ paymentId });
 		const result = await this.queryBus.execute(query);
 		if (result === null || result === undefined) {
-			throw ApplicationErrorFactory.create(
-				PAYMENTS_APPLICATION_ERRORS.PAYMENT_NOT_FOUND,
-				{ message: 'payment intent not found' },
-			);
+			throw ApplicationExceptionFactory.create(PaymentNotFoundException, {
+				description: 'payment intent not found',
+			});
 		}
 		if (!isPaymentIntentResult(result)) {
-			throw ApplicationErrorFactory.create(
-				PAYMENTS_APPLICATION_ERRORS.PAYMENT_INTENT_RESULT_INVALID,
+			throw ApplicationExceptionFactory.create(
+				PaymentIntentResultInvalidException,
 			);
 		}
 		const response = PaymentIntentResponse.fromResult(result);

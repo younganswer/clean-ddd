@@ -12,7 +12,7 @@ import {
 	createRetryAt,
 	resolveOutboxMaxAttempts,
 	resolveErrorMessage,
-} from '@/modules/outbox/application/outbox-error.util';
+} from '@/modules/outbox/application/outbox-exception.util';
 import { OutboxDispatchSource } from '@/shared/outbox/domain/queue/outbox-dispatch-source.enum';
 import { OutboxEventStatus } from '@/shared/outbox/domain/outbox-event-status.enum';
 

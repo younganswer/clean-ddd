@@ -13,8 +13,8 @@ import {
 	normalizeReaderExternalPage,
 	normalizeReaderInternalPage,
 } from '@/common/cqrs/pagination-policy';
-import { ORDERING_APPLICATION_ERRORS } from '@/shared/errors';
-import { ApplicationErrorFactory } from '@/common/errors/base.error-factory';
+import { OrderingOrderNotFoundException } from '@/shared/exceptions';
+import { ApplicationExceptionFactory } from '@/common/exceptions/base.exception-factory';
 
 @Injectable()
 export class OrderReader implements IOrderReader {
@@ -43,9 +43,9 @@ export class OrderReader implements IOrderReader {
 		const failHandler =
 			options?.failHandler ??
 			(() =>
-				ApplicationErrorFactory.create(
-					ORDERING_APPLICATION_ERRORS.ORDER_NOT_FOUND,
-					{ details: { id } },
+				ApplicationExceptionFactory.create(
+					OrderingOrderNotFoundException,
+					{ cause: { id } },
 				));
 		const order = await this.emForContext().findOneOrFail(
 			OrderSchema,

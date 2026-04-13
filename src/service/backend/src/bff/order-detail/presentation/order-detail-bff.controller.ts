@@ -9,8 +9,8 @@ import { OrderDetailBffResponse } from '@/bff/order-detail/presentation/swagger/
 
 import { GetOrderDetailBffQuery } from '@/bff/order-detail/application/queries/get-order-detail-bff.query';
 import { GetOrderDetailBffQueryDto } from '@/bff/order-detail/presentation/order-detail-bff.dto';
-import { ORDERING_APPLICATION_ERRORS } from '@/shared/errors';
-import { ApplicationErrorFactory } from '@/common/errors/base.error-factory';
+import { OrderingOrderNotFoundException } from '@/shared/exceptions';
+import { ApplicationExceptionFactory } from '@/common/exceptions/base.exception-factory';
 
 @Controller('bff/order-detail')
 export class OrderDetailBffController {
@@ -29,8 +29,8 @@ export class OrderDetailBffController {
 		});
 		const result = await this.queryBus.execute(getOrderDetailBffQuery);
 		if (!result)
-			throw ApplicationErrorFactory.create(
-				ORDERING_APPLICATION_ERRORS.ORDER_NOT_FOUND,
+			throw ApplicationExceptionFactory.create(
+				OrderingOrderNotFoundException,
 			);
 		const response = OrderDetailBffResponse.fromResult(result);
 

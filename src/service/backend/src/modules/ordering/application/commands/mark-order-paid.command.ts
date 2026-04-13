@@ -1,15 +1,20 @@
 import { Command } from '@nestjs/cqrs';
-import { ORDERING_APPLICATION_ERRORS } from '@/shared/errors';
-import { requireTrimmedString } from '@/common/cqrs/input-normalizer';
+import { OrderingOrderIdRequiredException } from '@/shared/exceptions';
+import { ApplicationExceptionFactory } from '@/common/exceptions/base.exception-factory';
+import { toTrimmedString } from '@/common/cqrs/input-normalizer';
 
 export class MarkOrderPaidCommand extends Command<void> {
 	public readonly orderId: string;
 
 	constructor(input: { orderId: string }) {
 		super();
-		this.orderId = requireTrimmedString(
-			input.orderId,
-			ORDERING_APPLICATION_ERRORS.ORDER_ID_REQUIRED,
-		);
+		const orderId = toTrimmedString(input.orderId);
+		if (!orderId) {
+			throw ApplicationExceptionFactory.create(
+				OrderingOrderIdRequiredException,
+			);
+		}
+
+		this.orderId = orderId;
 	}
 }

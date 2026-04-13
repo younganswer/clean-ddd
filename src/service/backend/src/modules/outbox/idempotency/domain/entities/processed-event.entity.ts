@@ -1,7 +1,10 @@
 import { randomUUID } from 'node:crypto';
 import { BaseEntity } from '@/common/domain/base.entity';
-import { IDEMPOTENCY_DOMAIN_ERRORS } from '@/shared/errors';
-import { DomainErrorFactory } from '@/common/errors/base.error-factory';
+import {
+	IdempotencyConsumerNameRequiredException,
+	IdempotencyEventIdRequiredException,
+} from '@/shared/exceptions';
+import { DomainExceptionFactory } from '@/common/exceptions/base.exception-factory';
 
 export class ProcessedEvent extends BaseEntity {
 	private constructor(
@@ -20,13 +23,13 @@ export class ProcessedEvent extends BaseEntity {
 		const eventId = String(input.eventId ?? '').trim();
 
 		if (!consumerName) {
-			throw DomainErrorFactory.create(
-				IDEMPOTENCY_DOMAIN_ERRORS.IDEMPOTENCY_CONSUMER_NAME_REQUIRED,
+			throw DomainExceptionFactory.create(
+				IdempotencyConsumerNameRequiredException,
 			);
 		}
 		if (!eventId) {
-			throw DomainErrorFactory.create(
-				IDEMPOTENCY_DOMAIN_ERRORS.IDEMPOTENCY_EVENT_ID_REQUIRED,
+			throw DomainExceptionFactory.create(
+				IdempotencyEventIdRequiredException,
 			);
 		}
 

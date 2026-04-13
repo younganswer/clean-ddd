@@ -10,7 +10,7 @@ import {
 } from '@/shared/outbox/domain/repositories/i.outbox.repository';
 import type { OutboxEvent } from '@/shared/outbox/domain/entities/outbox-event.entity';
 import { hydrateEvent } from '@/lib/outbox/event-registry';
-import { resolveErrorMessage } from '@/modules/outbox/application/outbox-error.util';
+import { resolveErrorMessage } from '@/modules/outbox/application/outbox-exception.util';
 import { OutboxKnownHandlerRegistryService } from '@/modules/outbox/application/outbox-known-handler.registry.service';
 import { OutboxConsumeStateMachine } from '@/modules/outbox/application/outbox-consume.state-machine';
 import { resolveOutboxTimeoutPolicy } from '@/modules/outbox/application/outbox-timeout-policy';

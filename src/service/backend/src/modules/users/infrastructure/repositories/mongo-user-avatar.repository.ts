@@ -5,8 +5,11 @@ import { optionalEnv } from '@/shared/env';
 import { Avatar } from '@/modules/users/domains/entities/avatar.entity';
 import { AvatarMapper } from '@/modules/users/infrastructure/mappers/avatar.mapper';
 import { AvatarDocument } from '@/modules/users/infrastructure/documents/avatar.document';
-import { USER_INFRA_ERRORS } from '@/shared/errors';
-import { InfrastructureErrorFactory } from '@/common/errors/base.error-factory';
+import {
+	UserInfraMongodbAvatarUpsertFailedException,
+	UserInfraMongodbUrlRequiredException,
+} from '@/shared/exceptions';
+import { InfrastructureExceptionFactory } from '@/common/exceptions/base.exception-factory';
 
 @Injectable()
 export class MongoUserAvatarRepository
@@ -44,8 +47,8 @@ export class MongoUserAvatarRepository
 	async upsert(avatar: Avatar): Promise<Avatar> {
 		const collection = await this.collection();
 		if (!collection) {
-			throw InfrastructureErrorFactory.create(
-				USER_INFRA_ERRORS.MONGODB_URL_REQUIRED,
+			throw InfrastructureExceptionFactory.create(
+				UserInfraMongodbUrlRequiredException,
 			);
 		}
 		const document = this.avatarMapper.toDocument(avatar);
@@ -68,10 +71,10 @@ export class MongoUserAvatarRepository
 
 		const found = await collection.findOne({ uuid: document.uuid });
 		if (!found) {
-			throw InfrastructureErrorFactory.create(
-				USER_INFRA_ERRORS.MONGODB_AVATAR_UPSERT_FAILED,
+			throw InfrastructureExceptionFactory.create(
+				UserInfraMongodbAvatarUpsertFailedException,
 				{
-					details: { avatarId: document.uuid },
+					cause: { avatarId: document.uuid },
 				},
 			);
 		}

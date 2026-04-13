@@ -1,13 +1,13 @@
 export const PAYMENT_FULFILLMENT_REQUESTED_EVENT_TYPE =
 	'PAYMENT_WEBHOOK.PAYMENT_FULFILLMENT_REQUESTED' as const;
 
-import { PAYMENTS_APPLICATION_ERRORS } from '@/shared/errors';
+import { PaymentWebhookPayloadInvalidException } from '@/shared/exceptions';
 import {
 	toBoundedInt,
 	toDate,
-	requireTrimmedString,
 	toTrimmedString,
 } from '@/common/cqrs/input-normalizer';
+import { ApplicationExceptionFactory } from '@/common/exceptions/base.exception-factory';
 
 export class PaymentFulfillmentRequestedEvent {
 	static readonly eventType = PAYMENT_FULFILLMENT_REQUESTED_EVENT_TYPE;
@@ -24,11 +24,15 @@ export class PaymentFulfillmentRequestedEvent {
 		aggregateId?: string;
 		sequence?: number;
 	}) {
-		this.orderId = requireTrimmedString(
-			input.orderId,
-			PAYMENTS_APPLICATION_ERRORS.PAYMENT_WEBHOOK_PAYLOAD_INVALID,
-			{ reason: 'orderId' },
-		);
+		const orderId = toTrimmedString(input.orderId);
+		if (!orderId) {
+			throw ApplicationExceptionFactory.create(
+				PaymentWebhookPayloadInvalidException,
+				{ description: 'orderId' },
+			);
+		}
+
+		this.orderId = orderId;
 		this.eventVersion = toBoundedInt(input.eventVersion, {
 			min: 1,
 			max: Number.MAX_SAFE_INTEGER,

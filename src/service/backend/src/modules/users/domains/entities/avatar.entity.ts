@@ -1,6 +1,9 @@
 import { BaseEntity } from '@/common/domain/base.entity';
-import { USER_DOMAIN_ERRORS } from '@/shared/errors';
-import { DomainErrorFactory } from '@/common/errors/base.error-factory';
+import {
+	UserDomainAvatarImageUrlRequiredException,
+	UserDomainAvatarUserIdRequiredException,
+} from '@/shared/exceptions';
+import { DomainExceptionFactory } from '@/common/exceptions/base.exception-factory';
 import { randomUUID } from 'node:crypto';
 
 export class Avatar extends BaseEntity {
@@ -17,13 +20,13 @@ export class Avatar extends BaseEntity {
 		const imageUrl = String(input.imageUrl ?? '').trim();
 
 		if (!userId) {
-			throw DomainErrorFactory.create(
-				USER_DOMAIN_ERRORS.AVATAR_USER_ID_REQUIRED,
+			throw DomainExceptionFactory.create(
+				UserDomainAvatarUserIdRequiredException,
 			);
 		}
 		if (!imageUrl) {
-			throw DomainErrorFactory.create(
-				USER_DOMAIN_ERRORS.AVATAR_IMAGE_URL_REQUIRED,
+			throw DomainExceptionFactory.create(
+				UserDomainAvatarImageUrlRequiredException,
 			);
 		}
 

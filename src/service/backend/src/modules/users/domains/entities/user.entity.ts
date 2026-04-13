@@ -1,6 +1,6 @@
 import { BaseEntity } from '@/common/domain/base.entity';
-import { USER_DOMAIN_ERRORS } from '@/shared/errors';
-import { DomainErrorFactory } from '@/common/errors/base.error-factory';
+import { UserDomainUserAvatarIdRequiredException } from '@/shared/exceptions';
+import { DomainExceptionFactory } from '@/common/exceptions/base.exception-factory';
 
 export class User extends BaseEntity {
 	private constructor(
@@ -29,8 +29,8 @@ export class User extends BaseEntity {
 	assignAvatarId(avatarId: string): void {
 		const normalized = String(avatarId ?? '').trim();
 		if (!normalized) {
-			throw DomainErrorFactory.create(
-				USER_DOMAIN_ERRORS.USER_AVATAR_ID_REQUIRED,
+			throw DomainExceptionFactory.create(
+				UserDomainUserAvatarIdRequiredException,
 			);
 		}
 

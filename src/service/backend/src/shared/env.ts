@@ -1,14 +1,14 @@
-import { SYSTEM_INFRA_ERRORS } from '@/shared/errors';
-import { InfrastructureErrorFactory } from '@/common/errors/base.error-factory';
+import { SystemRequiredEnvMissingException } from '@/shared/exceptions';
+import { InfrastructureExceptionFactory } from '@/common/exceptions/base.exception-factory';
 
 export function requireEnv(name: string): string {
 	const value = process.env[name];
 	if (!value) {
-		throw InfrastructureErrorFactory.create(
-			SYSTEM_INFRA_ERRORS.REQUIRED_ENV_MISSING,
+		throw InfrastructureExceptionFactory.create(
+			SystemRequiredEnvMissingException,
 			{
-				message: `Missing required env: ${name}`,
-				details: { name },
+				cause: { name },
+				description: `missing env: ${name}`,
 			},
 		);
 	}
