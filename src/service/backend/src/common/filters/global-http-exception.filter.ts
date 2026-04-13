@@ -6,8 +6,8 @@ import {
 	HttpStatus,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { BaseError } from '@/common/errors/base.error';
-import { ErrorScope } from '@/common/errors/error-scope.enum';
+import { BaseException } from '@/common/exceptions/base.exception';
+import { ExceptionScope } from '@/common/exceptions/exception-scope.enum';
 import { ErrorResponse, ResponseHelper } from '@/common/responses';
 
 @Catch()
@@ -49,6 +49,16 @@ export class GlobalHttpExceptionFilter implements ExceptionFilter {
 		code: string;
 		errors?: unknown;
 	} {
+		if (exception instanceof BaseException) {
+			const response = exception.getResponse();
+			return {
+				status: this.statusFromBaseException(exception),
+				detail: this.detailFromResponse(response, exception.message),
+				code: exception.code,
+				errors: this.errorsFromBaseException(exception, response),
+			};
+		}
+
 		if (exception instanceof HttpException) {
 			const status = exception.getStatus();
 			const response = exception.getResponse();
@@ -87,15 +97,6 @@ export class GlobalHttpExceptionFilter implements ExceptionFilter {
 			};
 		}
 
-		if (exception instanceof BaseError) {
-			return {
-				status: this.statusFromBaseError(exception),
-				detail: exception.message,
-				code: exception.code,
-				errors: exception.details,
-			};
-		}
-
 		if (exception instanceof Error) {
 			return {
 				status: HttpStatus.INTERNAL_SERVER_ERROR,
@@ -111,24 +112,79 @@ export class GlobalHttpExceptionFilter implements ExceptionFilter {
 		};
 	}
 
-	private statusFromBaseError(error: BaseError): number {
+	private detailFromResponse(response: unknown, fallback: string): string {
+		if (typeof response === 'string') {
+			return response;
+		}
+
+		if (response && typeof response === 'object') {
+			const payload = response as {
+				message?: string | string[];
+				detail?: string;
+				error?: string;
+			};
+
+			if (Array.isArray(payload.message)) {
+				return payload.message.join(', ');
+			}
+			if (typeof payload.message === 'string' && payload.message.trim()) {
+				return payload.message;
+			}
+			if (typeof payload.detail === 'string' && payload.detail.trim()) {
+				return payload.detail;
+			}
+			if (typeof payload.error === 'string' && payload.error.trim()) {
+				return payload.error;
+			}
+		}
+
+		return fallback;
+	}
+
+	private errorsFromBaseException(
+		exception: BaseException,
+		response: unknown,
+	): unknown {
+		if (response && typeof response === 'object') {
+			const payload = response as {
+				errors?: unknown;
+				cause?: unknown;
+			};
+			if (payload.errors !== undefined) {
+				return payload.errors;
+			}
+			if (payload.cause !== undefined) {
+				return payload.cause;
+			}
+		}
+
+		const errorCause = (exception as Error & { cause?: unknown }).cause;
+		if (errorCause !== undefined) {
+			return errorCause;
+		}
+
+		return undefined;
+	}
+
+	private statusFromBaseException(error: BaseException): number {
 		const supplemental = this.statusFromErrorCode(error.code, error.scope);
 		if (supplemental !== undefined) {
 			return supplemental;
 		}
 
-		if (typeof error.status === 'number') {
-			return error.status;
+		const status = error.getStatus();
+		if (typeof status === 'number') {
+			return status;
 		}
 
 		switch (error.scope) {
-			case ErrorScope.DOMAIN:
+			case ExceptionScope.DOMAIN:
 				return HttpStatus.BAD_REQUEST;
-			case ErrorScope.APPLICATION:
+			case ExceptionScope.APPLICATION:
 				return HttpStatus.CONFLICT;
-			case ErrorScope.INFRASTRUCTURE:
+			case ExceptionScope.INFRASTRUCTURE:
 				return HttpStatus.SERVICE_UNAVAILABLE;
-			case ErrorScope.UNEXPECTED:
+			case ExceptionScope.UNEXPECTED:
 			default:
 				return HttpStatus.INTERNAL_SERVER_ERROR;
 		}
@@ -136,7 +192,7 @@ export class GlobalHttpExceptionFilter implements ExceptionFilter {
 
 	private statusFromErrorCode(
 		code: string,
-		scope: ErrorScope,
+		scope: ExceptionScope,
 	): number | undefined {
 		const normalized = String(code ?? '')
 			.trim()
@@ -164,7 +220,10 @@ export class GlobalHttpExceptionFilter implements ExceptionFilter {
 			return HttpStatus.FORBIDDEN;
 		}
 
-		if (scope === ErrorScope.DOMAIN || scope === ErrorScope.APPLICATION) {
+		if (
+			scope === ExceptionScope.DOMAIN ||
+			scope === ExceptionScope.APPLICATION
+		) {
 			if (normalized.endsWith('_REQUIRED')) {
 				return HttpStatus.BAD_REQUEST;
 			}
