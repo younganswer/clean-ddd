@@ -13,12 +13,12 @@ import type { PaginatedResult } from '@/common/types/paginated.result';
 import {
 	IUserReaderSymbol,
 	type IUserReader,
-} from '@/modules/users/domains/readers/i.user.reader';
+} from '@/modules/user/domains/readers/i.user.reader';
 import {
 	IUserAvatarReaderSymbol,
 	type IUserAvatarReader,
-} from '@/modules/users/domains/readers/i.user-avatar.reader';
-import { UserProfileResult } from '@/modules/users/domains/readers/user-profile.result';
+} from '@/modules/user/domains/readers/i.user-avatar.reader';
+import { UserProfileResult } from '@/modules/user/domains/readers/user-profile.result';
 
 @QueryHandler(GetSystemConceptsBootstrapBffQuery)
 export class GetSystemConceptsBootstrapBffHandler implements IQueryHandler<GetSystemConceptsBootstrapBffQuery> {

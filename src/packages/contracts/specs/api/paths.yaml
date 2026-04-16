@@ -6,8 +6,8 @@
     $ref: "./paths/me.yaml"
 "/me/avatar":
     $ref: "./paths/me__avatar.yaml"
-"/users":
-    $ref: "./paths/users.yaml"
+"/user":
+    $ref: "./paths/user.yaml"
 "/orders":
     $ref: "./paths/orders.yaml"
 "/orders/{id}":

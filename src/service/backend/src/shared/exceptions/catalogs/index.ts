@@ -1,4 +1,4 @@
-export * from '@/shared/exceptions/catalogs/users.exception';
+export * from '@/shared/exceptions/catalogs/user.exception';
 export * from '@/shared/exceptions/catalogs/ordering.exception';
 export * from '@/shared/exceptions/catalogs/inventory.exception';
 export * from '@/shared/exceptions/catalogs/payment.exception';

@@ -7,7 +7,7 @@ import type { ApiRootPath } from "./root";
 import type { ApiAppHealthCheckPath } from "./app__health-check";
 import type { ApiMePath } from "./me";
 import type { ApiMeAvatarPath } from "./me__avatar";
-import type { ApiUsersPath } from "./users";
+import type { ApiUserPath } from "./user";
 import type { ApiOrdersPath } from "./orders";
 import type { ApiOrdersIdPath } from "./orders__id";
 import type { ApiOrdersOrderIdPaymentsIntentsPath } from "./orders__orderId__payments__intents";
@@ -25,7 +25,7 @@ export interface GeneratedPathEntries {
     "/app/health-check": ApiAppHealthCheckPath;
     "/me": ApiMePath;
     "/me/avatar": ApiMeAvatarPath;
-    "/users": ApiUsersPath;
+    "/user": ApiUserPath;
     "/orders": ApiOrdersPath;
     "/orders/{id}": ApiOrdersIdPath;
     "/orders/{orderId}/payments/intents": ApiOrdersOrderIdPaymentsIntentsPath;

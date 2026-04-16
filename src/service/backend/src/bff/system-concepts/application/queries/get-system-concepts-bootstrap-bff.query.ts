@@ -2,7 +2,7 @@ import { Query } from '@nestjs/cqrs';
 import { toBoundedInt } from '@/common/cqrs/input-normalizer';
 import type { PaginatedResult } from '@/common/types/paginated.result';
 import type { InventoryItemResult } from '@/modules/inventory/domains/readers/inventory-item.result';
-import type { UserProfileResult } from '@/modules/users/domains/readers/user-profile.result';
+import type { UserProfileResult } from '@/modules/user/domains/readers/user-profile.result';
 
 export type SystemConceptsBootstrapBffResult = {
 	users: PaginatedResult<UserProfileResult>;

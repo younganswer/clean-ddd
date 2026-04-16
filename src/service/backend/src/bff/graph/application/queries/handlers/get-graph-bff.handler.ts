@@ -18,11 +18,11 @@ import {
 	type IPaymentIntentReader,
 } from '@/modules/payments/domains/readers/i.payment-intent.reader';
 
-import type { UserProfileResult } from '@/modules/users/domains/readers/user-profile.result';
+import type { UserProfileResult } from '@/modules/user/domains/readers/user-profile.result';
 import {
 	IUserReaderSymbol,
 	type IUserReader,
-} from '@/modules/users/domains/readers/i.user.reader';
+} from '@/modules/user/domains/readers/i.user.reader';
 import {
 	IOutboxEventReaderSymbol,
 	type IOutboxEventReader,
