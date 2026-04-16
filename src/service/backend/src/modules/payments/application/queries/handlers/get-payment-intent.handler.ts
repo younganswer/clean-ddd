@@ -4,8 +4,8 @@ import { GetPaymentIntentQuery } from '@/modules/payments/application/queries/ge
 import {
 	IPaymentIntentReaderSymbol,
 	type IPaymentIntentReader,
-} from '@/modules/payments/domains/readers/i.payment-intent.reader';
-import type { PaymentIntentResult } from '@/modules/payments/domains/readers/payment-intent.result';
+} from '@/modules/payments/domain/readers/i.payment-intent.reader';
+import type { PaymentIntentResult } from '@/modules/payments/domain/readers/payment-intent.result';
 
 @QueryHandler(GetPaymentIntentQuery)
 export class GetPaymentIntentHandler implements IQueryHandler<GetPaymentIntentQuery> {

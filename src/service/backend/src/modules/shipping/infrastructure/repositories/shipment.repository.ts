@@ -8,9 +8,9 @@ import type {
 import {
 	IShipmentRepositorySymbol,
 	type IShipmentRepository,
-} from '@/modules/shipping/domains/repositories/i.shipment.repository';
+} from '@/modules/shipping/domain/repositories/i.shipment.repository';
 import { ShipmentSchema } from '@/modules/shipping/infrastructure/schemas/shipment.schema';
-import { Shipment } from '@/modules/shipping/domains/entities/aggregates/shipment/shipment.aggregate';
+import { Shipment } from '@/modules/shipping/domain/entities/aggregates/shipment/shipment.aggregate';
 import { ShipmentMapper } from '@/modules/shipping/infrastructure/mappers/shipment.mapper';
 import { ShippingNotFoundException } from '@/shared/exceptions';
 import { SystemRequestContextTransactionRequiredException } from '@/shared/exceptions/catalogs/system.exception';

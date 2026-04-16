@@ -1,5 +1,5 @@
 import { given, then, when } from 'test-utils/gwt.template.spec';
-import { OrderItem } from '@/modules/ordering/domains/value-objects/order-item.vo';
+import { OrderItem } from '@/modules/ordering/domain/value-objects/order-item.vo';
 
 describe('OrderItem', () => {
 	given('유효한 SKU와 수량이 주어지면', () => {

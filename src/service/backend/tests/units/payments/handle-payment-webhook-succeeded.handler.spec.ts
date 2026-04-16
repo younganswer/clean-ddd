@@ -1,9 +1,9 @@
 import type { CommandBus } from '@nestjs/cqrs';
 import { HandlePaymentWebhookSucceededHandler } from '@/modules/payments/application/commands/handlers/handle-payment-webhook-succeeded.handler';
 import { HandlePaymentWebhookSucceededCommand } from '@/modules/payments/application/commands/handle-payment-webhook-succeeded.command';
-import { PaymentIntent } from '@/modules/payments/domains/entities/aggregates/payment-intent/payment-intent.aggregate';
-import { PaymentStatus } from '@/modules/payments/domains/enums/payment-status.enum';
-import type { IPaymentRepository } from '@/modules/payments/domains/repositories/i.payment.repository';
+import { PaymentIntent } from '@/modules/payments/domain/entities/aggregates/payment-intent/payment-intent.aggregate';
+import { PaymentStatus } from '@/modules/payments/domain/enums/payment-status.enum';
+import type { IPaymentRepository } from '@/modules/payments/domain/repositories/i.payment.repository';
 import type { IOutboxProducer } from '@/shared/outbox/domain/producers/i.outbox.producer';
 import type { UnitOfWork } from '@/lib/database/unit-of-work';
 

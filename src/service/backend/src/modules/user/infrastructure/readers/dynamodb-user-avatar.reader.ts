@@ -5,8 +5,8 @@ import {
 	DynamoDBDocumentClient,
 	GetCommand,
 } from '@aws-sdk/lib-dynamodb';
-import { type IUserAvatarReader } from '@/modules/user/domains/readers/i.user-avatar.reader';
-import { UserAvatarResult } from '@/modules/user/domains/readers/user-avatar.result';
+import { type IUserAvatarReader } from '@/modules/user/domain/readers/i.user-avatar.reader';
+import { UserAvatarResult } from '@/modules/user/domain/readers/user-avatar.result';
 import { optionalEnv } from '@/shared/env';
 import { UserInfraDynamodbAvatarTableRequiredException } from '@/shared/exceptions';
 import { InfrastructureExceptionFactory } from '@/common/exceptions/base.exception-factory';

@@ -4,8 +4,8 @@ import { GetOrdersByUserIdQuery } from '@/modules/ordering/application/queries/g
 import {
 	IOrderReaderSymbol,
 	type IOrderReader,
-} from '@/modules/ordering/domains/readers/i.order.reader';
-import type { OrderResult } from '@/modules/ordering/domains/readers/order.result';
+} from '@/modules/ordering/domain/readers/i.order.reader';
+import type { OrderResult } from '@/modules/ordering/domain/readers/order.result';
 
 @QueryHandler(GetOrdersByUserIdQuery)
 export class ListOrdersByUserSubjectIdHandler implements IQueryHandler<GetOrdersByUserIdQuery> {

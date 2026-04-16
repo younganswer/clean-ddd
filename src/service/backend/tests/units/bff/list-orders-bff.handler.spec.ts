@@ -1,9 +1,9 @@
 import { ListOrdersBffHandler } from '@/bff/orders/application/queries/handlers/list-orders-bff.handler';
 import { GetOrdersBffQuery } from '@/bff/orders/application/queries/get-orders-bff.query';
 import type { PaginatedResult } from '@/common/types/paginated.result';
-import type { OrderResult } from '@/modules/ordering/domains/readers/order.result';
-import type { IOrderReader } from '@/modules/ordering/domains/readers/i.order.reader';
-import { OrderStatus } from '@/modules/ordering/domains/enums/order-status.enum';
+import type { OrderResult } from '@/modules/ordering/domain/readers/order.result';
+import type { IOrderReader } from '@/modules/ordering/domain/readers/i.order.reader';
+import { OrderStatus } from '@/modules/ordering/domain/enums/order-status.enum';
 
 describe('ListOrdersBffHandler', () => {
 	it('uses order reader and returns paginated result', async () => {

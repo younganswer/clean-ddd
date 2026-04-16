@@ -1,5 +1,5 @@
 import { Command } from '@nestjs/cqrs';
-import type { PaymentStatus } from '@/modules/payments/domains/enums/payment-status.enum';
+import type { PaymentStatus } from '@/modules/payments/domain/enums/payment-status.enum';
 import { PaymentOrderIdRequiredException } from '@/shared/exceptions';
 import { toTrimmedString, toBoundedInt } from '@/common/cqrs/input-normalizer';
 import { ApplicationExceptionFactory } from '@/common/exceptions/base.exception-factory';

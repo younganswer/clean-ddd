@@ -1,5 +1,5 @@
 import { Query } from '@nestjs/cqrs';
-import type { OrderResult } from '@/modules/ordering/domains/readers/order.result';
+import type { OrderResult } from '@/modules/ordering/domain/readers/order.result';
 import { UserApplicationUserIdRequiredException } from '@/shared/exceptions';
 import {
 	toTrimmedString,

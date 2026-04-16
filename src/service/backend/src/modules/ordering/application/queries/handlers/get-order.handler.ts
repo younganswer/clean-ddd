@@ -4,8 +4,8 @@ import { GetOrderQuery } from '@/modules/ordering/application/queries/get-order.
 import {
 	IOrderReaderSymbol,
 	type IOrderReader,
-} from '@/modules/ordering/domains/readers/i.order.reader';
-import type { OrderResult } from '@/modules/ordering/domains/readers/order.result';
+} from '@/modules/ordering/domain/readers/i.order.reader';
+import type { OrderResult } from '@/modules/ordering/domain/readers/order.result';
 
 @QueryHandler(GetOrderQuery)
 export class GetOrderHandler implements IQueryHandler<GetOrderQuery> {

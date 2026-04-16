@@ -7,19 +7,19 @@ import type { OrderDetailBffView } from '@/bff/order-detail/application/views/or
 import {
 	IOrderReaderSymbol,
 	type IOrderReader,
-} from '@/modules/ordering/domains/readers/i.order.reader';
+} from '@/modules/ordering/domain/readers/i.order.reader';
 import {
 	IPaymentIntentReaderSymbol,
 	type IPaymentIntentReader,
-} from '@/modules/payments/domains/readers/i.payment-intent.reader';
+} from '@/modules/payments/domain/readers/i.payment-intent.reader';
 import {
 	IShipmentReaderSymbol,
 	type IShipmentReader,
-} from '@/modules/shipping/domains/readers/i.shipment.reader';
+} from '@/modules/shipping/domain/readers/i.shipment.reader';
 import {
 	IInventoryReaderSymbol,
 	type IInventoryReader,
-} from '@/modules/inventory/domains/readers/i.inventory.reader';
+} from '@/modules/inventory/domain/readers/i.inventory.reader';
 
 @QueryHandler(GetOrderDetailBffQuery)
 export class GetOrderDetailBffHandler implements IQueryHandler<GetOrderDetailBffQuery> {

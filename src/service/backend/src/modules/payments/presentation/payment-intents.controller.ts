@@ -9,7 +9,7 @@ import {
 import { PaymentIntentResponse } from '@/modules/payments/presentation/swagger/payments.response';
 import { GetPaymentIntentQuery } from '@/modules/payments/application/queries/get-payment-intent.query';
 import { GetPaymentIntentsQuery } from '@/modules/payments/application/queries/get-payment-intents.query';
-import type { PaymentIntentResult } from '@/modules/payments/domains/readers/payment-intent.result';
+import type { PaymentIntentResult } from '@/modules/payments/domain/readers/payment-intent.result';
 import {
 	PaymentIntentResultInvalidException,
 	PaymentNotFoundException,

@@ -1,5 +1,5 @@
 import { Query } from '@nestjs/cqrs';
-import type { PaymentIntentResult } from '@/modules/payments/domains/readers/payment-intent.result';
+import type { PaymentIntentResult } from '@/modules/payments/domain/readers/payment-intent.result';
 import { PaymentOrderIdRequiredException } from '@/shared/exceptions';
 import { ApplicationExceptionFactory } from '@/common/exceptions/base.exception-factory';
 import { toTrimmedString } from '@/common/cqrs/input-normalizer';

@@ -3,7 +3,7 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import {
 	IOrderRepositorySymbol,
 	type IOrderRepository,
-} from '@/modules/ordering/domains/repositories/i.order.repository';
+} from '@/modules/ordering/domain/repositories/i.order.repository';
 import { MarkOrderPaidCommand } from '@/modules/ordering/application/commands/mark-order-paid.command';
 import { UnitOfWork } from '@/lib/database/unit-of-work';
 

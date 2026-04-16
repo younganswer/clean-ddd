@@ -5,10 +5,10 @@ import { Injectable } from '@nestjs/common';
 import {
 	IInventoryReaderSymbol,
 	type IInventoryReader,
-} from '@/modules/inventory/domains/readers/i.inventory.reader';
+} from '@/modules/inventory/domain/readers/i.inventory.reader';
 import type { PageOptions } from '@/lib/database/repository-get-options';
-import { InventoryItemResult } from '@/modules/inventory/domains/readers/inventory-item.result';
-import { InventoryReservationResult } from '@/modules/inventory/domains/readers/inventory-reservation.result';
+import { InventoryItemResult } from '@/modules/inventory/domain/readers/inventory-item.result';
+import { InventoryReservationResult } from '@/modules/inventory/domain/readers/inventory-reservation.result';
 import { InventoryItemSchema } from '@/modules/inventory/infrastructure/schemas/inventory-item.schema';
 import { InventoryReservationSchema } from '@/modules/inventory/infrastructure/schemas/inventory-reservation.schema';
 import { normalizeReaderExternalPage } from '@/common/cqrs/pagination-policy';

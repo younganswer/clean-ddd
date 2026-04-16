@@ -1,5 +1,5 @@
 import { PaginatedResult } from '@/common/types/paginated.result';
-import { OrderResult } from '@/modules/ordering/domains/readers/order.result';
+import { OrderResult } from '@/modules/ordering/domain/readers/order.result';
 import { Query } from '@nestjs/cqrs';
 import { toBoundedInt } from '@/common/cqrs/input-normalizer';
 

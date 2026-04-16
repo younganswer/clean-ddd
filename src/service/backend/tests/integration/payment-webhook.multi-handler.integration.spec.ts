@@ -10,12 +10,12 @@ import { HandlePaymentWebhookFailedCommand } from '@/modules/payments/applicatio
 import { HandlePaymentWebhookSucceededCommand } from '@/modules/payments/application/commands/handle-payment-webhook-succeeded.command';
 import { PaymentWebhookSucceededEvent } from '@/contracts/payments/events/payment-webhook-succeeded.event';
 import { PaymentWebhookFailedEvent } from '@/contracts/payments/events/payment-webhook-failed.event';
-import { PaymentStatus } from '@/modules/payments/domains/enums/payment-status.enum';
-import { PaymentIntent } from '@/modules/payments/domains/entities/aggregates/payment-intent/payment-intent.aggregate';
+import { PaymentStatus } from '@/modules/payments/domain/enums/payment-status.enum';
+import { PaymentIntent } from '@/modules/payments/domain/entities/aggregates/payment-intent/payment-intent.aggregate';
 import {
 	IPaymentRepositorySymbol,
 	type IPaymentRepository,
-} from '@/modules/payments/domains/repositories/i.payment.repository';
+} from '@/modules/payments/domain/repositories/i.payment.repository';
 import {
 	PaymentWebhookFailedHandler,
 	PaymentWebhookSucceededHandler,

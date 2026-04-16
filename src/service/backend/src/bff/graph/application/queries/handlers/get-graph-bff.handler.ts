@@ -1,32 +1,32 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import type { OrderResult } from '@/modules/ordering/domains/readers/order.result';
+import type { OrderResult } from '@/modules/ordering/domain/readers/order.result';
 import {
 	IOrderReaderSymbol,
 	type IOrderReader,
-} from '@/modules/ordering/domains/readers/i.order.reader';
+} from '@/modules/ordering/domain/readers/i.order.reader';
 
-import type { ShipmentResult } from '@/modules/shipping/domains/readers/shipment.result';
+import type { ShipmentResult } from '@/modules/shipping/domain/readers/shipment.result';
 import {
 	IShipmentReaderSymbol,
 	type IShipmentReader,
-} from '@/modules/shipping/domains/readers/i.shipment.reader';
+} from '@/modules/shipping/domain/readers/i.shipment.reader';
 
-import type { PaymentIntentResult } from '@/modules/payments/domains/readers/payment-intent.result';
+import type { PaymentIntentResult } from '@/modules/payments/domain/readers/payment-intent.result';
 import {
 	IPaymentIntentReaderSymbol,
 	type IPaymentIntentReader,
-} from '@/modules/payments/domains/readers/i.payment-intent.reader';
+} from '@/modules/payments/domain/readers/i.payment-intent.reader';
 
-import type { UserProfileResult } from '@/modules/user/domains/readers/user-profile.result';
+import type { UserProfileResult } from '@/modules/user/domain/readers/user-profile.result';
 import {
 	IUserReaderSymbol,
 	type IUserReader,
-} from '@/modules/user/domains/readers/i.user.reader';
+} from '@/modules/user/domain/readers/i.user.reader';
 import {
 	IOutboxEventReaderSymbol,
 	type IOutboxEventReader,
-} from '@/modules/outbox/domains/readers/i.outbox-event.reader';
+} from '@/modules/outbox/domain/readers/i.outbox-event.reader';
 
 import {
 	GetGraphBffQuery,

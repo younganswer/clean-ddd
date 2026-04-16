@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { Order } from '@/modules/ordering/domains/entities/aggregates/order/order.aggregate';
+import { Order } from '@/modules/ordering/domain/entities/aggregates/order/order.aggregate';
 import { Money } from '@/shared/money/value-objects/money.vo';
-import { OrderItem } from '@/modules/ordering/domains/value-objects/order-item.vo';
+import { OrderItem } from '@/modules/ordering/domain/value-objects/order-item.vo';
 import { OrderSchema } from '@/modules/ordering/infrastructure/schemas/order.schema';
 
 @Injectable()

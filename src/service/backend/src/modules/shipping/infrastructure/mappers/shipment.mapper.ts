@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Shipment } from '@/modules/shipping/domains/entities/aggregates/shipment/shipment.aggregate';
+import { Shipment } from '@/modules/shipping/domain/entities/aggregates/shipment/shipment.aggregate';
 import { ShipmentSchema } from '@/modules/shipping/infrastructure/schemas/shipment.schema';
 
 @Injectable()

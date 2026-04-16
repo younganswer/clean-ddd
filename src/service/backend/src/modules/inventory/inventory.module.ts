@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
-import { IInventoryReaderSymbol } from '@/modules/inventory/domains/readers/i.inventory.reader';
-import { InventoryProviders } from '@/modules/inventory/domains';
+import { IInventoryReaderSymbol } from '@/modules/inventory/domain/readers/i.inventory.reader';
+import { InventoryProviders } from '@/modules/inventory/domain';
 import { InventoryControllers } from '@/modules/inventory/presentation';
 
 const InventoryImports = [CqrsModule];

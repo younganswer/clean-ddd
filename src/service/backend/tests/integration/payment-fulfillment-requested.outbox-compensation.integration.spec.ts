@@ -16,8 +16,8 @@ import { UnitOfWork } from '@/lib/database/unit-of-work';
 import {
 	IOrderReaderSymbol,
 	type IOrderReader,
-} from '@/modules/ordering/domains/readers/i.order.reader';
-import { OrderStatus } from '@/modules/ordering/domains/enums/order-status.enum';
+} from '@/modules/ordering/domain/readers/i.order.reader';
+import { OrderStatus } from '@/modules/ordering/domain/enums/order-status.enum';
 import { PaymentFulfillmentRequestedEvent } from '@/contracts/payments/events/payment-fulfillment-requested.event';
 import { PaymentFulfillmentRequestedHandler } from '@/saga-orchestrator/fulfillment/payment-fulfillment-requested.event-handler';
 import { ReserveInventoryForOrderCommand } from '@/modules/inventory/application/commands/reserve-inventory-for-order.command';

@@ -2,9 +2,9 @@
 
 import { HandlePaymentWebhookFailedHandler } from '@/modules/payments/application/commands/handlers/handle-payment-webhook-failed.handler';
 import { HandlePaymentWebhookFailedCommand } from '@/modules/payments/application/commands/handle-payment-webhook-failed.command';
-import { PaymentIntent } from '@/modules/payments/domains/entities/aggregates/payment-intent/payment-intent.aggregate';
-import { PaymentStatus } from '@/modules/payments/domains/enums/payment-status.enum';
-import type { IPaymentRepository } from '@/modules/payments/domains/repositories/i.payment.repository';
+import { PaymentIntent } from '@/modules/payments/domain/entities/aggregates/payment-intent/payment-intent.aggregate';
+import { PaymentStatus } from '@/modules/payments/domain/enums/payment-status.enum';
+import type { IPaymentRepository } from '@/modules/payments/domain/repositories/i.payment.repository';
 import type { UnitOfWork } from '@/lib/database/unit-of-work';
 
 describe('HandlePaymentWebhookFailedHandler', () => {

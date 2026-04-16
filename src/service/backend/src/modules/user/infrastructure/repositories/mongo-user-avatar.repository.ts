@@ -1,8 +1,8 @@
 import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import { Collection, MongoClient } from 'mongodb';
-import { type IUserAvatarRepository } from '@/modules/user/domains/repositories/i.user-avatar.repository';
+import { type IUserAvatarRepository } from '@/modules/user/domain/repositories/i.user-avatar.repository';
 import { optionalEnv } from '@/shared/env';
-import { Avatar } from '@/modules/user/domains/entities/avatar.entity';
+import { Avatar } from '@/modules/user/domain/entities/avatar.entity';
 import { AvatarMapper } from '@/modules/user/infrastructure/mappers/avatar.mapper';
 import { AvatarDocument } from '@/modules/user/infrastructure/documents/avatar.document';
 import {

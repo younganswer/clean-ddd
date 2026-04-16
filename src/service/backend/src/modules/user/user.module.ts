@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
-import { IUserAvatarReaderSymbol } from '@/modules/user/domains/readers/i.user-avatar.reader';
-import { IUserReaderSymbol } from '@/modules/user/domains/readers/i.user.reader';
-import { UserProviders } from '@/modules/user/domains';
+import { IUserAvatarReaderSymbol } from '@/modules/user/domain/readers/i.user-avatar.reader';
+import { IUserReaderSymbol } from '@/modules/user/domain/readers/i.user.reader';
+import { UserProviders } from '@/modules/user/domain';
 import { UserControllers } from '@/modules/user/presentation';
 
 const UserImports = [CqrsModule];

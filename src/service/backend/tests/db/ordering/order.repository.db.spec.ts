@@ -4,10 +4,10 @@ import { createTestOrm } from 'test-utils/db/test-orm';
 import { OrderRepository } from '@/modules/ordering/infrastructure/repositories/order.repository';
 import { OrderMapper } from '@/modules/ordering/infrastructure/mappers/order.mapper';
 import { OrderSchema } from '@/modules/ordering/infrastructure/schemas/order.schema';
-import { OrderStatus } from '@/modules/ordering/domains/enums/order-status.enum';
-import { Order } from '@/modules/ordering/domains/entities/aggregates/order/order.aggregate';
+import { OrderStatus } from '@/modules/ordering/domain/enums/order-status.enum';
+import { Order } from '@/modules/ordering/domain/entities/aggregates/order/order.aggregate';
 import { Money } from '@/shared/money/value-objects/money.vo';
-import { OrderItem } from '@/modules/ordering/domains/value-objects/order-item.vo';
+import { OrderItem } from '@/modules/ordering/domain/value-objects/order-item.vo';
 import { UnitOfWork } from '@/lib/database/unit-of-work';
 
 describe('OrderRepository (DB)', () => {

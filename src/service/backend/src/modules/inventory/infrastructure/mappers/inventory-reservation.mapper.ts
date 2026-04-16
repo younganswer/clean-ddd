@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { InventoryReservation } from '@/modules/inventory/domains/entities/inventory-reservation.entity';
+import { InventoryReservation } from '@/modules/inventory/domain/entities/inventory-reservation.entity';
 import { InventoryReservationSchema } from '@/modules/inventory/infrastructure/schemas/inventory-reservation.schema';
 
 @Injectable()

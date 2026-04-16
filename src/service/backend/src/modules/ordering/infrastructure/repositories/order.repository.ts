@@ -8,8 +8,8 @@ import type {
 import {
 	IOrderRepositorySymbol,
 	type IOrderRepository,
-} from '@/modules/ordering/domains/repositories/i.order.repository';
-import { Order } from '@/modules/ordering/domains/entities/aggregates/order/order.aggregate';
+} from '@/modules/ordering/domain/repositories/i.order.repository';
+import { Order } from '@/modules/ordering/domain/entities/aggregates/order/order.aggregate';
 import { OrderMapper } from '@/modules/ordering/infrastructure/mappers/order.mapper';
 import { OrderSchema } from '@/modules/ordering/infrastructure/schemas/order.schema';
 import { OrderingOrderNotFoundException } from '@/shared/exceptions';

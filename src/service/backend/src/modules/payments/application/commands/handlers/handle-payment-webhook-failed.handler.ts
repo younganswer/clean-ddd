@@ -4,9 +4,9 @@ import { UnitOfWork } from '@/lib/database/unit-of-work';
 import {
 	IPaymentRepositorySymbol,
 	type IPaymentRepository,
-} from '@/modules/payments/domains/repositories/i.payment.repository';
+} from '@/modules/payments/domain/repositories/i.payment.repository';
 import { HandlePaymentWebhookFailedCommand } from '@/modules/payments/application/commands/handle-payment-webhook-failed.command';
-import { PaymentStatus } from '@/modules/payments/domains/enums/payment-status.enum';
+import { PaymentStatus } from '@/modules/payments/domain/enums/payment-status.enum';
 
 @CommandHandler(HandlePaymentWebhookFailedCommand)
 export class HandlePaymentWebhookFailedHandler implements ICommandHandler<HandlePaymentWebhookFailedCommand> {

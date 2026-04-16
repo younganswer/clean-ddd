@@ -4,9 +4,9 @@ import { Injectable } from '@nestjs/common';
 import {
 	IPaymentIntentReaderSymbol,
 	type IPaymentIntentReader,
-} from '@/modules/payments/domains/readers/i.payment-intent.reader';
+} from '@/modules/payments/domain/readers/i.payment-intent.reader';
 import type { PageOptions } from '@/lib/database/repository-get-options';
-import { PaymentIntentResult } from '@/modules/payments/domains/readers/payment-intent.result';
+import { PaymentIntentResult } from '@/modules/payments/domain/readers/payment-intent.result';
 import { PaymentIntentSchema } from '@/modules/payments/infrastructure/schemas/payment-intent.schema';
 import { normalizeReaderExternalPage } from '@/common/cqrs/pagination-policy';
 import { useClassProvider } from '@/common/utils/nest-provider.helpers';

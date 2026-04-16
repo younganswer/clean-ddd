@@ -1,7 +1,7 @@
 import { Inject } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UnitOfWork } from '@/lib/database/unit-of-work';
-import { InventoryReservationService } from '@/modules/inventory/domains/services/inventory-reservation.service';
+import { InventoryReservationService } from '@/modules/inventory/domain/services/inventory-reservation.service';
 import { ReleaseInventoryForOrderCommand } from '@/modules/inventory/application/commands/release-inventory-for-order.command';
 
 @CommandHandler(ReleaseInventoryForOrderCommand)

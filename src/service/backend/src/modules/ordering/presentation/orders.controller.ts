@@ -9,7 +9,7 @@ import {
 import { CreateOrderCommand } from '@/modules/ordering/application/commands/create-order.command';
 import { GetOrderQuery } from '@/modules/ordering/application/queries/get-order.query';
 import { GetOrdersQuery } from '@/modules/ordering/application/queries/get-orders.query';
-import { isOrderResult } from '@/modules/ordering/domains/readers/order-result.guard';
+import { isOrderResult } from '@/modules/ordering/domain/readers/order-result.guard';
 import { CreateOrderRequest } from '@/modules/ordering/presentation/dto/create-order.request';
 import {
 	CreateOrderResponse,

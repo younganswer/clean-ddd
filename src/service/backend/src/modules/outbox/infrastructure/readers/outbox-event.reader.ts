@@ -6,9 +6,9 @@ import {
 import {
 	IOutboxEventReaderSymbol,
 	type IOutboxEventReader,
-} from '@/modules/outbox/domains/readers/i.outbox-event.reader';
+} from '@/modules/outbox/domain/readers/i.outbox-event.reader';
 import type { PageOptions } from '@/lib/database/repository-get-options';
-import type { OutboxEventResult } from '@/modules/outbox/domains/readers/outbox-event.result';
+import type { OutboxEventResult } from '@/modules/outbox/domain/readers/outbox-event.result';
 import { useClassProvider } from '@/common/utils/nest-provider.helpers';
 
 @Injectable()

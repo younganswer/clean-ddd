@@ -1,7 +1,7 @@
-import type { InventoryReservationResult } from '@/modules/inventory/domains/readers/inventory-reservation.result';
-import type { OrderResult } from '@/modules/ordering/domains/readers/order.result';
-import type { PaymentIntentResult } from '@/modules/payments/domains/readers/payment-intent.result';
-import type { ShipmentResult } from '@/modules/shipping/domains/readers/shipment.result';
+import type { InventoryReservationResult } from '@/modules/inventory/domain/readers/inventory-reservation.result';
+import type { OrderResult } from '@/modules/ordering/domain/readers/order.result';
+import type { PaymentIntentResult } from '@/modules/payments/domain/readers/payment-intent.result';
+import type { ShipmentResult } from '@/modules/shipping/domain/readers/shipment.result';
 import type { BffPartialError } from '@/bff/shared/partial-error';
 
 export type OrderDetailBffView = {

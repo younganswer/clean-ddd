@@ -1,16 +1,16 @@
 import { GetDashboardSummaryBffHandler } from '@/bff/dashboard/application/queries/handlers/get-dashboard-summary-bff.handler';
 import { GetDashboardSummaryBffQuery } from '@/bff/dashboard/application/queries/get-dashboard-summary-bff.query';
-import type { IInventoryReader } from '@/modules/inventory/domains/readers/i.inventory.reader';
-import type { OrderResult } from '@/modules/ordering/domains/readers/order.result';
-import type { IOrderReader } from '@/modules/ordering/domains/readers/i.order.reader';
-import type { IPaymentIntentReader } from '@/modules/payments/domains/readers/i.payment-intent.reader';
-import type { PaymentIntentResult } from '@/modules/payments/domains/readers/payment-intent.result';
-import type { IShipmentReader } from '@/modules/shipping/domains/readers/i.shipment.reader';
-import type { ShipmentResult } from '@/modules/shipping/domains/readers/shipment.result';
-import type { InventoryItemResult } from '@/modules/inventory/domains/readers/inventory-item.result';
-import { OrderStatus } from '@/modules/ordering/domains/enums/order-status.enum';
-import { PaymentStatus } from '@/modules/payments/domains/enums/payment-status.enum';
-import { ShipmentStatus } from '@/modules/shipping/domains/enums/shipment-status.enum';
+import type { IInventoryReader } from '@/modules/inventory/domain/readers/i.inventory.reader';
+import type { OrderResult } from '@/modules/ordering/domain/readers/order.result';
+import type { IOrderReader } from '@/modules/ordering/domain/readers/i.order.reader';
+import type { IPaymentIntentReader } from '@/modules/payments/domain/readers/i.payment-intent.reader';
+import type { PaymentIntentResult } from '@/modules/payments/domain/readers/payment-intent.result';
+import type { IShipmentReader } from '@/modules/shipping/domain/readers/i.shipment.reader';
+import type { ShipmentResult } from '@/modules/shipping/domain/readers/shipment.result';
+import type { InventoryItemResult } from '@/modules/inventory/domain/readers/inventory-item.result';
+import { OrderStatus } from '@/modules/ordering/domain/enums/order-status.enum';
+import { PaymentStatus } from '@/modules/payments/domain/enums/payment-status.enum';
+import { ShipmentStatus } from '@/modules/shipping/domain/enums/shipment-status.enum';
 
 describe('GetDashboardSummaryBffHandler', () => {
 	it('unwraps paginated query results and returns aggregated view', async () => {

@@ -1,12 +1,12 @@
 import { Inject } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { GetShipmentsQuery } from '@/modules/shipping/application/queries/get-shipments.query';
-import type { ShipmentResult } from '@/modules/shipping/domains/readers/shipment.result';
+import type { ShipmentResult } from '@/modules/shipping/domain/readers/shipment.result';
 import type { PaginatedResult } from '@/common/types/paginated.result';
 import {
 	IShipmentReaderSymbol,
 	type IShipmentReader,
-} from '@/modules/shipping/domains/readers/i.shipment.reader';
+} from '@/modules/shipping/domain/readers/i.shipment.reader';
 
 @QueryHandler(GetShipmentsQuery)
 export class ListShipmentsHandler implements IQueryHandler<GetShipmentsQuery> {

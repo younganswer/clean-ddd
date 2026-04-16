@@ -1,5 +1,5 @@
 import { Query } from '@nestjs/cqrs';
-import type { InventoryReservationResult } from '@/modules/inventory/domains/readers/inventory-reservation.result';
+import type { InventoryReservationResult } from '@/modules/inventory/domain/readers/inventory-reservation.result';
 import { InventoryOrderIdRequiredException } from '@/shared/exceptions';
 import { ApplicationExceptionFactory } from '@/common/exceptions/base.exception-factory';
 import { toTrimmedString } from '@/common/cqrs/input-normalizer';

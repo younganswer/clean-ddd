@@ -2,8 +2,8 @@ import { forwardRef, Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { OutboxModule } from '@/modules/outbox/outbox.module';
 import { OrderingModule } from '@/modules/ordering/ordering.module';
-import { IPaymentIntentReaderSymbol } from '@/modules/payments/domains/readers/i.payment-intent.reader';
-import { PaymentsProviders } from '@/modules/payments/domains';
+import { IPaymentIntentReaderSymbol } from '@/modules/payments/domain/readers/i.payment-intent.reader';
+import { PaymentsProviders } from '@/modules/payments/domain';
 import { PaymentsControllers } from '@/modules/payments/presentation';
 
 const PaymentsImports = [

@@ -6,8 +6,8 @@ import {
 	GetCommand,
 	UpdateCommand,
 } from '@aws-sdk/lib-dynamodb';
-import { type IUserAvatarRepository } from '@/modules/user/domains/repositories/i.user-avatar.repository';
-import { Avatar } from '@/modules/user/domains/entities/avatar.entity';
+import { type IUserAvatarRepository } from '@/modules/user/domain/repositories/i.user-avatar.repository';
+import { Avatar } from '@/modules/user/domain/entities/avatar.entity';
 import { AvatarDocument } from '@/modules/user/infrastructure/documents/avatar.document';
 import { AvatarMapper } from '@/modules/user/infrastructure/mappers/avatar.mapper';
 import { optionalEnv } from '@/shared/env';

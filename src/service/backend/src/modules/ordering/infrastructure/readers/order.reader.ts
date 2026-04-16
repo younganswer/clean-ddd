@@ -4,9 +4,9 @@ import { Injectable } from '@nestjs/common';
 import {
 	IOrderReaderSymbol,
 	type IOrderReader,
-} from '@/modules/ordering/domains/readers/i.order.reader';
+} from '@/modules/ordering/domain/readers/i.order.reader';
 import type { PageOptions } from '@/lib/database/repository-get-options';
-import { OrderResult } from '@/modules/ordering/domains/readers/order.result';
+import { OrderResult } from '@/modules/ordering/domain/readers/order.result';
 import { OrderSchema } from '@/modules/ordering/infrastructure/schemas/order.schema';
 import { RepositoryGetByIdOptions } from '@/lib/database/repository-get-options';
 import {

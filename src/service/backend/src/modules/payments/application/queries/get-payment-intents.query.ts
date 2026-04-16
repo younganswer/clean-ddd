@@ -1,5 +1,5 @@
 import { Query } from '@nestjs/cqrs';
-import type { PaymentIntentResult } from '@/modules/payments/domains/readers/payment-intent.result';
+import type { PaymentIntentResult } from '@/modules/payments/domain/readers/payment-intent.result';
 import { toBoundedInt } from '@/common/cqrs/input-normalizer';
 
 export class GetPaymentIntentsQuery extends Query<PaymentIntentResult[]> {

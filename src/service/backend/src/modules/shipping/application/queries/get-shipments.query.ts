@@ -1,6 +1,6 @@
 import { Query } from '@nestjs/cqrs';
 import type { PaginatedResult } from '@/common/types/paginated.result';
-import type { ShipmentResult } from '@/modules/shipping/domains/readers/shipment.result';
+import type { ShipmentResult } from '@/modules/shipping/domain/readers/shipment.result';
 import { toBoundedInt } from '@/common/cqrs/input-normalizer';
 
 export class GetShipmentsQuery extends Query<PaginatedResult<ShipmentResult>> {

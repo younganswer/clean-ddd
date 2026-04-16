@@ -92,7 +92,7 @@ export default tseslint.config(
 		},
 	},
 	{
-		files: ['src/modules/*/domains/**/*.ts'],
+		files: ['src/modules/*/domain/**/*.ts'],
 		rules: {
 			'no-restricted-imports': [
 				'error',
@@ -104,6 +104,12 @@ export default tseslint.config(
 					],
 				},
 			],
+		},
+	},
+	{
+		files: ['src/modules/*/domain/**/index.ts'],
+		rules: {
+			'no-restricted-imports': 'off',
 		},
 	},
 	{
@@ -119,7 +125,7 @@ export default tseslint.config(
 	},
 	{
 		files: [
-			'src/modules/{ordering,inventory,payments,shipping,users}/application/queries/**/*.ts',
+			'src/modules/{ordering,inventory,payments,shipping,user}/application/queries/**/*.ts',
 			'src/bff/**/application/queries/**/*.ts',
 		],
 		rules: {
@@ -127,7 +133,7 @@ export default tseslint.config(
 				'error',
 				{
 					patterns: [
-						'**/domains/repositories/**',
+						'**/domain/repositories/**',
 						'**/infrastructure/repositories/**',
 					],
 				},
@@ -141,7 +147,7 @@ export default tseslint.config(
 				'error',
 				{
 					patterns: [
-						'**/domains/repositories/**',
+						'**/domain/repositories/**',
 						'**/infrastructure/repositories/**',
 					],
 				},

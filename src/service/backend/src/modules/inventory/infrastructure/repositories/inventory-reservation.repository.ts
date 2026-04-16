@@ -4,8 +4,8 @@ import { Injectable } from '@nestjs/common';
 import {
 	IInventoryReservationRepositorySymbol,
 	type IInventoryReservationRepository,
-} from '@/modules/inventory/domains/repositories/i.inventory-reservation.repository';
-import { InventoryReservation } from '@/modules/inventory/domains/entities/inventory-reservation.entity';
+} from '@/modules/inventory/domain/repositories/i.inventory-reservation.repository';
+import { InventoryReservation } from '@/modules/inventory/domain/entities/inventory-reservation.entity';
 import { InventoryReservationMapper } from '@/modules/inventory/infrastructure/mappers/inventory-reservation.mapper';
 import { InventoryReservationSchema } from '@/modules/inventory/infrastructure/schemas/inventory-reservation.schema';
 import { SystemRequestContextTransactionRequiredException } from '@/shared/exceptions/catalogs/system.exception';

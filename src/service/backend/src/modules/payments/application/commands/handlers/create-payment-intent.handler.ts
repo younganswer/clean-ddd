@@ -4,13 +4,13 @@ import {
 	IOutboxProducerSymbol,
 	type IOutboxProducer,
 } from '@/shared/outbox/domain/producers/i.outbox.producer';
-import { IPaymentRepositorySymbol } from '@/modules/payments/domains/repositories/i.payment.repository';
-import type { IPaymentRepository } from '@/modules/payments/domains/repositories/i.payment.repository';
+import { IPaymentRepositorySymbol } from '@/modules/payments/domain/repositories/i.payment.repository';
+import type { IPaymentRepository } from '@/modules/payments/domain/repositories/i.payment.repository';
 import {
 	IOrderReaderSymbol,
 	type IOrderReader,
-} from '@/modules/ordering/domains/readers/i.order.reader';
-import { PaymentIntent } from '@/modules/payments/domains/entities/aggregates/payment-intent/payment-intent.aggregate';
+} from '@/modules/ordering/domain/readers/i.order.reader';
+import { PaymentIntent } from '@/modules/payments/domain/entities/aggregates/payment-intent/payment-intent.aggregate';
 import { PaymentIntentCreatedEvent } from '@/contracts/payments/events/payment-intent-created.event';
 import { PaymentWebhookFailedEvent } from '@/contracts/payments/events/payment-webhook-failed.event';
 import { PaymentWebhookSucceededEvent } from '@/contracts/payments/events/payment-webhook-succeeded.event';

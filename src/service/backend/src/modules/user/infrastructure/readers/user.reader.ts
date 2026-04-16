@@ -4,12 +4,12 @@ import { Injectable } from '@nestjs/common';
 import {
 	IUserReaderSymbol,
 	type IUserReader,
-} from '@/modules/user/domains/readers/i.user.reader';
+} from '@/modules/user/domain/readers/i.user.reader';
 import type { PageOptions } from '@/lib/database/repository-get-options';
 import { UserSchema } from '@/modules/user/infrastructure/schemas/user.schema';
 import { UserApplicationUserNotFoundException } from '@/shared/exceptions';
 import { ApplicationExceptionFactory } from '@/common/exceptions/base.exception-factory';
-import { UserProfileResult } from '@/modules/user/domains/readers/user-profile.result';
+import { UserProfileResult } from '@/modules/user/domain/readers/user-profile.result';
 import { normalizeReaderInternalPage } from '@/common/cqrs/pagination-policy';
 import { useClassProvider } from '@/common/utils/nest-provider.helpers';
 

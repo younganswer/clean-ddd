@@ -4,7 +4,7 @@ import { GetOrderBffQuery } from '@/bff/orders/application/queries/get-order-bff
 import {
 	IOrderReaderSymbol,
 	type IOrderReader,
-} from '@/modules/ordering/domains/readers/i.order.reader';
+} from '@/modules/ordering/domain/readers/i.order.reader';
 
 @QueryHandler(GetOrderBffQuery)
 export class GetOrderBffHandler implements IQueryHandler<GetOrderBffQuery> {

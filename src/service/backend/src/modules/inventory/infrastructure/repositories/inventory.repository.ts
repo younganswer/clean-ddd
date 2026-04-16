@@ -6,8 +6,8 @@ import type { RepositoryPageOptions } from '@/lib/database/repository-get-option
 import {
 	IInventoryItemRepositorySymbol,
 	type IInventoryItemRepository,
-} from '@/modules/inventory/domains/repositories/i.inventory-item.repository';
-import { InventoryItem } from '@/modules/inventory/domains/entities/inventory-item.entity';
+} from '@/modules/inventory/domain/repositories/i.inventory-item.repository';
+import { InventoryItem } from '@/modules/inventory/domain/entities/inventory-item.entity';
 import { InventoryItemMapper } from '@/modules/inventory/infrastructure/mappers/inventory-item.mapper';
 import { InventoryItemSchema } from '@/modules/inventory/infrastructure/schemas/inventory-item.schema';
 import { SystemRequestContextTransactionRequiredException } from '@/shared/exceptions/catalogs/system.exception';

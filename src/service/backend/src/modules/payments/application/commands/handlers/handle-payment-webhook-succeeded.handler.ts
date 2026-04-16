@@ -8,10 +8,10 @@ import {
 import {
 	IPaymentRepositorySymbol,
 	type IPaymentRepository,
-} from '@/modules/payments/domains/repositories/i.payment.repository';
+} from '@/modules/payments/domain/repositories/i.payment.repository';
 import { PaymentFulfillmentRequestedEvent } from '@/contracts/payments/events/payment-fulfillment-requested.event';
 import { HandlePaymentWebhookSucceededCommand } from '@/modules/payments/application/commands/handle-payment-webhook-succeeded.command';
-import { PaymentStatus } from '@/modules/payments/domains/enums/payment-status.enum';
+import { PaymentStatus } from '@/modules/payments/domain/enums/payment-status.enum';
 import { DispatchOutboxEventCommand } from '@/modules/outbox/application/commands/dispatch-outbox-event.command';
 import { isOutboxHandlerImmediateDispatchEnabled } from '@/bootstrap/runtime-role';
 

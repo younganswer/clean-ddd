@@ -1,12 +1,12 @@
 import { Inject } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { GetOrdersBffQuery } from '@/bff/orders/application/queries/get-orders-bff.query';
-import type { OrderResult } from '@/modules/ordering/domains/readers/order.result';
+import type { OrderResult } from '@/modules/ordering/domain/readers/order.result';
 import type { PaginatedResult } from '@/common/types/paginated.result';
 import {
 	IOrderReaderSymbol,
 	type IOrderReader,
-} from '@/modules/ordering/domains/readers/i.order.reader';
+} from '@/modules/ordering/domain/readers/i.order.reader';
 
 @QueryHandler(GetOrdersBffQuery)
 export class ListOrdersBffHandler implements IQueryHandler<GetOrdersBffQuery> {

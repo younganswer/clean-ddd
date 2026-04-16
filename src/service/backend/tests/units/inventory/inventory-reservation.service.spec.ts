@@ -1,8 +1,8 @@
-import { InventoryItem } from '@/modules/inventory/domains/entities/inventory-item.entity';
-import { InventoryReservation } from '@/modules/inventory/domains/entities/inventory-reservation.entity';
-import { InventoryReservationService } from '@/modules/inventory/domains/services/inventory-reservation.service';
-import type { IInventoryItemRepository } from '@/modules/inventory/domains/repositories/i.inventory-item.repository';
-import type { IInventoryReservationRepository } from '@/modules/inventory/domains/repositories/i.inventory-reservation.repository';
+import { InventoryItem } from '@/modules/inventory/domain/entities/inventory-item.entity';
+import { InventoryReservation } from '@/modules/inventory/domain/entities/inventory-reservation.entity';
+import { InventoryReservationService } from '@/modules/inventory/domain/services/inventory-reservation.service';
+import type { IInventoryItemRepository } from '@/modules/inventory/domain/repositories/i.inventory-item.repository';
+import type { IInventoryReservationRepository } from '@/modules/inventory/domain/repositories/i.inventory-reservation.repository';
 
 describe('InventoryReservationService', () => {
 	it('aggregates duplicate sku requests and persists once per sku', async () => {

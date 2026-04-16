@@ -1,7 +1,7 @@
 import type { CommandBus } from '@nestjs/cqrs';
 import { CreatePaymentIntentHandler } from '@/modules/payments/application/commands/handlers/create-payment-intent.handler';
-import type { IPaymentRepository } from '@/modules/payments/domains/repositories/i.payment.repository';
-import type { IOrderReader } from '@/modules/ordering/domains/readers/i.order.reader';
+import type { IPaymentRepository } from '@/modules/payments/domain/repositories/i.payment.repository';
+import type { IOrderReader } from '@/modules/ordering/domain/readers/i.order.reader';
 import type { IOutboxProducer } from '@/shared/outbox/domain/producers/i.outbox.producer';
 import type { UnitOfWork } from '@/lib/database/unit-of-work';
 import { CreatePaymentIntentCommand } from '@/modules/payments/application/commands/create-payment-intent.command';

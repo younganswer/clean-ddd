@@ -5,9 +5,9 @@ import { Injectable } from '@nestjs/common';
 import {
 	IShipmentReaderSymbol,
 	type IShipmentReader,
-} from '@/modules/shipping/domains/readers/i.shipment.reader';
+} from '@/modules/shipping/domain/readers/i.shipment.reader';
 import type { PageOptions } from '@/lib/database/repository-get-options';
-import { ShipmentResult } from '@/modules/shipping/domains/readers/shipment.result';
+import { ShipmentResult } from '@/modules/shipping/domain/readers/shipment.result';
 import { ShipmentSchema } from '@/modules/shipping/infrastructure/schemas/shipment.schema';
 import { normalizeReaderExternalPage } from '@/common/cqrs/pagination-policy';
 import { useClassProvider } from '@/common/utils/nest-provider.helpers';

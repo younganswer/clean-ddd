@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Avatar } from '@/modules/user/domains/entities/avatar.entity';
+import { Avatar } from '@/modules/user/domain/entities/avatar.entity';
 import { AvatarDocument } from '@/modules/user/infrastructure/documents/avatar.document';
 
 @Injectable()

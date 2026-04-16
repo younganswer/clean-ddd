@@ -1,6 +1,6 @@
 import { Query } from '@nestjs/cqrs';
 import type { PaginatedResult } from '@/common/types/paginated.result';
-import type { InventoryItemResult } from '@/modules/inventory/domains/readers/inventory-item.result';
+import type { InventoryItemResult } from '@/modules/inventory/domain/readers/inventory-item.result';
 import { toBoundedInt } from '@/common/cqrs/input-normalizer';
 
 export class GetInventoryItemsQuery extends Query<

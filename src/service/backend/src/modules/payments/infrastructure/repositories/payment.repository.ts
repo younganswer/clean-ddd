@@ -8,8 +8,8 @@ import type {
 import {
 	IPaymentRepositorySymbol,
 	type IPaymentRepository,
-} from '@/modules/payments/domains/repositories/i.payment.repository';
-import { PaymentIntent } from '@/modules/payments/domains/entities/aggregates/payment-intent/payment-intent.aggregate';
+} from '@/modules/payments/domain/repositories/i.payment.repository';
+import { PaymentIntent } from '@/modules/payments/domain/entities/aggregates/payment-intent/payment-intent.aggregate';
 import { PaymentIntentMapper } from '@/modules/payments/infrastructure/mappers/payment-intent.mapper';
 import { PaymentIntentSchema } from '@/modules/payments/infrastructure/schemas/payment-intent.schema';
 import { PaymentNotFoundException } from '@/shared/exceptions';

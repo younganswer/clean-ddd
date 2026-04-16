@@ -1,5 +1,5 @@
 import { Query } from '@nestjs/cqrs';
-import type { UserProfileResult } from '@/modules/user/domains/readers/user-profile.result';
+import type { UserProfileResult } from '@/modules/user/domain/readers/user-profile.result';
 import type { PaginatedResult } from '@/common/types/paginated.result';
 import { toBoundedInt } from '@/common/cqrs/input-normalizer';
 

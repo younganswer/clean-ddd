@@ -5,11 +5,11 @@ import type {
 	RepositoryGetByIdOptions,
 	RepositoryPageOptions,
 } from '@/lib/database/repository-get-options';
-import { User } from '@/modules/user/domains/entities/user.entity';
+import { User } from '@/modules/user/domain/entities/user.entity';
 import {
 	IUserRepositorySymbol,
 	type IUserRepository,
-} from '@/modules/user/domains/repositories/i.user.repository';
+} from '@/modules/user/domain/repositories/i.user.repository';
 import { UserMapper } from '@/modules/user/infrastructure/mappers/user.mapper';
 import { UserSchema } from '@/modules/user/infrastructure/schemas/user.schema';
 import { UserApplicationUserNotFoundException } from '@/shared/exceptions';

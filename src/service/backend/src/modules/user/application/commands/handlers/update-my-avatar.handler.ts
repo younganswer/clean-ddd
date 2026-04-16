@@ -5,12 +5,12 @@ import { UpdateMyAvatarCommand } from '@/modules/user/application/commands/updat
 import {
 	IUserAvatarRepositorySymbol,
 	type IUserAvatarRepository,
-} from '@/modules/user/domains/repositories/i.user-avatar.repository';
+} from '@/modules/user/domain/repositories/i.user-avatar.repository';
 import {
 	IUserRepositorySymbol,
 	type IUserRepository,
-} from '@/modules/user/domains/repositories/i.user.repository';
-import { Avatar } from '@/modules/user/domains/entities/avatar.entity';
+} from '@/modules/user/domain/repositories/i.user.repository';
+import { Avatar } from '@/modules/user/domain/entities/avatar.entity';
 
 @CommandHandler(UpdateMyAvatarCommand)
 export class UpdateMyAvatarHandler implements ICommandHandler<UpdateMyAvatarCommand> {

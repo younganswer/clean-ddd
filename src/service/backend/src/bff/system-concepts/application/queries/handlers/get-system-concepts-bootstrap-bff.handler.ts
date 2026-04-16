@@ -7,18 +7,18 @@ import {
 import {
 	IInventoryReaderSymbol,
 	type IInventoryReader,
-} from '@/modules/inventory/domains/readers/i.inventory.reader';
-import type { InventoryItemResult } from '@/modules/inventory/domains/readers/inventory-item.result';
+} from '@/modules/inventory/domain/readers/i.inventory.reader';
+import type { InventoryItemResult } from '@/modules/inventory/domain/readers/inventory-item.result';
 import type { PaginatedResult } from '@/common/types/paginated.result';
 import {
 	IUserReaderSymbol,
 	type IUserReader,
-} from '@/modules/user/domains/readers/i.user.reader';
+} from '@/modules/user/domain/readers/i.user.reader';
 import {
 	IUserAvatarReaderSymbol,
 	type IUserAvatarReader,
-} from '@/modules/user/domains/readers/i.user-avatar.reader';
-import { UserProfileResult } from '@/modules/user/domains/readers/user-profile.result';
+} from '@/modules/user/domain/readers/i.user-avatar.reader';
+import { UserProfileResult } from '@/modules/user/domain/readers/user-profile.result';
 
 @QueryHandler(GetSystemConceptsBootstrapBffQuery)
 export class GetSystemConceptsBootstrapBffHandler implements IQueryHandler<GetSystemConceptsBootstrapBffQuery> {

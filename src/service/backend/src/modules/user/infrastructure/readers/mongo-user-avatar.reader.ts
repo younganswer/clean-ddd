@@ -1,7 +1,7 @@
 import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import { Collection, MongoClient } from 'mongodb';
-import { type IUserAvatarReader } from '@/modules/user/domains/readers/i.user-avatar.reader';
-import { UserAvatarResult } from '@/modules/user/domains/readers/user-avatar.result';
+import { type IUserAvatarReader } from '@/modules/user/domain/readers/i.user-avatar.reader';
+import { UserAvatarResult } from '@/modules/user/domain/readers/user-avatar.result';
 import { optionalEnv } from '@/shared/env';
 import { AvatarDocument } from '@/modules/user/infrastructure/documents/avatar.document';
 

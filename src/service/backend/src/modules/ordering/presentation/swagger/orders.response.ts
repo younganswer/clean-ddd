@@ -3,7 +3,7 @@ import type { PaginatedResult } from '@/common/types/paginated.result';
 import type {
 	OrderItemResult,
 	OrderResult,
-} from '@/modules/ordering/domains/readers/order.result';
+} from '@/modules/ordering/domain/readers/order.result';
 import { MoneyResponse } from '@/shared/money/presentation/swagger/money.response';
 
 export class OrderItemResponse {

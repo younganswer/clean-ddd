@@ -1,5 +1,5 @@
 import { Entity, Index, Property } from '@mikro-orm/core';
-import { OrderStatus } from '@/modules/ordering/domains/enums/order-status.enum';
+import { OrderStatus } from '@/modules/ordering/domain/enums/order-status.enum';
 import { BaseSchema } from '@/common/persistence/mikro-orm/base.schema';
 
 @Entity({ tableName: 'orders' })

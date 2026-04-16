@@ -2,8 +2,8 @@ import { CommandBus } from '@nestjs/cqrs';
 import { PaymentFulfillmentRequestedEvent } from '@/contracts/payments/events/payment-fulfillment-requested.event';
 import { ReserveInventoryForOrderCommand } from '@/modules/inventory/application/commands/reserve-inventory-for-order.command';
 import { ReleaseInventoryForOrderCommand } from '@/modules/inventory/application/commands/release-inventory-for-order.command';
-import type { IOrderReader } from '@/modules/ordering/domains/readers/i.order.reader';
-import { OrderStatus } from '@/modules/ordering/domains/enums/order-status.enum';
+import type { IOrderReader } from '@/modules/ordering/domain/readers/i.order.reader';
+import { OrderStatus } from '@/modules/ordering/domain/enums/order-status.enum';
 import { CreateShipmentForOrderCommand } from '@/modules/shipping/application/commands/create-shipment-for-order.command';
 import { PaymentFulfillmentRequestedHandler } from '@/saga-orchestrator/fulfillment/payment-fulfillment-requested.event-handler';
 
