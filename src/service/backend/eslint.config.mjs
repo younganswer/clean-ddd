@@ -147,8 +147,8 @@ export default tseslint.config(
 				'error',
 				{
 					patterns: [
-						'**/domain/repositories/**',
-						'**/infrastructure/repositories/**',
+						'@/modules/*/domain/repositories/**',
+						'@/modules/*/infrastructure/repositories/**',
 					],
 				},
 			],
