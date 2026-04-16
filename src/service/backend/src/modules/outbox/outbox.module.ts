@@ -2,74 +2,36 @@ import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { DiscoveryModule } from '@nestjs/core';
 import { SqsModule } from '@/lib/queue/sqs.module';
-import { ProcessedEventMapper } from '@/modules/outbox/idempotency/infrastructure/processed-event.mapper';
-import { ProcessedEventRepository } from '@/modules/outbox/idempotency/infrastructure/processed-event.repository';
 import { IdempotencyService } from '@/modules/outbox/idempotency/application/idempotency.service';
-import { IProcessedEventRepositorySymbol } from '@/modules/outbox/idempotency/domain/i.processed-event.repository';
 import { IOutboxQueueSymbol } from '@/shared/outbox/domain/queue/i.outbox.queue';
 import { IOutboxRepositorySymbol } from '@/shared/outbox/domain/repositories/i.outbox.repository';
-import { OutboxCommandHandlers } from '@/modules/outbox/application/commands';
 import { OutboxProducer } from '@/modules/outbox/application/outbox.producer';
 import { OutboxDispatcher } from '@/modules/outbox/application/outbox.dispatcher';
-import { OutboxQueryHandlers } from '@/modules/outbox/application/queries';
-import { OutboxRepository } from '@/modules/outbox/infrastructure/persistence/outbox.repository';
+import { OutboxProviders } from '@/modules/outbox/domains';
 import { OutboxQueue } from '@/modules/outbox/infrastructure/queue/outbox.queue';
-import { OutboxMapper } from '@/modules/outbox/infrastructure/mappers/outbox.mapper';
 import { OutboxKnownHandlerRegistryService } from '@/modules/outbox/application/outbox-known-handler.registry.service';
 import { IOutboxProducerSymbol } from '@/shared/outbox/domain/producers/i.outbox.producer';
-import { OutboxEventReaderProvider } from '@/modules/outbox/infrastructure/readers/outbox-event.reader';
 import { IOutboxEventReaderSymbol } from '@/modules/outbox/domains/readers/i.outbox-event.reader';
 import { IOutboxDelayedDispatchTriggerSymbol } from '@/shared/outbox/domain/schedulers/i.outbox-delayed-dispatch-trigger';
-import { OutboxDelayedDispatchTriggerAdapter } from '@/modules/outbox/infrastructure/schedulers/outbox-delayed-dispatch-trigger.adapter';
+
+const OutboxImports = [CqrsModule, DiscoveryModule, SqsModule];
+
+const OutboxExports = [
+	OutboxQueue,
+	OutboxProducer,
+	IOutboxDelayedDispatchTriggerSymbol,
+	IOutboxProducerSymbol,
+	OutboxDispatcher,
+	OutboxKnownHandlerRegistryService,
+	IdempotencyService,
+	IOutboxQueueSymbol,
+	IOutboxRepositorySymbol,
+	IOutboxEventReaderSymbol,
+];
 
 @Module({
-	imports: [CqrsModule, DiscoveryModule, SqsModule],
-	providers: [
-		ProcessedEventMapper,
-		ProcessedEventRepository,
-		{
-			provide: IProcessedEventRepositorySymbol,
-			useExisting: ProcessedEventRepository,
-		},
-		IdempotencyService,
-		OutboxQueue,
-		{
-			provide: IOutboxQueueSymbol,
-			useExisting: OutboxQueue,
-		},
-		OutboxProducer,
-		OutboxDelayedDispatchTriggerAdapter,
-		{
-			provide: IOutboxDelayedDispatchTriggerSymbol,
-			useExisting: OutboxDelayedDispatchTriggerAdapter,
-		},
-		{
-			provide: IOutboxProducerSymbol,
-			useExisting: OutboxProducer,
-		},
-		OutboxDispatcher,
-		OutboxKnownHandlerRegistryService,
-		OutboxRepository,
-		OutboxMapper,
-		OutboxEventReaderProvider,
-		...OutboxCommandHandlers,
-		...OutboxQueryHandlers,
-		{
-			provide: IOutboxRepositorySymbol,
-			useExisting: OutboxRepository,
-		},
-	],
-	exports: [
-		OutboxQueue,
-		OutboxProducer,
-		IOutboxDelayedDispatchTriggerSymbol,
-		IOutboxProducerSymbol,
-		OutboxDispatcher,
-		OutboxKnownHandlerRegistryService,
-		IdempotencyService,
-		IOutboxQueueSymbol,
-		IOutboxRepositorySymbol,
-		IOutboxEventReaderSymbol,
-	],
+	imports: OutboxImports,
+	providers: OutboxProviders,
+	exports: OutboxExports,
 })
 export class OutboxModule {}

@@ -5,9 +5,10 @@ import type {
 	RepositoryGetByIdOptions,
 	RepositoryPageOptions,
 } from '@/lib/database/repository-get-options';
-import type {
-	IOutboxRepository,
-	OutboxConsumedOrderingCriteria,
+import {
+	IOutboxRepositorySymbol,
+	type IOutboxRepository,
+	type OutboxConsumedOrderingCriteria,
 } from '@/shared/outbox/domain/repositories/i.outbox.repository';
 import { OutboxEvent } from '@/shared/outbox/domain/entities/outbox-event.entity';
 import { OutboxEventStatus } from '@/shared/outbox/domain/outbox-event-status.enum';
@@ -15,6 +16,7 @@ import { OutboxMapper } from '@/modules/outbox/infrastructure/mappers/outbox.map
 import { OutboxEventSchema } from '@/modules/outbox/infrastructure/persistence/outbox.schema';
 import { OutboxEventNotFoundException } from '@/shared/exceptions';
 import { InfrastructureExceptionFactory } from '@/common/exceptions/base.exception-factory';
+import { useClassProviders } from '@/common/utils/nest-provider.helpers';
 
 @Injectable()
 export class OutboxRepository implements IOutboxRepository {
@@ -154,3 +156,8 @@ export class OutboxRepository implements IOutboxRepository {
 		);
 	}
 }
+
+export const OutboxRepositoryProviders = useClassProviders(
+	IOutboxRepositorySymbol,
+	OutboxRepository,
+);

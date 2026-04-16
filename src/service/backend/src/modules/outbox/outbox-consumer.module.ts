@@ -6,9 +6,19 @@ import { OutboxConsumeStateMachine } from '@/modules/outbox/application/outbox-c
 import { OutboxModule } from '@/modules/outbox/outbox.module';
 import { OutboxSqsPoller } from '@/modules/outbox/infrastructure/sqs/outbox.sqs-poller';
 
+const OutboxConsumerImports = [CqrsModule, OutboxModule, SqsModule];
+
+const OutboxConsumerProviders = [
+	OutboxConsumer,
+	OutboxConsumeStateMachine,
+	OutboxSqsPoller,
+];
+
+const OutboxConsumerExports = [OutboxConsumer];
+
 @Module({
-	imports: [CqrsModule, OutboxModule, SqsModule],
-	providers: [OutboxConsumer, OutboxConsumeStateMachine, OutboxSqsPoller],
-	exports: [OutboxConsumer],
+	imports: OutboxConsumerImports,
+	providers: OutboxConsumerProviders,
+	exports: OutboxConsumerExports,
 })
 export class OutboxConsumerModule {}

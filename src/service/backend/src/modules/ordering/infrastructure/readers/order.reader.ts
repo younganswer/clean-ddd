@@ -15,6 +15,7 @@ import {
 } from '@/common/cqrs/pagination-policy';
 import { OrderingOrderNotFoundException } from '@/shared/exceptions';
 import { ApplicationExceptionFactory } from '@/common/exceptions/base.exception-factory';
+import { useClassProvider } from '@/common/utils/nest-provider.helpers';
 
 @Injectable()
 export class OrderReader implements IOrderReader {
@@ -97,7 +98,7 @@ export class OrderReader implements IOrderReader {
 	}
 }
 
-export const OrderReaderProvider = {
-	provide: IOrderReaderSymbol,
-	useClass: OrderReader,
-};
+export const OrderReaderProvider = useClassProvider(
+	IOrderReaderSymbol,
+	OrderReader,
+);

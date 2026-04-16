@@ -4,9 +4,15 @@ import { AppService } from '@/bootstrap/app.service';
 import { appDefaultImportList } from '@/bootstrap/app.default';
 import { HttpIdempotencyInterceptor } from '@/common/interceptors/http-idempotency.interceptor';
 
+const AppImports = [...appDefaultImportList];
+
+const AppControllers = [AppController];
+
+const AppProviders = [AppService, HttpIdempotencyInterceptor];
+
 @Module({
-	controllers: [AppController],
-	imports: [...appDefaultImportList],
-	providers: [AppService, HttpIdempotencyInterceptor],
+	imports: AppImports,
+	controllers: AppControllers,
+	providers: AppProviders,
 })
 export class AppModule {}

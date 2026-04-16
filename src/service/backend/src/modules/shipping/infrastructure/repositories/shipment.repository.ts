@@ -5,7 +5,10 @@ import type {
 	RepositoryGetByIdOptions,
 	RepositoryPageOptions,
 } from '@/lib/database/repository-get-options';
-import type { IShipmentRepository } from '@/modules/shipping/domains/repositories/i.shipment.repository';
+import {
+	IShipmentRepositorySymbol,
+	type IShipmentRepository,
+} from '@/modules/shipping/domains/repositories/i.shipment.repository';
 import { ShipmentSchema } from '@/modules/shipping/infrastructure/schemas/shipment.schema';
 import { Shipment } from '@/modules/shipping/domains/entities/aggregates/shipment/shipment.aggregate';
 import { ShipmentMapper } from '@/modules/shipping/infrastructure/mappers/shipment.mapper';
@@ -13,6 +16,7 @@ import { ShippingNotFoundException } from '@/shared/exceptions';
 import { SystemRequestContextTransactionRequiredException } from '@/shared/exceptions/catalogs/system.exception';
 import { ApplicationExceptionFactory } from '@/common/exceptions/base.exception-factory';
 import { InfrastructureExceptionFactory } from '@/common/exceptions/base.exception-factory';
+import { useClassProviders } from '@/common/utils/nest-provider.helpers';
 
 @Injectable()
 export class ShipmentRepository implements IShipmentRepository {
@@ -118,3 +122,8 @@ export class ShipmentRepository implements IShipmentRepository {
 		return await em.count(ShipmentSchema, {});
 	}
 }
+
+export const ShipmentRepositoryProviders = useClassProviders(
+	IShipmentRepositorySymbol,
+	ShipmentRepository,
+);

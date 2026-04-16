@@ -9,12 +9,21 @@ import {
 	PaymentWebhookSucceededHandler,
 } from '@/saga-orchestrator/webhooks/payment-webhook.event-handlers';
 
+const SagaOrchestratorImports = [
+	CqrsModule,
+	OutboxModule,
+	PaymentsModule,
+	OrderingModule,
+];
+
+const SagaOrchestratorProviders = [
+	PaymentWebhookSucceededHandler,
+	PaymentWebhookFailedHandler,
+	PaymentFulfillmentRequestedHandler,
+];
+
 @Module({
-	imports: [CqrsModule, OutboxModule, PaymentsModule, OrderingModule],
-	providers: [
-		PaymentWebhookSucceededHandler,
-		PaymentWebhookFailedHandler,
-		PaymentFulfillmentRequestedHandler,
-	],
+	imports: SagaOrchestratorImports,
+	providers: SagaOrchestratorProviders,
 })
 export class SagaOrchestratorModule {}

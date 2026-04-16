@@ -5,7 +5,10 @@ import type {
 	RepositoryGetByIdOptions,
 	RepositoryPageOptions,
 } from '@/lib/database/repository-get-options';
-import type { IOrderRepository } from '@/modules/ordering/domains/repositories/i.order.repository';
+import {
+	IOrderRepositorySymbol,
+	type IOrderRepository,
+} from '@/modules/ordering/domains/repositories/i.order.repository';
 import { Order } from '@/modules/ordering/domains/entities/aggregates/order/order.aggregate';
 import { OrderMapper } from '@/modules/ordering/infrastructure/mappers/order.mapper';
 import { OrderSchema } from '@/modules/ordering/infrastructure/schemas/order.schema';
@@ -15,6 +18,7 @@ import {
 	ApplicationExceptionFactory,
 	InfrastructureExceptionFactory,
 } from '@/common/exceptions/base.exception-factory';
+import { useClassProviders } from '@/common/utils/nest-provider.helpers';
 
 @Injectable()
 export class OrderRepository implements IOrderRepository {
@@ -135,3 +139,8 @@ export class OrderRepository implements IOrderRepository {
 		return await em.count(OrderSchema, {});
 	}
 }
+
+export const OrderRepositoryProviders = useClassProviders(
+	IOrderRepositorySymbol,
+	OrderRepository,
+);

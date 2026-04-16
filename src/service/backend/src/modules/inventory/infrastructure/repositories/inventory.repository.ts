@@ -3,12 +3,16 @@ import { EntityManager } from '@mikro-orm/postgresql';
 import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import type { RepositoryPageOptions } from '@/lib/database/repository-get-options';
-import type { IInventoryItemRepository } from '@/modules/inventory/domains/repositories/i.inventory-item.repository';
+import {
+	IInventoryItemRepositorySymbol,
+	type IInventoryItemRepository,
+} from '@/modules/inventory/domains/repositories/i.inventory-item.repository';
 import { InventoryItem } from '@/modules/inventory/domains/entities/inventory-item.entity';
 import { InventoryItemMapper } from '@/modules/inventory/infrastructure/mappers/inventory-item.mapper';
 import { InventoryItemSchema } from '@/modules/inventory/infrastructure/schemas/inventory-item.schema';
 import { SystemRequestContextTransactionRequiredException } from '@/shared/exceptions/catalogs/system.exception';
 import { InfrastructureExceptionFactory } from '@/common/exceptions/base.exception-factory';
+import { useClassProviders } from '@/common/utils/nest-provider.helpers';
 
 @Injectable()
 export class InventoryItemRepository implements IInventoryItemRepository {
@@ -111,3 +115,8 @@ export class InventoryItemRepository implements IInventoryItemRepository {
 		}
 	}
 }
+
+export const InventoryItemRepositoryProviders = useClassProviders(
+	IInventoryItemRepositorySymbol,
+	InventoryItemRepository,
+);

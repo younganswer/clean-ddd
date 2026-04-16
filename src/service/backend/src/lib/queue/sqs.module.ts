@@ -4,6 +4,7 @@ import {
 	SQSClient,
 } from '@aws-sdk/client-sqs';
 import { Global, Module } from '@nestjs/common';
+import { useFactoryProvider } from '@/common/utils/nest-provider.helpers';
 import { optionalEnv, requireEnv } from '@/shared/env';
 
 export const SQS_OUTBOX_QUEUE_URL = Symbol('SQS_OUTBOX_QUEUE_URL');
@@ -153,66 +154,61 @@ const resolveQueueUrlFromEndpoint = async (params: {
 	return null;
 };
 
+const SqsProviders = [
+	useFactoryProvider(SQS_OUTBOX_QUEUE_URL, async () => {
+		const rawQueueUrl = optionalEnv('SQS_OUTBOX_QUEUE_URL');
+		const endpoint = optionalEnv('SQS_ENDPOINT');
+		const queueName =
+			optionalEnv('SQS_OUTBOX_QUEUE_NAME') ?? 'OutboxDispatchQueue.fifo';
+
+		if (endpoint) {
+			const resolved = await resolveQueueUrlFromEndpoint({
+				endpoint,
+				queueName,
+				rawQueueUrl,
+			});
+			if (resolved) {
+				return resolved;
+			}
+		}
+
+		return normalizeOutboxQueueUrl(
+			rawQueueUrl ?? requireEnv('SQS_OUTBOX_QUEUE_URL'),
+		);
+	}),
+	useFactoryProvider(SQS_CLIENT, () => {
+		const region = process.env.AWS_REGION;
+		const endpoint = process.env.SQS_ENDPOINT;
+		const useLocalStaticCreds =
+			endpoint !== undefined && isLocalSqsEndpoint(endpoint);
+		return new SQSClient({
+			region,
+			...(endpoint ? { endpoint } : {}),
+			...(useLocalStaticCreds
+				? {
+						credentials: {
+							accessKeyId:
+								process.env.AWS_ACCESS_KEY_ID ?? 'test',
+							secretAccessKey:
+								process.env.AWS_SECRET_ACCESS_KEY ?? 'test',
+							...(process.env.AWS_SESSION_TOKEN
+								? {
+										sessionToken:
+											process.env.AWS_SESSION_TOKEN,
+									}
+								: {}),
+						},
+					}
+				: {}),
+		});
+	}),
+];
+
+const SqsExports = [SQS_OUTBOX_QUEUE_URL, SQS_CLIENT];
+
 @Global()
 @Module({
-	providers: [
-		{
-			provide: SQS_OUTBOX_QUEUE_URL,
-			useFactory: async () => {
-				const rawQueueUrl = optionalEnv('SQS_OUTBOX_QUEUE_URL');
-				const endpoint = optionalEnv('SQS_ENDPOINT');
-				const queueName =
-					optionalEnv('SQS_OUTBOX_QUEUE_NAME') ??
-					'OutboxDispatchQueue.fifo';
-
-				if (endpoint) {
-					const resolved = await resolveQueueUrlFromEndpoint({
-						endpoint,
-						queueName,
-						rawQueueUrl,
-					});
-					if (resolved) {
-						return resolved;
-					}
-				}
-
-				return normalizeOutboxQueueUrl(
-					rawQueueUrl ?? requireEnv('SQS_OUTBOX_QUEUE_URL'),
-				);
-			},
-		},
-		{
-			provide: SQS_CLIENT,
-			useFactory: () => {
-				const region = process.env.AWS_REGION;
-				const endpoint = process.env.SQS_ENDPOINT;
-				const useLocalStaticCreds =
-					endpoint !== undefined && isLocalSqsEndpoint(endpoint);
-				return new SQSClient({
-					region,
-					...(endpoint ? { endpoint } : {}),
-					...(useLocalStaticCreds
-						? {
-								credentials: {
-									accessKeyId:
-										process.env.AWS_ACCESS_KEY_ID ?? 'test',
-									secretAccessKey:
-										process.env.AWS_SECRET_ACCESS_KEY ??
-										'test',
-									...(process.env.AWS_SESSION_TOKEN
-										? {
-												sessionToken:
-													process.env
-														.AWS_SESSION_TOKEN,
-											}
-										: {}),
-								},
-							}
-						: {}),
-				});
-			},
-		},
-	],
-	exports: [SQS_OUTBOX_QUEUE_URL, SQS_CLIENT],
+	providers: SqsProviders,
+	exports: SqsExports,
 })
 export class SqsModule {}

@@ -1,12 +1,16 @@
 import { RequestContext } from '@mikro-orm/core';
 import { EntityManager } from '@mikro-orm/postgresql';
 import { Injectable } from '@nestjs/common';
-import type { IInventoryReservationRepository } from '@/modules/inventory/domains/repositories/i.inventory-reservation.repository';
+import {
+	IInventoryReservationRepositorySymbol,
+	type IInventoryReservationRepository,
+} from '@/modules/inventory/domains/repositories/i.inventory-reservation.repository';
 import { InventoryReservation } from '@/modules/inventory/domains/entities/inventory-reservation.entity';
 import { InventoryReservationMapper } from '@/modules/inventory/infrastructure/mappers/inventory-reservation.mapper';
 import { InventoryReservationSchema } from '@/modules/inventory/infrastructure/schemas/inventory-reservation.schema';
 import { SystemRequestContextTransactionRequiredException } from '@/shared/exceptions/catalogs/system.exception';
 import { InfrastructureExceptionFactory } from '@/common/exceptions/base.exception-factory';
+import { useClassProviders } from '@/common/utils/nest-provider.helpers';
 
 @Injectable()
 export class InventoryReservationRepository implements IInventoryReservationRepository {
@@ -97,3 +101,8 @@ export class InventoryReservationRepository implements IInventoryReservationRepo
 		return found.map((r) => this.mapper.toDomain(r));
 	}
 }
+
+export const InventoryReservationRepositoryProviders = useClassProviders(
+	IInventoryReservationRepositorySymbol,
+	InventoryReservationRepository,
+);

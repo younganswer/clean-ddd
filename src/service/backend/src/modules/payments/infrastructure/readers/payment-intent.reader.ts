@@ -9,6 +9,7 @@ import type { PageOptions } from '@/lib/database/repository-get-options';
 import { PaymentIntentResult } from '@/modules/payments/domains/readers/payment-intent.result';
 import { PaymentIntentSchema } from '@/modules/payments/infrastructure/schemas/payment-intent.schema';
 import { normalizeReaderExternalPage } from '@/common/cqrs/pagination-policy';
+import { useClassProvider } from '@/common/utils/nest-provider.helpers';
 
 @Injectable()
 export class PaymentIntentReader implements IPaymentIntentReader {
@@ -47,7 +48,7 @@ export class PaymentIntentReader implements IPaymentIntentReader {
 	}
 }
 
-export const PaymentIntentReaderProvider = {
-	provide: IPaymentIntentReaderSymbol,
-	useClass: PaymentIntentReader,
-};
+export const PaymentIntentReaderProvider = useClassProvider(
+	IPaymentIntentReaderSymbol,
+	PaymentIntentReader,
+);

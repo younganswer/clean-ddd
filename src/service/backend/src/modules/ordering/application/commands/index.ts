@@ -2,7 +2,7 @@ import { AttachPaymentToOrderHandler } from '@/modules/ordering/application/comm
 import { CreateOrderHandler } from '@/modules/ordering/application/commands/handlers/create-order.handler';
 import { MarkOrderPaidHandler } from '@/modules/ordering/application/commands/handlers/mark-order-paid.handler';
 
-export const CommandHandlers = [
+export const OrderingCommandHandlers = [
 	CreateOrderHandler,
 	AttachPaymentToOrderHandler,
 	MarkOrderPaidHandler,

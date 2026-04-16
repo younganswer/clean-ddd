@@ -3,11 +3,13 @@ import { EntityManager } from '@mikro-orm/postgresql';
 import { Injectable } from '@nestjs/common';
 import { ProcessedEvent } from '@/modules/outbox/idempotency/domain/entities/processed-event.entity';
 import {
+	IProcessedEventRepositorySymbol,
 	type IProcessedEventRepository,
 	type ProcessedEventFindCriteria,
 } from '@/modules/outbox/idempotency/domain/i.processed-event.repository';
 import { ProcessedEventMapper } from '@/modules/outbox/idempotency/infrastructure/processed-event.mapper';
 import { ProcessedEventSchema } from '@/modules/outbox/idempotency/infrastructure/processed-event.schema';
+import { useClassProviders } from '@/common/utils/nest-provider.helpers';
 
 @Injectable()
 export class ProcessedEventRepository implements IProcessedEventRepository {
@@ -105,3 +107,8 @@ export class ProcessedEventRepository implements IProcessedEventRepository {
 		em.remove(existing);
 	}
 }
+
+export const ProcessedEventRepositoryProviders = useClassProviders(
+	IProcessedEventRepositorySymbol,
+	ProcessedEventRepository,
+);

@@ -3,15 +3,21 @@ import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { mikroOrmConfigForRuntime } from '@/lib/database/mikro-orm.config';
 import { UnitOfWork } from '@/lib/database/unit-of-work';
 
+const DatabaseImports = [
+	MikroOrmModule.forRoot({
+		...mikroOrmConfigForRuntime(),
+		registerRequestContext: true,
+	}),
+];
+
+const DatabaseProviders = [UnitOfWork];
+
+const DatabaseExports = [UnitOfWork];
+
 @Global()
 @Module({
-	imports: [
-		MikroOrmModule.forRoot({
-			...mikroOrmConfigForRuntime(),
-			registerRequestContext: true,
-		}),
-	],
-	providers: [UnitOfWork],
-	exports: [UnitOfWork],
+	imports: DatabaseImports,
+	providers: DatabaseProviders,
+	exports: DatabaseExports,
 })
 export class DatabaseModule {}

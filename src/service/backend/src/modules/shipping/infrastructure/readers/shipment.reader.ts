@@ -10,6 +10,7 @@ import type { PageOptions } from '@/lib/database/repository-get-options';
 import { ShipmentResult } from '@/modules/shipping/domains/readers/shipment.result';
 import { ShipmentSchema } from '@/modules/shipping/infrastructure/schemas/shipment.schema';
 import { normalizeReaderExternalPage } from '@/common/cqrs/pagination-policy';
+import { useClassProvider } from '@/common/utils/nest-provider.helpers';
 
 @Injectable()
 export class ShipmentReader implements IShipmentReader {
@@ -59,7 +60,7 @@ export class ShipmentReader implements IShipmentReader {
 	}
 }
 
-export const ShipmentReaderProvider = {
-	provide: IShipmentReaderSymbol,
-	useClass: ShipmentReader,
-};
+export const ShipmentReaderProvider = useClassProvider(
+	IShipmentReaderSymbol,
+	ShipmentReader,
+);

@@ -4,7 +4,11 @@ import { IOutboxRepositorySymbol } from '@/shared/outbox/domain/repositories/i.o
 import type { IOutboxRepository } from '@/shared/outbox/domain/repositories/i.outbox.repository';
 import { OutboxEvent } from '@/shared/outbox/domain/entities/outbox-event.entity';
 import { getEventType, toPayload } from '@/lib/outbox/event-registry';
-import type { IOutboxProducer } from '@/shared/outbox/domain/producers/i.outbox.producer';
+import {
+	IOutboxProducerSymbol,
+	type IOutboxProducer,
+} from '@/shared/outbox/domain/producers/i.outbox.producer';
+import { useClassProviders } from '@/common/utils/nest-provider.helpers';
 
 @Injectable()
 export class OutboxProducer implements IOutboxProducer {
@@ -45,3 +49,8 @@ export class OutboxProducer implements IOutboxProducer {
 		});
 	}
 }
+
+export const OutboxProducerProviders = useClassProviders(
+	IOutboxProducerSymbol,
+	OutboxProducer,
+);

@@ -3,7 +3,11 @@ import {
 	SchedulerClient,
 } from '@aws-sdk/client-scheduler';
 import { Injectable } from '@nestjs/common';
-import { IOutboxDelayedDispatchTrigger } from '@/shared/outbox/domain/schedulers/i.outbox-delayed-dispatch-trigger';
+import {
+	IOutboxDelayedDispatchTriggerSymbol,
+	type IOutboxDelayedDispatchTrigger,
+} from '@/shared/outbox/domain/schedulers/i.outbox-delayed-dispatch-trigger';
+import { useClassProviders } from '@/common/utils/nest-provider.helpers';
 
 const SCHEDULE_NAME_PREFIX = 'outbox-';
 
@@ -66,3 +70,8 @@ export class OutboxDelayedDispatchTriggerAdapter implements IOutboxDelayedDispat
 		}
 	}
 }
+
+export const OutboxDelayedDispatchTriggerProviders = useClassProviders(
+	IOutboxDelayedDispatchTriggerSymbol,
+	OutboxDelayedDispatchTriggerAdapter,
+);

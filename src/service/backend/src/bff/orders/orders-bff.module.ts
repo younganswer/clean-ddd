@@ -2,13 +2,24 @@ import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 
 import { OrdersBffController } from '@/bff/orders/presentation/orders-bff.controller';
-import { CommandHandlers } from '@/bff/orders/application/commands';
-import { QueryHandlers } from '@/bff/orders/application/queries';
+import { OrdersBffCommandHandlers } from '@/bff/orders/application/commands';
+import { OrdersBffQueryHandlers } from '@/bff/orders/application/queries';
 import { OrderingModule } from '@/modules/ordering/ordering.module';
 
+const OrdersBffImports = [CqrsModule, OrderingModule];
+
+const OrdersBffControllers = [OrdersBffController];
+
+const OrdersBffHandlers = [
+	...OrdersBffCommandHandlers,
+	...OrdersBffQueryHandlers,
+];
+
+const OrdersBffProviders = [...OrdersBffHandlers];
+
 @Module({
-	imports: [CqrsModule, OrderingModule],
-	controllers: [OrdersBffController],
-	providers: [...CommandHandlers, ...QueryHandlers],
+	imports: OrdersBffImports,
+	controllers: OrdersBffControllers,
+	providers: OrdersBffProviders,
 })
 export class OrdersBffModule {}

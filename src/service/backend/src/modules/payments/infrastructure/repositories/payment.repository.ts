@@ -5,7 +5,10 @@ import type {
 	RepositoryGetByIdOptions,
 	RepositoryPageOptions,
 } from '@/lib/database/repository-get-options';
-import type { IPaymentRepository } from '@/modules/payments/domains/repositories/i.payment.repository';
+import {
+	IPaymentRepositorySymbol,
+	type IPaymentRepository,
+} from '@/modules/payments/domains/repositories/i.payment.repository';
 import { PaymentIntent } from '@/modules/payments/domains/entities/aggregates/payment-intent/payment-intent.aggregate';
 import { PaymentIntentMapper } from '@/modules/payments/infrastructure/mappers/payment-intent.mapper';
 import { PaymentIntentSchema } from '@/modules/payments/infrastructure/schemas/payment-intent.schema';
@@ -13,6 +16,7 @@ import { PaymentNotFoundException } from '@/shared/exceptions';
 import { SystemRequestContextTransactionRequiredException } from '@/shared/exceptions/catalogs/system.exception';
 import { ApplicationExceptionFactory } from '@/common/exceptions/base.exception-factory';
 import { InfrastructureExceptionFactory } from '@/common/exceptions/base.exception-factory';
+import { useClassProviders } from '@/common/utils/nest-provider.helpers';
 
 @Injectable()
 export class PaymentRepository implements IPaymentRepository {
@@ -108,3 +112,8 @@ export class PaymentRepository implements IPaymentRepository {
 		return found.map((p) => this.mapper.toDomain(p));
 	}
 }
+
+export const PaymentRepositoryProviders = useClassProviders(
+	IPaymentRepositorySymbol,
+	PaymentRepository,
+);

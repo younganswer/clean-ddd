@@ -1,11 +1,15 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { SendMessageCommand, SQSClient } from '@aws-sdk/client-sqs';
 import { SQS_CLIENT, SQS_OUTBOX_QUEUE_URL } from '@/lib/queue/sqs.module';
-import { IOutboxQueue } from '@/shared/outbox/domain/queue/i.outbox.queue';
+import {
+	IOutboxQueueSymbol,
+	type IOutboxQueue,
+} from '@/shared/outbox/domain/queue/i.outbox.queue';
 import {
 	serializeOutboxDispatchMessage,
 	type OutboxEnqueueSource,
 } from '@/shared/outbox/domain/queue/outbox-dispatch-message';
+import { useClassProviders } from '@/common/utils/nest-provider.helpers';
 
 @Injectable()
 export class OutboxQueue implements IOutboxQueue {
@@ -49,3 +53,8 @@ export class OutboxQueue implements IOutboxQueue {
 		await this.sqs.send(new SendMessageCommand(messageAttributes));
 	}
 }
+
+export const OutboxQueueProviders = useClassProviders(
+	IOutboxQueueSymbol,
+	OutboxQueue,
+);

@@ -12,6 +12,7 @@ import { InventoryReservationResult } from '@/modules/inventory/domains/readers/
 import { InventoryItemSchema } from '@/modules/inventory/infrastructure/schemas/inventory-item.schema';
 import { InventoryReservationSchema } from '@/modules/inventory/infrastructure/schemas/inventory-reservation.schema';
 import { normalizeReaderExternalPage } from '@/common/cqrs/pagination-policy';
+import { useClassProvider } from '@/common/utils/nest-provider.helpers';
 
 @Injectable()
 export class InventoryReader implements IInventoryReader {
@@ -74,7 +75,7 @@ export class InventoryReader implements IInventoryReader {
 	}
 }
 
-export const InventoryReaderProvider = {
-	provide: IInventoryReaderSymbol,
-	useClass: InventoryReader,
-};
+export const InventoryReaderProvider = useClassProvider(
+	IInventoryReaderSymbol,
+	InventoryReader,
+);

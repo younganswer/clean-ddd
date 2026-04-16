@@ -8,15 +8,17 @@ import { DashboardBffModule } from '@/bff/dashboard/dashboard-bff.module';
 import { GraphBffModule } from '@/bff/graph/graph-bff.module';
 import { SystemConceptsBffModule } from '@/bff/system-concepts/system-concepts-bff.module';
 
+const BffImports = [
+	CqrsModule,
+	OrdersBffModule,
+	OrderDetailBffModule,
+	CheckoutBffModule,
+	DashboardBffModule,
+	GraphBffModule,
+	SystemConceptsBffModule,
+];
+
 @Module({
-	imports: [
-		CqrsModule,
-		OrdersBffModule,
-		OrderDetailBffModule,
-		CheckoutBffModule,
-		DashboardBffModule,
-		GraphBffModule,
-		SystemConceptsBffModule,
-	],
+	imports: BffImports,
 })
 export class BffModule {}
